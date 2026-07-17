@@ -1,0 +1,199 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum EducationLevel {
+  SCHOOL
+  COLLEGE
+}
+
+enum ResourceType {
+  NOTES
+  PYQ
+}
+
+// e.g. "CBSE Class 12", "B.Com (Hons)", "BBA"
+model Program {
+  id        String   @id @default(cuid())
+  level     EducationLevel
+  name      String
+  slug      String   @unique
+  summary   String?
+  createdAt DateTime @default(now())
+
+  terms Term[]
+}
+
+// e.g. "Semester 1" for college, or just "Full Year" for school
+model Term {
+  id        String   @id @default(cuid())
+  programId String
+  program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  name      String
+  order     Int      @default(1)
+  createdAt DateTime @default(now())
+
+  subjects Subject[]
+
+  @@unique([programId, order])
+}
+
+model Subject {
+  id          String   @id @default(cuid())
+  termId      String
+  term        Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String
+  description String?
+  createdAt   DateTime @default(now())
+
+  resources Resource[]
+  questions Question[]
+  analysis  SubjectAnalysis?
+
+  @@unique([termId, slug])
+}
+
+// Cached result of analyzing a subject's uploaded PYQ papers: AI-compiled
+// notes, the most-repeated questions across years, and a predicted paper.
+// Regenerated on demand (not automatically) since it costs a real AI call.
+model SubjectAnalysis {
+  id                  String   @id @default(cuid())
+  subjectId           String   @unique
+  subject             Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  compiledNotes       String
+  mostRepeatedJson     String // JSON-encoded array
+  predictedPaperJson   String // JSON-encoded array
+  sourceResourceCount Int
+  generatedAt         DateTime @default(now())
+}
+
+model Resource {
+  id         String       @id @default(cuid())
+  subjectId  String
+  subject    Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  type       ResourceType
+  title      String
+  year       Int?
+  fileUrl    String
+  fileName   String
+  fileSize   Int
+  fileHash   String? // SHA-256 of the file bytes, used to reject duplicate uploads
+  downloads  Int          @default(0)
+  createdAt  DateTime     @default(now())
+  batchId    String?
+  batch      UploadBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+
+  questions Question[]
+
+  @@index([fileHash])
+  @@index([batchId])
+}
+
+// One row per "Upload N files" click in Bulk Upload — lets the admin later
+// browse back through what was uploaded together and fix a mistake (wrong
+// year/subject/type) without having to hunt for the resource elsewhere.
+model UploadBatch {
+  id        String     @id @default(cuid())
+  createdAt DateTime   @default(now())
+  resources Resource[]
+}
+
+// A row an admin either couldn't assign a subject to, or that failed to
+// upload, kept around (with the original file) so it isn't silently lost —
+// visible on /admin/failed-uploads for the admin to fix and retry later.
+model FailedUpload {
+  id        String       @id @default(cuid())
+  fileName  String
+  title     String
+  type      ResourceType
+  year      Int?
+  reason    String
+  fileUrl   String?
+  fileSize  Int?
+  fileHash  String? // lets the admin see if this is a duplicate of an already-uploaded resource
+  createdAt DateTime     @default(now())
+
+  @@index([fileHash])
+}
+
+// Individual PYQ question, optionally linked back to the paper it appeared in.
+// isRepeated + repeatCount + years power the "most repeated questions" feature.
+model Question {
+  id             String    @id @default(cuid())
+  subjectId      String
+  subject        Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  resourceId     String?
+  resource       Resource? @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  questionText   String
+  answerText     String
+  marks          Int?
+  isRepeated     Boolean   @default(false)
+  repeatCount    Int       @default(1)
+  years          String? // comma-separated list of years this question appeared, e.g. "2021,2022,2024"
+  createdAt      DateTime  @default(now())
+}
+
+// Singleton row (id is always "singleton") for the small set of homepage
+// text fields an admin can safely edit without any risk of breaking a page.
+model SiteSettings {
+  id              String   @id @default("singleton")
+  heroHeadline    String?
+  heroSubtitle    String?
+  heroImageUrl    String?
+  currencyIconUrl String?
+  updatedAt       DateTime @updatedAt
+}
+
+model Admin {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  createdAt    DateTime @default(now())
+}
+
+// Learned filename/title -> subject associations for Bulk Upload. When an
+// admin manually assigns a subject to a paper the filename-matching heuristic
+// couldn't place, we remember it (keyed by a normalized title with trailing
+// paper numbers stripped) so future uploads with a similar title auto-match.
+model SubjectMatchMemory {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  subjectId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// Anonymous, login-free student identity — one row per browser (device
+// cookie), not a real account. Powers the streak / oranges / leaderboard
+// mechanic without adding a password-based sign-up flow.
+model Student {
+  id             String   @id @default(cuid())
+  deviceId       String   @unique
+  nickname       String?
+  oranges        Int      @default(0)
+  streak         Int      @default(0)
+  lastActiveDate String? // "YYYY-MM-DD", used to compute streak continuation
+  createdAt      DateTime @default(now())
+
+  events OrangeEvent[]
+}
+
+model OrangeEvent {
+  id        String   @id @default(cuid())
+  studentId String
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  amount    Int
+  reason    String // "daily_visit" | "resource_view" | "exam_kit_session"
+  createdAt DateTime @default(now())
+}
