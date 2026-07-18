@@ -175,6 +175,44 @@ export async function updateSubjectNotesAction(formData: FormData) {
   revalidatePath(`/subjects/${subjectId}`);
 }
 
+// Reassigns one or more subjects to a real course + semester — the fast
+// path out of the "Unsorted (Pending Categorization)" holding pool. Each
+// subject keeps its resources/notes/questions (only termId + slug change);
+// a slug collision in the destination term gets a numeric suffix instead
+// of failing the whole batch.
+export async function moveSubjectsToTermAction(formData: FormData) {
+  await requireAdmin();
+  const termId = String(formData.get("termId") ?? "").trim();
+  const subjectIds = formData.getAll("subjectIds").map(String).filter(Boolean);
+  if (!termId) throw new Error("Pick a destination course + semester first.");
+  if (subjectIds.length === 0) throw new Error("No subjects selected.");
+
+  const destSlugs = new Set(
+    (await prisma.subject.findMany({ where: { termId }, select: { slug: true } })).map((s) => s.slug)
+  );
+
+  let moved = 0;
+  for (const id of subjectIds) {
+    const subject = await prisma.subject.findUnique({ where: { id }, select: { name: true, slug: true } });
+    if (!subject) continue;
+
+    let slug = subject.slug;
+    if (destSlugs.has(slug)) {
+      slug = await uniqueSlug(subject.name, async (s) => destSlugs.has(s));
+    }
+    destSlugs.add(slug);
+
+    await prisma.subject.update({ where: { id }, data: { termId, slug } });
+    moved++;
+  }
+
+  const term = await prisma.term.findUnique({ where: { id: termId } });
+  if (term) revalidatePath(`/admin/programs/${term.programId}`);
+  revalidatePath("/admin/unsorted");
+
+  return { moved };
+}
+
 // Remembers a title -> subject association from a manual Bulk Upload
 // correction, so future papers with a similarly-named title (same title,
 // different trailing paper number) auto-match without re-picking.

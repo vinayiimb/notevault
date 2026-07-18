@@ -8,6 +8,7 @@ import {
   GraduationCap,
   GridFour,
   House,
+  Shuffle,
   SignOut,
   WarningCircle,
 } from "@phosphor-icons/react/dist/ssr";
@@ -74,6 +75,13 @@ export default async function AdminDashboardLayout({
           >
             <GridFour size={16} />
             PYQ coverage
+          </Link>
+          <Link
+            href="/admin/unsorted"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Shuffle size={16} />
+            Unsorted subjects
           </Link>
           <Link
             href="/admin/failed-uploads"

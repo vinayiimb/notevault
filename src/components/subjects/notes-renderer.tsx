@@ -107,16 +107,24 @@ export function NotesRenderer({
             </li>
           ),
           table: ({ children }) => (
-            <div className="mt-4 overflow-x-auto rounded-xl border border-border">
+            <div className="mt-6 overflow-hidden overflow-x-auto rounded-2xl border border-border bg-surface shadow-[0_10px_30px_rgba(15,23,42,.05)]">
               <table className="w-full border-collapse text-sm">{children}</table>
             </div>
           ),
-          th: ({ children }) => (
-            <th className="border-b border-border bg-surface-muted px-3 py-2 text-left font-semibold">
+          thead: ({ children }) => <thead className="bg-surface-muted">{children}</thead>,
+          tr: ({ children }) => (
+            <tr className="border-b border-border/60 transition-colors last:border-0 [tbody_&]:hover:bg-surface-muted/60">
               {children}
-            </th>
+            </tr>
           ),
-          td: ({ children }) => <td className="border-b border-border px-3 py-2">{children}</td>,
+          th: ({ children }) => (
+            <th className="px-6 py-4 text-left font-semibold text-foreground">{children}</th>
+          ),
+          td: ({ children }) => (
+            <td className="px-6 py-4 text-foreground/90 first:font-semibold first:text-foreground">
+              {children}
+            </td>
+          ),
           code: ({ children }) => (
             <code className="rounded bg-surface-muted px-1.5 py-0.5 font-mono text-[0.85em]">
               {children}
