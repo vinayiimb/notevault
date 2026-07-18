@@ -7,6 +7,7 @@ import { saveUploadedFile, hashFile, putBytes, deleteByUrl } from "@/lib/storage
 import { slugify } from "@/lib/utils";
 import { heroImageExtensionsFor } from "@/lib/hero-image";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
+import { normalizeMemoryKey } from "@/lib/subject-match";
 import {
   createSessionCookie,
   destroySessionCookie,
@@ -302,6 +303,180 @@ export async function deleteFailedUploadAction(formData: FormData) {
   await deleteByUrl(failed?.fileUrl);
   await prisma.failedUpload.delete({ where: { id } });
   revalidatePath("/admin/failed-uploads");
+}
+
+function normalizeLoose(s: string) {
+  return s.toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+
+function findProgramMatch<T extends { name: string }>(programs: T[], value: string): T | null {
+  const v = normalizeLoose(value);
+  if (!v) return null;
+
+  // DU elective-pool shorthand: GSEC/SEC/VAC/VEC/AEC all live under the
+  // "Common Pool" programme; a bare "GE" means the separate GE Pool.
+  if (/^(gsec|sec|vac|vec|aec)$/.test(v) || v.includes("sec") || v.includes("vac") || v.includes("vec") || v.includes("aec")) {
+    const pool = programs.find((p) => normalizeLoose(p.name).includes("commonpool"));
+    if (pool) return pool;
+  }
+  if (v === "ge" || v.includes("genericelective")) {
+    const pool = programs.find((p) => normalizeLoose(p.name).includes("gepool"));
+    if (pool) return pool;
+  }
+
+  const exact = programs.find((p) => normalizeLoose(p.name) === v);
+  if (exact) return exact;
+  return programs.find((p) => normalizeLoose(p.name).includes(v) || v.includes(normalizeLoose(p.name))) ?? null;
+}
+
+function findTermMatch<T extends { name: string }>(terms: T[], value: string): T | null {
+  const v = normalizeLoose(value);
+  if (!v) return null;
+
+  if (v === "all" || v.includes("allsemester")) {
+    return terms.find((t) => normalizeLoose(t.name).includes("allsemester")) ?? null;
+  }
+  const num = v.match(/\d+/)?.[0];
+  if (num) {
+    const found = terms.find((t) => normalizeLoose(t.name) === `semester${num}`);
+    if (found) return found;
+  }
+  const exact = terms.find((t) => normalizeLoose(t.name) === v);
+  if (exact) return exact;
+  return terms.find((t) => normalizeLoose(t.name).includes(v) || v.includes(normalizeLoose(t.name))) ?? null;
+}
+
+export type CsvDeployRowResult = {
+  title: string;
+  status: "deployed" | "duplicate" | "no-failed-upload-match" | "no-program-match" | "no-term-match" | "no-subject" | "error";
+  message?: string;
+};
+
+// Bulk-deploys Failed Uploads from a CSV the admin filled in offline (title
+// -> which course/semester/subject it actually belongs to). Expected
+// columns (case-insensitive, any order): title, program (or course), term
+// (or semester), subject, type (PYQ/NOTES, default PYQ), year (optional).
+// Any subject named in the sheet that doesn't exist yet under the matched
+// term is created automatically. Every row is reported back individually —
+// nothing is silently dropped, so a partially-wrong sheet can just be
+// trimmed to its failed rows and re-dropped.
+export async function deployFailedUploadsFromCsvAction(formData: FormData): Promise<{ results: CsvDeployRowResult[] }> {
+  await requireAdmin();
+  const file = formData.get("file") as File | null;
+  if (!file || file.size === 0) throw new Error("A CSV file is required.");
+
+  const { parseCsv } = await import("@/lib/csv");
+  const text = await file.text();
+  const rows = parseCsv(text);
+
+  const programs = await prisma.program.findMany({
+    include: { terms: { include: { subjects: { select: { id: true, name: true } } } } },
+  });
+  const pendingFailedUploads = await prisma.failedUpload.findMany();
+
+  const results: CsvDeployRowResult[] = [];
+
+  for (const row of rows) {
+    const title = (row.title || row.filename || row.paper || row.name || "").trim();
+    if (!title) continue;
+
+    const failedIdx = pendingFailedUploads.findIndex(
+      (f) => f.title.trim().toLowerCase() === title.toLowerCase()
+    );
+    const failed =
+      failedIdx >= 0
+        ? pendingFailedUploads[failedIdx]
+        : pendingFailedUploads.find((f) => normalizeLoose(f.title) === normalizeLoose(title));
+    if (!failed) {
+      results.push({ title, status: "no-failed-upload-match" });
+      continue;
+    }
+    if (!failed.fileUrl || !failed.fileSize) {
+      results.push({ title, status: "error", message: "No file was saved for this entry." });
+      continue;
+    }
+
+    const programVal = (row.program || row.course || "").trim();
+    const program = findProgramMatch(programs, programVal);
+    if (!program) {
+      results.push({ title, status: "no-program-match", message: `No course matched "${programVal}"` });
+      continue;
+    }
+
+    const termVal = (row.term || row.semester || row.sem || "").trim();
+    const term = findTermMatch(program.terms, termVal);
+    if (!term) {
+      results.push({
+        title,
+        status: "no-term-match",
+        message: `No semester matched "${termVal}" in ${program.name}`,
+      });
+      continue;
+    }
+
+    const subjectVal = (row.subject || "").trim();
+    if (!subjectVal) {
+      results.push({ title, status: "no-subject", message: "No subject name given" });
+      continue;
+    }
+
+    let subject = term.subjects.find((s) => s.name.trim().toLowerCase() === subjectVal.toLowerCase());
+    if (!subject) {
+      const slug = await uniqueSlug(subjectVal, async (s) => {
+        const found = await prisma.subject.findUnique({ where: { termId_slug: { termId: term.id, slug: s } } });
+        return !!found;
+      });
+      const created = await prisma.subject.create({ data: { termId: term.id, name: subjectVal, slug } });
+      subject = { id: created.id, name: created.name };
+      term.subjects.push(subject);
+    }
+
+    const typeVal = (row.type || "PYQ").trim().toUpperCase() === "NOTES" ? "NOTES" : "PYQ";
+    const yearRaw = (row.year || "").trim();
+    const year = yearRaw ? Number(yearRaw) : null;
+
+    if (failed.fileHash) {
+      const existing = await prisma.resource.findFirst({ where: { fileHash: failed.fileHash } });
+      if (existing) {
+        await prisma.failedUpload.delete({ where: { id: failed.id } });
+        pendingFailedUploads.splice(pendingFailedUploads.indexOf(failed), 1);
+        results.push({ title, status: "duplicate" });
+        continue;
+      }
+    }
+
+    await prisma.resource.create({
+      data: {
+        subjectId: subject.id,
+        type: typeVal,
+        title: failed.title,
+        year,
+        fileUrl: failed.fileUrl,
+        fileName: failed.fileName,
+        fileSize: failed.fileSize,
+        fileHash: failed.fileHash,
+      },
+    });
+    await prisma.failedUpload.delete({ where: { id: failed.id } });
+    pendingFailedUploads.splice(pendingFailedUploads.indexOf(failed), 1);
+
+    const memoryKey = normalizeMemoryKey(failed.title);
+    if (memoryKey) {
+      await prisma.subjectMatchMemory.upsert({
+        where: { key: memoryKey },
+        create: { key: memoryKey, subjectId: subject.id },
+        update: { subjectId: subject.id },
+      });
+    }
+
+    results.push({ title, status: "deployed" });
+  }
+
+  revalidatePath("/admin/failed-uploads");
+  revalidatePath("/admin/programs");
+  revalidatePath("/admin/coverage");
+
+  return { results };
 }
 
 export async function deleteResourceAction(formData: FormData) {

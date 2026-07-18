@@ -1,6 +1,14 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { BookOpen, Exam, GraduationCap, ImageSquare, Notebook } from "@phosphor-icons/react/dist/ssr";
+import {
+  BookOpen,
+  CompassRose,
+  Exam,
+  GraduationCap,
+  ImageSquare,
+  Notebook,
+  Sparkle,
+} from "@phosphor-icons/react/dist/ssr";
 import { SearchBar } from "@/components/search-bar";
 import { getStats, getProgramsByLevel, getSiteSettings } from "@/lib/data";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
@@ -20,7 +28,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="relative -mt-[92px] min-h-[640px] overflow-hidden bg-[linear-gradient(180deg,#54d1ff,#42c3f3_55%,#62d8ff)]">
+      <section className="relative -mt-[92px] min-h-[600px] overflow-hidden bg-[linear-gradient(180deg,#54d1ff,#42c3f3_55%,#62d8ff)]">
         {heroImage && (
           // Plain <img>, not next/image: the admin can upload any image at
           // any aspect ratio. Used here as a full-bleed background behind
@@ -36,10 +44,15 @@ export default async function HomePage() {
           />
         )}
         {heroImage && (
-          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/55" />
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/45" />
         )}
+        {/* The hero doesn't end on a hard edge — it fades into the page
+            background over its bottom third, so the floating cards below
+            (which overlap this fade) read as part of one continuous surface
+            instead of sitting on a seam. */}
+        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-background" />
 
-        <div className="relative z-10 mx-auto flex min-h-[640px] max-w-4xl flex-col items-center justify-center px-4 pt-[92px] text-center sm:px-6">
+        <div className="relative z-10 mx-auto flex min-h-[600px] max-w-4xl flex-col items-center justify-center px-4 pt-[92px] pb-28 text-center sm:px-6">
           <h1 className="font-display text-5xl leading-[0.95] font-extrabold tracking-[-0.02em] whitespace-pre-line text-white drop-shadow-sm sm:text-7xl">
             {siteSettings.heroHeadline}
           </h1>
@@ -67,35 +80,49 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <section>
-          <div className="flex items-center gap-3">
-            <span className="flex size-11 items-center justify-center rounded-2xl bg-brand-soft text-brand">
-              <GraduationCap size={22} weight="bold" />
-            </span>
-            <div>
-              <h2 className="text-lg font-semibold">PYQ</h2>
-              <p className="text-sm text-muted">
-                Previous year papers for B.A., B.Com, B.Sc and other programs.
-              </p>
+      {/* Floating action cards: pulled up over the hero's fade with a
+          negative margin so they visually straddle both sections. */}
+      <div className="relative z-10 mx-auto -mt-24 max-w-6xl px-4 sm:px-6">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="rounded-3xl border border-border bg-surface p-6 shadow-[0_15px_40px_rgba(15,23,42,.08)] transition duration-200 ease-out hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(15,23,42,.12)] lg:col-span-2">
+            <div className="flex items-center gap-3">
+              <span className="flex size-11 items-center justify-center rounded-2xl bg-brand-soft text-brand">
+                <GraduationCap size={22} weight="bold" />
+              </span>
+              <div>
+                <p className="font-display text-lg font-bold">Course &amp; semester</p>
+                <p className="text-xs text-muted">Jump straight to your papers</p>
+              </div>
             </div>
+            {jumpData.length > 0 ? (
+              <div className="mt-4">
+                <CourseSemesterJump programs={jumpData} embedded />
+              </div>
+            ) : (
+              <p className="mt-4 text-sm text-muted">No courses added yet.</p>
+            )}
           </div>
 
-          {jumpData.length > 0 && (
-            <div className="mt-5 max-w-2xl">
-              <CourseSemesterJump programs={jumpData} />
-            </div>
-          )}
-
-          <Link
+          <ActionCard
+            icon={<CompassRose size={22} weight="bold" />}
+            title="Explore PYQs"
+            description="Browse every course, semester, and subject."
             href="/browse/college"
-            className="mt-4 inline-block text-sm font-medium text-brand hover:underline"
-          >
-            Or browse every course →
-          </Link>
-        </section>
+            cta="Browse all →"
+          />
 
-        <section className="mt-14 grid grid-cols-2 gap-4 border-y border-border py-8 sm:grid-cols-4">
+          <ActionCard
+            icon={<Sparkle size={22} weight="bold" />}
+            title="AI study tools"
+            description="Flashcards, quizzes, concept maps, and more."
+            href="/tools/exam-kit"
+            cta="Open exam kit →"
+          />
+        </div>
+      </div>
+
+      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
+        <section className="grid grid-cols-2 gap-4 border-y border-border py-8 sm:grid-cols-4">
           <Stat icon={<GraduationCap size={18} weight="bold" />} label="Programs" value={stats.programs} />
           <Stat icon={<Notebook size={18} weight="bold" />} label="Subjects" value={stats.subjects} />
           <Stat icon={<BookOpen size={18} weight="bold" />} label="Notes & PYQs" value={stats.resources} />
@@ -103,6 +130,34 @@ export default async function HomePage() {
         </section>
       </div>
     </div>
+  );
+}
+
+function ActionCard({
+  icon,
+  title,
+  description,
+  href,
+  cta,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  href: string;
+  cta: string;
+}) {
+  return (
+    <Link
+      href={href}
+      className="group flex flex-col rounded-3xl border border-border bg-surface p-6 shadow-[0_15px_40px_rgba(15,23,42,.08)] transition duration-200 ease-out hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(15,23,42,.12)]"
+    >
+      <span className="flex size-11 items-center justify-center rounded-2xl bg-brand-soft text-brand transition-transform duration-200 group-hover:scale-110">
+        {icon}
+      </span>
+      <p className="mt-3 font-display text-lg font-bold">{title}</p>
+      <p className="mt-1 text-sm text-muted">{description}</p>
+      <span className="mt-4 text-sm font-semibold text-brand">{cta}</span>
+    </Link>
   );
 }
 

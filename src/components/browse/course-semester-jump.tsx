@@ -2,19 +2,32 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 type Program = { id: string; name: string; terms: { id: string; name: string }[] };
 
-export function CourseSemesterJump({ programs }: { programs: Program[] }) {
+export function CourseSemesterJump({
+  programs,
+  embedded = false,
+}: {
+  programs: Program[];
+  // When true, skip the card's own background/border/shadow — used when a
+  // parent (the homepage's floating action-card grid) already provides it.
+  embedded?: boolean;
+}) {
   const [programId, setProgramId] = useState("");
   const [termId, setTermId] = useState("");
   const router = useRouter();
   const program = programs.find((p) => p.id === programId);
 
   return (
-    <div className="rounded-2xl border border-border bg-surface p-5 shadow-[0_10px_40px_rgba(0,0,0,.06)]">
-      <p className="text-sm font-semibold">Jump straight to your papers</p>
-      <div className="mt-3 flex flex-wrap items-end gap-3">
+    <div
+      className={
+        embedded ? "" : "rounded-2xl border border-border bg-surface p-5 shadow-[0_10px_40px_rgba(0,0,0,.06)]"
+      }
+    >
+      {!embedded && <p className="text-sm font-semibold">Jump straight to your papers</p>}
+      <div className={embedded ? "flex flex-wrap items-end gap-3" : "mt-3 flex flex-wrap items-end gap-3"}>
         <div className="flex flex-col gap-1.5">
           <label className="text-xs text-muted">Course</label>
           <select
@@ -59,7 +72,11 @@ export function CourseSemesterJump({ programs }: { programs: Program[] }) {
         </button>
       </div>
       <p className="mt-3 text-xs text-muted">
-        Don&apos;t know your course yet? Browse everything below instead.
+        Don&apos;t know your course yet? Try{" "}
+        <Link href="/browse/college" className="text-brand hover:underline">
+          browsing everything
+        </Link>{" "}
+        instead.
       </p>
     </div>
   );

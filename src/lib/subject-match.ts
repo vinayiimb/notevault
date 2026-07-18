@@ -18,6 +18,24 @@ function normalizeWords(s: string) {
     .filter(Boolean);
 }
 
+// Best-effort exam year from a filename, e.g. "Financial Accounting 2023.pdf"
+// or "DSC 1.2 - Micro Eco (2021).pdf". Only trusts a standalone 4-digit
+// number in a plausible exam-year range — this avoids misreading a paper
+// code or roll number (e.g. "...1553.pdf") as a year. Returns null when
+// nothing plausible is found, leaving the row's year to the admin's default.
+export function guessYear(filename: string): number | null {
+  const base = filename.replace(/\.pdf$/i, "");
+  const matches = base.match(/(?:19|20)\d{2}/g);
+  if (!matches) return null;
+  const currentYear = new Date().getFullYear();
+  const plausible = matches.map(Number).filter((y) => y >= 2000 && y <= currentYear + 1);
+  if (plausible.length === 0) return null;
+  // Last match wins — years in these filenames tend to trail the title
+  // ("Subject Name 2023.pdf"), while a leading number is more often a
+  // paper/roll code.
+  return plausible[plausible.length - 1];
+}
+
 function splitSubjectName(name: string): { code: string | null; title: string } {
   // Handles "BC 1.2 — Financial Accounting" and "DSC-2.1 — Corporate Accounting" alike:
   // split on the first em/en-dash-with-spaces, and separately allow a plain hyphen

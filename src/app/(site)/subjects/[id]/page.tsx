@@ -59,7 +59,7 @@ export default async function SubjectPage({
           <Exam size={20} weight="bold" className="text-accent" />
           Previous year question papers
         </h2>
-        <ResourceList resources={pyqs} emptyLabel="No PYQs uploaded yet." />
+        <PyqsByYear resources={pyqs} />
       </section>
 
       {repeated.length > 0 && (
@@ -133,6 +133,48 @@ function ResourceList({
         </li>
       ))}
     </ul>
+  );
+}
+
+// PYQs are grouped by year (newest first) so "which year is this from" is
+// answered by the section heading, not buried in each row's fine print —
+// papers with no year on file (an unset default during bulk upload) get
+// their own "Year not set" group at the end instead of silently mixing in.
+function PyqsByYear({
+  resources,
+}: {
+  resources: { id: string; title: string; year: number | null; fileUrl: string; fileSize: number }[];
+}) {
+  if (resources.length === 0) {
+    return <p className="mt-3 text-sm text-muted">No PYQs uploaded yet.</p>;
+  }
+
+  const groups = new Map<number | null, typeof resources>();
+  for (const r of resources) {
+    const key = r.year;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key)!.push(r);
+  }
+  const sortedYears = Array.from(groups.keys()).sort((a, b) => {
+    if (a === null) return 1;
+    if (b === null) return -1;
+    return b - a;
+  });
+
+  return (
+    <div className="mt-4 flex flex-col gap-6">
+      {sortedYears.map((year) => (
+        <div key={year ?? "unset"}>
+          <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
+            {year ?? "Year not set"}
+            <span className="rounded-full bg-surface-muted px-2 py-0.5 font-normal normal-case text-muted">
+              {groups.get(year)!.length} paper{groups.get(year)!.length === 1 ? "" : "s"}
+            </span>
+          </p>
+          <ResourceList resources={groups.get(year)!} emptyLabel="" />
+        </div>
+      ))}
+    </div>
   );
 }
 

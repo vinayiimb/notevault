@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { FailedUploadsClient } from "@/components/failed-uploads/failed-uploads-client";
 import { CopyableTitleList } from "@/components/failed-uploads/copyable-title-list";
+import { CsvDeploy } from "@/components/failed-uploads/csv-deploy";
 
 export default async function FailedUploadsPage() {
   const [rows, existingHashes, programs] = await Promise.all([
@@ -50,6 +51,7 @@ export default async function FailedUploadsPage() {
       </p>
 
       <CopyableTitleList titles={titles} />
+      <CsvDeploy />
 
       <FailedUploadsClient rows={data} programs={programData} />
     </div>

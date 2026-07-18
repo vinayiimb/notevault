@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { CoverageFilters } from "@/components/coverage/coverage-filters";
+import { CoverageResourceTable } from "@/components/coverage/coverage-resource-table";
 
 export default async function AdminCoveragePage({
   searchParams,
@@ -61,118 +62,144 @@ export default async function AdminCoveragePage({
       )
     : [];
 
+  // Fixed 5-step buckets rather than scaling to the max in view — PYQ counts
+  // per subject/year are usually 0-3, so a relative scale would make a
+  // single paper look "maximum hot" and wash out the signal.
+  function heatClass(count: number) {
+    if (count === 0) return "bg-transparent text-muted";
+    if (count === 1) return "bg-heat-2 text-heat-text";
+    if (count === 2) return "bg-heat-3 text-heat-text";
+    if (count === 3) return "bg-heat-4 text-heat-text";
+    if (count === 4) return "bg-heat-5 text-heat-text";
+    return "bg-heat-6 text-heat-text";
+  }
+
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold">PYQ coverage</h1>
-      <p className="mt-1 text-sm text-muted">
-        Pick a course and semester to see which years are missing for each subject — useful
-        when uploading papers in batches across multiple zips.
-      </p>
+      <div className="rounded-[28px] border border-border bg-surface p-8 shadow-[0_10px_40px_rgba(15,23,42,.06)] sm:p-10">
+        <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">
+          PYQ coverage
+        </h1>
+        <p className="mt-2 text-sm text-muted">
+          Pick a course and semester to see which years are missing for each subject — useful
+          when uploading papers in batches across multiple zips.
+        </p>
 
-      <div className="mt-6">
-        <CoverageFilters programs={programData} programId={programId} termId={termId} />
-      </div>
+        <div className="mt-6">
+          <CoverageFilters programs={programData} programId={programId} termId={termId} />
+        </div>
 
-      {!term && (
-        <p className="mt-6 text-sm text-muted">Pick a course and semester above to see coverage.</p>
-      )}
+        {!term && (
+          <p className="mt-6 text-sm text-muted">Pick a course and semester above to see coverage.</p>
+        )}
 
-      {term && (
-        <>
-          <div className="mt-6 overflow-x-auto rounded-xl border border-border">
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-border bg-surface-muted">
-                  <th className="sticky left-0 z-10 min-w-56 bg-surface-muted px-4 py-2 text-left font-medium">
-                    Subject
-                  </th>
-                  {years.map((y) => (
-                    <th key={y} className="px-3 py-2 text-center font-medium">
-                      {y}
+        {term && (
+          <>
+            <div className="mt-8 overflow-x-auto rounded-2xl border border-border">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border">
+                    <th className="sticky left-0 z-10 min-w-56 bg-surface px-5 py-3 text-left text-xs font-bold tracking-wider text-muted uppercase">
+                      Subject
                     </th>
-                  ))}
-                  <th className="px-3 py-2 text-center font-medium">Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {term.subjects.map((s) => {
-                  const total = s.resources.length;
-                  return (
-                    <tr key={s.id} className="border-b border-border last:border-0">
-                      <td className="sticky left-0 z-10 bg-surface px-4 py-2 font-medium">
-                        <Link href={`/admin/subjects/${s.id}`} className="hover:text-accent">
-                          {s.name}
-                        </Link>
-                      </td>
-                      {years.map((y) => {
-                        const count = s.resources.filter((r) => r.year === y).length;
-                        return (
-                          <td
-                            key={y}
-                            className={`px-3 py-2 text-center ${
-                              count === 0 ? "text-muted" : "font-semibold text-green"
-                            }`}
-                          >
-                            {count === 0 ? "—" : count}
-                          </td>
-                        );
-                      })}
-                      <td className="px-3 py-2 text-center text-muted">{total}</td>
-                    </tr>
-                  );
-                })}
-                {term.subjects.length === 0 && (
-                  <tr>
-                    <td colSpan={years.length + 2} className="px-4 py-6 text-center text-muted">
-                      No subjects in this semester yet.
-                    </td>
+                    {years.map((y) => (
+                      <th
+                        key={y}
+                        className="px-3 py-3 text-center text-xs font-bold tracking-wider text-muted uppercase"
+                      >
+                        {y}
+                      </th>
+                    ))}
+                    <th className="px-4 py-3 text-center text-xs font-bold tracking-wider text-muted uppercase">
+                      Total
+                    </th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {term.subjects.map((s) => {
+                    const total = s.resources.length;
+                    return (
+                      <tr
+                        key={s.id}
+                        className="border-b border-[#F1F5F9] transition-colors last:border-0 hover:bg-surface-muted dark:border-border"
+                        style={{ height: 56 }}
+                      >
+                        <td className="sticky left-0 z-10 bg-surface px-5 py-2 font-medium">
+                          <Link href={`/admin/subjects/${s.id}`} className="hover:text-accent">
+                            {s.name}
+                          </Link>
+                        </td>
+                        {years.map((y) => {
+                          const count = s.resources.filter((r) => r.year === y).length;
+                          return (
+                            <td key={y} className="px-3 py-2 text-center">
+                              <span
+                                className={`inline-flex min-w-9 items-center justify-center rounded-lg px-2 py-1 text-sm font-semibold transition-transform hover:scale-105 ${heatClass(count)}`}
+                              >
+                                {count === 0 ? "—" : count}
+                              </span>
+                            </td>
+                          );
+                        })}
+                        <td className="px-4 py-2 text-center font-semibold text-foreground">{total}</td>
+                      </tr>
+                    );
+                  })}
+                  {term.subjects.length === 0 && (
+                    <tr>
+                      <td colSpan={years.length + 2} className="px-4 py-6 text-center text-muted">
+                        No subjects in this semester yet.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-          <h2 className="mt-10 text-lg font-semibold">
-            Full list — {term.program.name} · {term.name} ({flatList.length} papers)
-          </h2>
-          <div className="mt-3 overflow-hidden rounded-xl border border-border">
-            <table className="w-full border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-border bg-surface-muted">
-                  <th className="px-4 py-2 text-left font-medium">Subject</th>
-                  <th className="px-4 py-2 text-left font-medium">Title</th>
-                  <th className="px-4 py-2 text-left font-medium">Year</th>
-                  <th className="px-4 py-2 text-left font-medium">Uploaded</th>
-                </tr>
-              </thead>
-              <tbody>
-                {flatList
-                  .slice()
-                  .sort((a, b) => a.subjectName.localeCompare(b.subjectName) || (a.year ?? 0) - (b.year ?? 0))
-                  .map((r) => (
-                    <tr key={r.id} className="border-b border-border last:border-0">
-                      <td className="px-4 py-2">
-                        <Link href={`/admin/subjects/${r.subjectId}`} className="hover:text-accent">
-                          {r.subjectName}
-                        </Link>
-                      </td>
-                      <td className="px-4 py-2">{r.title}</td>
-                      <td className="px-4 py-2">{r.year ?? "—"}</td>
-                      <td className="px-4 py-2 text-muted">{r.createdAt.toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                {flatList.length === 0 && (
-                  <tr>
-                    <td colSpan={4} className="px-4 py-6 text-center text-muted">
-                      No PYQ papers uploaded for this semester yet.
-                    </td>
+            <h2 className="mt-10 text-lg font-semibold">
+              Full list — {term.program.name} · {term.name} ({flatList.length} papers)
+            </h2>
+            <p className="mt-1 text-xs text-muted">
+              Edit inline to fix a wrong year or move a paper to a different subject.
+            </p>
+            <div className="mt-3 overflow-hidden rounded-2xl border border-border">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-surface-muted">
+                    <th className="px-4 py-2 text-left text-xs font-bold tracking-wider text-muted uppercase">
+                      Subject
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-bold tracking-wider text-muted uppercase">
+                      Title
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-bold tracking-wider text-muted uppercase">
+                      Year
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-bold tracking-wider text-muted uppercase">
+                      Uploaded
+                    </th>
+                    <th className="px-4 py-2 text-left text-xs font-bold tracking-wider text-muted uppercase"></th>
                   </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-        </>
-      )}
+                </thead>
+                <tbody>
+                  <CoverageResourceTable
+                    rows={flatList.map((r) => ({
+                      id: r.id,
+                      subjectId: r.subjectId,
+                      subjectName: r.subjectName,
+                      title: r.title,
+                      type: "PYQ",
+                      year: r.year,
+                      createdAt: r.createdAt.toLocaleDateString(),
+                    }))}
+                    subjects={term.subjects.map((s) => ({ id: s.id, name: s.name }))}
+                  />
+                </tbody>
+              </table>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }

@@ -9,7 +9,7 @@ import {
   uploadResourceAction,
 } from "@/lib/actions";
 import { matchSubjectsWithAI } from "@/lib/ai";
-import { guessSubject, normalizeMemoryKey } from "@/lib/subject-match";
+import { guessSubject, guessYear, normalizeMemoryKey } from "@/lib/subject-match";
 import type { AcademicProgram } from "@/lib/academic-types";
 
 const NEW_SUBJECT = "__new__";
@@ -64,6 +64,7 @@ export function BulkUploadClient({
   const [alreadyUploadedInZip, setAlreadyUploadedInZip] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
   const [autoCreating, setAutoCreating] = useState(false);
   const [aiMatching, setAiMatching] = useState(false);
   const [aiMatchError, setAiMatchError] = useState<string | null>(null);
@@ -159,7 +160,7 @@ export function BulkUploadClient({
             fileHash,
             title: filename.replace(/\.pdf$/i, "").replace(/[_-]+/g, " ").trim(),
             subjectId,
-            year: defaultYear,
+            year: String(guessYear(filename) ?? defaultYear),
             type: defaultType,
             status: alreadyInDb ? "duplicate" : "pending",
             message: alreadyInDb ? "Already uploaded previously — skipped" : undefined,
@@ -423,53 +424,72 @@ export function BulkUploadClient({
     }
   }
 
+  async function uploadRow(row: Row) {
+    // No subject at all — don't lose the file, file it away for later
+    // instead of silently skipping it.
+    if (!row.subjectId) {
+      updateRow(row.key, { status: "uploading" });
+      const saved = await fileAway(row, "No subject matched");
+      updateRow(row.key, {
+        status: "unmatched",
+        message: saved
+          ? "No subject picked — saved to Failed Uploads"
+          : "No subject picked — AND could not save a copy either. Try Upload again.",
+      });
+      return;
+    }
+
+    updateRow(row.key, { status: "uploading" });
+    try {
+      const formData = new FormData();
+      formData.set("subjectId", row.subjectId);
+      formData.set("type", row.type);
+      formData.set("title", row.title || row.filename);
+      if (row.type === "PYQ" && row.year) formData.set("year", row.year);
+      formData.set("file", row.file);
+      formData.set("batchId", batchId);
+      const result = await uploadResourceAction(formData);
+      if (result?.status === "duplicate") {
+        updateRow(row.key, { status: "duplicate", message: "Already uploaded — skipped" });
+        setKnownHashes((prev) => new Set(prev).add(row.fileHash));
+      } else {
+        updateRow(row.key, { status: "done", message: "Uploaded" });
+        setKnownHashes((prev) => new Set(prev).add(row.fileHash));
+      }
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : "Upload failed";
+      const saved = await fileAway(row, reason);
+      updateRow(row.key, {
+        status: "error",
+        message: saved
+          ? `${reason} — saved to Failed Uploads`
+          : `${reason} — AND could not save a copy either. Try Upload again.`,
+      });
+    }
+  }
+
+  // Uploads run UPLOAD_CONCURRENCY at a time instead of one-by-one — with
+  // dozens of PDFs in a batch, each a real network round-trip to Blob, doing
+  // them serially was the main reason bulk upload felt slow.
+  const UPLOAD_CONCURRENCY = 5;
+
   async function uploadAll() {
     setUploading(true);
-    for (const row of rows) {
-      if (row.status === "done" || row.status === "duplicate") continue;
+    const toUpload = rows.filter((r) => r.status !== "done" && r.status !== "duplicate");
+    setUploadProgress({ done: 0, total: toUpload.length });
 
-      // No subject at all — don't lose the file, file it away for later
-      // instead of silently skipping it.
-      if (!row.subjectId) {
-        updateRow(row.key, { status: "uploading" });
-        const saved = await fileAway(row, "No subject matched");
-        updateRow(row.key, {
-          status: "unmatched",
-          message: saved
-            ? "No subject picked — saved to Failed Uploads"
-            : "No subject picked — AND could not save a copy either. Try Upload again.",
-        });
-        continue;
-      }
-
-      updateRow(row.key, { status: "uploading" });
-      try {
-        const formData = new FormData();
-        formData.set("subjectId", row.subjectId);
-        formData.set("type", row.type);
-        formData.set("title", row.title || row.filename);
-        if (row.type === "PYQ" && row.year) formData.set("year", row.year);
-        formData.set("file", row.file);
-        formData.set("batchId", batchId);
-        const result = await uploadResourceAction(formData);
-        if (result?.status === "duplicate") {
-          updateRow(row.key, { status: "duplicate", message: "Already uploaded — skipped" });
-          setKnownHashes((prev) => new Set(prev).add(row.fileHash));
-        } else {
-          updateRow(row.key, { status: "done", message: "Uploaded" });
-          setKnownHashes((prev) => new Set(prev).add(row.fileHash));
-        }
-      } catch (err) {
-        const reason = err instanceof Error ? err.message : "Upload failed";
-        const saved = await fileAway(row, reason);
-        updateRow(row.key, {
-          status: "error",
-          message: saved
-            ? `${reason} — saved to Failed Uploads`
-            : `${reason} — AND could not save a copy either. Try Upload again.`,
-        });
+    let nextIndex = 0;
+    async function worker() {
+      while (nextIndex < toUpload.length) {
+        const row = toUpload[nextIndex++];
+        await uploadRow(row);
+        setUploadProgress((p) => ({ ...p, done: p.done + 1 }));
       }
     }
+    await Promise.all(
+      Array.from({ length: Math.min(UPLOAD_CONCURRENCY, toUpload.length) }, worker)
+    );
+
     setUploading(false);
   }
 
@@ -642,6 +662,22 @@ export function BulkUploadClient({
           </button>
         </div>
       </div>
+
+      {uploading && (
+        <div className="mt-3 flex items-center gap-3">
+          <div className="h-2 flex-1 overflow-hidden rounded-full bg-surface-muted">
+            <div
+              className="h-full rounded-full bg-accent transition-all duration-300"
+              style={{
+                width: `${uploadProgress.total === 0 ? 0 : (uploadProgress.done / uploadProgress.total) * 100}%`,
+              }}
+            />
+          </div>
+          <span className="shrink-0 text-xs text-muted">
+            {uploadProgress.done} of {uploadProgress.total}
+          </span>
+        </div>
+      )}
 
       {!defaultTermId && (
         <p className="mt-2 text-xs text-muted">
