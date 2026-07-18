@@ -153,6 +153,12 @@ export async function updateSubjectNotesAction(formData: FormData) {
   await requireAdmin();
   const subjectId = String(formData.get("subjectId"));
   const content = String(formData.get("content") ?? "").trim();
+  const themeRaw = String(formData.get("theme") ?? "sky");
+  const theme = (["sky", "violet", "emerald", "amber"] as const).includes(
+    themeRaw as "sky" | "violet" | "emerald" | "amber"
+  )
+    ? themeRaw
+    : "sky";
   if (!subjectId) throw new Error("Subject is required.");
 
   if (!content) {
@@ -160,8 +166,8 @@ export async function updateSubjectNotesAction(formData: FormData) {
   } else {
     await prisma.subjectNotes.upsert({
       where: { subjectId },
-      create: { subjectId, content },
-      update: { content },
+      create: { subjectId, content, theme },
+      update: { content, theme },
     });
   }
 

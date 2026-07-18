@@ -10,7 +10,7 @@ import {
 import { getSubjectById } from "@/lib/data";
 import { formatBytes, levelLabel } from "@/lib/utils";
 import { PaperAnalysisPanel } from "@/components/subjects/paper-analysis-panel";
-import { NotesRenderer } from "@/components/subjects/notes-renderer";
+import { NotesSection } from "@/components/subjects/notes-section";
 
 export default async function SubjectPage({
   params,
@@ -54,9 +54,11 @@ export default async function SubjectPage({
             <NotePencil size={20} weight="bold" className="text-sky-dark" />
             Compiled notes
           </h2>
-          <div className="mt-4">
-            <NotesRenderer content={subject.notes.content} />
-          </div>
+          <NotesSection
+            content={subject.notes.content}
+            theme={subject.notes.theme}
+            subjectName={subject.name}
+          />
         </section>
       )}
 

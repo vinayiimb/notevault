@@ -23,3 +23,38 @@ export function preprocessNotesMarkdown(raw: string): string {
     })
     .join("\n");
 }
+
+export type NotesHeading = { level: 2 | 3; text: string; slug: string };
+
+export function slugify(text: string) {
+  return text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
+
+// Table of contents entries, in document order — the same order
+// NotesRenderer's h2/h3 components render in, so slugs line up with the
+// anchors it assigns without needing to re-derive them from rendered React
+// children.
+export function extractNotesHeadings(preprocessedMarkdown: string): NotesHeading[] {
+  const headings: NotesHeading[] = [];
+  const seen = new Map<string, number>();
+
+  for (const line of preprocessedMarkdown.split("\n")) {
+    const h2 = line.match(/^##\s+(.+)$/);
+    const h3 = !h2 && line.match(/^###\s+(.+)$/);
+    const match = h2 ?? h3;
+    if (!match) continue;
+
+    const text = match[1].trim();
+    let slug = slugify(text) || "section";
+    const count = seen.get(slug) ?? 0;
+    seen.set(slug, count + 1);
+    if (count > 0) slug = `${slug}-${count}`;
+
+    headings.push({ level: h2 ? 2 : 3, text, slug });
+  }
+
+  return headings;
+}

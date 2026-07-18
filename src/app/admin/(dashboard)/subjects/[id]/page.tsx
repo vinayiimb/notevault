@@ -58,6 +58,31 @@ export default async function AdminSubjectPage({
             placeholder="Paste your notes here..."
             className="rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:border-accent focus:outline-none"
           />
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-muted">Color theme</label>
+            <div className="flex gap-3">
+              {(
+                [
+                  { value: "sky", label: "Sky", dot: "bg-sky-dark" },
+                  { value: "violet", label: "Violet", dot: "bg-notes-violet-dark" },
+                  { value: "emerald", label: "Emerald", dot: "bg-notes-emerald-dark" },
+                  { value: "amber", label: "Amber", dot: "bg-notes-amber-dark" },
+                ] as const
+              ).map((opt) => (
+                <label key={opt.value} className="flex items-center gap-1.5 text-sm">
+                  <input
+                    type="radio"
+                    name="theme"
+                    value={opt.value}
+                    defaultChecked={(subject.notes?.theme ?? "sky") === opt.value}
+                    className="accent-accent"
+                  />
+                  <span className={`size-3 rounded-full ${opt.dot}`} />
+                  {opt.label}
+                </label>
+              ))}
+            </div>
+          </div>
           <button
             type="submit"
             className="self-start rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90"
