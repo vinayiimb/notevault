@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { FilePdf, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 
 export function PdfDropzone({ name, required }: { name: string; required?: boolean }) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -18,9 +19,11 @@ export function PdfDropzone({ name, required }: { name: string; required?: boole
         }`}
       >
         {/* Real, fully-interactive file input layered over the visual box.
-            Native browser drag-and-drop and click both work on it directly,
-            and it keeps real dimensions so required-field validation is visible. */}
+            dragover MUST call preventDefault(), or the browser rejects the
+            drop entirely — without it, the box's border still lights up on
+            hover but no file ever actually lands in the input. */}
         <input
+          ref={inputRef}
           type="file"
           name={name}
           accept="application/pdf"
@@ -28,7 +31,16 @@ export function PdfDropzone({ name, required }: { name: string; required?: boole
           className="absolute inset-0 z-10 cursor-pointer opacity-0"
           onDragEnter={() => setDragOver(true)}
           onDragLeave={() => setDragOver(false)}
-          onDrop={() => setDragOver(false)}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            const dropped = e.dataTransfer.files;
+            if (dropped && dropped.length > 0 && inputRef.current) {
+              inputRef.current.files = dropped;
+              setFileName(dropped[0].name);
+            }
+          }}
           onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)}
         />
         {fileName ? (

@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
-type Program = { id: string; name: string; terms: { id: string; name: string }[] };
+type Program = { id: string; name: string; slug: string; terms: { id: string; name: string }[] };
 
 export function CourseSemesterJump({
   programs,
@@ -64,11 +64,19 @@ export function CourseSemesterJump({
         </div>
         <button
           type="button"
-          disabled={!termId}
-          onClick={() => termId && router.push(`/terms/${termId}`)}
+          disabled={!programId}
+          onClick={() => {
+            // Two ways forward, both requiring an explicit click — picking
+            // a course or semester never navigates by itself:
+            // 1. Course + semester picked -> straight to that semester's papers.
+            // 2. Only a course picked -> "Go ahead" to that course's own page,
+            //    where semesters/subjects can be picked from there.
+            if (termId) router.push(`/terms/${termId}`);
+            else if (program) router.push(`/programs/${program.slug}`);
+          }}
           className="rounded-full bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground transition hover:opacity-90 disabled:opacity-40"
         >
-          View papers →
+          {termId ? "View papers →" : "Go ahead →"}
         </button>
       </div>
       <p className="mt-3 text-xs text-muted">

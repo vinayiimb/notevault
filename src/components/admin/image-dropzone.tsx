@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { ImageSquare, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 
 export function ImageDropzone({ name, required }: { name: string; required?: boolean }) {
   const [fileName, setFileName] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -19,8 +20,15 @@ export function ImageDropzone({ name, required }: { name: string; required?: boo
       >
         {/* Real, fully-interactive file input layered over the visual box —
             same pattern as PdfDropzone, which fixed a real drag-and-drop bug
-            (a visually-hidden input silently failed on some browsers). */}
+            (a visually-hidden input silently failed on some browsers).
+            dragover MUST call preventDefault(), or the browser rejects the
+            drop entirely (its default action for a dragged file is to open
+            it, not hand it to the input) — without that, the box's border
+            still lights up on hover but no file ever actually lands in the
+            input, so submitting shows "Please select a file" even though a
+            file was visibly dropped. */}
         <input
+          ref={inputRef}
           type="file"
           name={name}
           accept="image/png,image/jpeg,image/webp"
@@ -28,7 +36,16 @@ export function ImageDropzone({ name, required }: { name: string; required?: boo
           className="absolute inset-0 z-10 cursor-pointer opacity-0"
           onDragEnter={() => setDragOver(true)}
           onDragLeave={() => setDragOver(false)}
-          onDrop={() => setDragOver(false)}
+          onDragOver={(e) => e.preventDefault()}
+          onDrop={(e) => {
+            e.preventDefault();
+            setDragOver(false);
+            const dropped = e.dataTransfer.files;
+            if (dropped && dropped.length > 0 && inputRef.current) {
+              inputRef.current.files = dropped;
+              setFileName(dropped[0].name);
+            }
+          }}
           onChange={(e) => setFileName(e.target.files?.[0]?.name ?? null)}
         />
         {fileName ? (

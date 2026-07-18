@@ -348,7 +348,15 @@ function findTermMatch<T extends { name: string }>(terms: T[], value: string): T
 
 export type CsvDeployRowResult = {
   title: string;
-  status: "deployed" | "duplicate" | "no-failed-upload-match" | "no-program-match" | "no-term-match" | "no-subject" | "error";
+  status:
+    | "deployed"
+    | "duplicate"
+    | "no-failed-upload-match"
+    | "no-program-match"
+    | "no-term-match"
+    | "no-subject"
+    | "no-title"
+    | "error";
   message?: string;
 };
 
@@ -369,6 +377,12 @@ export async function deployFailedUploadsFromCsvAction(formData: FormData): Prom
   const text = await file.text();
   const rows = parseCsv(text);
 
+  if (rows.length === 0) {
+    throw new Error(
+      "Could not read any rows from that file — check it's a real CSV (comma, semicolon, or tab-separated) with a header row."
+    );
+  }
+
   const programs = await prisma.program.findMany({
     include: { terms: { include: { subjects: { select: { id: true, name: true } } } } },
   });
@@ -378,7 +392,15 @@ export async function deployFailedUploadsFromCsvAction(formData: FormData): Prom
 
   for (const row of rows) {
     const title = (row.title || row.filename || row.paper || row.name || "").trim();
-    if (!title) continue;
+    if (!title) {
+      const columnsSeen = Object.keys(row).filter((k) => k).join(", ") || "(none detected)";
+      results.push({
+        title: "(blank)",
+        status: "no-title",
+        message: `No title/filename/paper/name column found — columns seen: ${columnsSeen}`,
+      });
+      continue;
+    }
 
     const failedIdx = pendingFailedUploads.findIndex(
       (f) => f.title.trim().toLowerCase() === title.toLowerCase()

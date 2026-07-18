@@ -1,7 +1,20 @@
 // Minimal, dependency-free CSV parser — handles quoted fields (with
-// embedded commas/quotes/newlines). Returns one object per data row, keyed
-// by the (trimmed, lowercased) header from the first row.
+// embedded commas/quotes/newlines) and auto-detects the delimiter (comma,
+// semicolon, or tab — Excel exports in some locales use semicolons).
+// Returns one object per data row, keyed by the (trimmed, lowercased)
+// header from the first row.
 export function parseCsv(text: string): Record<string, string>[] {
+  // Strip a UTF-8 BOM, which Excel prepends and would otherwise end up
+  // glued onto the first header name (e.g. "﻿title" != "title").
+  const cleaned = text.charCodeAt(0) === 0xfeff ? text.slice(1) : text;
+
+  const firstLine = cleaned.split(/\r?\n/, 1)[0] ?? "";
+  const candidates: [string, number][] = [",", ";", "\t"].map((d) => [
+    d,
+    firstLine.split(d).length,
+  ]);
+  const delimiter = candidates.reduce((a, b) => (b[1] > a[1] ? b : a))[0];
+
   const rows: string[][] = [];
   let row: string[] = [];
   let field = "";
@@ -17,11 +30,11 @@ export function parseCsv(text: string): Record<string, string>[] {
     row = [];
   };
 
-  for (let i = 0; i < text.length; i++) {
-    const c = text[i];
+  for (let i = 0; i < cleaned.length; i++) {
+    const c = cleaned[i];
     if (inQuotes) {
       if (c === '"') {
-        if (text[i + 1] === '"') {
+        if (cleaned[i + 1] === '"') {
           field += '"';
           i++;
         } else {
@@ -32,7 +45,7 @@ export function parseCsv(text: string): Record<string, string>[] {
       }
     } else if (c === '"') {
       inQuotes = true;
-    } else if (c === ",") {
+    } else if (c === delimiter) {
       pushField();
     } else if (c === "\n") {
       pushRow();

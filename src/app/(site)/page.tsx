@@ -23,6 +23,7 @@ export default async function HomePage() {
   const jumpData = programs.map((p) => ({
     id: p.id,
     name: p.name,
+    slug: p.slug,
     terms: p.terms.map((t) => ({ id: t.id, name: t.name })),
   }));
 

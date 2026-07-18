@@ -11,6 +11,7 @@ const STATUS_LABEL: Record<CsvDeployRowResult["status"], string> = {
   "no-program-match": "Course not recognized",
   "no-term-match": "Semester not recognized",
   "no-subject": "No subject name given",
+  "no-title": "No title column found in this row",
   error: "Error",
 };
 
