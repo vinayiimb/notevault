@@ -11,7 +11,15 @@ const ROMAN_HEADING = /^\*\*([IVXLCDM]+\.\s.+)\*\*$/;
 const NUMBERED_HEADING = /^\*\*(\d+\.\s.+)\*\*$/;
 
 export function preprocessNotesMarkdown(raw: string): string {
-  return raw
+  // AI-generated content (and some pasted-from-Word/Docs text) comes back
+  // with \r\n or bare \r line endings. Every regex below anchors on `$`,
+  // which only matches end-of-string/before \n — a trailing \r left in
+  // means "line" text like "## Heading\r" silently fails to match at all.
+  // Normalizing once here keeps every downstream consumer (both this
+  // function's own heading-promotion and extractNotesHeadings, which runs
+  // on this function's output) working on plain \n-terminated lines.
+  const normalized = raw.replace(/\r\n?/g, "\n");
+  return normalized
     .split("\n")
     .map((line) => {
       const trimmed = line.trim();

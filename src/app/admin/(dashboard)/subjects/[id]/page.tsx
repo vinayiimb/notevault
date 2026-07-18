@@ -6,11 +6,11 @@ import {
   createQuestionAction,
   deleteQuestionAction,
   deleteResourceAction,
-  updateSubjectNotesAction,
   uploadResourceFormAction,
 } from "@/lib/actions";
 import { formatBytes } from "@/lib/utils";
 import { PdfDropzone } from "@/components/admin/pdf-dropzone";
+import { NotesEditor } from "@/components/admin/notes-editor";
 
 export default async function AdminSubjectPage({
   params,
@@ -43,53 +43,12 @@ export default async function AdminSubjectPage({
           <NotePencil size={18} weight="bold" className="text-sky-dark" />
           Compiled notes
         </h2>
-        <p className="mt-1 text-sm text-muted">
-          Paste text (plain or markdown — bold section headings like{" "}
-          <strong>**I. Section Title**</strong> become real headings automatically). Shown on
-          the public subject page as a styled notes page, separate from uploaded PDFs. Leave
-          blank and save to remove it.
-        </p>
-        <form action={updateSubjectNotesAction} className="mt-4 flex flex-col gap-3">
-          <input type="hidden" name="subjectId" value={subject.id} />
-          <textarea
-            name="content"
-            defaultValue={subject.notes?.content ?? ""}
-            rows={10}
-            placeholder="Paste your notes here..."
-            className="rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:border-accent focus:outline-none"
-          />
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted">Color theme</label>
-            <div className="flex gap-3">
-              {(
-                [
-                  { value: "sky", label: "Sky", dot: "bg-sky-dark" },
-                  { value: "violet", label: "Violet", dot: "bg-notes-violet-dark" },
-                  { value: "emerald", label: "Emerald", dot: "bg-notes-emerald-dark" },
-                  { value: "amber", label: "Amber", dot: "bg-notes-amber-dark" },
-                ] as const
-              ).map((opt) => (
-                <label key={opt.value} className="flex items-center gap-1.5 text-sm">
-                  <input
-                    type="radio"
-                    name="theme"
-                    value={opt.value}
-                    defaultChecked={(subject.notes?.theme ?? "sky") === opt.value}
-                    className="accent-accent"
-                  />
-                  <span className={`size-3 rounded-full ${opt.dot}`} />
-                  {opt.label}
-                </label>
-              ))}
-            </div>
-          </div>
-          <button
-            type="submit"
-            className="self-start rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90"
-          >
-            Save notes
-          </button>
-        </form>
+        <NotesEditor
+          subjectId={subject.id}
+          initialContent={subject.notes?.content ?? ""}
+          initialTheme={subject.notes?.theme ?? "sky"}
+          pyqCount={subject.resources.filter((r) => r.type === "PYQ").length}
+        />
       </section>
 
       <section className="mt-6 rounded-xl border border-border bg-surface p-5">
