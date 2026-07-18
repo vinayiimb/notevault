@@ -64,8 +64,21 @@ model Subject {
   resources Resource[]
   questions Question[]
   analysis  SubjectAnalysis?
+  notes     SubjectNotes?
 
   @@unique([termId, slug])
+}
+
+// Admin-pasted, long-form compiled notes for a subject (markdown), rendered
+// on the public subject page with its own styling — distinct from Resource
+// rows of type NOTES, which are uploaded PDF files.
+model SubjectNotes {
+  id        String   @id @default(cuid())
+  subjectId String   @unique
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  content   String
+  updatedAt DateTime @updatedAt
+  createdAt DateTime @default(now())
 }
 
 // Cached result of analyzing a subject's uploaded PYQ papers: AI-compiled

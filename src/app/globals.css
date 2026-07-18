@@ -26,6 +26,7 @@
   --brand-soft: var(--accent-soft);
   --sky: #4fcbff;
   --sky-dark: #42c3f3;
+  --sky-soft: #e6f8ff;
   --green: #19c26b;
   --green-soft: #e7fff0;
   --yellow-soft: #fff3b8;
@@ -63,6 +64,7 @@
   --brand-soft: var(--accent-soft);
   --sky: #35b8f0;
   --sky-dark: #2196c9;
+  --sky-soft: #0d2733;
   --green: #22d47f;
   --green-soft: #0f2e1e;
   --yellow-soft: #3a3316;
@@ -97,6 +99,7 @@
   --color-brand-soft: var(--brand-soft);
   --color-sky: var(--sky);
   --color-sky-dark: var(--sky-dark);
+  --color-sky-soft: var(--sky-soft);
   --color-green: var(--green);
   --color-green-soft: var(--green-soft);
   --color-yellow-soft: var(--yellow-soft);

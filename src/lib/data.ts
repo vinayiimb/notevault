@@ -40,6 +40,7 @@ export function getSubjectById(id: string) {
       resources: { orderBy: { createdAt: "desc" } },
       questions: { orderBy: [{ isRepeated: "desc" }, { repeatCount: "desc" }] },
       analysis: true,
+      notes: true,
     },
   });
 }

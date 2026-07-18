@@ -146,6 +146,29 @@ export async function quickCreateSubjectAction(formData: FormData) {
   return { id: subject.id, name: subject.name, termId: subject.termId };
 }
 
+// Long-form compiled notes an admin pastes in as markdown — rendered on the
+// public subject page with its own styling, separate from uploaded NOTES
+// PDFs. Empty content deletes the row instead of storing a blank note.
+export async function updateSubjectNotesAction(formData: FormData) {
+  await requireAdmin();
+  const subjectId = String(formData.get("subjectId"));
+  const content = String(formData.get("content") ?? "").trim();
+  if (!subjectId) throw new Error("Subject is required.");
+
+  if (!content) {
+    await prisma.subjectNotes.deleteMany({ where: { subjectId } });
+  } else {
+    await prisma.subjectNotes.upsert({
+      where: { subjectId },
+      create: { subjectId, content },
+      update: { content },
+    });
+  }
+
+  revalidatePath(`/admin/subjects/${subjectId}`);
+  revalidatePath(`/subjects/${subjectId}`);
+}
+
 // Remembers a title -> subject association from a manual Bulk Upload
 // correction, so future papers with a similarly-named title (same title,
 // different trailing paper number) auto-match without re-picking.

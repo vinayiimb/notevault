@@ -5,10 +5,12 @@ import {
   FileText,
   Fire,
   Exam,
+  NotePencil,
 } from "@phosphor-icons/react/dist/ssr";
 import { getSubjectById } from "@/lib/data";
 import { formatBytes, levelLabel } from "@/lib/utils";
 import { PaperAnalysisPanel } from "@/components/subjects/paper-analysis-panel";
+import { NotesRenderer } from "@/components/subjects/notes-renderer";
 
 export default async function SubjectPage({
   params,
@@ -45,6 +47,18 @@ export default async function SubjectPage({
       </p>
       <h1 className="mt-1 text-3xl font-semibold tracking-tight">{subject.name}</h1>
       {subject.description && <p className="mt-2 text-muted">{subject.description}</p>}
+
+      {subject.notes && (
+        <section className="mt-10">
+          <h2 className="flex items-center gap-2 text-lg font-medium">
+            <NotePencil size={20} weight="bold" className="text-sky-dark" />
+            Compiled notes
+          </h2>
+          <div className="mt-4">
+            <NotesRenderer content={subject.notes.content} />
+          </div>
+        </section>
+      )}
 
       <section className="mt-10">
         <h2 className="flex items-center gap-2 text-lg font-medium">

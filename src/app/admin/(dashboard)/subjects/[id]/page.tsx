@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FileText } from "@phosphor-icons/react/dist/ssr";
+import { FileText, NotePencil } from "@phosphor-icons/react/dist/ssr";
 import { prisma } from "@/lib/prisma";
 import {
   createQuestionAction,
   deleteQuestionAction,
   deleteResourceAction,
+  updateSubjectNotesAction,
   uploadResourceFormAction,
 } from "@/lib/actions";
 import { formatBytes } from "@/lib/utils";
@@ -23,6 +24,7 @@ export default async function AdminSubjectPage({
       term: { include: { program: true } },
       resources: { orderBy: { createdAt: "desc" } },
       questions: { orderBy: { createdAt: "desc" } },
+      notes: true,
     },
   });
   if (!subject) notFound();
@@ -35,6 +37,35 @@ export default async function AdminSubjectPage({
         </Link>
       </p>
       <h1 className="text-2xl font-semibold">{subject.name}</h1>
+
+      <section className="mt-6 rounded-xl border border-border bg-surface p-5">
+        <h2 className="flex items-center gap-2 font-medium">
+          <NotePencil size={18} weight="bold" className="text-sky-dark" />
+          Compiled notes
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          Paste text (plain or markdown — bold section headings like{" "}
+          <strong>**I. Section Title**</strong> become real headings automatically). Shown on
+          the public subject page as a styled notes page, separate from uploaded PDFs. Leave
+          blank and save to remove it.
+        </p>
+        <form action={updateSubjectNotesAction} className="mt-4 flex flex-col gap-3">
+          <input type="hidden" name="subjectId" value={subject.id} />
+          <textarea
+            name="content"
+            defaultValue={subject.notes?.content ?? ""}
+            rows={10}
+            placeholder="Paste your notes here..."
+            className="rounded-lg border border-border bg-background px-3 py-2 font-mono text-sm focus:border-accent focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="self-start rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90"
+          >
+            Save notes
+          </button>
+        </form>
+      </section>
 
       <section className="mt-6 rounded-xl border border-border bg-surface p-5">
         <h2 className="flex items-center gap-2 font-medium">
