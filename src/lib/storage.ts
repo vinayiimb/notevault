@@ -6,22 +6,59 @@ const PUBLIC_ROOT = path.join(process.cwd(), "public");
 
 // Vercel's serverless functions have a read-only, ephemeral filesystem — a
 // PDF written to public/uploads during one request is gone by the next
-// (different instance, or wiped on the next deploy). Vercel Blob is the
-// persistent alternative. Locally there's no BLOB_READ_WRITE_TOKEN, so we
-// fall back to writing straight into public/ — same behavior as before.
+// (different instance, or wiped on the next deploy). Cloudflare R2 is the
+// persistent store (moved off Vercel Blob after its 1GB Hobby-plan cap was
+// hit). Vercel Blob support is kept only so deleteByUrl can still clean up
+// any not-yet-migrated legacy URLs. Locally, with none of these configured,
+// we fall back to writing straight into public/.
+function r2Enabled() {
+  return !!(process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && process.env.R2_ENDPOINT);
+}
+
 function blobEnabled() {
   return !!process.env.BLOB_READ_WRITE_TOKEN;
 }
 
+async function r2Client() {
+  const { S3Client } = await import("@aws-sdk/client-s3");
+  return new S3Client({
+    region: "auto",
+    endpoint: process.env.R2_ENDPOINT,
+    credentials: {
+      accessKeyId: process.env.R2_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    },
+  });
+}
+
+function r2PublicUrl(key: string) {
+  return `${process.env.R2_PUBLIC_URL}/${key}`;
+}
+
 // Uploads bytes under `key` (e.g. "uploads/pyqs/<uuid>-file.pdf" or
 // "images/hero-du.png") and returns a URL usable directly in <img src> / a
-// download redirect: an absolute https URL on Blob, or a "/uploads/..."
+// download redirect: an absolute https URL on R2, or a "/uploads/..."
 // site-relative path in local dev.
 export async function putBytes(
   key: string,
   bytes: Buffer,
   options?: { allowOverwrite?: boolean }
 ): Promise<string> {
+  void options; // R2 PutObject always overwrites; kept for signature parity with the old Blob call sites.
+
+  if (r2Enabled()) {
+    const { PutObjectCommand } = await import("@aws-sdk/client-s3");
+    const client = await r2Client();
+    await client.send(
+      new PutObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: key,
+        Body: bytes,
+      })
+    );
+    return r2PublicUrl(key);
+  }
+
   if (blobEnabled()) {
     const { put } = await import("@vercel/blob");
     const blob = await put(key, bytes, {
@@ -38,10 +75,22 @@ export async function putBytes(
   return `/${key}`;
 }
 
-// Deletes whatever putBytes previously returned — a Blob URL or a
-// site-relative local path, whichever this environment actually produced.
+// Deletes whatever putBytes previously returned — an R2 URL, a legacy Blob
+// URL, or a site-relative local path, whichever this environment actually
+// produced.
 export async function deleteByUrl(url: string | null | undefined) {
   if (!url) return;
+
+  if (r2Enabled() && process.env.R2_PUBLIC_URL && url.startsWith(process.env.R2_PUBLIC_URL)) {
+    const key = url.slice(process.env.R2_PUBLIC_URL.length).replace(/^\//, "");
+    const { DeleteObjectCommand } = await import("@aws-sdk/client-s3");
+    const client = await r2Client();
+    await client
+      .send(new DeleteObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: key }))
+      .catch(() => {});
+    return;
+  }
+
   if (/^https?:\/\//.test(url)) {
     if (blobEnabled()) {
       const { del } = await import("@vercel/blob");
@@ -49,6 +98,7 @@ export async function deleteByUrl(url: string | null | undefined) {
     }
     return;
   }
+
   await rm(path.join(PUBLIC_ROOT, url), { force: true }).catch(() => {});
 }
 

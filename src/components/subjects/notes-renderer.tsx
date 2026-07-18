@@ -1,6 +1,7 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { preprocessNotesMarkdown, slugify } from "@/lib/notes-markdown";
+import { MermaidDiagram } from "./mermaid-diagram";
 
 export const NOTES_THEMES = ["sky", "violet", "emerald", "amber"] as const;
 export type NotesTheme = (typeof NOTES_THEMES)[number];
@@ -125,11 +126,16 @@ export function NotesRenderer({
               {children}
             </td>
           ),
-          code: ({ children }) => (
-            <code className="rounded bg-surface-muted px-1.5 py-0.5 font-mono text-[0.85em]">
-              {children}
-            </code>
-          ),
+          code: ({ className, children }) => {
+            if (className?.includes("language-mermaid")) {
+              return <MermaidDiagram chart={flattenToText(children)} />;
+            }
+            return (
+              <code className="rounded bg-surface-muted px-1.5 py-0.5 font-mono text-[0.85em]">
+                {children}
+              </code>
+            );
+          },
         }}
       >
         {markdown}

@@ -46,20 +46,37 @@ export function getSubjectById(id: string) {
 }
 
 // SQLite's `contains` is case-sensitive, so filter in JS for a case-insensitive match.
+//
+// Ranked, not just filtered — a short query like "ma" or "international"
+// substring-matches dozens of subjects (it's inside "Drama", "Format",
+// etc.), and the one the user actually wants ("Management Accounting",
+// "International Relations") could get pushed past the result cap by
+// unrelated matches if we didn't prioritize by how the query matches:
+// whole-name prefix, then any-word prefix, then substring anywhere.
 export async function searchSubjects(query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return [];
   const subjects = await prisma.subject.findMany({
     include: { term: { include: { program: true } } },
   });
+
+  function score(s: (typeof subjects)[number]): number | null {
+    const name = s.name.toLowerCase();
+    if (name.startsWith(q)) return 0;
+    if (name.split(/\s+/).some((word) => word.startsWith(q))) return 1;
+    if (name.includes(q)) return 2;
+    if (s.term.program.name.toLowerCase().includes(q) || (s.description ?? "").toLowerCase().includes(q)) {
+      return 3;
+    }
+    return null;
+  }
+
   return subjects
-    .filter(
-      (s) =>
-        s.name.toLowerCase().includes(q) ||
-        s.term.program.name.toLowerCase().includes(q) ||
-        (s.description ?? "").toLowerCase().includes(q)
-    )
-    .slice(0, 20);
+    .map((s) => ({ s, rank: score(s) }))
+    .filter((x): x is { s: (typeof subjects)[number]; rank: number } => x.rank !== null)
+    .sort((a, b) => a.rank - b.rank || a.s.name.localeCompare(b.s.name))
+    .slice(0, 20)
+    .map((x) => x.s);
 }
 
 export function getRecentResources(limit = 6) {

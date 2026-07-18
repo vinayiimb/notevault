@@ -10,6 +10,20 @@
 const ROMAN_HEADING = /^\*\*([IVXLCDM]+\.\s.+)\*\*$/;
 const NUMBERED_HEADING = /^\*\*(\d+\.\s.+)\*\*$/;
 
+// Real section headings are short titles ("I. Foundations of Financial
+// Management"). Bolded numbered *body* content — a very common pattern in
+// AI-generated notes ("**1. Fixed Costs: costs that don't change with
+// output.**") — matches the same whole-line-bold shape but is a full
+// sentence/definition, not a title. Without this check that body text gets
+// promoted to a heading, vanishes from the flow, and leaks into the "On
+// this page" sidebar as if it were a real section — title case only.
+function looksLikeHeadingText(text: string): boolean {
+  const trimmed = text.trim();
+  if (/[.!?]$/.test(trimmed)) return false;
+  if (trimmed.split(/\s+/).length > 12) return false;
+  return true;
+}
+
 export function preprocessNotesMarkdown(raw: string): string {
   // AI-generated content (and some pasted-from-Word/Docs text) comes back
   // with \r\n or bare \r line endings. Every regex below anchors on `$`,
@@ -24,9 +38,9 @@ export function preprocessNotesMarkdown(raw: string): string {
     .map((line) => {
       const trimmed = line.trim();
       const roman = trimmed.match(ROMAN_HEADING);
-      if (roman) return `## ${roman[1]}`;
+      if (roman && looksLikeHeadingText(roman[1])) return `## ${roman[1]}`;
       const numbered = trimmed.match(NUMBERED_HEADING);
-      if (numbered) return `### ${numbered[1]}`;
+      if (numbered && looksLikeHeadingText(numbered[1])) return `### ${numbered[1]}`;
       return line;
     })
     .join("\n");

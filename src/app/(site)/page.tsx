@@ -29,7 +29,7 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="relative -mt-[92px] min-h-[600px] overflow-hidden bg-[linear-gradient(180deg,#54d1ff,#42c3f3_55%,#62d8ff)]">
+      <section className="relative -mt-[92px] min-h-[680px] overflow-hidden bg-[linear-gradient(180deg,#54d1ff,#42c3f3_55%,#62d8ff)]">
         {heroImage && (
           // Plain <img>, not next/image: the admin can upload any image at
           // any aspect ratio. Used here as a full-bleed background behind
@@ -53,7 +53,7 @@ export default async function HomePage() {
             instead of sitting on a seam. */}
         <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-background" />
 
-        <div className="relative z-10 mx-auto flex min-h-[600px] max-w-4xl flex-col items-center justify-center px-4 pt-[92px] pb-28 text-center sm:px-6">
+        <div className="relative z-10 mx-auto flex min-h-[680px] max-w-4xl flex-col items-center justify-center px-4 pt-[160px] pb-28 text-center sm:px-6">
           <h1 className="font-display text-5xl leading-[0.95] font-extrabold tracking-[-0.02em] whitespace-pre-line text-white drop-shadow-sm sm:text-7xl">
             {siteSettings.heroHeadline}
           </h1>

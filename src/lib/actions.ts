@@ -458,6 +458,53 @@ export async function deleteSubjectAction(formData: FormData) {
   revalidatePath(`/admin/programs/${programId}`);
 }
 
+// Folds a duplicate subject (created by mistake — same subject filed twice
+// under slightly different names/spellings) into another. Every resource
+// and question moves over; compiled notes/analysis move over only if the
+// target doesn't already have its own (both are @unique on subjectId, so
+// keeping both would violate that constraint — the target's version wins
+// on conflict since it's the one being kept). The source subject is then
+// deleted. Redirects to the surviving subject since the source's admin
+// page no longer exists after this runs.
+export async function mergeSubjectsAction(formData: FormData) {
+  await requireAdmin();
+  const sourceId = String(formData.get("sourceId") ?? "").trim();
+  const targetId = String(formData.get("targetId") ?? "").trim();
+  if (!sourceId || !targetId) throw new Error("Both subjects are required.");
+  if (sourceId === targetId) throw new Error("Can't merge a subject into itself.");
+
+  const [source, target] = await Promise.all([
+    prisma.subject.findUnique({
+      where: { id: sourceId },
+      include: { notes: true, analysis: true, term: true },
+    }),
+    prisma.subject.findUnique({ where: { id: targetId }, include: { notes: true, analysis: true } }),
+  ]);
+  if (!source || !target) throw new Error("Subject not found.");
+
+  await prisma.$transaction([
+    prisma.resource.updateMany({ where: { subjectId: sourceId }, data: { subjectId: targetId } }),
+    prisma.question.updateMany({ where: { subjectId: sourceId }, data: { subjectId: targetId } }),
+    ...(source.notes && !target.notes
+      ? [prisma.subjectNotes.update({ where: { id: source.notes.id }, data: { subjectId: targetId } })]
+      : []),
+    ...(source.analysis && !target.analysis
+      ? [
+          prisma.subjectAnalysis.update({
+            where: { id: source.analysis.id },
+            data: { subjectId: targetId },
+          }),
+        ]
+      : []),
+    prisma.subject.delete({ where: { id: sourceId } }),
+  ]);
+
+  revalidatePath(`/admin/programs/${source.term.programId}`);
+  revalidatePath(`/admin/subjects/${targetId}`);
+  revalidatePath(`/subjects/${targetId}`);
+  redirect(`/admin/subjects/${targetId}`);
+}
+
 // ---------- Resources (Notes / PYQs) ----------
 
 export async function uploadResourceAction(formData: FormData) {

@@ -11,6 +11,7 @@ import {
 import { formatBytes } from "@/lib/utils";
 import { PdfDropzone } from "@/components/admin/pdf-dropzone";
 import { NotesEditor } from "@/components/admin/notes-editor";
+import { MergeSubjectPicker } from "@/components/admin/merge-subject-picker";
 
 export default async function AdminSubjectPage({
   params,
@@ -37,6 +38,17 @@ export default async function AdminSubjectPage({
         </Link>
       </p>
       <h1 className="text-2xl font-semibold">{subject.name}</h1>
+
+      <section className="mt-6 rounded-xl border border-border bg-surface p-5">
+        <h2 className="font-medium">Merge duplicate subject</h2>
+        <p className="mt-1 text-sm text-muted">
+          If this subject was accidentally created twice under a different name, find the correct one
+          and merge this into it.
+        </p>
+        <div className="mt-3">
+          <MergeSubjectPicker subjectId={subject.id} subjectName={subject.name} />
+        </div>
+      </section>
 
       <section className="mt-6 rounded-xl border border-border bg-surface p-5">
         <h2 className="flex items-center gap-2 font-medium">
