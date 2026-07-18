@@ -175,39 +175,81 @@ export async function updateSubjectNotesAction(formData: FormData) {
   revalidatePath(`/subjects/${subjectId}`);
 }
 
-// Reassigns one or more subjects to a real course + semester — the fast
-// path out of the "Unsorted (Pending Categorization)" holding pool. Each
-// subject keeps its resources/notes/questions (only termId + slug change);
-// a slug collision in the destination term gets a numeric suffix instead
-// of failing the whole batch.
+// Reassigns subjects to a real course + semester — the fast path out of
+// the "Unsorted (Pending Categorization)" holding pool. Each subject can go
+// to a DIFFERENT destination (the whole point — 512 imported subjects
+// span every department, not one shared course), so this takes a list of
+// individual {subjectId, termId} assignments rather than one shared termId.
+//
+// Grouped by destination term, then done in as few queries as possible:
+// subjects whose existing slug doesn't collide with anything already in
+// that term get one batched `updateMany` per group (no per-row round
+// trip); only genuine slug collisions fall back to a per-row update with a
+// regenerated unique slug, since that's rare in practice.
 export async function moveSubjectsToTermAction(formData: FormData) {
   await requireAdmin();
-  const termId = String(formData.get("termId") ?? "").trim();
-  const subjectIds = formData.getAll("subjectIds").map(String).filter(Boolean);
-  if (!termId) throw new Error("Pick a destination course + semester first.");
-  if (subjectIds.length === 0) throw new Error("No subjects selected.");
+  const assignmentsRaw = String(formData.get("assignments") ?? "[]");
+  let assignments: { subjectId: string; termId: string }[];
+  try {
+    assignments = JSON.parse(assignmentsRaw);
+  } catch {
+    throw new Error("Malformed assignment list.");
+  }
+  assignments = assignments.filter((a) => a?.subjectId && a?.termId);
+  if (assignments.length === 0) throw new Error("No subjects with a destination picked.");
 
-  const destSlugs = new Set(
-    (await prisma.subject.findMany({ where: { termId }, select: { slug: true } })).map((s) => s.slug)
-  );
+  const subjectIds = assignments.map((a) => a.subjectId);
+  const subjects = await prisma.subject.findMany({
+    where: { id: { in: subjectIds } },
+    select: { id: true, name: true, slug: true },
+  });
+  const subjectById = new Map(subjects.map((s) => [s.id, s]));
 
-  let moved = 0;
-  for (const id of subjectIds) {
-    const subject = await prisma.subject.findUnique({ where: { id }, select: { name: true, slug: true } });
-    if (!subject) continue;
-
-    let slug = subject.slug;
-    if (destSlugs.has(slug)) {
-      slug = await uniqueSlug(subject.name, async (s) => destSlugs.has(s));
-    }
-    destSlugs.add(slug);
-
-    await prisma.subject.update({ where: { id }, data: { termId, slug } });
-    moved++;
+  const byTerm = new Map<string, string[]>();
+  for (const a of assignments) {
+    if (!subjectById.has(a.subjectId)) continue;
+    if (!byTerm.has(a.termId)) byTerm.set(a.termId, []);
+    byTerm.get(a.termId)!.push(a.subjectId);
   }
 
-  const term = await prisma.term.findUnique({ where: { id: termId } });
-  if (term) revalidatePath(`/admin/programs/${term.programId}`);
+  let moved = 0;
+  const touchedProgramIds = new Set<string>();
+
+  for (const [termId, ids] of byTerm) {
+    const term = await prisma.term.findUnique({ where: { id: termId }, select: { programId: true } });
+    if (!term) continue;
+    touchedProgramIds.add(term.programId);
+
+    const destSlugs = new Set(
+      (await prisma.subject.findMany({ where: { termId }, select: { slug: true } })).map((s) => s.slug)
+    );
+
+    const clean: string[] = [];
+    const collisions: string[] = [];
+    for (const id of ids) {
+      const slug = subjectById.get(id)!.slug;
+      if (destSlugs.has(slug)) collisions.push(id);
+      else clean.push(id);
+    }
+
+    if (clean.length > 0) {
+      const result = await prisma.subject.updateMany({
+        where: { id: { in: clean } },
+        data: { termId },
+      });
+      moved += result.count;
+    }
+
+    for (const id of collisions) {
+      const subject = subjectById.get(id)!;
+      const slug = await uniqueSlug(subject.name, async (s) => destSlugs.has(s));
+      destSlugs.add(slug);
+      await prisma.subject.update({ where: { id }, data: { termId, slug } });
+      moved++;
+    }
+  }
+
+  for (const programId of touchedProgramIds) revalidatePath(`/admin/programs/${programId}`);
   revalidatePath("/admin/unsorted");
 
   return { moved };

@@ -5,6 +5,7 @@ import { moveSubjectsToTermAction } from "@/lib/actions";
 
 type Subject = { id: string; name: string; description: string | null };
 type Program = { id: string; name: string; level: string; terms: { id: string; name: string }[] };
+type RowState = { programId: string; termId: string };
 
 export function UnsortedSubjectsClient({
   subjects: initialSubjects,
@@ -15,14 +16,14 @@ export function UnsortedSubjectsClient({
 }) {
   const [subjects, setSubjects] = useState(initialSubjects);
   const [query, setQuery] = useState("");
-  const [selected, setSelected] = useState<Set<string>>(new Set());
-  const [programId, setProgramId] = useState("");
-  const [termId, setTermId] = useState("");
-  const [moving, setMoving] = useState(false);
+  const [rowState, setRowState] = useState<Record<string, RowState>>({});
+  const [quickProgramId, setQuickProgramId] = useState("");
+  const [quickTermId, setQuickTermId] = useState("");
+  const [deploying, setDeploying] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastMoved, setLastMoved] = useState<number | null>(null);
 
-  const program = programs.find((p) => p.id === programId);
+  const quickProgram = programs.find((p) => p.id === quickProgramId);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -32,123 +33,139 @@ export function UnsortedSubjectsClient({
     );
   }, [subjects, query]);
 
-  function toggle(id: string) {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+  const configuredCount = useMemo(
+    () => Object.values(rowState).filter((r) => r.termId).length,
+    [rowState]
+  );
+
+  function setRow(id: string, patch: Partial<RowState>) {
+    setRowState((prev) => ({ ...prev, [id]: { ...(prev[id] ?? { programId: "", termId: "" }), ...patch } }));
+  }
+
+  // Pre-fills every currently-VISIBLE (i.e. searched-for) row with the same
+  // course + semester — the fast path for the common case where a search
+  // narrows to a batch of subjects that really do belong together (e.g.
+  // "Hindi Gadya"). Each row stays individually editable afterward, so this
+  // is a starting point, not a hard requirement that everything match.
+  function applyToVisible() {
+    if (!quickTermId) return;
+    setRowState((prev) => {
+      const next = { ...prev };
+      for (const s of filtered) next[s.id] = { programId: quickProgramId, termId: quickTermId };
       return next;
     });
   }
 
-  function selectAllVisible() {
-    setSelected((prev) => {
-      const next = new Set(prev);
-      filtered.forEach((s) => next.add(s.id));
-      return next;
-    });
-  }
+  async function deploy() {
+    const assignments = Object.entries(rowState)
+      .filter(([, r]) => r.termId)
+      .map(([subjectId, r]) => ({ subjectId, termId: r.termId }));
+    if (assignments.length === 0) return;
 
-  function clearSelection() {
-    setSelected(new Set());
-  }
-
-  async function move() {
-    if (!termId || selected.size === 0) return;
-    setMoving(true);
+    setDeploying(true);
     setError(null);
     setLastMoved(null);
     try {
       const formData = new FormData();
-      formData.set("termId", termId);
-      selected.forEach((id) => formData.append("subjectIds", id));
+      formData.set("assignments", JSON.stringify(assignments));
       const { moved } = await moveSubjectsToTermAction(formData);
-      setSubjects((prev) => prev.filter((s) => !selected.has(s.id)));
-      setSelected(new Set());
+      const movedIds = new Set(assignments.map((a) => a.subjectId));
+      setSubjects((prev) => prev.filter((s) => !movedIds.has(s.id)));
+      setRowState((prev) => {
+        const next = { ...prev };
+        movedIds.forEach((id) => delete next[id]);
+        return next;
+      });
       setLastMoved(moved);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Could not move those subjects.");
     } finally {
-      setMoving(false);
+      setDeploying(false);
     }
   }
 
   return (
     <div className="mt-6">
-      <div className="flex flex-wrap items-end gap-3 rounded-xl border border-border bg-surface p-4">
-        <div className="flex flex-1 flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted">Search</label>
-          <input
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Filter by name or code..."
-            className="min-w-[200px] rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
-          />
-        </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted">Move to course</label>
-          <select
-            value={programId}
-            onChange={(e) => {
-              setProgramId(e.target.value);
-              setTermId("");
-            }}
-            className="min-w-56 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
+      <div className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-4">
+        <div className="flex flex-wrap items-end gap-3">
+          <div className="flex flex-1 flex-col gap-1.5">
+            <label className="text-xs font-medium text-muted">Search</label>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Filter by name or code..."
+              className="min-w-[200px] rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={deploy}
+            disabled={deploying || configuredCount === 0}
+            className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-40"
           >
-            <option value="">Select course</option>
-            {programs.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+            {deploying ? "Deploying..." : `Deploy ${configuredCount} configured →`}
+          </button>
         </div>
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs font-medium text-muted">Semester</label>
-          <select
-            value={termId}
-            disabled={!program}
-            onChange={(e) => setTermId(e.target.value)}
-            className="min-w-48 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none disabled:opacity-50"
+
+        <div className="flex flex-wrap items-end gap-3 border-t border-border pt-3">
+          <p className="w-full text-xs font-medium text-muted">
+            Quick-fill: set the same course + semester for every row currently visible below
+            (still editable per row afterward)
+          </p>
+          <div className="flex flex-col gap-1.5">
+            <select
+              value={quickProgramId}
+              onChange={(e) => {
+                setQuickProgramId(e.target.value);
+                setQuickTermId("");
+              }}
+              className="min-w-56 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
+            >
+              <option value="">Select course</option>
+              {programs.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <select
+              value={quickTermId}
+              disabled={!quickProgram}
+              onChange={(e) => setQuickTermId(e.target.value)}
+              className="min-w-48 rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none disabled:opacity-50"
+            >
+              <option value="">Select semester</option>
+              {quickProgram?.terms.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            type="button"
+            onClick={applyToVisible}
+            disabled={!quickTermId}
+            className="rounded-lg border border-border px-3 py-2 text-sm transition hover:bg-surface-muted disabled:opacity-40"
           >
-            <option value="">Select semester</option>
-            {program?.terms.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
+            Apply to {filtered.length} visible
+          </button>
         </div>
-        <button
-          type="button"
-          onClick={move}
-          disabled={moving || !termId || selected.size === 0}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-40"
-        >
-          {moving ? "Moving..." : `Move ${selected.size} selected →`}
-        </button>
       </div>
 
       <div className="mt-3 flex items-center justify-between text-sm">
-        <div className="flex items-center gap-3">
-          <button type="button" onClick={selectAllVisible} className="text-accent hover:underline">
-            Select all {filtered.length} visible
-          </button>
-          {selected.size > 0 && (
-            <button type="button" onClick={clearSelection} className="text-muted hover:underline">
-              Clear selection ({selected.size})
-            </button>
-          )}
-        </div>
         <span className="text-muted">
           {filtered.length} of {subjects.length} shown
         </span>
+        {error && <span className="text-red-500">{error}</span>}
+        {lastMoved !== null && (
+          <span className="text-green">
+            Deployed {lastMoved} subject{lastMoved === 1 ? "" : "s"}.
+          </span>
+        )}
       </div>
-
-      {error && <p className="mt-2 text-sm text-red-500">{error}</p>}
-      {lastMoved !== null && (
-        <p className="mt-2 text-sm text-green">Moved {lastMoved} subject{lastMoved === 1 ? "" : "s"}.</p>
-      )}
 
       <div className="mt-3 max-h-[70vh] overflow-y-auto rounded-xl border border-border bg-surface">
         {filtered.length === 0 ? (
@@ -157,26 +174,48 @@ export function UnsortedSubjectsClient({
           </p>
         ) : (
           <ul className="flex flex-col divide-y divide-border">
-            {filtered.map((s) => (
-              <li key={s.id} className="flex items-start gap-3 px-4 py-2.5">
-                <input
-                  type="checkbox"
-                  checked={selected.has(s.id)}
-                  onChange={() => toggle(s.id)}
-                  className="mt-1 accent-accent"
-                />
-                <div className="min-w-0">
-                  <button
-                    type="button"
-                    onClick={() => toggle(s.id)}
-                    className="block truncate text-left text-sm font-medium hover:text-accent"
+            {filtered.map((s) => {
+              const row = rowState[s.id] ?? { programId: "", termId: "" };
+              const rowProgram = programs.find((p) => p.id === row.programId);
+              return (
+                <li
+                  key={s.id}
+                  className={`flex flex-wrap items-center gap-3 px-4 py-2.5 ${
+                    row.termId ? "bg-accent-soft/30" : ""
+                  }`}
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-medium">{s.name}</p>
+                    {s.description && <p className="truncate text-xs text-muted">{s.description}</p>}
+                  </div>
+                  <select
+                    value={row.programId}
+                    onChange={(e) => setRow(s.id, { programId: e.target.value, termId: "" })}
+                    className="min-w-48 rounded-lg border border-border bg-background px-2 py-1.5 text-xs focus:border-accent focus:outline-none"
                   >
-                    {s.name}
-                  </button>
-                  {s.description && <p className="truncate text-xs text-muted">{s.description}</p>}
-                </div>
-              </li>
-            ))}
+                    <option value="">Course...</option>
+                    {programs.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                  <select
+                    value={row.termId}
+                    disabled={!rowProgram}
+                    onChange={(e) => setRow(s.id, { termId: e.target.value })}
+                    className="min-w-36 rounded-lg border border-border bg-background px-2 py-1.5 text-xs focus:border-accent focus:outline-none disabled:opacity-40"
+                  >
+                    <option value="">Sem...</option>
+                    {rowProgram?.terms.map((t) => (
+                      <option key={t.id} value={t.id}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
