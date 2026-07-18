@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { FailedUploadsClient } from "@/components/failed-uploads/failed-uploads-client";
+import { CopyableTitleList } from "@/components/failed-uploads/copyable-title-list";
 
 export default async function FailedUploadsPage() {
   const [rows, existingHashes, programs] = await Promise.all([
@@ -37,6 +38,8 @@ export default async function FailedUploadsPage() {
     terms: p.terms.map((t) => ({ id: t.id, name: t.name, subjects: t.subjects })),
   }));
 
+  const titles = [...new Set(rows.map((r) => r.title))].sort((a, b) => a.localeCompare(b));
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-semibold">Failed uploads</h1>
@@ -45,6 +48,8 @@ export default async function FailedUploadsPage() {
         original file is kept here so nothing is lost; pick the right subject and hit
         &quot;Deploy&quot; to publish it directly, no need to re-upload the file.
       </p>
+
+      <CopyableTitleList titles={titles} />
 
       <FailedUploadsClient rows={data} programs={programData} />
     </div>

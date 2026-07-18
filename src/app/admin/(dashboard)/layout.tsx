@@ -6,6 +6,7 @@ import {
   FileArrowUp,
   Gear,
   GraduationCap,
+  GridFour,
   House,
   SignOut,
   WarningCircle,
@@ -66,6 +67,13 @@ export default async function AdminDashboardLayout({
           >
             <ClockCounterClockwise size={16} />
             Upload batches
+          </Link>
+          <Link
+            href="/admin/coverage"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <GridFour size={16} />
+            PYQ coverage
           </Link>
           <Link
             href="/admin/failed-uploads"
