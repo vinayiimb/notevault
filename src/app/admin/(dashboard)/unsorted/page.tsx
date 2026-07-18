@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { UnsortedSubjectsClient } from "@/components/unsorted/unsorted-subjects-client";
+import { MatchUnsortedCsv } from "@/components/unsorted/match-unsorted-csv";
+import { CreateSubjectsCsv } from "@/components/unsorted/create-subjects-csv";
 
 export default async function AdminUnsortedPage() {
   const holding = await prisma.program.findFirst({
@@ -39,6 +41,11 @@ export default async function AdminUnsortedPage() {
         list, not yet assigned to a real course + semester. Search, select the ones you
         recognize, pick where they belong, and move them in one go.
       </p>
+
+      <div className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <MatchUnsortedCsv />
+        <CreateSubjectsCsv />
+      </div>
 
       <UnsortedSubjectsClient subjects={subjects} programs={programData} />
     </div>

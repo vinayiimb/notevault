@@ -175,28 +175,15 @@ export async function updateSubjectNotesAction(formData: FormData) {
   revalidatePath(`/subjects/${subjectId}`);
 }
 
-// Reassigns subjects to a real course + semester — the fast path out of
-// the "Unsorted (Pending Categorization)" holding pool. Each subject can go
-// to a DIFFERENT destination (the whole point — 512 imported subjects
-// span every department, not one shared course), so this takes a list of
-// individual {subjectId, termId} assignments rather than one shared termId.
-//
-// Grouped by destination term, then done in as few queries as possible:
-// subjects whose existing slug doesn't collide with anything already in
-// that term get one batched `updateMany` per group (no per-row round
-// trip); only genuine slug collisions fall back to a per-row update with a
-// regenerated unique slug, since that's rare in practice.
-export async function moveSubjectsToTermAction(formData: FormData) {
-  await requireAdmin();
-  const assignmentsRaw = String(formData.get("assignments") ?? "[]");
-  let assignments: { subjectId: string; termId: string }[];
-  try {
-    assignments = JSON.parse(assignmentsRaw);
-  } catch {
-    throw new Error("Malformed assignment list.");
-  }
-  assignments = assignments.filter((a) => a?.subjectId && a?.termId);
-  if (assignments.length === 0) throw new Error("No subjects with a destination picked.");
+// Shared by moveSubjectsToTermAction (UI-driven) and
+// matchUnsortedFromCsvAction (CSV-driven) — grouped by destination term,
+// then done in as few queries as possible: subjects whose existing slug
+// doesn't collide with anything already in that term get one batched
+// `updateMany` per group (no per-row round trip); only genuine slug
+// collisions fall back to a per-row update with a regenerated unique slug,
+// since that's rare in practice.
+async function applySubjectMoves(assignments: { subjectId: string; termId: string }[]): Promise<number> {
+  if (assignments.length === 0) return 0;
 
   const subjectIds = assignments.map((a) => a.subjectId);
   const subjects = await prisma.subject.findMany({
@@ -252,7 +239,199 @@ export async function moveSubjectsToTermAction(formData: FormData) {
   for (const programId of touchedProgramIds) revalidatePath(`/admin/programs/${programId}`);
   revalidatePath("/admin/unsorted");
 
+  return moved;
+}
+
+// Reassigns subjects to a real course + semester — the fast path out of
+// the "Unsorted (Pending Categorization)" holding pool. Each subject can go
+// to a DIFFERENT destination (the whole point — 512 imported subjects
+// span every department, not one shared course), so this takes a list of
+// individual {subjectId, termId} assignments rather than one shared termId.
+export async function moveSubjectsToTermAction(formData: FormData) {
+  await requireAdmin();
+  const assignmentsRaw = String(formData.get("assignments") ?? "[]");
+  let assignments: { subjectId: string; termId: string }[];
+  try {
+    assignments = JSON.parse(assignmentsRaw);
+  } catch {
+    throw new Error("Malformed assignment list.");
+  }
+  assignments = assignments.filter((a) => a?.subjectId && a?.termId);
+  if (assignments.length === 0) throw new Error("No subjects with a destination picked.");
+
+  const moved = await applySubjectMoves(assignments);
   return { moved };
+}
+
+export type UnsortedCsvRowResult = {
+  name: string;
+  status: "matched" | "no-subject-match" | "no-program-match" | "no-term-match" | "no-name";
+  message?: string;
+};
+
+// CSV-driven version of the same move — for going through the Unsorted
+// backlog offline (in a spreadsheet) instead of one search-batch at a time
+// in the UI. Expected columns (case-insensitive, any order): name (or
+// subject), program (or course), term (or semester). Matches each row's
+// name against the current Unsorted pool by exact-then-loose match; a name
+// that appears twice in the sheet only consumes one subject (first match
+// wins) so accidental duplicate rows can't double-claim the same subject.
+export async function matchUnsortedFromCsvAction(
+  formData: FormData
+): Promise<{ results: UnsortedCsvRowResult[] }> {
+  await requireAdmin();
+  const file = formData.get("file") as File | null;
+  if (!file || file.size === 0) throw new Error("A CSV file is required.");
+
+  const { parseCsv } = await import("@/lib/csv");
+  const text = await file.text();
+  const rows = parseCsv(text);
+  if (rows.length === 0) {
+    throw new Error(
+      "Could not read any rows from that file — check it's a real CSV (comma, semicolon, or tab-separated) with a header row."
+    );
+  }
+
+  const holding = await prisma.program.findFirst({ where: { name: "Unsorted (Pending Categorization)" } });
+  const unsortedSubjects = holding
+    ? await prisma.subject.findMany({
+        where: { term: { programId: holding.id } },
+        select: { id: true, name: true, slug: true },
+      })
+    : [];
+
+  const programs = await prisma.program.findMany({
+    where: { id: { not: holding?.id ?? "" } },
+    include: { terms: true },
+  });
+
+  const results: UnsortedCsvRowResult[] = [];
+  const assignments: { subjectId: string; termId: string }[] = [];
+  const claimed = new Set<string>();
+
+  for (const row of rows) {
+    const name = (row.name || row.subject || row.title || "").trim();
+    if (!name) {
+      results.push({ name: "(blank)", status: "no-name" });
+      continue;
+    }
+
+    const subject =
+      unsortedSubjects.find((s) => !claimed.has(s.id) && s.name.trim().toLowerCase() === name.toLowerCase()) ??
+      unsortedSubjects.find((s) => !claimed.has(s.id) && normalizeLoose(s.name) === normalizeLoose(name));
+    if (!subject) {
+      results.push({ name, status: "no-subject-match" });
+      continue;
+    }
+
+    const programVal = (row.program || row.course || "").trim();
+    const program = findProgramMatch(programs, programVal);
+    if (!program) {
+      results.push({ name, status: "no-program-match", message: `No course matched "${programVal}"` });
+      continue;
+    }
+
+    const termVal = (row.term || row.semester || row.sem || "").trim();
+    const term = findTermMatch(program.terms, termVal);
+    if (!term) {
+      results.push({
+        name,
+        status: "no-term-match",
+        message: `No semester matched "${termVal}" in ${program.name}`,
+      });
+      continue;
+    }
+
+    claimed.add(subject.id);
+    assignments.push({ subjectId: subject.id, termId: term.id });
+    results.push({ name, status: "matched" });
+  }
+
+  await applySubjectMoves(assignments);
+
+  return { results };
+}
+
+export type NewSubjectCsvRowResult = {
+  name: string;
+  status: "created" | "duplicate" | "no-program-match" | "no-term-match" | "no-name";
+  message?: string;
+};
+
+// Creates brand-new subjects straight into their real course + semester —
+// for subjects that were never in the Unsorted import at all, skipping the
+// holding pool entirely. Expected columns (case-insensitive, any order):
+// name (or subject), program (or course), term (or semester), and
+// optionally code and description.
+export async function createSubjectsFromCsvAction(
+  formData: FormData
+): Promise<{ results: NewSubjectCsvRowResult[] }> {
+  await requireAdmin();
+  const file = formData.get("file") as File | null;
+  if (!file || file.size === 0) throw new Error("A CSV file is required.");
+
+  const { parseCsv } = await import("@/lib/csv");
+  const text = await file.text();
+  const rows = parseCsv(text);
+  if (rows.length === 0) {
+    throw new Error(
+      "Could not read any rows from that file — check it's a real CSV (comma, semicolon, or tab-separated) with a header row."
+    );
+  }
+
+  const programs = await prisma.program.findMany({
+    include: { terms: { include: { subjects: { select: { name: true, slug: true } } } } },
+  });
+
+  const results: NewSubjectCsvRowResult[] = [];
+  const touchedProgramIds = new Set<string>();
+
+  for (const row of rows) {
+    const name = (row.name || row.subject || row.title || "").trim();
+    if (!name) {
+      results.push({ name: "(blank)", status: "no-name" });
+      continue;
+    }
+
+    const programVal = (row.program || row.course || "").trim();
+    const program = findProgramMatch(programs, programVal);
+    if (!program) {
+      results.push({ name, status: "no-program-match", message: `No course matched "${programVal}"` });
+      continue;
+    }
+
+    const termVal = (row.term || row.semester || row.sem || "").trim();
+    const term = findTermMatch(program.terms, termVal);
+    if (!term) {
+      results.push({
+        name,
+        status: "no-term-match",
+        message: `No semester matched "${termVal}" in ${program.name}`,
+      });
+      continue;
+    }
+
+    if (term.subjects.some((s) => s.name.trim().toLowerCase() === name.toLowerCase())) {
+      results.push({ name, status: "duplicate", message: `Already exists in ${program.name} · ${term.name}` });
+      continue;
+    }
+
+    const takenSlugs = new Set(term.subjects.map((s) => s.slug));
+    const slug = await uniqueSlug(name, async (s) => takenSlugs.has(s));
+
+    const code = (row.code || "").trim();
+    const descRaw = (row.description || "").trim();
+    const description = code ? (descRaw ? `Code: ${code} | ${descRaw}` : `Code: ${code}`) : descRaw || null;
+
+    await prisma.subject.create({ data: { termId: term.id, name, slug, description } });
+    term.subjects.push({ name, slug });
+    touchedProgramIds.add(program.id);
+    results.push({ name, status: "created" });
+  }
+
+  for (const programId of touchedProgramIds) revalidatePath(`/admin/programs/${programId}`);
+
+  return { results };
 }
 
 // Remembers a title -> subject association from a manual Bulk Upload
