@@ -12,7 +12,8 @@ type FileStatus = "pending" | "uploading" | "done" | "duplicate" | "error";
 type FlatFile = {
   key: string;
   path: string;
-  groupKey: string; // which row in the bulk "map to course" section this file belongs to
+  groupKey: string; // canonical (lowercased, punctuation-insensitive) — which bulk-map row this belongs to
+  groupLabel: string; // display text for that same group
   subjectName: string; // editable — actual Subject name used on upload
   programId: string; // editable — which course this uploads under
   order: number | null; // editable — semester (1-6)
@@ -146,14 +147,29 @@ function parseFileNameHints(fileName: string): { year: string; order: number | n
   return { year, order, courseGuess, subjectGuess: stripDegreePrefix(courseGuess) };
 }
 
+// Only strips the near-meaningless "B"/"A" degree-letter tokens and common
+// filler words, and canonicalizes spelling variants of the rest ("H" /
+// "Hons" / "Honours" -> "hons", "Prog" / "Programme" -> "prog", "Pol" ->
+// "political") instead of discarding them outright. Unlike a full noise
+// strip, this keeps enough of a degree-only name ("B.Com" vs "B.Sc.
+// Programme") intact to tell two different degree-only programs apart,
+// while still letting differently-punctuated/abbreviated versions of the
+// *same* course collapse to identical tokens.
+const MINIMAL_NOISE = new Set(["b", "a", "of", "the", "and"]);
+const WORD_SYNONYMS: Record<string, string> = {
+  h: "hons", hon: "hons", hons: "hons", honours: "hons", honors: "hons",
+  prog: "prog", programme: "prog", program: "prog",
+  pol: "political",
+};
+
 function normalizeCourseWords(s: string): string[] {
-  const noise = new Set([...DEGREE_NOISE, "of", "the", "and"]);
   return s
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .split(" ")
     .filter(Boolean)
-    .filter((w) => !noise.has(w));
+    .filter((w) => !MINIMAL_NOISE.has(w))
+    .map((w) => WORD_SYNONYMS[w] ?? w);
 }
 
 // Fuzzy-matches a course guess (however it's punctuated/spaced/abbreviated)
@@ -178,7 +194,21 @@ function guessProgramId(groupKey: string, courseGuess: string, programs: Program
   return matchProgram(courseGuess || groupKey, programs)?.id ?? "";
 }
 
-type ParsedEntry = { groupKey: string; subjectName: string; courseGuess: string; order: number | null; year: string };
+// Canonical grouping key: same significant-word normalization used for
+// program matching, so "B.A.(H) History-1st Semester-2017", "B. A.
+// (Honours ) History IInd Semester 2024-2025", and
+// "b.a(hons.)-history-3rd-semester-2022" all collapse into one "history"
+// group instead of one group per differently-punctuated filename — the
+// admin picks the course once per real subject, not once per file.
+function canonicalKey(courseGuess: string): string {
+  return normalizeCourseWords(courseGuess).join(" ");
+}
+
+function titleCase(s: string): string {
+  return s.replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+type ParsedEntry = { groupKey: string; groupLabel: string; subjectName: string; courseGuess: string; order: number | null; year: string };
 
 // Combines folder-based hints (for a well-organized Semester_X/Subject/Year
 // zip) with filename-text hints (for a flat dump where everything is
@@ -215,12 +245,22 @@ function parseEntry(path: string): ParsedEntry | null {
   const year = hints.year;
 
   if (folderIsInformative) {
-    return { groupKey: folderSubject as string, subjectName: folderSubject as string, courseGuess: folderSubject as string, order, year };
+    const subject = folderSubject as string;
+    return { groupKey: subject.toLowerCase(), groupLabel: subject, subjectName: subject, courseGuess: subject, order, year };
   }
   if (hints.subjectGuess) {
-    return { groupKey: hints.courseGuess || hints.subjectGuess, subjectName: hints.subjectGuess, courseGuess: hints.courseGuess, order, year };
+    const key = canonicalKey(hints.courseGuess) || hints.subjectGuess.toLowerCase();
+    return {
+      groupKey: key,
+      groupLabel: titleCase(key),
+      subjectName: hints.subjectGuess,
+      courseGuess: hints.courseGuess,
+      order,
+      year,
+    };
   }
-  return { groupKey: folderSubject ?? "Unsorted", subjectName: folderSubject ?? "Unsorted", courseGuess: folderSubject ?? "", order, year };
+  const subject = folderSubject ?? "Unsorted";
+  return { groupKey: subject.toLowerCase(), groupLabel: subject, subjectName: subject, courseGuess: subject, order, year };
 }
 
 export function ConsolidatedUploadClient({
@@ -243,9 +283,9 @@ export function ConsolidatedUploadClient({
   // here applies to every file in it at once; each file can still be
   // fine-tuned individually in the table below.
   const groups = useMemo(() => {
-    const set = new Set<string>();
-    for (const f of files) set.add(f.groupKey);
-    return Array.from(set).sort();
+    const labels = new Map<string, string>();
+    for (const f of files) if (!labels.has(f.groupKey)) labels.set(f.groupKey, f.groupLabel);
+    return Array.from(labels.entries()).sort((a, b) => a[1].localeCompare(b[1]));
   }, [files]);
 
   function setProgramForGroup(group: string, programId: string) {
@@ -302,6 +342,7 @@ export function ConsolidatedUploadClient({
         key: path,
         path,
         groupKey: parsed.groupKey,
+        groupLabel: parsed.groupLabel,
         subjectName: parsed.subjectName,
         programId: resolvedGroupProgram.get(parsed.groupKey) ?? "",
         order: parsed.order,
@@ -472,11 +513,11 @@ export function ConsolidatedUploadClient({
           Year on any individual row in the table below.
         </p>
         <div className="mt-3 flex flex-col gap-2">
-          {groups.map((group) => {
+          {groups.map(([group, label]) => {
             const count = files.filter((f) => f.groupKey === group).length;
             return (
               <div key={group} className="flex flex-wrap items-center gap-3">
-                <span className="min-w-[240px] text-sm font-medium">{group}</span>
+                <span className="min-w-[240px] text-sm font-medium">{label}</span>
                 <span className="text-xs text-muted">{count} file{count === 1 ? "" : "s"}</span>
                 <select
                   value={groupProgram[group] ?? ""}
