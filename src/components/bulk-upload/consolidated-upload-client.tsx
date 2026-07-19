@@ -3,28 +3,31 @@
 import { useMemo, useState } from "react";
 import { FileArchive, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import { findOrCreateSubjectAction, uploadResourceAction } from "@/lib/actions";
-import { guessYear } from "@/lib/subject-match";
 
 type Term = { id: string; name: string; order: number };
 type Program = { id: string; name: string; terms: Term[] };
 
-type ParsedFile = {
-  path: string;
-  subjectFolder: string;
-  order: number | null;
-  year: string;
-  bytes: ArrayBuffer;
-};
-
 type FileStatus = "pending" | "uploading" | "done" | "duplicate" | "error";
 
-type FlatFile = ParsedFile & { key: string; status: FileStatus; message?: string };
+type FlatFile = {
+  key: string;
+  path: string;
+  groupKey: string; // which row in the bulk "map to course" section this file belongs to
+  subjectName: string; // editable — actual Subject name used on upload
+  programId: string; // editable — which course this uploads under
+  order: number | null; // editable — semester (1-6)
+  year: string; // editable
+  bytes: ArrayBuffer;
+  status: FileStatus;
+  message?: string;
+};
 
 const ORDER_TO_ROMAN = ["I", "II", "III", "IV", "V", "VI"];
 
-// Normalized (lowercased, non-alphanumerics stripped) path segment -> semester
+// Normalized (lowercased, non-alphanumerics stripped) folder-name -> semester
 // order. Covers "Semester_I", "Semester I", "SEM-1", "semester01", "SemVI",
-// etc. so the parser doesn't depend on one exact folder-naming convention.
+// etc. so a well-organized zip's folder names don't depend on one exact
+// naming convention.
 const SEMESTER_LOOKUP: Record<string, number> = {};
 for (let n = 1; n <= 6; n++) {
   const roman = ORDER_TO_ROMAN[n - 1].toLowerCase();
@@ -34,11 +37,24 @@ for (let n = 1; n <= 6; n++) {
   }
 }
 
-// Best-guess Program name for each subject-folder name this workflow's
-// input zips use — matched case-insensitively against the real Program
-// list at runtime, so it still works if a program gets renamed slightly.
-// Anything that doesn't resolve to a real program is left for the admin to
-// pick by hand (e.g. a course that doesn't exist here yet).
+// Ordinal/roman word -> semester order, for filenames that spell the
+// semester out in text (e.g. "...-6th Semester-2019.pdf", "...VIth Semester
+// 2023-2024.pdf") rather than putting it in the folder structure.
+const SEM_WORD_TO_ORDER: Record<string, number> = {
+  "1st": 1, first: 1, ist: 1, i: 1,
+  "2nd": 2, second: 2, iind: 2, ii: 2,
+  "3rd": 3, third: 3, iiird: 3, iii: 3,
+  "4th": 4, fourth: 4, ivth: 4, iv: 4,
+  "5th": 5, fifth: 5, vth: 5, v: 5,
+  "6th": 6, sixth: 6, vith: 6, vi: 6,
+};
+const SEMESTER_PHRASE_RE = /([a-z0-9]+)\s*[-–—]?\s*semesters?\b|\bsemesters?\s*[-–—]?\s*([a-z0-9]+)/i;
+
+// Best-guess Program name for a handful of well-known short folder/course
+// names — matched case-insensitively against the real Program list at
+// runtime. This is just a fast path; matchProgram() below does the real
+// (fuzzy) work for everything else, e.g. "B.Sc.(H) Biochemistry" or
+// "B. A. (Honours) Political Science" extracted straight from a filename.
 const SUGGESTED_PROGRAM_NAME: Record<string, string> = {
   biochemistry: "B.Sc. (Hons.) Biochemistry",
   botany: "B.Sc. (Hons.) Botany",
@@ -59,6 +75,15 @@ const SUGGESTED_PROGRAM_NAME: Record<string, string> = {
   "b.sc(hons) generic elective": "GE Pool (Generic Electives)",
 };
 
+// Folder names too generic to use as a subject/group label on their own
+// (a zip export's catch-all dump folder, not an actual subject).
+const GENERIC_FOLDER_NAMES = new Set(["unsorted", "downloads", "download", "papers", "pdf", "pdfs", "files", "documents", "root", "misc", "other", "scans"]);
+
+// Degree-level words to strip off a course guess ("B.Sc.(H) Biochemistry")
+// to get the bare subject name ("Biochemistry") that matches how subjects
+// are actually named in the database.
+const DEGREE_NOISE = new Set(["b", "a", "sc", "com", "tech", "hons", "hon", "honours", "honors", "h", "prog", "programme", "program"]);
+
 async function sha256Hex(data: ArrayBuffer) {
   const digest = await crypto.subtle.digest("SHA-256", data);
   return Array.from(new Uint8Array(digest))
@@ -66,54 +91,136 @@ async function sha256Hex(data: ArrayBuffer) {
     .join("");
 }
 
-// Pulls a "2017-18"-style range out of a filename if one is present
-// (preserves the nicer range label); otherwise falls back to the
-// single-year heuristic already used elsewhere (guessYear), so filenames
-// like "Financial Accounting 2023.pdf" still get a year. Returns "" when
-// nothing plausible is found — left for the admin to fill in.
-function extractYearLabel(fileName: string): string {
-  const base = fileName.replace(/\.pdf$/i, "");
-  const rangeMatch = base.match(/(?:19|20)\d{2}-\d{2,4}/);
-  if (rangeMatch) return rangeMatch[0];
-  const guessed = guessYear(fileName);
-  return guessed ? String(guessed) : "";
+function extractYearFromText(text: string): { year: string; span: [number, number] | null } {
+  const rangeMatch = text.match(/(?:19|20)\d{2}\s*-\s*\d{2,4}/);
+  if (rangeMatch && rangeMatch.index !== undefined) {
+    return { year: rangeMatch[0].replace(/\s+/g, ""), span: [rangeMatch.index, rangeMatch.index + rangeMatch[0].length] };
+  }
+  const singleMatch = text.match(/(?:19|20)\d{2}/);
+  if (singleMatch && singleMatch.index !== undefined) {
+    const y = Number(singleMatch[0]);
+    const currentYear = new Date().getFullYear();
+    if (y >= 2000 && y <= currentYear + 1) {
+      return { year: singleMatch[0], span: [singleMatch.index, singleMatch.index + singleMatch[0].length] };
+    }
+  }
+  return { year: "", span: null };
 }
 
-// Tolerant PDF path parser: finds a semester folder anywhere in the path
-// (not necessarily immediately at the root, and under many naming
-// variants), takes the folder right after it as the subject, and falls
-// back to the file's immediate parent folder when no semester folder is
-// found at all (e.g. a zip of just one subject's papers, or an unrelated
-// wrapping folder name). Every .pdf in the zip produces a row — nothing is
-// silently dropped just because the folder layout isn't the exact expected
-// shape.
-function parseEntry(path: string): { subjectFolder: string; order: number | null; year: string } | null {
+function extractSemesterFromText(text: string): { order: number | null; span: [number, number] | null } {
+  const m = text.match(SEMESTER_PHRASE_RE);
+  if (!m || m.index === undefined) return { order: null, span: null };
+  const token = (m[1] ?? m[2] ?? "").toLowerCase();
+  return { order: SEM_WORD_TO_ORDER[token] ?? null, span: [m.index, m.index + m[0].length] };
+}
+
+// Strips leading degree-level words ("B.Sc.(H)", "B. A. (Honours)", ...)
+// off a course guess, leaving the bare subject name.
+function stripDegreePrefix(courseGuess: string): string {
+  const words = courseGuess.match(/[A-Za-z]+/g) ?? [];
+  let i = 0;
+  while (i < words.length && DEGREE_NOISE.has(words[i].toLowerCase())) i++;
+  const remaining = words.slice(i);
+  return (remaining.length > 0 ? remaining : words).join(" ");
+}
+
+// Extracts year, semester, and the leftover course-name text straight from
+// a filename like "B.Sc.(H) Biochemistry-6th Semester-2019.pdf" — the
+// primary source of truth when the zip's folder structure doesn't carry
+// this information (a flat dump, or inconsistent per-file folder naming).
+function parseFileNameHints(fileName: string): { year: string; order: number | null; courseGuess: string; subjectGuess: string } {
+  const base = fileName.replace(/\.pdf$/i, "");
+  const { year, span: yearSpan } = extractYearFromText(base);
+  const { order, span: semSpan } = extractSemesterFromText(base);
+
+  const spans = [yearSpan, semSpan]
+    .filter((s): s is [number, number] => s !== null)
+    .sort((a, b) => a[0] - b[0]);
+  let courseGuess = base;
+  for (let i = spans.length - 1; i >= 0; i--) {
+    const [s, e] = spans[i];
+    courseGuess = courseGuess.slice(0, s) + " " + courseGuess.slice(e);
+  }
+  courseGuess = courseGuess.replace(/[-_.,]+/g, " ").replace(/\s{2,}/g, " ").trim();
+
+  return { year, order, courseGuess, subjectGuess: stripDegreePrefix(courseGuess) };
+}
+
+function normalizeCourseWords(s: string): string[] {
+  const noise = new Set([...DEGREE_NOISE, "of", "the", "and"]);
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .filter((w) => !noise.has(w));
+}
+
+// Fuzzy-matches a course guess (however it's punctuated/spaced/abbreviated)
+// against the real Program list by significant-word overlap, e.g.
+// "B. A. (Honours) Political Science" -> "B.A. (Hons.) Political Science".
+function matchProgram(courseGuess: string, programs: Program[]): Program | null {
+  const guessWords = new Set(normalizeCourseWords(courseGuess));
+  if (guessWords.size === 0) return null;
+  let best: { program: Program; score: number } | null = null;
+  for (const p of programs) {
+    const nameWords = normalizeCourseWords(p.name);
+    const score = nameWords.filter((w) => guessWords.has(w)).length;
+    if (score > 0 && (!best || score > best.score)) best = { program: p, score };
+  }
+  return best?.program ?? null;
+}
+
+function guessProgramId(groupKey: string, courseGuess: string, programs: Program[]): string {
+  const suggestedName = SUGGESTED_PROGRAM_NAME[groupKey.trim().toLowerCase()];
+  const exact = suggestedName ? programs.find((p) => p.name === suggestedName) : undefined;
+  if (exact) return exact.id;
+  return matchProgram(courseGuess || groupKey, programs)?.id ?? "";
+}
+
+type ParsedEntry = { groupKey: string; subjectName: string; courseGuess: string; order: number | null; year: string };
+
+// Combines folder-based hints (for a well-organized Semester_X/Subject/Year
+// zip) with filename-text hints (for a flat dump where everything is
+// encoded in the filename instead) — whichever source is actually
+// informative wins for each field, so both zip styles work without the
+// admin needing to pick one convention.
+function parseEntry(path: string): ParsedEntry | null {
   if (path.includes("__MACOSX")) return null;
   const parts = path.split("/").filter(Boolean);
   const fileName = parts[parts.length - 1];
   if (!fileName || !/\.pdf$/i.test(fileName) || fileName.startsWith(".")) return null;
 
-  let order: number | null = null;
+  let folderOrder: number | null = null;
   let semesterIdx = -1;
   for (let i = 0; i < parts.length - 1; i++) {
     const norm = parts[i].toLowerCase().replace(/[^a-z0-9]/g, "");
     if (SEMESTER_LOOKUP[norm] !== undefined) {
-      order = SEMESTER_LOOKUP[norm];
+      folderOrder = SEMESTER_LOOKUP[norm];
       semesterIdx = i;
       break;
     }
   }
 
-  let subjectFolder: string;
+  let folderSubject: string | null = null;
   if (semesterIdx !== -1 && semesterIdx + 1 <= parts.length - 2) {
-    subjectFolder = parts[semesterIdx + 1];
+    folderSubject = parts[semesterIdx + 1];
   } else if (parts.length >= 2) {
-    subjectFolder = parts[parts.length - 2];
-  } else {
-    subjectFolder = "Unsorted";
+    folderSubject = parts[parts.length - 2];
   }
+  const folderIsInformative = !!folderSubject && !GENERIC_FOLDER_NAMES.has(folderSubject.toLowerCase().replace(/[^a-z0-9]/g, ""));
 
-  return { subjectFolder, order, year: extractYearLabel(fileName) };
+  const hints = parseFileNameHints(fileName);
+  const order = folderOrder ?? hints.order;
+  const year = hints.year;
+
+  if (folderIsInformative) {
+    return { groupKey: folderSubject as string, subjectName: folderSubject as string, courseGuess: folderSubject as string, order, year };
+  }
+  if (hints.subjectGuess) {
+    return { groupKey: hints.courseGuess || hints.subjectGuess, subjectName: hints.subjectGuess, courseGuess: hints.courseGuess, order, year };
+  }
+  return { groupKey: folderSubject ?? "Unsorted", subjectName: folderSubject ?? "Unsorted", courseGuess: folderSubject ?? "", order, year };
 }
 
 export function ConsolidatedUploadClient({
@@ -127,18 +234,24 @@ export function ConsolidatedUploadClient({
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [files, setFiles] = useState<FlatFile[]>([]);
-  const [subjectProgram, setSubjectProgram] = useState<Record<string, string>>({});
+  const [groupProgram, setGroupProgram] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
   const knownHashes = useMemo(() => new Set(existingHashes), [existingHashes]);
 
-  // One row per distinct subject folder found across every zip dropped so
-  // far — mapping a folder to a course here applies to every year/semester
-  // file inside it at once.
-  const subjectFolders = useMemo(() => {
+  // One row per distinct detected group (a folder name, or an extracted
+  // course name when the zip is a flat dump) — mapping a group to a course
+  // here applies to every file in it at once; each file can still be
+  // fine-tuned individually in the table below.
+  const groups = useMemo(() => {
     const set = new Set<string>();
-    for (const f of files) set.add(f.subjectFolder);
+    for (const f of files) set.add(f.groupKey);
     return Array.from(set).sort();
   }, [files]);
+
+  function setProgramForGroup(group: string, programId: string) {
+    setGroupProgram((prev) => ({ ...prev, [group]: programId }));
+    setFiles((prev) => prev.map((f) => (f.groupKey === group ? { ...f, programId } : f)));
+  }
 
   async function handleZips(zipFiles: File[]) {
     setError(null);
@@ -146,7 +259,7 @@ export function ConsolidatedUploadClient({
     setExtracting(true);
     try {
       const JSZip = (await import("jszip")).default;
-      const newFiles: FlatFile[] = [];
+      const newEntries: { path: string; parsed: ParsedEntry; bytes: ArrayBuffer }[] = [];
       const seen = new Set<string>(files.map((f) => f.path));
       let nestedZipCount = 0;
 
@@ -162,43 +275,52 @@ export function ConsolidatedUploadClient({
           const parsed = parseEntry(path);
           if (!parsed) continue;
           seen.add(path);
-
           const bytes = await entry.async("arraybuffer");
-          newFiles.push({
-            key: path,
-            path,
-            subjectFolder: parsed.subjectFolder,
-            order: parsed.order,
-            year: parsed.year,
-            bytes,
-            status: "pending",
-          });
+          newEntries.push({ path, parsed, bytes });
         }
       }
 
-      if (newFiles.length === 0) {
+      if (newEntries.length === 0) {
         setError(
           nestedZipCount > 0
             ? `That zip contains ${nestedZipCount} other zip file${nestedZipCount === 1 ? "" : "s"}, not PDFs directly — open it and upload the inner zip(s) (or their extracted PDFs) instead.`
             : "No PDF files found inside that zip."
         );
-      } else {
-        const missingSemester = newFiles.filter((f) => f.order === null).length;
-        if (missingSemester > 0) {
-          setNotice(
-            `Couldn't detect a semester folder for ${missingSemester} file${missingSemester === 1 ? "" : "s"} — set it manually in the Semester column before uploading those rows.`
-          );
-        }
+        setExtracting(false);
+        return;
       }
 
-      // Pre-fill each newly-seen subject folder's suggested course mapping.
-      setSubjectProgram((prev) => {
+      // Resolve one course default per distinct group, from its first
+      // entry's course guess, so every row in the group starts consistent.
+      const resolvedGroupProgram = new Map<string, string>();
+      for (const { parsed } of newEntries) {
+        if (resolvedGroupProgram.has(parsed.groupKey)) continue;
+        resolvedGroupProgram.set(parsed.groupKey, guessProgramId(parsed.groupKey, parsed.courseGuess, programs));
+      }
+
+      const newFiles: FlatFile[] = newEntries.map(({ path, parsed, bytes }) => ({
+        key: path,
+        path,
+        groupKey: parsed.groupKey,
+        subjectName: parsed.subjectName,
+        programId: resolvedGroupProgram.get(parsed.groupKey) ?? "",
+        order: parsed.order,
+        year: parsed.year,
+        bytes,
+        status: "pending",
+      }));
+
+      const missingSemester = newFiles.filter((f) => f.order === null).length;
+      if (missingSemester > 0) {
+        setNotice(
+          `Couldn't detect a semester for ${missingSemester} file${missingSemester === 1 ? "" : "s"} — set it manually in the Semester column before uploading those rows.`
+        );
+      }
+
+      setGroupProgram((prev) => {
         const next = { ...prev };
-        for (const f of newFiles) {
-          if (next[f.subjectFolder] !== undefined) continue;
-          const suggestedName = SUGGESTED_PROGRAM_NAME[f.subjectFolder.trim().toLowerCase()];
-          const match = suggestedName ? programs.find((p) => p.name === suggestedName) : undefined;
-          next[f.subjectFolder] = match?.id ?? "";
+        for (const [group, id] of resolvedGroupProgram) {
+          if (next[group] === undefined) next[group] = id;
         }
         return next;
       });
@@ -218,7 +340,7 @@ export function ConsolidatedUploadClient({
   function resolveTermId(program: Program, order: number | null): string | null {
     // A program with only one "All Semesters" term (GE Pool) or one that
     // also happens to carry it (Common Pool) uses that single bucket
-    // regardless of which semester folder the file came from.
+    // regardless of which semester the file came from.
     const allSemesters = program.terms.find((t) => t.name === "All Semesters");
     if (allSemesters && program.terms.length === 1) return allSemesters.id;
     if (order === null) return null;
@@ -230,18 +352,16 @@ export function ConsolidatedUploadClient({
 
   async function uploadAll() {
     setUploading(true);
-    // One subject per (program, term, subjectFolder name) combo, reused
-    // across every year file that maps to it, instead of re-resolving the
-    // subject id per file.
+    // One subject per (term, subject name) combo, reused across every file
+    // that maps to it, instead of re-resolving the subject id per file.
     const subjectCache = new Map<string, string>();
     const seenThisRun = new Set<string>();
 
     for (const file of files) {
       if (file.status === "done" || file.status === "duplicate") continue;
-      const programId = subjectProgram[file.subjectFolder];
-      const program = programs.find((p) => p.id === programId);
+      const program = programs.find((p) => p.id === file.programId);
       if (!program) {
-        updateFile(file.key, { status: "error", message: "No course chosen for this subject folder" });
+        updateFile(file.key, { status: "error", message: "No course chosen for this row" });
         continue;
       }
       const termId = resolveTermId(program, file.order);
@@ -250,6 +370,10 @@ export function ConsolidatedUploadClient({
           status: "error",
           message: file.order === null ? "Pick a semester for this row first" : `${program.name} has no matching semester`,
         });
+        continue;
+      }
+      if (!file.subjectName.trim()) {
+        updateFile(file.key, { status: "error", message: "Subject name can't be empty" });
         continue;
       }
 
@@ -261,12 +385,12 @@ export function ConsolidatedUploadClient({
           continue;
         }
 
-        const cacheKey = `${termId}::${file.subjectFolder}`;
+        const cacheKey = `${termId}::${file.subjectName.trim().toLowerCase()}`;
         let subjectId = subjectCache.get(cacheKey);
         if (!subjectId) {
           const subjectForm = new FormData();
           subjectForm.set("termId", termId);
-          subjectForm.set("name", file.subjectFolder);
+          subjectForm.set("name", file.subjectName.trim());
           const subject = await findOrCreateSubjectAction(subjectForm);
           subjectId = subject.id;
           subjectCache.set(cacheKey, subjectId);
@@ -275,7 +399,7 @@ export function ConsolidatedUploadClient({
         const uploadForm = new FormData();
         uploadForm.set("subjectId", subjectId);
         uploadForm.set("type", "PYQ");
-        uploadForm.set("title", file.year ? `${file.subjectFolder} — ${file.year}` : file.subjectFolder);
+        uploadForm.set("title", file.year ? `${file.subjectName.trim()} — ${file.year}` : file.subjectName.trim());
         uploadForm.set("year", file.year.slice(0, 4));
         uploadForm.set("file", new File([file.bytes], `${file.year || "paper"}.pdf`, { type: "application/pdf" }));
         const result = await uploadResourceAction(uploadForm);
@@ -296,7 +420,7 @@ export function ConsolidatedUploadClient({
   }
 
   const doneCount = files.filter((f) => f.status === "done" || f.status === "duplicate").length;
-  const allMapped = subjectFolders.length > 0 && subjectFolders.every((s) => subjectProgram[s]);
+  const allMapped = files.length > 0 && files.every((f) => f.programId);
 
   if (files.length === 0) {
     return (
@@ -315,7 +439,8 @@ export function ConsolidatedUploadClient({
             {extracting ? "Reading zip file..." : "Drop a zip containing PDFs here"}
           </span>
           <span className="text-xs text-muted">
-            Any folder layout works — a Semester_X/Subject/Year.pdf structure is detected automatically, but every PDF found gets a row either way
+            Any layout works — a Semester_X/Subject/Year.pdf structure, or a flat dump where the course/semester/year
+            are just in the filename. Every PDF found gets an editable row either way.
           </span>
           <span className="text-xs text-muted">or click to browse</span>
           <input
@@ -341,21 +466,21 @@ export function ConsolidatedUploadClient({
       {notice && <p className="text-sm text-amber-500">{notice}</p>}
 
       <div className="rounded-xl border border-border bg-surface p-4">
-        <p className="text-sm font-medium">
-          Map each subject folder to a course ({subjectFolders.length} found)
+        <p className="text-sm font-medium">Bulk-assign a course to each detected group ({groups.length} found)</p>
+        <p className="mt-1 text-xs text-muted">
+          Sets the course for every file in that group at once — you can still fine-tune Course, Subject, Semester, or
+          Year on any individual row in the table below.
         </p>
         <div className="mt-3 flex flex-col gap-2">
-          {subjectFolders.map((folder) => {
-            const count = files.filter((f) => f.subjectFolder === folder).length;
+          {groups.map((group) => {
+            const count = files.filter((f) => f.groupKey === group).length;
             return (
-              <div key={folder} className="flex flex-wrap items-center gap-3">
-                <span className="min-w-[240px] text-sm font-medium">{folder}</span>
+              <div key={group} className="flex flex-wrap items-center gap-3">
+                <span className="min-w-[240px] text-sm font-medium">{group}</span>
                 <span className="text-xs text-muted">{count} file{count === 1 ? "" : "s"}</span>
                 <select
-                  value={subjectProgram[folder] ?? ""}
-                  onChange={(e) =>
-                    setSubjectProgram((prev) => ({ ...prev, [folder]: e.target.value }))
-                  }
+                  value={groupProgram[group] ?? ""}
+                  onChange={(e) => setProgramForGroup(group, e.target.value)}
                   className="rounded-lg border border-border bg-background px-3 py-1.5 text-sm focus:border-accent focus:outline-none"
                 >
                   <option value="">Select course — no match found</option>
@@ -376,7 +501,7 @@ export function ConsolidatedUploadClient({
           type="button"
           onClick={uploadAll}
           disabled={uploading || !allMapped}
-          title={!allMapped ? "Map every subject folder to a course first" : undefined}
+          title={!allMapped ? "Every row needs a course selected first" : undefined}
           className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50"
         >
           <UploadSimple size={16} weight="bold" />
@@ -392,7 +517,8 @@ export function ConsolidatedUploadClient({
           <thead className="bg-surface-muted text-xs font-semibold tracking-wide text-muted uppercase">
             <tr>
               <th className="px-4 py-2 text-left">File</th>
-              <th className="px-4 py-2 text-left">Subject folder</th>
+              <th className="px-4 py-2 text-left">Course</th>
+              <th className="px-4 py-2 text-left">Subject</th>
               <th className="px-4 py-2 text-left">Semester</th>
               <th className="px-4 py-2 text-left">Year</th>
               <th className="px-4 py-2 text-left">Status</th>
@@ -404,13 +530,34 @@ export function ConsolidatedUploadClient({
                 <td className="max-w-xs truncate px-4 py-2 text-xs text-muted" title={f.path}>
                   {f.path}
                 </td>
-                <td className="px-4 py-2">{f.subjectFolder}</td>
+                <td className="px-4 py-2">
+                  <select
+                    value={f.programId}
+                    onChange={(e) => updateFile(f.key, { programId: e.target.value })}
+                    className={`min-w-[200px] rounded-lg border bg-background px-2 py-1 text-sm focus:border-accent focus:outline-none ${
+                      f.programId ? "border-border" : "border-amber-500"
+                    }`}
+                  >
+                    <option value="">Select course</option>
+                    {programs.map((p) => (
+                      <option key={p.id} value={p.id}>
+                        {p.name}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className="px-4 py-2">
+                  <input
+                    type="text"
+                    value={f.subjectName}
+                    onChange={(e) => updateFile(f.key, { subjectName: e.target.value })}
+                    className="w-40 rounded-lg border border-border bg-background px-2 py-1 text-sm focus:border-accent focus:outline-none"
+                  />
+                </td>
                 <td className="px-4 py-2">
                   <select
                     value={f.order ?? ""}
-                    onChange={(e) =>
-                      updateFile(f.key, { order: e.target.value ? Number(e.target.value) : null })
-                    }
+                    onChange={(e) => updateFile(f.key, { order: e.target.value ? Number(e.target.value) : null })}
                     className={`rounded-lg border bg-background px-2 py-1 text-sm focus:border-accent focus:outline-none ${
                       f.order === null ? "border-amber-500" : "border-border"
                     }`}
