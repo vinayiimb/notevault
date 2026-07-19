@@ -45,6 +45,45 @@ export function getSubjectById(id: string) {
   });
 }
 
+/** Lightweight index for the complete OCR archive. The text itself stays out
+ * of this query; individual paper pages load it only when opened. */
+export function getPyqArchiveIndex() {
+  return prisma.resource.findMany({
+    where: { type: "PYQ", ocrText: { not: null } },
+    select: {
+      id: true,
+      title: true,
+      year: true,
+      academicYear: true,
+      pageCount: true,
+      subject: {
+        select: {
+          id: true,
+          name: true,
+          term: {
+            select: {
+              id: true,
+              name: true,
+              order: true,
+              program: { select: { name: true, slug: true } },
+            },
+          },
+        },
+      },
+    },
+    orderBy: [{ academicYear: "desc" }, { year: "desc" }, { title: "asc" }],
+  });
+}
+
+export function getPyqResourceById(id: string) {
+  return prisma.resource.findFirst({
+    where: { id, type: "PYQ", ocrText: { not: null } },
+    include: {
+      subject: { include: { term: { include: { program: true } } } },
+    },
+  });
+}
+
 // SQLite's `contains` is case-sensitive, so filter in JS for a case-insensitive match.
 //
 // Ranked, not just filtered — a short query like "ma" or "international"

@@ -213,6 +213,7 @@ function PyqResourceList({ resources }: { resources: PyqResource[] }) {
       {resources.map((resource) => (
         <li
           key={resource.id}
+          id={`paper-${resource.id}`}
           className="overflow-hidden rounded-2xl border border-border bg-surface transition-colors hover:border-accent/40"
         >
           <div className="flex items-center justify-between gap-4 p-4 sm:p-5">
@@ -236,7 +237,7 @@ function PyqResourceList({ resources }: { resources: PyqResource[] }) {
           </div>
 
           {resource.ocrText && (
-            <details className="group border-t border-border">
+            <details open className="group border-t border-border">
               <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-accent transition hover:bg-accent-soft/50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent sm:px-5">
                 <span className="flex items-center gap-2">
                   <BookOpenText size={18} weight="bold" />

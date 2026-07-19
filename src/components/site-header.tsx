@@ -19,6 +19,9 @@ export function SiteHeader() {
           <Link href="/browse/college" className="transition hover:text-foreground">
             PYQ
           </Link>
+          <Link href="/pyq-notes" className="transition hover:text-foreground">
+            Full archive
+          </Link>
           <Link href="/tools" className="transition hover:text-foreground">
             Tools
           </Link>

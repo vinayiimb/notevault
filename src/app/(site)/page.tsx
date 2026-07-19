@@ -113,6 +113,14 @@ export default async function HomePage() {
           />
 
           <ActionCard
+            icon={<BookOpen size={22} weight="bold" />}
+            title="Read full papers"
+            description="Open the complete OCR text of every supplied paper."
+            href="/pyq-notes"
+            cta="Open archive →"
+          />
+
+          <ActionCard
             icon={<Sparkle size={22} weight="bold" />}
             title="AI study tools"
             description="Flashcards, quizzes, concept maps, and more."
