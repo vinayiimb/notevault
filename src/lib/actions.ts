@@ -122,6 +122,28 @@ export async function createSubjectAction(formData: FormData) {
   revalidatePath(`/admin/programs/${programId}`);
 }
 
+// Reuses an existing subject if one with this name already exists under the
+// term, instead of always creating a new one — needed for the consolidated
+// (Semester/Subject/Year) upload flow, where the same subject folder (e.g.
+// "Physics") gets uploaded across several separate zip/session runs and
+// each run should land in the same subject, not spawn "Physics (2)", "Physics (3)".
+export async function findOrCreateSubjectAction(formData: FormData) {
+  await requireAdmin();
+  const termId = String(formData.get("termId"));
+  const name = String(formData.get("name") ?? "").trim();
+  if (!termId) throw new Error("A semester is required.");
+  if (!name) throw new Error("Subject name is required.");
+
+  const slug = slugify(name) || "subject";
+  const existing = await prisma.subject.findUnique({ where: { termId_slug: { termId, slug } } });
+  if (existing) return { id: existing.id, name: existing.name, termId };
+
+  const created = await prisma.subject.create({ data: { termId, name, slug } });
+  const term = await prisma.term.findUnique({ where: { id: termId } });
+  if (term) revalidatePath(`/admin/programs/${term.programId}`);
+  return { id: created.id, name: created.name, termId };
+}
+
 // Same as createSubjectAction, but returns the created row so callers that
 // invoke it programmatically (not via a <form>) can use the new id right
 // away — e.g. assigning it to a row mid-workflow without a page reload.

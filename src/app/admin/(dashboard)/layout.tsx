@@ -10,6 +10,7 @@ import {
   House,
   Shuffle,
   SignOut,
+  Stack,
   WarningCircle,
 } from "@phosphor-icons/react/dist/ssr";
 import { logoutAction } from "@/lib/actions";
@@ -61,6 +62,13 @@ export default async function AdminDashboardLayout({
           >
             <FileArchive size={16} />
             Bulk upload
+          </Link>
+          <Link
+            href="/admin/consolidated-upload"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Stack size={16} />
+            Consolidated upload
           </Link>
           <Link
             href="/admin/batches"
