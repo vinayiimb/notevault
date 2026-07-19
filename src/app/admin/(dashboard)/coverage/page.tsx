@@ -132,12 +132,11 @@ export default async function AdminCoveragePage({
                         {years.map((y) => {
                           const count = s.resources.filter((r) => r.year === y).length;
                           return (
-                            <td key={y} className="px-3 py-2 text-center">
-                              <span
-                                className={`inline-flex min-w-9 items-center justify-center rounded-lg px-2 py-1 text-sm font-semibold transition-transform hover:scale-105 ${heatClass(count)}`}
-                              >
-                                {count === 0 ? "—" : count}
-                              </span>
+                            <td
+                              key={y}
+                              className={`px-3 py-2 text-center text-sm font-semibold transition-colors ${heatClass(count)}`}
+                            >
+                              {count === 0 ? "—" : count}
                             </td>
                           );
                         })}
