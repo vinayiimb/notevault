@@ -59,6 +59,16 @@ export function BulkUploadClient({
   const [defaultType, setDefaultType] = useState<"PYQ" | "NOTES">("PYQ");
   const [defaultProgramId, setDefaultProgramId] = useState("");
   const [defaultTermId, setDefaultTermId] = useState("");
+  // When the whole batch is really just one subject's papers across years
+  // (the common case), picking this once assigns it to every row — the
+  // per-row Title & Subject editor then collapses to a simple label, with a
+  // "change" link for the rare outlier file that doesn't belong.
+  const [defaultSubjectId, setDefaultSubjectId] = useState("");
+  const [overriddenKeys, setOverriddenKeys] = useState<Set<string>>(new Set());
+  const [creatingDefaultSubject, setCreatingDefaultSubject] = useState(false);
+  const [newDefaultSubjectName, setNewDefaultSubjectName] = useState("");
+  const [creatingDefaultSubjectBusy, setCreatingDefaultSubjectBusy] = useState(false);
+  const [creatingDefaultSubjectError, setCreatingDefaultSubjectError] = useState<string | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [duplicatesInZip, setDuplicatesInZip] = useState(0);
   const [alreadyUploadedInZip, setAlreadyUploadedInZip] = useState(0);
@@ -103,6 +113,9 @@ export function BulkUploadClient({
   const matchedRows = activeRows.filter((r) => r.subjectId);
   const unmatchedRows = activeRows.filter((r) => !r.subjectId);
   const defaultProgram = programs.find((p) => p.id === defaultProgramId);
+  const defaultTerm = defaultProgram?.terms.find((t) => t.id === defaultTermId);
+  const defaultTermSubjects = defaultTerm?.subjects ?? [];
+  const defaultSubject = defaultTermSubjects.find((s) => s.id === defaultSubjectId);
 
   // DSE / AEC / SEC / VAC / GE electives aren't tied to one semester — the
   // Common Pool programme carries a real "All Semesters" term for exactly
@@ -147,7 +160,9 @@ export function BulkUploadClient({
 
           const filename = path.split("/").pop() || path;
           const pdfFile = new File([arrayBuffer], filename, { type: "application/pdf" });
-          const subjectId = guessSubject(filename, flatSubjects, memory) ?? "";
+          // A default subject means the whole batch is one subject's papers
+          // — skip the per-file heuristic entirely and use it directly.
+          const subjectId = defaultSubjectId || (guessSubject(filename, flatSubjects, memory) ?? "");
           // Already uploaded in an earlier session — flag it immediately
           // instead of waiting until Upload is clicked.
           const alreadyInDb = knownHashes.has(fileHash);
@@ -315,6 +330,57 @@ export function BulkUploadClient({
   async function applyDefaultsToAll() {
     setRows((prev) => prev.map((r) => ({ ...r, year: defaultYear, type: defaultType })));
     await autoCreateRemaining();
+  }
+
+  // Sets the default subject and assigns it to every row that hasn't been
+  // individually flagged as an exception via toggleOverride.
+  function applyDefaultSubject(subjectId: string) {
+    setDefaultSubjectId(subjectId);
+    if (!subjectId) return;
+    setRows((prev) => prev.map((r) => (overriddenKeys.has(r.key) ? r : { ...r, subjectId })));
+  }
+
+  // Toggles a single row out of (or back into) the default-subject
+  // cascade — for the rare file in an otherwise single-subject batch that
+  // actually belongs somewhere else, without giving up the simplified view
+  // for every other row.
+  function toggleOverride(row: Row) {
+    setOverriddenKeys((prev) => {
+      const next = new Set(prev);
+      if (next.has(row.key)) {
+        next.delete(row.key);
+        if (defaultSubjectId) updateRow(row.key, { subjectId: defaultSubjectId });
+      } else {
+        next.add(row.key);
+      }
+      return next;
+    });
+  }
+
+  async function createDefaultSubject() {
+    if (!defaultTermId || !newDefaultSubjectName.trim()) return;
+    setCreatingDefaultSubjectBusy(true);
+    setCreatingDefaultSubjectError(null);
+    try {
+      const formData = new FormData();
+      formData.set("termId", defaultTermId);
+      formData.set("name", newDefaultSubjectName.trim());
+      const created = await quickCreateSubjectAction(formData);
+      setPrograms((prev) =>
+        prev.map((p) => ({
+          ...p,
+          terms: p.terms.map((t) =>
+            t.id === created.termId ? { ...t, subjects: [...t.subjects, created] } : t
+          ),
+        }))
+      );
+      applyDefaultSubject(created.id);
+      setCreatingDefaultSubject(false);
+    } catch (err) {
+      setCreatingDefaultSubjectError(err instanceof Error ? err.message : "Could not create that subject.");
+    } finally {
+      setCreatingDefaultSubjectBusy(false);
+    }
   }
 
   // Auto-fill as soon as a default semester is picked (or new files are
@@ -540,6 +606,7 @@ export function BulkUploadClient({
             onChange={(e) => {
               setDefaultProgramId(e.target.value);
               setDefaultTermId("");
+              setDefaultSubjectId("");
             }}
             className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
           >
@@ -558,6 +625,7 @@ export function BulkUploadClient({
             onChange={(e) => {
               const val = e.target.value;
               setDefaultTermId(val);
+              setDefaultSubjectId("");
               if (allSemestersTerm && val === allSemestersTerm.termId) {
                 setDefaultProgramId(allSemestersTerm.programId);
               }
@@ -575,6 +643,34 @@ export function BulkUploadClient({
                 No specific semester (DSE / AEC / SEC / VAC / GE)
               </option>
             )}
+          </select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-xs font-medium text-muted">Default subject</label>
+          <select
+            value={defaultSubjectId}
+            onChange={(e) => {
+              const val = e.target.value;
+              if (val === NEW_SUBJECT) {
+                setCreatingDefaultSubject(true);
+                setNewDefaultSubjectName("");
+                setCreatingDefaultSubjectError(null);
+              } else {
+                setCreatingDefaultSubject(false);
+                applyDefaultSubject(val);
+              }
+            }}
+            disabled={!defaultTermId}
+            title={!defaultTermId ? "Pick a default semester first" : "Whole batch is one subject's papers across years? Set it here."}
+            className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none disabled:opacity-50"
+          >
+            <option value="">One subject for this whole batch?</option>
+            <option value={NEW_SUBJECT}>+ Create new subject...</option>
+            {defaultTermSubjects.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
           </select>
         </div>
         <div className="flex flex-col gap-1.5">
@@ -647,6 +743,9 @@ export function BulkUploadClient({
               setDuplicatesInZip(0);
               setAlreadyUploadedInZip(0);
               setAiMatchError(null);
+              setDefaultSubjectId("");
+              setCreatingDefaultSubject(false);
+              setOverriddenKeys(new Set());
             }}
             className="rounded-lg border border-border px-3 py-2 text-sm transition hover:bg-surface-muted"
           >
@@ -662,6 +761,35 @@ export function BulkUploadClient({
           </button>
         </div>
       </div>
+
+      {creatingDefaultSubject && (
+        <div className="mt-3 flex flex-wrap items-end gap-3 rounded-lg border border-accent/40 bg-accent-soft/20 p-3">
+          <div className="flex flex-1 flex-col gap-1.5">
+            <label className="text-xs font-medium text-muted">New subject name</label>
+            <input
+              value={newDefaultSubjectName}
+              onChange={(e) => setNewDefaultSubjectName(e.target.value)}
+              className="w-full min-w-[200px] rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={createDefaultSubject}
+            disabled={creatingDefaultSubjectBusy || !newDefaultSubjectName.trim() || !defaultTermId}
+            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50"
+          >
+            {creatingDefaultSubjectBusy ? "Creating..." : "Create & use for this batch"}
+          </button>
+          <button
+            type="button"
+            onClick={() => setCreatingDefaultSubject(false)}
+            className="rounded-lg border border-border px-3 py-1.5 text-sm transition hover:bg-surface-muted"
+          >
+            Cancel
+          </button>
+          {creatingDefaultSubjectError && <p className="w-full text-xs text-red-500">{creatingDefaultSubjectError}</p>}
+        </div>
+      )}
 
       {uploading && (
         <div className="mt-3 flex items-center gap-3">
@@ -684,6 +812,13 @@ export function BulkUploadClient({
           Pick a default course + semester above — anything still unmatched below gets its own
           subject created automatically (named from the file), so all that&apos;s left is to hit
           Upload. Rename or regroup those subjects later once you know where they really belong.
+        </p>
+      )}
+      {defaultTermId && !defaultSubjectId && (
+        <p className="mt-2 text-xs text-muted">
+          If this whole batch is one subject&apos;s papers across years, pick it in{" "}
+          <strong>Default subject</strong> above — every row below will use it and the table
+          collapses to just File + Year, with a &quot;change&quot; link for any file that&apos;s an exception.
         </p>
       )}
       {aiMatchError && <p className="mt-2 text-xs text-red-500">{aiMatchError}</p>}
@@ -757,32 +892,61 @@ export function BulkUploadClient({
                       </div>
                     </td>
                     <td className="px-4 py-2">
-                      <div className="flex flex-col gap-1.5">
-                        <input
-                          value={row.title}
-                          onChange={(e) => updateRow(row.key, { title: e.target.value })}
-                          className="w-full min-w-[220px] rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
-                        />
-                        <select
-                          value={row.creatingNew ? NEW_SUBJECT : row.subjectId}
-                          onChange={(e) => onSubjectSelect(row, e.target.value)}
-                          className={`w-full min-w-[220px] rounded-lg border bg-background px-2 py-1.5 text-sm focus:outline-none ${
-                            row.subjectId || row.creatingNew ? "border-border focus:border-accent" : "border-amber-400"
-                          }`}
-                        >
-                          <option value="">Not matched — pick one</option>
-                          <option value={NEW_SUBJECT}>+ Create new subject...</option>
-                          {grouped.map(([group, groupSubjects]) => (
-                            <optgroup key={group} label={group}>
-                              {groupSubjects.map((s) => (
-                                <option key={s.id} value={s.id}>
-                                  {s.name}
-                                </option>
-                              ))}
-                            </optgroup>
-                          ))}
-                        </select>
-                      </div>
+                      {defaultSubjectId && !overriddenKeys.has(row.key) ? (
+                        <div className="flex flex-col gap-1">
+                          <input
+                            value={row.title}
+                            onChange={(e) => updateRow(row.key, { title: e.target.value })}
+                            className="w-full min-w-[220px] rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
+                          />
+                          <div className="flex items-center gap-2 text-xs text-muted">
+                            <span>Subject: {defaultSubject?.name ?? "—"}</span>
+                            <button
+                              type="button"
+                              onClick={() => toggleOverride(row)}
+                              className="text-accent underline-offset-2 hover:underline"
+                            >
+                              not this one?
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex flex-col gap-1.5">
+                          {defaultSubjectId && (
+                            <button
+                              type="button"
+                              onClick={() => toggleOverride(row)}
+                              className="self-start text-xs text-accent underline-offset-2 hover:underline"
+                            >
+                              ← use default subject ({defaultSubject?.name})
+                            </button>
+                          )}
+                          <input
+                            value={row.title}
+                            onChange={(e) => updateRow(row.key, { title: e.target.value })}
+                            className="w-full min-w-[220px] rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
+                          />
+                          <select
+                            value={row.creatingNew ? NEW_SUBJECT : row.subjectId}
+                            onChange={(e) => onSubjectSelect(row, e.target.value)}
+                            className={`w-full min-w-[220px] rounded-lg border bg-background px-2 py-1.5 text-sm focus:outline-none ${
+                              row.subjectId || row.creatingNew ? "border-border focus:border-accent" : "border-amber-400"
+                            }`}
+                          >
+                            <option value="">Not matched — pick one</option>
+                            <option value={NEW_SUBJECT}>+ Create new subject...</option>
+                            {grouped.map(([group, groupSubjects]) => (
+                              <optgroup key={group} label={group}>
+                                {groupSubjects.map((s) => (
+                                  <option key={s.id} value={s.id}>
+                                    {s.name}
+                                  </option>
+                                ))}
+                              </optgroup>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                     </td>
                     <td className="px-4 py-2">
                       <select
