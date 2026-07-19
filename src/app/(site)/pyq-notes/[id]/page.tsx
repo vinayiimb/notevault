@@ -3,23 +3,7 @@ import { ArrowLeft, DownloadSimple, FileText } from "@phosphor-icons/react/dist/
 import { notFound } from "next/navigation";
 import { getPyqResourceById } from "@/lib/data";
 import { formatBytes } from "@/lib/utils";
-
-function OcrDocument({ text }: { text: string }) {
-  const lines = text.replace(/\r\n?/g, "\n").split("\n");
-  return (
-    <div className="ocr-document font-sans text-[0.98rem] leading-7 text-foreground">
-      {lines.map((line, index) =>
-        line.trim() ? (
-          <p key={`${index}-${line.slice(0, 12)}`} className="min-h-7 text-pretty">
-            {line}
-          </p>
-        ) : (
-          <div key={`${index}-blank`} className="h-3" aria-hidden="true" />
-        ),
-      )}
-    </div>
-  );
-}
+import { OcrPaperRenderer } from "@/components/subjects/ocr-paper-renderer";
 
 export default async function PyqPaperPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -53,11 +37,12 @@ export default async function PyqPaperPage({ params }: { params: Promise<{ id: s
         </a>
       </header>
 
-      <article className="mt-8 rounded-3xl border border-border bg-surface px-5 py-7 shadow-[0_15px_45px_rgba(15,23,42,.06)] sm:px-10 sm:py-10">
-        <div className="mb-7 border-b border-border pb-5 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
+      <article className="mt-8 rounded-3xl border border-[#e7e0d1] bg-[#fffdf7] px-5 py-7 shadow-[0_20px_60px_rgba(70,53,25,.08)] dark:border-border dark:bg-surface sm:px-10 sm:py-10">
+        <div className="mb-8 flex items-center justify-between border-b border-[#e7e0d1] pb-5 text-xs font-semibold uppercase tracking-[0.16em] text-muted dark:border-border">
           Original extracted question paper
+          <span className="hidden text-accent sm:inline">Full text · preserved</span>
         </div>
-        <OcrDocument text={paper.ocrText} />
+        <OcrPaperRenderer text={paper.ocrText} />
       </article>
     </div>
   );

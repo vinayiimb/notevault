@@ -13,6 +13,7 @@ import { getSubjectById } from "@/lib/data";
 import { formatBytes, levelLabel } from "@/lib/utils";
 import { PaperAnalysisPanel } from "@/components/subjects/paper-analysis-panel";
 import { NotesSection } from "@/components/subjects/notes-section";
+import { OcrPaperRenderer } from "@/components/subjects/ocr-paper-renderer";
 
 export default async function SubjectPage({
   params,
@@ -249,8 +250,8 @@ function PyqResourceList({ resources }: { resources: PyqResource[] }) {
                   className="transition-transform duration-200 group-open:rotate-180"
                 />
               </summary>
-              <article className="max-h-[70vh] overflow-y-auto border-t border-border bg-background px-5 py-6 text-[0.95rem] leading-7 text-foreground sm:px-8">
-                <p className="whitespace-pre-wrap font-sans text-pretty">{resource.ocrText}</p>
+              <article className="max-h-[78vh] overflow-y-auto border-t border-[#e7e0d1] bg-[#fffdf7] px-5 py-6 dark:border-border dark:bg-surface sm:px-8">
+                <OcrPaperRenderer text={resource.ocrText} />
               </article>
             </details>
           )}
