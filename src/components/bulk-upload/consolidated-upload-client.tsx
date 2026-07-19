@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { FileArchive, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import { findOrCreateSubjectAction, uploadResourceAction } from "@/lib/actions";
+import { guessYear } from "@/lib/subject-match";
 
 type Term = { id: string; name: string; order: number };
 type Program = { id: string; name: string; terms: Term[] };
@@ -10,7 +11,7 @@ type Program = { id: string; name: string; terms: Term[] };
 type ParsedFile = {
   path: string;
   subjectFolder: string;
-  semesterRoman: string;
+  order: number | null;
   year: string;
   bytes: ArrayBuffer;
 };
@@ -19,7 +20,19 @@ type FileStatus = "pending" | "uploading" | "done" | "duplicate" | "error";
 
 type FlatFile = ParsedFile & { key: string; status: FileStatus; message?: string };
 
-const ROMAN_TO_ORDER: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6 };
+const ORDER_TO_ROMAN = ["I", "II", "III", "IV", "V", "VI"];
+
+// Normalized (lowercased, non-alphanumerics stripped) path segment -> semester
+// order. Covers "Semester_I", "Semester I", "SEM-1", "semester01", "SemVI",
+// etc. so the parser doesn't depend on one exact folder-naming convention.
+const SEMESTER_LOOKUP: Record<string, number> = {};
+for (let n = 1; n <= 6; n++) {
+  const roman = ORDER_TO_ROMAN[n - 1].toLowerCase();
+  const padded = String(n).padStart(2, "0");
+  for (const key of [`semester${roman}`, `sem${roman}`, `semester${n}`, `sem${n}`, `semester${padded}`, `sem${padded}`]) {
+    SEMESTER_LOOKUP[key] = n;
+  }
+}
 
 // Best-guess Program name for each subject-folder name this workflow's
 // input zips use — matched case-insensitively against the real Program
@@ -53,10 +66,55 @@ async function sha256Hex(data: ArrayBuffer) {
     .join("");
 }
 
-// Matches "Semester_I/Physics/2017-18.pdf" (or "2017-2018.pdf") anywhere in
-// the zip path — tolerant of a wrapping root folder like
-// "DBC_By_Semester/Semester_I/...".
-const ENTRY_RE = /Semester_(I|II|III|IV|V|VI)\/([^/]+)\/(\d{4}-\d{2,4})\.pdf$/i;
+// Pulls a "2017-18"-style range out of a filename if one is present
+// (preserves the nicer range label); otherwise falls back to the
+// single-year heuristic already used elsewhere (guessYear), so filenames
+// like "Financial Accounting 2023.pdf" still get a year. Returns "" when
+// nothing plausible is found — left for the admin to fill in.
+function extractYearLabel(fileName: string): string {
+  const base = fileName.replace(/\.pdf$/i, "");
+  const rangeMatch = base.match(/(?:19|20)\d{2}-\d{2,4}/);
+  if (rangeMatch) return rangeMatch[0];
+  const guessed = guessYear(fileName);
+  return guessed ? String(guessed) : "";
+}
+
+// Tolerant PDF path parser: finds a semester folder anywhere in the path
+// (not necessarily immediately at the root, and under many naming
+// variants), takes the folder right after it as the subject, and falls
+// back to the file's immediate parent folder when no semester folder is
+// found at all (e.g. a zip of just one subject's papers, or an unrelated
+// wrapping folder name). Every .pdf in the zip produces a row — nothing is
+// silently dropped just because the folder layout isn't the exact expected
+// shape.
+function parseEntry(path: string): { subjectFolder: string; order: number | null; year: string } | null {
+  if (path.includes("__MACOSX")) return null;
+  const parts = path.split("/").filter(Boolean);
+  const fileName = parts[parts.length - 1];
+  if (!fileName || !/\.pdf$/i.test(fileName) || fileName.startsWith(".")) return null;
+
+  let order: number | null = null;
+  let semesterIdx = -1;
+  for (let i = 0; i < parts.length - 1; i++) {
+    const norm = parts[i].toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (SEMESTER_LOOKUP[norm] !== undefined) {
+      order = SEMESTER_LOOKUP[norm];
+      semesterIdx = i;
+      break;
+    }
+  }
+
+  let subjectFolder: string;
+  if (semesterIdx !== -1 && semesterIdx + 1 <= parts.length - 2) {
+    subjectFolder = parts[semesterIdx + 1];
+  } else if (parts.length >= 2) {
+    subjectFolder = parts[parts.length - 2];
+  } else {
+    subjectFolder = "Unsorted";
+  }
+
+  return { subjectFolder, order, year: extractYearLabel(fileName) };
+}
 
 export function ConsolidatedUploadClient({
   programs,
@@ -67,6 +125,7 @@ export function ConsolidatedUploadClient({
 }) {
   const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const [files, setFiles] = useState<FlatFile[]>([]);
   const [subjectProgram, setSubjectProgram] = useState<Record<string, string>>({});
   const [uploading, setUploading] = useState(false);
@@ -83,31 +142,34 @@ export function ConsolidatedUploadClient({
 
   async function handleZips(zipFiles: File[]) {
     setError(null);
+    setNotice(null);
     setExtracting(true);
     try {
       const JSZip = (await import("jszip")).default;
       const newFiles: FlatFile[] = [];
       const seen = new Set<string>(files.map((f) => f.path));
+      let nestedZipCount = 0;
 
       for (const zipFile of zipFiles) {
         const zip = await JSZip.loadAsync(zipFile);
         for (const [path, entry] of Object.entries(zip.files)) {
           if (entry.dir) continue;
-          const match = path.match(ENTRY_RE);
-          if (!match) continue;
           if (seen.has(path)) continue;
+          if (/\.zip$/i.test(path)) {
+            nestedZipCount++;
+            continue;
+          }
+          const parsed = parseEntry(path);
+          if (!parsed) continue;
           seen.add(path);
 
-          const [, semesterRoman, subjectFolder, yearRaw] = match;
           const bytes = await entry.async("arraybuffer");
-          const year = yearRaw.length > 7 ? `${yearRaw.slice(0, 4)}-${yearRaw.slice(-2)}` : yearRaw;
-
           newFiles.push({
             key: path,
             path,
-            subjectFolder,
-            semesterRoman: semesterRoman.toUpperCase(),
-            year,
+            subjectFolder: parsed.subjectFolder,
+            order: parsed.order,
+            year: parsed.year,
             bytes,
             status: "pending",
           });
@@ -116,8 +178,17 @@ export function ConsolidatedUploadClient({
 
       if (newFiles.length === 0) {
         setError(
-          "No matching files found. Expected paths like \"Semester_I/Physics/2017-18.pdf\" inside the zip."
+          nestedZipCount > 0
+            ? `That zip contains ${nestedZipCount} other zip file${nestedZipCount === 1 ? "" : "s"}, not PDFs directly — open it and upload the inner zip(s) (or their extracted PDFs) instead.`
+            : "No PDF files found inside that zip."
         );
+      } else {
+        const missingSemester = newFiles.filter((f) => f.order === null).length;
+        if (missingSemester > 0) {
+          setNotice(
+            `Couldn't detect a semester folder for ${missingSemester} file${missingSemester === 1 ? "" : "s"} — set it manually in the Semester column before uploading those rows.`
+          );
+        }
       }
 
       // Pre-fill each newly-seen subject folder's suggested course mapping.
@@ -144,14 +215,14 @@ export function ConsolidatedUploadClient({
     setFiles((prev) => prev.map((f) => (f.key === key ? { ...f, ...patch } : f)));
   }
 
-  function resolveTermId(program: Program, semesterRoman: string): string | null {
+  function resolveTermId(program: Program, order: number | null): string | null {
     // A program with only one "All Semesters" term (GE Pool) or one that
     // also happens to carry it (Common Pool) uses that single bucket
-    // regardless of which Semester_X folder the file came from.
+    // regardless of which semester folder the file came from.
     const allSemesters = program.terms.find((t) => t.name === "All Semesters");
     if (allSemesters && program.terms.length === 1) return allSemesters.id;
+    if (order === null) return null;
 
-    const order = ROMAN_TO_ORDER[semesterRoman];
     const specific = program.terms.find((t) => t.order === order);
     if (specific) return specific.id;
     return allSemesters?.id ?? null;
@@ -173,9 +244,12 @@ export function ConsolidatedUploadClient({
         updateFile(file.key, { status: "error", message: "No course chosen for this subject folder" });
         continue;
       }
-      const termId = resolveTermId(program, file.semesterRoman);
+      const termId = resolveTermId(program, file.order);
       if (!termId) {
-        updateFile(file.key, { status: "error", message: `${program.name} has no matching semester` });
+        updateFile(file.key, {
+          status: "error",
+          message: file.order === null ? "Pick a semester for this row first" : `${program.name} has no matching semester`,
+        });
         continue;
       }
 
@@ -201,9 +275,9 @@ export function ConsolidatedUploadClient({
         const uploadForm = new FormData();
         uploadForm.set("subjectId", subjectId);
         uploadForm.set("type", "PYQ");
-        uploadForm.set("title", `${file.subjectFolder} — ${file.year}`);
+        uploadForm.set("title", file.year ? `${file.subjectFolder} — ${file.year}` : file.subjectFolder);
         uploadForm.set("year", file.year.slice(0, 4));
-        uploadForm.set("file", new File([file.bytes], `${file.year}.pdf`, { type: "application/pdf" }));
+        uploadForm.set("file", new File([file.bytes], `${file.year || "paper"}.pdf`, { type: "application/pdf" }));
         const result = await uploadResourceAction(uploadForm);
         if (result?.status === "duplicate") {
           updateFile(file.key, { status: "duplicate", message: "Already uploaded" });
@@ -238,7 +312,10 @@ export function ConsolidatedUploadClient({
         >
           <FileArchive size={32} weight="bold" className="text-muted" />
           <span className="text-sm font-medium">
-            {extracting ? "Reading zip file..." : "Drop a zip of Semester_X/Subject/Year.pdf files here"}
+            {extracting ? "Reading zip file..." : "Drop a zip containing PDFs here"}
+          </span>
+          <span className="text-xs text-muted">
+            Any folder layout works — a Semester_X/Subject/Year.pdf structure is detected automatically, but every PDF found gets a row either way
           </span>
           <span className="text-xs text-muted">or click to browse</span>
           <input
@@ -261,6 +338,7 @@ export function ConsolidatedUploadClient({
   return (
     <div className="flex flex-col gap-6">
       {error && <p className="text-sm text-red-500">{error}</p>}
+      {notice && <p className="text-sm text-amber-500">{notice}</p>}
 
       <div className="rounded-xl border border-border bg-surface p-4">
         <p className="text-sm font-medium">
@@ -327,8 +405,33 @@ export function ConsolidatedUploadClient({
                   {f.path}
                 </td>
                 <td className="px-4 py-2">{f.subjectFolder}</td>
-                <td className="px-4 py-2">{f.semesterRoman}</td>
-                <td className="px-4 py-2">{f.year}</td>
+                <td className="px-4 py-2">
+                  <select
+                    value={f.order ?? ""}
+                    onChange={(e) =>
+                      updateFile(f.key, { order: e.target.value ? Number(e.target.value) : null })
+                    }
+                    className={`rounded-lg border bg-background px-2 py-1 text-sm focus:border-accent focus:outline-none ${
+                      f.order === null ? "border-amber-500" : "border-border"
+                    }`}
+                  >
+                    <option value="">Set semester</option>
+                    {ORDER_TO_ROMAN.map((roman, i) => (
+                      <option key={roman} value={i + 1}>
+                        {roman}
+                      </option>
+                    ))}
+                  </select>
+                </td>
+                <td className="px-4 py-2">
+                  <input
+                    type="text"
+                    value={f.year}
+                    onChange={(e) => updateFile(f.key, { year: e.target.value })}
+                    placeholder="e.g. 2023-24"
+                    className="w-28 rounded-lg border border-border bg-background px-2 py-1 text-sm focus:border-accent focus:outline-none"
+                  />
+                </td>
                 <td className="px-4 py-2">
                   {f.status === "pending" && <span className="text-muted">Waiting</span>}
                   {f.status === "uploading" && <span className="text-accent">Uploading...</span>}
