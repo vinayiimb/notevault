@@ -472,6 +472,22 @@ export async function rememberSubjectMatchAction(formData: FormData) {
   });
 }
 
+// Remembers a course-guess -> Program association from a manual
+// Consolidated Upload correction, so a future upload with a similarly
+// (but not identically) worded course name auto-matches without re-picking.
+export async function rememberCourseMatchAction(formData: FormData) {
+  await requireAdmin();
+  const key = String(formData.get("key") ?? "").trim();
+  const programId = String(formData.get("programId") ?? "").trim();
+  if (!key || !programId) return;
+
+  await prisma.courseMatchMemory.upsert({
+    where: { key },
+    create: { key, programId },
+    update: { programId },
+  });
+}
+
 export async function deleteSubjectAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));

@@ -193,6 +193,22 @@ model SubjectMatchMemory {
   updatedAt DateTime @updatedAt
 }
 
+// Learned course-guess -> Program associations for Consolidated Upload. When
+// an admin assigns a course to a detected group (a folder name, or an
+// extracted course name from a flat dump of filenames) that the fuzzy
+// matcher couldn't place on its own, we remember it — keyed by the same
+// minimal-noise, synonym-canonicalized token key used for grouping — so a
+// future upload with a similarly-worded but differently-punctuated or
+// abbreviated filename ("Pol. Science" vs "Political Science") matches
+// instantly instead of needing the same course picked again.
+model CourseMatchMemory {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  programId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Anonymous, login-free student identity — one row per browser (device
 // cookie), not a real account. Powers the streak / oranges / leaderboard
 // mechanic without adding a password-based sign-up flow.

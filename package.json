@@ -9,6 +9,8 @@
     "start": "next start",
     "lint": "eslint",
     "seed:du-syllabus": "tsx prisma/seed-du-syllabus.ts",
+    "seed:biochemistry": "tsx prisma/seed-biochemistry.ts",
+    "seed:course-match-memory": "tsx prisma/seed-course-match-memory.ts",
     "migrate:export": "tsx prisma/migrate-to-postgres-blob.ts export",
     "migrate:import": "tsx prisma/migrate-to-postgres-blob.ts import"
   },

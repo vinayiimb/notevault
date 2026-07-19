@@ -30,17 +30,22 @@ export default async function AdminConsolidatedUploadPage() {
   });
   const existingHashes = hashRows.map((r) => r.fileHash as string);
 
+  const memoryRows = await prisma.courseMatchMemory.findMany({
+    select: { key: true, programId: true },
+  });
+  const courseMemory = Object.fromEntries(memoryRows.map((r) => [r.key, r.programId]));
+
   return (
     <div className="p-8">
       <h1 className="text-2xl font-semibold">Consolidated upload</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted">
-        Drop a zip organized as <code className="rounded bg-surface-muted px-1 py-0.5 text-xs">Semester_I/Subject Name/2017-18.pdf</code> —
-        every year for every subject, already sorted by semester. Map each subject folder to a
-        course once, and every year&apos;s paper inside it uploads straight to the matching
-        semester automatically.
+        Drop a zip organized as <code className="rounded bg-surface-muted px-1 py-0.5 text-xs">Semester_I/Subject Name/2017-18.pdf</code>,
+        or a flat dump of PDFs whose course/semester/year are just in the filename. Map each
+        detected group to a course once, and every file in it uploads to the matching semester
+        automatically — corrections are remembered for next time.
       </p>
       <div className="mt-6">
-        <ConsolidatedUploadClient programs={data} existingHashes={existingHashes} />
+        <ConsolidatedUploadClient programs={data} existingHashes={existingHashes} courseMemory={courseMemory} />
       </div>
     </div>
   );

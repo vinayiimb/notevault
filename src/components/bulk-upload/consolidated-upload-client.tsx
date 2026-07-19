@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { FileArchive, UploadSimple } from "@phosphor-icons/react/dist/ssr";
-import { findOrCreateSubjectAction, uploadResourceAction } from "@/lib/actions";
+import { findOrCreateSubjectAction, rememberCourseMatchAction, uploadResourceAction } from "@/lib/actions";
 
 type Term = { id: string; name: string; order: number };
 type Program = { id: string; name: string; terms: Term[] };
@@ -187,7 +187,17 @@ function matchProgram(courseGuess: string, programs: Program[]): Program | null 
   return best?.program ?? null;
 }
 
-function guessProgramId(groupKey: string, courseGuess: string, programs: Program[]): string {
+function guessProgramId(
+  groupKey: string,
+  courseGuess: string,
+  programs: Program[],
+  memory: Record<string, string>
+): string {
+  // A previously-taught association for this exact canonical key wins over
+  // everything else — it's a real admin decision, not a heuristic guess.
+  const remembered = memory[groupKey];
+  if (remembered && programs.some((p) => p.id === remembered)) return remembered;
+
   const suggestedName = SUGGESTED_PROGRAM_NAME[groupKey.trim().toLowerCase()];
   const exact = suggestedName ? programs.find((p) => p.name === suggestedName) : undefined;
   if (exact) return exact.id;
@@ -266,15 +276,18 @@ function parseEntry(path: string): ParsedEntry | null {
 export function ConsolidatedUploadClient({
   programs,
   existingHashes,
+  courseMemory: initialCourseMemory,
 }: {
   programs: Program[];
   existingHashes: string[];
+  courseMemory: Record<string, string>;
 }) {
   const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [files, setFiles] = useState<FlatFile[]>([]);
   const [groupProgram, setGroupProgram] = useState<Record<string, string>>({});
+  const [courseMemory, setCourseMemory] = useState(initialCourseMemory);
   const [uploading, setUploading] = useState(false);
   const knownHashes = useMemo(() => new Set(existingHashes), [existingHashes]);
 
@@ -291,6 +304,16 @@ export function ConsolidatedUploadClient({
   function setProgramForGroup(group: string, programId: string) {
     setGroupProgram((prev) => ({ ...prev, [group]: programId }));
     setFiles((prev) => prev.map((f) => (f.groupKey === group ? { ...f, programId } : f)));
+    if (!programId) return;
+
+    // Teach this association for next time — but only once it's a genuine
+    // admin decision, not the very same guess the memory already gave us.
+    if (courseMemory[group] === programId) return;
+    setCourseMemory((prev) => ({ ...prev, [group]: programId }));
+    const formData = new FormData();
+    formData.set("key", group);
+    formData.set("programId", programId);
+    rememberCourseMatchAction(formData).catch(() => {});
   }
 
   async function handleZips(zipFiles: File[]) {
@@ -335,7 +358,7 @@ export function ConsolidatedUploadClient({
       const resolvedGroupProgram = new Map<string, string>();
       for (const { parsed } of newEntries) {
         if (resolvedGroupProgram.has(parsed.groupKey)) continue;
-        resolvedGroupProgram.set(parsed.groupKey, guessProgramId(parsed.groupKey, parsed.courseGuess, programs));
+        resolvedGroupProgram.set(parsed.groupKey, guessProgramId(parsed.groupKey, parsed.courseGuess, programs, courseMemory));
       }
 
       const newFiles: FlatFile[] = newEntries.map(({ path, parsed, bytes }) => ({
