@@ -7,7 +7,7 @@ import { findOrCreateSubjectAction, uploadResourceAction } from "@/lib/actions";
 type Term = { id: string; name: string; order: number };
 type Program = { id: string; name: string; terms: Term[] };
 
-type FileStatus = "pending" | "uploading" | "done" | "duplicate" | "error";
+type FileStatus = "pending" | "uploading" | "done" | "duplicate" | "error" | "invalid";
 
 type Row = {
   key: string;
@@ -84,6 +84,13 @@ function parsePath(relativePath: string) {
   const courseFolder = courseParts.length > 0 ? courseParts[courseParts.length - 1] : nameStem;
 
   return { semesterRoman, courseFolder, year: year ?? "" };
+}
+
+// Real PDFs always start with "%PDF-". Catches the broken-download case
+// where a redirect/loader HTML page got saved with a .pdf extension.
+async function looksLikeRealPdf(file: File): Promise<boolean> {
+  const head = await file.slice(0, 5).text();
+  return head === "%PDF-";
 }
 
 async function sha256Hex(data: ArrayBuffer) {
@@ -165,6 +172,13 @@ export function FolderUploadClient({
           status: "pending",
         });
       }
+      // Fire off magic-byte checks in the background; each row flips to
+      // "invalid" if it fails instead of blocking the rest of the batch.
+      for (const row of additions) {
+        looksLikeRealPdf(row.file).then((ok) => {
+          if (!ok) updateRow(row.key, { status: "invalid", message: "Not a real PDF (broken download?)" });
+        });
+      }
       return [...prev, ...additions];
     });
   }
@@ -228,7 +242,7 @@ export function FolderUploadClient({
     const seenThisRun = new Set<string>();
 
     for (const row of rows) {
-      if (row.status === "done" || row.status === "duplicate") continue;
+      if (row.status === "done" || row.status === "duplicate" || row.status === "invalid") continue;
       if (!row.year.trim()) {
         updateRow(row.key, { status: "error", message: "Year is required" });
         continue;
@@ -512,6 +526,7 @@ export function FolderUploadClient({
                   {r.status === "uploading" && <span className="text-accent">Uploading...</span>}
                   {r.status === "done" && <span className="text-green-600">Uploaded</span>}
                   {r.status === "duplicate" && <span className="text-muted">{r.message}</span>}
+                  {r.status === "invalid" && <span className="text-amber-600">{r.message}</span>}
                   {r.status === "error" && <span className="text-red-500">{r.message}</span>}
                 </td>
               </tr>
