@@ -1,5 +1,6 @@
 "use server";
 
+import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
@@ -32,6 +33,165 @@ async function uniqueSlug(base: string, exists: (slug: string) => Promise<boolea
     candidate = `${root}-${i}`;
   }
   return candidate;
+}
+
+// ---------- OCR metadata import ----------
+
+const corePyqCourses = {
+  Biochemistry: "B.Sc. (Hons.) Biochemistry",
+  Botany: "B.Sc. (Hons.) Botany",
+  Chemistry: "B.Sc. (Hons.) Chemistry",
+  Mathematics: "B.Sc. (Hons.) Mathematics",
+  Physics: "B.Sc. (Hons.) Physics",
+  Zoology: "B.Sc. (Hons.) Zoology",
+} as const;
+
+const corePyqSemesters = {
+  Semester_I: 1,
+  Semester_II: 2,
+  Semester_III: 3,
+  Semester_IV: 4,
+  Semester_V: 5,
+  Semester_VI: 6,
+} as const;
+
+type CorePyqCourse = keyof typeof corePyqCourses;
+type CorePyqSemester = keyof typeof corePyqSemesters;
+
+type CorePyqMetadataRecord = {
+  sourceJsonName: string;
+  course: CorePyqCourse;
+  semester: CorePyqSemester;
+  academicYear: string;
+  year: number;
+  originalFilename?: string;
+  extractionMethod?: string;
+  ocrText: string;
+  pageCount: number;
+  ocrTextHash?: string;
+};
+
+function corePyqHash(value: string) {
+  return createHash("sha256").update(value).digest("hex");
+}
+
+function isCorePyqCourse(value: unknown): value is CorePyqCourse {
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(corePyqCourses, value);
+}
+
+function isCorePyqSemester(value: unknown): value is CorePyqSemester {
+  return typeof value === "string" && Object.prototype.hasOwnProperty.call(corePyqSemesters, value);
+}
+
+/**
+ * Attach OCR JSON to the PDF resources that are already in production.
+ * This is deliberately admin-only and accepts one subject manifest at a time
+ * so large OCR bodies never have to travel through a public endpoint.
+ */
+export async function importCorePyqMetadataAction(
+  _previousState: { ok: boolean; message: string } | undefined,
+  formData: FormData,
+) {
+  await requireAdmin();
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) return { ok: false, message: "Choose a JSON manifest first." };
+  if (file.size > 25 * 1024 * 1024) return { ok: false, message: "Manifest is larger than 25 MB." };
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(await file.text());
+  } catch {
+    return { ok: false, message: "The selected file is not valid JSON." };
+  }
+  if (!Array.isArray(parsed) || parsed.length === 0) {
+    return { ok: false, message: "Manifest must be a non-empty JSON array." };
+  }
+
+  let imported = 0;
+  const missing: string[] = [];
+  const errors: string[] = [];
+
+  for (const raw of parsed) {
+    const record = raw as Partial<CorePyqMetadataRecord>;
+    const label = String(record.sourceJsonName ?? "unknown source");
+    const pageCount = Number(record.pageCount);
+    if (
+      typeof record.sourceJsonName !== "string" ||
+      !isCorePyqCourse(record.course) ||
+      !isCorePyqSemester(record.semester) ||
+      typeof record.academicYear !== "string" ||
+      !/^\d{4}-\d{2}$/.test(record.academicYear) ||
+      typeof record.year !== "number" ||
+      typeof record.ocrText !== "string" ||
+      record.ocrText.length === 0 ||
+      !Number.isInteger(pageCount) ||
+      pageCount <= 0
+    ) {
+      errors.push(`${label}: invalid metadata record`);
+      continue;
+    }
+
+    try {
+      const semesterOrder = corePyqSemesters[record.semester];
+      const programName = corePyqCourses[record.course];
+      const program = await prisma.program.upsert({
+        where: { slug: `bsc-hons-${record.course.toLowerCase()}` },
+        create: { name: programName, slug: `bsc-hons-${record.course.toLowerCase()}`, level: "COLLEGE" },
+        update: { name: programName },
+      });
+      const term = await prisma.term.upsert({
+        where: { programId_order: { programId: program.id, order: semesterOrder } },
+        create: { programId: program.id, order: semesterOrder, name: `Semester ${semesterOrder}` },
+        update: { name: `Semester ${semesterOrder}` },
+      });
+      const subject = await prisma.subject.upsert({
+        where: { termId_slug: { termId: term.id, slug: record.course.toLowerCase() } },
+        create: {
+          termId: term.id,
+          name: record.course,
+          slug: record.course.toLowerCase(),
+          description: `Combined ${record.course} previous-year question papers for ${programName}, Semester ${semesterOrder}.`,
+        },
+        update: { name: record.course },
+      });
+
+      let resource = await prisma.resource.findUnique({ where: { sourceJsonName: record.sourceJsonName } });
+      if (!resource) {
+        resource = await prisma.resource.findFirst({
+          where: { subjectId: subject.id, type: "PYQ", year: record.year },
+          orderBy: { createdAt: "desc" },
+        });
+      }
+      if (!resource) {
+        missing.push(label);
+        continue;
+      }
+
+      await prisma.resource.update({
+        where: { id: resource.id },
+        data: {
+          subjectId: subject.id,
+          type: "PYQ",
+          year: record.year,
+          academicYear: record.academicYear,
+          ocrText: record.ocrText,
+          ocrTextHash: record.ocrTextHash || corePyqHash(record.ocrText),
+          sourceJsonName: record.sourceJsonName,
+          pageCount,
+        },
+      });
+      imported += 1;
+      revalidatePath(`/subjects/${subject.id}`);
+    } catch (error) {
+      errors.push(`${label}: ${error instanceof Error ? error.message : "database update failed"}`);
+    }
+  }
+
+  const parts = [`Imported ${imported} of ${parsed.length} papers.`];
+  if (missing.length) parts.push(`Missing PDF resources: ${missing.join(", ")}.`);
+  if (errors.length) parts.push(`Errors: ${errors.join(" | ")}`);
+  return { ok: missing.length === 0 && errors.length === 0, message: parts.join(" ") };
 }
 
 // ---------- Auth ----------

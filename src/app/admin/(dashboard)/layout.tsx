@@ -4,6 +4,7 @@ import {
   ClockCounterClockwise,
   FileArchive,
   FileArrowUp,
+  FileText,
   FolderOpen,
   Gear,
   GraduationCap,
@@ -91,6 +92,13 @@ export default async function AdminDashboardLayout({
           >
             <GridFour size={16} />
             PYQ coverage
+          </Link>
+          <Link
+            href="/admin/import-pyq-metadata"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <FileText size={16} />
+            OCR metadata
           </Link>
           <Link
             href="/admin/unsorted"

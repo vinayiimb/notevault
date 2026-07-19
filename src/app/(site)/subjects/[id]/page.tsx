@@ -6,6 +6,8 @@ import {
   Fire,
   Exam,
   NotePencil,
+  BookOpenText,
+  CaretDown,
 } from "@phosphor-icons/react/dist/ssr";
 import { getSubjectById } from "@/lib/data";
 import { formatBytes, levelLabel } from "@/lib/utils";
@@ -152,6 +154,17 @@ function ResourceList({
   );
 }
 
+type PyqResource = {
+  id: string;
+  title: string;
+  year: number | null;
+  academicYear: string | null;
+  fileUrl: string;
+  fileSize: number;
+  pageCount: number | null;
+  ocrText: string | null;
+};
+
 // PYQs are grouped by year (newest first) so "which year is this from" is
 // answered by the section heading, not buried in each row's fine print —
 // papers with no year on file (an unset default during bulk upload) get
@@ -159,38 +172,90 @@ function ResourceList({
 function PyqsByYear({
   resources,
 }: {
-  resources: { id: string; title: string; year: number | null; fileUrl: string; fileSize: number }[];
+  resources: PyqResource[];
 }) {
   if (resources.length === 0) {
     return <p className="mt-3 text-sm text-muted">No PYQs uploaded yet.</p>;
   }
 
-  const groups = new Map<number | null, typeof resources>();
+  const groups = new Map<string, typeof resources>();
   for (const r of resources) {
-    const key = r.year;
+    const key = r.academicYear ?? (r.year ? String(r.year) : "Year not set");
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(r);
   }
   const sortedYears = Array.from(groups.keys()).sort((a, b) => {
-    if (a === null) return 1;
-    if (b === null) return -1;
-    return b - a;
+    if (a === "Year not set") return 1;
+    if (b === "Year not set") return -1;
+    return Number(b.slice(0, 4)) - Number(a.slice(0, 4));
   });
 
   return (
     <div className="mt-4 flex flex-col gap-6">
       {sortedYears.map((year) => (
-        <div key={year ?? "unset"}>
+        <div key={year}>
           <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
-            {year ?? "Year not set"}
+            {year}
             <span className="rounded-full bg-surface-muted px-2 py-0.5 font-normal normal-case text-muted">
               {groups.get(year)!.length} paper{groups.get(year)!.length === 1 ? "" : "s"}
             </span>
           </p>
-          <ResourceList resources={groups.get(year)!} emptyLabel="" />
+          <PyqResourceList resources={groups.get(year)!} />
         </div>
       ))}
     </div>
+  );
+}
+
+function PyqResourceList({ resources }: { resources: PyqResource[] }) {
+  return (
+    <ul className="flex flex-col gap-3">
+      {resources.map((resource) => (
+        <li
+          key={resource.id}
+          className="overflow-hidden rounded-2xl border border-border bg-surface transition-colors hover:border-accent/40"
+        >
+          <div className="flex items-center justify-between gap-4 p-4 sm:p-5">
+            <div className="min-w-0">
+              <p className="font-medium text-foreground">{resource.title}</p>
+              <p className="mt-1 text-xs text-muted">
+                {resource.pageCount ? `${resource.pageCount} pages · ` : ""}
+                {formatBytes(resource.fileSize)}
+                {resource.ocrText ? " · Full text available" : ""}
+              </p>
+            </div>
+            <a
+              href={`/api/download/${resource.id}`}
+              download
+              className="flex shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            >
+              <DownloadSimple size={16} weight="bold" />
+              <span className="hidden sm:inline">Download PDF</span>
+              <span className="sm:hidden">PDF</span>
+            </a>
+          </div>
+
+          {resource.ocrText && (
+            <details className="group border-t border-border">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-accent transition hover:bg-accent-soft/50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent sm:px-5">
+                <span className="flex items-center gap-2">
+                  <BookOpenText size={18} weight="bold" />
+                  Read complete question paper
+                </span>
+                <CaretDown
+                  size={16}
+                  weight="bold"
+                  className="transition-transform duration-200 group-open:rotate-180"
+                />
+              </summary>
+              <article className="max-h-[70vh] overflow-y-auto border-t border-border bg-background px-5 py-6 text-[0.95rem] leading-7 text-foreground sm:px-8">
+                <p className="whitespace-pre-wrap font-sans text-pretty">{resource.ocrText}</p>
+              </article>
+            </details>
+          )}
+        </li>
+      ))}
+    </ul>
   );
 }
 

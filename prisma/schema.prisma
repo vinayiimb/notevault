@@ -28,12 +28,12 @@ enum ResourceType {
 
 // e.g. "CBSE Class 12", "B.Com (Hons)", "BBA"
 model Program {
-  id        String   @id @default(cuid())
+  id        String         @id @default(cuid())
   level     EducationLevel
   name      String
-  slug      String   @unique
+  slug      String         @unique
   summary   String?
-  createdAt DateTime @default(now())
+  createdAt DateTime       @default(now())
 
   terms Term[]
 }
@@ -90,27 +90,32 @@ model SubjectAnalysis {
   subjectId           String   @unique
   subject             Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   compiledNotes       String
-  mostRepeatedJson     String // JSON-encoded array
-  predictedPaperJson   String // JSON-encoded array
+  mostRepeatedJson    String // JSON-encoded array
+  predictedPaperJson  String // JSON-encoded array
   sourceResourceCount Int
   generatedAt         DateTime @default(now())
 }
 
 model Resource {
-  id         String       @id @default(cuid())
-  subjectId  String
-  subject    Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  type       ResourceType
-  title      String
-  year       Int?
-  fileUrl    String
-  fileName   String
-  fileSize   Int
-  fileHash   String? // SHA-256 of the file bytes, used to reject duplicate uploads
-  downloads  Int          @default(0)
-  createdAt  DateTime     @default(now())
-  batchId    String?
-  batch      UploadBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  id             String       @id @default(cuid())
+  subjectId      String
+  subject        Subject      @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  type           ResourceType
+  title          String
+  year           Int?
+  academicYear   String?
+  fileUrl        String
+  fileName       String
+  fileSize       Int
+  fileHash       String? // SHA-256 of the file bytes, used to reject duplicate uploads
+  ocrText        String?      @db.Text
+  ocrTextHash    String?
+  sourceJsonName String?      @unique
+  pageCount      Int?
+  downloads      Int          @default(0)
+  createdAt      DateTime     @default(now())
+  batchId        String?
+  batch          UploadBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
 
   questions Question[]
 
@@ -148,18 +153,18 @@ model FailedUpload {
 // Individual PYQ question, optionally linked back to the paper it appeared in.
 // isRepeated + repeatCount + years power the "most repeated questions" feature.
 model Question {
-  id             String    @id @default(cuid())
-  subjectId      String
-  subject        Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  resourceId     String?
-  resource       Resource? @relation(fields: [resourceId], references: [id], onDelete: SetNull)
-  questionText   String
-  answerText     String
-  marks          Int?
-  isRepeated     Boolean   @default(false)
-  repeatCount    Int       @default(1)
-  years          String? // comma-separated list of years this question appeared, e.g. "2021,2022,2024"
-  createdAt      DateTime  @default(now())
+  id           String    @id @default(cuid())
+  subjectId    String
+  subject      Subject   @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  resourceId   String?
+  resource     Resource? @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  questionText String
+  answerText   String
+  marks        Int?
+  isRepeated   Boolean   @default(false)
+  repeatCount  Int       @default(1)
+  years        String? // comma-separated list of years this question appeared, e.g. "2021,2022,2024"
+  createdAt    DateTime  @default(now())
 }
 
 // Singleton row (id is always "singleton") for the small set of homepage
