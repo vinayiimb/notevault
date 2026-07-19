@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Sparkle, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import { updateSubjectNotesAction, uploadResourceAction } from "@/lib/actions";
 import { generateSubjectAnalysisAction } from "@/lib/subject-analysis-actions";
+import { GamifiedLoader } from "@/components/ui/gamified-loader";
 
 const THEMES = [
   { value: "sky", label: "Sky", dot: "bg-sky-dark" },
@@ -184,6 +185,7 @@ export function NotesEditor({
       </div>
 
       {genError && <p className="text-xs text-red-500">{genError}</p>}
+      {generating && <GamifiedLoader size="sm" />}
 
       <textarea
         value={content}
