@@ -3,7 +3,7 @@ import { ArrowLeft, DownloadSimple, FileText } from "@phosphor-icons/react/dist/
 import { notFound } from "next/navigation";
 import { getPyqResourceById } from "@/lib/data";
 import { formatBytes } from "@/lib/utils";
-import { OcrPaperRenderer } from "@/components/subjects/ocr-paper-renderer";
+import { OcrContents, OcrPaperRenderer } from "@/components/subjects/ocr-paper-renderer";
 
 export default async function PyqPaperPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -12,12 +12,13 @@ export default async function PyqPaperPage({ params }: { params: Promise<{ id: s
 
   const subject = paper.subject;
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 sm:py-14">
+    <div className="min-h-screen bg-sky-soft/35 px-4 py-10 sm:px-6 sm:py-14">
+      <div className="mx-auto max-w-6xl">
       <Link href="/pyq-notes" className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground">
         <ArrowLeft size={16} weight="bold" /> Back to complete archive
       </Link>
 
-      <header className="mt-8 border-b border-border pb-8">
+      <header className="mt-8 border-b border-sky/25 pb-8">
         <p className="text-sm text-muted">
           {subject.term.program.name} · {subject.term.name} · {subject.name}
         </p>
@@ -37,13 +38,15 @@ export default async function PyqPaperPage({ params }: { params: Promise<{ id: s
         </a>
       </header>
 
-      <article className="mt-8 rounded-3xl border border-[#e7e0d1] bg-[#fffdf7] px-5 py-7 shadow-[0_20px_60px_rgba(70,53,25,.08)] dark:border-border dark:bg-surface sm:px-10 sm:py-10">
-        <div className="mb-8 flex items-center justify-between border-b border-[#e7e0d1] pb-5 text-xs font-semibold uppercase tracking-[0.16em] text-muted dark:border-border">
+      <article className="mt-8 rounded-3xl border border-sky/25 bg-sky-soft/45 px-5 py-7 shadow-[0_20px_60px_rgba(66,195,243,.10)] dark:border-border dark:bg-surface sm:px-10 sm:py-10">
+        <div className="mb-8 flex items-center justify-between border-b border-sky/25 pb-5 text-xs font-semibold uppercase tracking-[0.16em] text-muted">
           Original extracted question paper
-          <span className="hidden text-accent sm:inline">Full text · preserved</span>
+          <span className="hidden text-sky-dark sm:inline">Full text · preserved</span>
         </div>
+        <OcrContents text={paper.ocrText} />
         <OcrPaperRenderer text={paper.ocrText} />
       </article>
+      </div>
     </div>
   );
 }

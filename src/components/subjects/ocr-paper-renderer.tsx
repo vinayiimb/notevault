@@ -1,4 +1,4 @@
-type OcrBlock =
+export type OcrBlock =
   | { kind: "meta"; lines: string[] }
   | { kind: "question"; marker: string; text: string }
   | { kind: "subquestion"; marker: string; text: string }
@@ -10,7 +10,7 @@ const QUESTION_MARKER = /^(\d{1,2})\.\s*(.*)$/;
 const SUBQUESTION_MARKER = /^(\([a-z]\)|\([ivx]+\))\s*(.*)$/i;
 const PAGE_MARKER = /^p\.?\s*t\.?\s*o\.?$/i;
 
-function classifyOcr(text: string): OcrBlock[] {
+export function classifyOcr(text: string): OcrBlock[] {
   const lines = text.replace(/\r\n?/g, "\n").split("\n");
   const blocks: OcrBlock[] = [];
   const body: string[] = [];
@@ -30,7 +30,7 @@ function classifyOcr(text: string): OcrBlock[] {
       if (body.length > 0) flushBody();
       continue;
     }
-    if (PAGE_MARKER.test(trimmed)) {
+    if (PAGE_MARKER.test(trimmed) || /^\d{3,5}\s+\d{1,2}$/.test(trimmed)) {
       flushBody();
       flushMeta();
       blocks.push({ kind: "page", text: trimmed });
@@ -81,15 +81,15 @@ function OcrLines({ lines }: { lines: string[] }) {
 export function OcrPaperRenderer({ text }: { text: string }) {
   const blocks = classifyOcr(text);
   return (
-    <div className="ocr-document space-y-7">
+    <div className="ocr-document space-y-8">
       {blocks.map((block, index) => {
         if (block.kind === "meta") {
           return (
-            <section key={`meta-${index}`} className="rounded-2xl border border-accent/15 bg-accent-soft/30 p-5 sm:p-6">
-              <p className="mb-4 text-xs font-semibold uppercase tracking-[0.18em] text-accent">Paper details</p>
+            <section key={`meta-${index}`} className="rounded-2xl border border-sky/30 bg-white/70 p-5 shadow-[0_8px_24px_rgba(66,195,243,.08)] dark:bg-surface/70 sm:p-6">
+              <p className="mb-4 font-display text-xl font-bold text-sky-dark">Paper details</p>
               <div className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
                 {block.lines.map((line, lineIndex) => (
-                  <p key={`${lineIndex}-${line.slice(0, 14)}`} className="border-b border-accent/10 pb-2 text-sm leading-6 text-foreground/80">
+                  <p key={`${lineIndex}-${line.slice(0, 14)}`} className="border-b border-sky/15 pb-2 text-sm leading-6 text-foreground/80">
                     {line}
                   </p>
                 ))}
@@ -99,19 +99,19 @@ export function OcrPaperRenderer({ text }: { text: string }) {
         }
         if (block.kind === "question") {
           return (
-            <section key={`question-${index}`} className="scroll-mt-28 border-l-4 border-accent pl-5 sm:pl-7">
-              <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                <span className="mr-3 text-accent">{block.marker}</span>
-                <span className="text-foreground/50">Question</span>
+            <section id={`ocr-question-${index}`} key={`question-${index}`} className="scroll-mt-28 border-l-4 border-sky pl-5 sm:pl-7">
+              <h2 className="font-display text-3xl font-bold tracking-tight text-sky-dark sm:text-4xl">
+                <span className="mr-3">{block.marker}</span>
+                <span>Question</span>
               </h2>
-              {block.text && <p className="mt-3 max-w-[78ch] text-[1.04rem] font-medium leading-8 text-foreground">{block.text}</p>}
+              {block.text && <p className="mt-3 max-w-[78ch] text-[1.08rem] font-medium leading-8 text-foreground">{block.text}</p>}
             </section>
           );
         }
         if (block.kind === "subquestion") {
           return (
-            <section key={`subquestion-${index}`} className="scroll-mt-28 border-l-2 border-accent/40 pl-5 sm:ml-3 sm:pl-6">
-              <h3 className="font-display text-xl font-semibold leading-8 text-foreground sm:text-[1.35rem]">
+            <section id={`ocr-subquestion-${index}`} key={`subquestion-${index}`} className="scroll-mt-28 border-l-2 border-sky/35 pl-5 sm:ml-3 sm:pl-6">
+              <h3 className="font-display text-xl font-bold leading-8 text-foreground sm:text-[1.35rem]">
                 <span className="mr-2 text-accent">{block.marker}</span>
                 {block.text}
               </h3>
@@ -120,15 +120,46 @@ export function OcrPaperRenderer({ text }: { text: string }) {
         }
         if (block.kind === "page") {
           return (
-            <div key={`page-${index}`} className="flex items-center gap-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-muted">
-              <span className="h-px flex-1 bg-border" />
+            <div key={`page-${index}`} className="flex items-center gap-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-sky-dark">
+              <span className="h-px flex-1 bg-sky/25" />
               <span>{block.text}</span>
-              <span className="h-px flex-1 bg-border" />
+              <span className="h-px flex-1 bg-sky/25" />
             </div>
           );
         }
         return <OcrLines key={`body-${index}`} lines={block.lines} />;
       })}
     </div>
+  );
+}
+
+export function OcrContents({ text }: { text: string }) {
+  const allBlocks = classifyOcr(text);
+  const blocks = allBlocks.filter((block) => block.kind === "question" || block.kind === "subquestion");
+  if (blocks.length === 0) return null;
+
+  return (
+    <nav className="mb-10 border-y border-sky/25 py-7" aria-label="Paper contents">
+      <h2 className="font-display text-3xl font-bold text-sky-dark">Contents</h2>
+      <div className="mt-4 grid gap-x-8 gap-y-2 sm:grid-cols-2">
+        {blocks.map((block, index) => {
+          const isQuestion = block.kind === "question";
+          const anchor = isQuestion ? `ocr-question-${allBlocks.indexOf(block)}` : `ocr-subquestion-${allBlocks.indexOf(block)}`;
+          const label = isQuestion
+            ? `${block.marker} Question`
+            : `${block.marker} ${block.text.slice(0, 72)}${block.text.length > 72 ? "…" : ""}`;
+          return (
+            <a
+              key={`${anchor}-${index}`}
+              href={`#${anchor}`}
+              className={`group flex items-start gap-3 rounded-lg px-2 py-1.5 text-foreground transition hover:bg-sky-soft hover:text-sky-dark ${isQuestion ? "font-semibold" : "pl-5 text-sm"}`}
+            >
+              <span className="mt-2 size-2 shrink-0 rounded-full bg-sky transition group-hover:scale-125" />
+              <span>{label}</span>
+            </a>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
