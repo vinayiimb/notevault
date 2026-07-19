@@ -30,9 +30,14 @@ export default async function AdminConsolidatedUploadPage() {
   });
   const existingHashes = hashRows.map((r) => r.fileHash as string);
 
-  const memoryRows = await prisma.courseMatchMemory.findMany({
-    select: { key: true, programId: true },
-  });
+  // Course matching memory improves future guesses, but it must never make
+  // the upload tool unavailable. Older deployments may briefly serve this
+  // code before the CourseMatchMemory migration has reached their database.
+  const memoryRows = await prisma.courseMatchMemory
+    .findMany({
+      select: { key: true, programId: true },
+    })
+    .catch(() => []);
   const courseMemory = Object.fromEntries(memoryRows.map((r) => [r.key, r.programId]));
 
   return (

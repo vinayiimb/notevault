@@ -194,6 +194,116 @@ export async function importCorePyqMetadataAction(
   return { ok: missing.length === 0 && errors.length === 0, message: parts.join(" ") };
 }
 
+// This formatter is deliberately self-contained. It does not call an external
+// model, rewrite the source text, or depend on an API quota. Every non-empty
+// OCR line is retained in order; only headings, spacing, and page dividers are
+// added around it.
+const OCR_LOCAL_MARKER = "<!-- OCR_REFORMATTED_V2 -->";
+const LEGACY_OCR_MARKER = "<!-- AI_REFORMATTED_OCR_V1 -->";
+
+function formatOcrLocally(source: string) {
+  const cleanSource = source
+    .replace(new RegExp(`^\\s*(?:${OCR_LOCAL_MARKER}|${LEGACY_OCR_MARKER})\\s*`, "i"), "")
+    .replace(/\r\n?/g, "\n");
+  const lines = cleanSource.split("\n");
+  const metadata: string[] = [];
+  const document: string[] = [];
+  const body: string[] = [];
+  let inQuestions = false;
+  let sawQuestion = false;
+
+  const flushBody = () => {
+    const text = body.map((line) => line.trim()).filter(Boolean).join(" ");
+    if (text) document.push(text);
+    body.length = 0;
+  };
+  const startQuestions = () => {
+    if (inQuestions) return;
+    flushBody();
+    inQuestions = true;
+    document.push("## Questions");
+  };
+
+  for (const rawLine of lines) {
+    const line = rawLine.trim();
+    if (!line) continue;
+
+    const markdownQuestion = line.match(/^#{2,4}\s*(?:Question\s*)?(\d{1,2})\s*(?:[.:)\\-]\s*)?(.*)$/i);
+    const question = line.match(/^(?:Question\s*)?(\d{1,2})\s*(?:[.:)\\-]\s*)?(.*)$/i);
+    const markdownSubquestion = line.match(/^#{3,5}\s*((?:\([a-z]\)|\([ivx]+\)|[A-Z]\.))\s*(.*)$/i);
+    const subquestion = line.match(/^((?:\([a-z]\)|\([ivx]+\)|[A-Z]\.))\s*(.*)$/i);
+    const page = line.replace(/[0O]/g, "0").match(/^p\.?\s*t\.?\s*o\.?$/i);
+
+    if (page) {
+      flushBody();
+      document.push("---", "*P.T.O.*", "---");
+      continue;
+    }
+    if (markdownQuestion || (question && Number(question[1]) <= 20 && (inQuestions || question[2].trim()))) {
+      startQuestions();
+      flushBody();
+      const match = markdownQuestion ?? question!;
+      const suffix = match[2].trim();
+      document.push(`## Question ${match[1]}${suffix ? ` — ${suffix}` : ""}`);
+      sawQuestion = true;
+      continue;
+    }
+    if (markdownSubquestion || subquestion) {
+      startQuestions();
+      if (!sawQuestion) {
+        document.push("## Question 1");
+        sawQuestion = true;
+      }
+      flushBody();
+      const match = markdownSubquestion ?? subquestion!;
+      document.push(`### ${match[1]}${match[2].trim() ? ` ${match[2].trim()}` : ""}`);
+      continue;
+    }
+
+    if (!inQuestions) metadata.push(line);
+    else body.push(line);
+  }
+  flushBody();
+
+  const output: string[] = [];
+  if (metadata.length) {
+    output.push("## Paper details", ...metadata.map((line) => `- ${line}`));
+  }
+  output.push(...document);
+  return `${OCR_LOCAL_MARKER}\n\n${output.join("\n\n")}`;
+}
+
+/**
+ * Reformats exactly one paper per request. Keeping a paper atomic means a
+ * partial model response can never replace its original OCR text.
+ */
+export async function reformatNextOcrPaperAction() {
+  await requireAdmin();
+  const resource = await prisma.resource.findFirst({
+    where: {
+      type: "PYQ",
+      ocrText: { not: null },
+      NOT: { ocrText: { startsWith: OCR_LOCAL_MARKER } },
+    },
+    orderBy: [{ academicYear: "asc" }, { year: "asc" }, { createdAt: "asc" }],
+    select: { id: true, title: true, subjectId: true, ocrText: true },
+  });
+
+  if (!resource || !resource.ocrText) {
+    return { ok: true, done: true, message: "All OCR papers are already reformatted." };
+  }
+
+  await prisma.resource.update({
+    where: { id: resource.id },
+    data: { ocrText: formatOcrLocally(resource.ocrText) },
+  });
+  return {
+    ok: true,
+    done: false,
+    message: `Reformatted ${resource.title} with lossless local structure.`,
+  };
+}
+
 // ---------- Auth ----------
 
 export async function loginAction(_prevState: unknown, formData: FormData) {

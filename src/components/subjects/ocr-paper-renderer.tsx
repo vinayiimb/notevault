@@ -1,3 +1,8 @@
+import { NotesRenderer } from "./notes-renderer";
+
+export const AI_OCR_MARKER = "<!-- OCR_REFORMATTED_V2 -->";
+const LEGACY_AI_OCR_MARKER = "<!-- AI_REFORMATTED_OCR_V1 -->";
+
 export type OcrBlock =
   | { kind: "meta"; lines: string[] }
   | { kind: "question"; marker: string; text: string }
@@ -9,6 +14,8 @@ const META_LABEL = /^(?:sr\.?\s*no|serial|unique paper code|name of (?:the )?(?:
 const QUESTION_MARKER = /^(\d{1,2})\.\s*(.*)$/;
 const SUBQUESTION_MARKER = /^(\([a-z]\)|\([ivx]+\))\s*(.*)$/i;
 const PAGE_MARKER = /^p\.?\s*t\.?\s*o\.?$/i;
+const MARKDOWN_QUESTION_MARKER = /^#{2,3}\s+Question\s+(\d{1,2})\s*[:.-]?\s*(.*)$/i;
+const MARKDOWN_SUBQUESTION_MARKER = /^#{3,4}\s+(\([a-z]\)|\([ivx]+\))\s*(.*)$/i;
 
 export function classifyOcr(text: string): OcrBlock[] {
   const lines = text.replace(/\r\n?/g, "\n").split("\n");
@@ -34,6 +41,20 @@ export function classifyOcr(text: string): OcrBlock[] {
       flushBody();
       flushMeta();
       blocks.push({ kind: "page", text: trimmed });
+      continue;
+    }
+    const markdownQuestion = trimmed.match(MARKDOWN_QUESTION_MARKER);
+    if (markdownQuestion) {
+      flushBody();
+      flushMeta();
+      inHeader = false;
+      blocks.push({ kind: "question", marker: `${markdownQuestion[1]}.`, text: markdownQuestion[2] });
+      continue;
+    }
+    const markdownSubquestion = trimmed.match(MARKDOWN_SUBQUESTION_MARKER);
+    if (markdownSubquestion) {
+      flushBody();
+      blocks.push({ kind: "subquestion", marker: markdownSubquestion[1], text: markdownSubquestion[2] });
       continue;
     }
     if (inHeader && META_LABEL.test(trimmed)) {
@@ -131,6 +152,16 @@ export function OcrPaperRenderer({ text }: { text: string }) {
       })}
     </div>
   );
+}
+
+export function isAiReformattedOcr(text: string) {
+  const value = text.trimStart();
+  return value.startsWith(AI_OCR_MARKER) || value.startsWith(LEGACY_AI_OCR_MARKER);
+}
+
+export function FormattedOcrPaperRenderer({ text }: { text: string }) {
+  const markdown = text.replace(new RegExp(`^\\s*(?:${AI_OCR_MARKER}|${LEGACY_AI_OCR_MARKER})\\s*`), "");
+  return <NotesRenderer content={markdown} theme="sky" />;
 }
 
 export function OcrContents({ text }: { text: string }) {

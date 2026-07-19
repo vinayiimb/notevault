@@ -3,7 +3,12 @@ import { ArrowLeft, DownloadSimple, FileText } from "@phosphor-icons/react/dist/
 import { notFound } from "next/navigation";
 import { getPyqResourceById } from "@/lib/data";
 import { formatBytes } from "@/lib/utils";
-import { OcrContents, OcrPaperRenderer } from "@/components/subjects/ocr-paper-renderer";
+import {
+  FormattedOcrPaperRenderer,
+  isAiReformattedOcr,
+  OcrContents,
+  OcrPaperRenderer,
+} from "@/components/subjects/ocr-paper-renderer";
 
 export default async function PyqPaperPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -44,7 +49,11 @@ export default async function PyqPaperPage({ params }: { params: Promise<{ id: s
           <span className="hidden text-sky-dark sm:inline">Full text · preserved</span>
         </div>
         <OcrContents text={paper.ocrText} />
-        <OcrPaperRenderer text={paper.ocrText} />
+        {isAiReformattedOcr(paper.ocrText) ? (
+          <FormattedOcrPaperRenderer text={paper.ocrText} />
+        ) : (
+          <OcrPaperRenderer text={paper.ocrText} />
+        )}
       </article>
       </div>
     </div>

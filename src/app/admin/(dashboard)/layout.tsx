@@ -101,6 +101,13 @@ export default async function AdminDashboardLayout({
             OCR metadata
           </Link>
           <Link
+            href="/admin/ocr-reformat"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <FileText size={16} />
+            AI OCR reformat
+          </Link>
+          <Link
             href="/admin/unsorted"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
           >

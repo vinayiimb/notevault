@@ -13,7 +13,12 @@ import { getSubjectById } from "@/lib/data";
 import { formatBytes, levelLabel } from "@/lib/utils";
 import { PaperAnalysisPanel } from "@/components/subjects/paper-analysis-panel";
 import { NotesSection } from "@/components/subjects/notes-section";
-import { OcrContents, OcrPaperRenderer } from "@/components/subjects/ocr-paper-renderer";
+import {
+  FormattedOcrPaperRenderer,
+  isAiReformattedOcr,
+  OcrContents,
+  OcrPaperRenderer,
+} from "@/components/subjects/ocr-paper-renderer";
 
 export default async function SubjectPage({
   params,
@@ -252,7 +257,11 @@ function PyqResourceList({ resources }: { resources: PyqResource[] }) {
               </summary>
               <article className="max-h-[78vh] overflow-y-auto border-t border-sky/25 bg-sky-soft/45 px-5 py-6 dark:border-border dark:bg-surface sm:px-8">
                 <OcrContents text={resource.ocrText} />
-                <OcrPaperRenderer text={resource.ocrText} />
+                {isAiReformattedOcr(resource.ocrText) ? (
+                  <FormattedOcrPaperRenderer text={resource.ocrText} />
+                ) : (
+                  <OcrPaperRenderer text={resource.ocrText} />
+                )}
               </article>
             </details>
           )}

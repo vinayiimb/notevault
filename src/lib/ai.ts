@@ -27,6 +27,62 @@ function getClient(): Groq | null {
   return new Groq({ apiKey: process.env.GROQ_API_KEY });
 }
 
+/**
+ * Reflows one bounded OCR fragment into exam-ready Markdown. This is kept
+ * separate from the small structured-output helpers above because a paper
+ * fragment may legitimately be several thousand tokens long.
+ */
+export async function reformatOcrChunk(
+  source: string,
+  context: { paperTitle: string; chunkNumber: number; chunkCount: number },
+): Promise<AiResult<string>> {
+  const client = getClient();
+  if (!client) return { ok: false, error: "GROQ_API_KEY is not configured in production." };
+
+  const system = `You are an expert editor preparing Delhi University previous-year question papers for students.
+You receive OCR text from an original paper. Rebuild its presentation as clean Markdown, but preserve the paper itself.
+Never summarize, answer, merge, reorder, or omit content. Preserve every question, sub-question, option, mark value, equation, symbol, instruction, and metadata line.
+Repair only obvious OCR spacing/capitalization errors when the intended text is unambiguous. If a word, formula, or symbol is uncertain, keep the source wording rather than guessing.
+Use this structure when the source supports it: a short metadata block, ## Question N headings, ### (a)/(b)/(c) subheadings, bullet lists for explicitly listed items, blockquotes for instructions, and --- at printed page transitions.
+Return Markdown only: no preface, no commentary, no code fence, and no answers.`;
+  const user = `Paper: ${context.paperTitle}
+Fragment ${context.chunkNumber} of ${context.chunkCount}. The fragment can begin or end in the middle of a question; preserve its exact order and do not invent a missing boundary.
+
+SOURCE OCR FRAGMENT
+-------------------
+${source}
+-------------------
+
+Return the fully preserved, better-structured Markdown for this fragment.`;
+
+  try {
+    const response = await client.chat.completions.create({
+      model: MODEL,
+      max_tokens: 4000,
+      temperature: 0.1,
+      messages: [
+        { role: "system", content: system },
+        { role: "user", content: user },
+      ],
+    });
+    const content = response.choices[0]?.message?.content?.trim();
+    const finishReason = response.choices[0]?.finish_reason;
+    if (!content) return { ok: false, error: "The OCR editor returned an empty fragment." };
+    if (finishReason && finishReason !== "stop") {
+      return { ok: false, error: `The OCR editor stopped early (${finishReason}).` };
+    }
+    if (content.length < Math.max(160, Math.floor(source.length * 0.24))) {
+      return { ok: false, error: "The OCR editor returned too little text; the source was not changed." };
+    }
+    return { ok: true, data: content };
+  } catch (err) {
+    if (err instanceof Groq.RateLimitError) return { ok: false, error: "AI is rate-limited right now." };
+    if (err instanceof Groq.APIConnectionError) return { ok: false, error: "Could not reach the OCR editor." };
+    if (err instanceof Groq.APIError) return { ok: false, error: `OCR editor failed: ${err.message}` };
+    return { ok: false, error: "OCR editor failed unexpectedly." };
+  }
+}
+
 async function callStructured<S extends z.ZodType>(
   schema: S,
   system: string,
