@@ -4,6 +4,7 @@ import {
   ClockCounterClockwise,
   FileArchive,
   FileArrowUp,
+  FolderOpen,
   Gear,
   GraduationCap,
   GridFour,
@@ -69,6 +70,13 @@ export default async function AdminDashboardLayout({
           >
             <Stack size={16} />
             Consolidated upload
+          </Link>
+          <Link
+            href="/admin/folder-upload"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <FolderOpen size={16} />
+            Folder upload
           </Link>
           <Link
             href="/admin/batches"
