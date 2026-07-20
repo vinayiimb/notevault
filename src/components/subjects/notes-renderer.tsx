@@ -1,8 +1,28 @@
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import {
+  Article,
+  Calculator,
+  CheckCircle,
+  Lightbulb,
+  Info,
+  Sigma,
+  Warning,
+} from "@phosphor-icons/react/dist/ssr";
 import { preprocessNotesMarkdown, slugify } from "@/lib/notes-markdown";
 import { MermaidDiagram } from "./mermaid-diagram";
 import { DataChart } from "./data-chart";
+import { detectCallout, CALLOUT_STYLES, type CalloutKind } from "./notes-callout";
+
+const CALLOUT_ICONS: Record<CalloutKind, typeof Article> = {
+  definition: Article,
+  formula: Sigma,
+  working: Calculator,
+  final: CheckCircle,
+  example: Lightbulb,
+  note: Info,
+  warning: Warning,
+};
 
 export const NOTES_THEMES = ["sky", "violet", "emerald", "amber"] as const;
 export type NotesTheme = (typeof NOTES_THEMES)[number];
@@ -90,9 +110,23 @@ export function NotesRenderer({
               {children}
             </h3>
           ),
-          p: ({ children }) => (
-            <p className="mt-3 leading-relaxed text-foreground">{children}</p>
-          ),
+          p: ({ children }) => {
+            const callout = detectCallout(children);
+            if (!callout) {
+              return <p className="mt-3 leading-relaxed text-foreground">{children}</p>;
+            }
+            const style = CALLOUT_STYLES[callout.kind];
+            const Icon = CALLOUT_ICONS[callout.kind];
+            return (
+              <div className={`mt-4 rounded-xl border px-4 py-3 ${style.card}`}>
+                <p className={`flex items-center gap-1.5 text-xs font-bold tracking-wide uppercase ${style.label}`}>
+                  <Icon size={14} weight="bold" />
+                  {callout.label}
+                </p>
+                <p className="mt-1.5 leading-relaxed text-foreground">{callout.rest}</p>
+              </div>
+            );
+          },
           strong: ({ children }) => (
             <strong className="font-semibold text-foreground">{children}</strong>
           ),

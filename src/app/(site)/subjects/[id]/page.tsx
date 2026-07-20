@@ -13,6 +13,8 @@ import { getSubjectById } from "@/lib/data";
 import { formatBytes, levelLabel } from "@/lib/utils";
 import { PaperAnalysisPanel } from "@/components/subjects/paper-analysis-panel";
 import { NotesSection } from "@/components/subjects/notes-section";
+import { ExamWeightage } from "@/components/subjects/exam-weightage";
+import { DownloadAllButton } from "@/components/subjects/download-all-button";
 
 export default async function SubjectPage({
   params,
@@ -47,7 +49,12 @@ export default async function SubjectPage({
           {subject.term.name}
         </Link>
       </p>
-      <h1 className="mt-1 text-3xl font-semibold tracking-tight">{subject.name}</h1>
+      <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+        <h1 className="text-3xl font-semibold tracking-tight">{subject.name}</h1>
+        {(notes.length > 0 || pyqs.length > 0 || subject.notes) && (
+          <DownloadAllButton subjectId={subject.id} />
+        )}
+      </div>
       {subject.description && <p className="mt-2 text-muted">{subject.description}</p>}
 
       {subject.notes && (
@@ -91,6 +98,8 @@ export default async function SubjectPage({
         </div>
         <PyqsByYear resources={pyqs} />
       </section>
+
+      <ExamWeightage questions={subject.questions} />
 
       {repeated.length > 0 && (
         <section className="mt-10">
