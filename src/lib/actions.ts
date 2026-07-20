@@ -4,7 +4,14 @@ import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { saveUploadedFile, hashFile, putBytes, deleteByUrl } from "@/lib/storage";
+import {
+  saveUploadedFile,
+  hashFile,
+  putBytes,
+  deleteByUrl,
+  createDirectUploadTarget,
+  storedObjectSize,
+} from "@/lib/storage";
 import { slugify } from "@/lib/utils";
 import { heroImageExtensionsFor } from "@/lib/hero-image";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
@@ -381,6 +388,17 @@ export async function createSubjectAction(formData: FormData) {
   const description = String(formData.get("description") ?? "").trim() || null;
   if (!name) throw new Error("Subject name is required.");
 
+  // Case, punctuation, and spacing changes should not create a second row
+  // for the same subject. Fuzzy cases remain reviewable in Subject issues.
+  const baseSlug = slugify(name) || "subject";
+  const existing = await prisma.subject.findUnique({
+    where: { termId_slug: { termId, slug: baseSlug } },
+  });
+  if (existing) {
+    revalidatePath(`/admin/programs/${programId}`);
+    return;
+  }
+
   const slug = await uniqueSlug(name, async (s) => {
     const found = await prisma.subject.findUnique({
       where: { termId_slug: { termId, slug: s } },
@@ -390,6 +408,7 @@ export async function createSubjectAction(formData: FormData) {
 
   await prisma.subject.create({ data: { termId, name, description, slug } });
   revalidatePath(`/admin/programs/${programId}`);
+  revalidatePath("/admin/subject-issues");
 }
 
 // Reuses an existing subject if one with this name already exists under the
@@ -411,6 +430,7 @@ export async function findOrCreateSubjectAction(formData: FormData) {
   const created = await prisma.subject.create({ data: { termId, name, slug } });
   const term = await prisma.term.findUnique({ where: { id: termId } });
   if (term) revalidatePath(`/admin/programs/${term.programId}`);
+  revalidatePath("/admin/subject-issues");
   return { id: created.id, name: created.name, termId };
 }
 
@@ -424,6 +444,12 @@ export async function quickCreateSubjectAction(formData: FormData) {
   if (!termId) throw new Error("A semester is required.");
   if (!name) throw new Error("Subject name is required.");
 
+  const baseSlug = slugify(name) || "subject";
+  const existing = await prisma.subject.findUnique({
+    where: { termId_slug: { termId, slug: baseSlug } },
+  });
+  if (existing) return { id: existing.id, name: existing.name, termId: existing.termId };
+
   const slug = await uniqueSlug(name, async (s) => {
     const found = await prisma.subject.findUnique({
       where: { termId_slug: { termId, slug: s } },
@@ -434,6 +460,7 @@ export async function quickCreateSubjectAction(formData: FormData) {
   const subject = await prisma.subject.create({ data: { termId, name, slug } });
   const term = await prisma.term.findUnique({ where: { id: termId } });
   if (term) revalidatePath(`/admin/programs/${term.programId}`);
+  revalidatePath("/admin/subject-issues");
 
   return { id: subject.id, name: subject.name, termId: subject.termId };
 }
@@ -703,7 +730,8 @@ export async function createSubjectsFromCsvAction(
       continue;
     }
 
-    if (term.subjects.some((s) => s.name.trim().toLowerCase() === name.toLowerCase())) {
+    const baseSlug = slugify(name) || "subject";
+    if (term.subjects.some((s) => s.slug === baseSlug || s.name.trim().toLowerCase() === name.toLowerCase())) {
       results.push({ name, status: "duplicate", message: `Already exists in ${program.name} · ${term.name}` });
       continue;
     }
@@ -722,6 +750,7 @@ export async function createSubjectsFromCsvAction(
   }
 
   for (const programId of touchedProgramIds) revalidatePath(`/admin/programs/${programId}`);
+  if (touchedProgramIds.size > 0) revalidatePath("/admin/subject-issues");
 
   return { results };
 }
@@ -764,6 +793,7 @@ export async function deleteSubjectAction(formData: FormData) {
   const programId = String(formData.get("programId"));
   await prisma.subject.delete({ where: { id } });
   revalidatePath(`/admin/programs/${programId}`);
+  revalidatePath("/admin/subject-issues");
 }
 
 // Folds a duplicate subject (created by mistake — same subject filed twice
@@ -808,6 +838,7 @@ export async function mergeSubjectsAction(formData: FormData) {
   ]);
 
   revalidatePath(`/admin/programs/${source.term.programId}`);
+  revalidatePath("/admin/subject-issues");
   revalidatePath(`/admin/subjects/${targetId}`);
   revalidatePath(`/subjects/${targetId}`);
   redirect(`/admin/subjects/${targetId}`);
@@ -822,6 +853,7 @@ export async function uploadResourceAction(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const yearRaw = String(formData.get("year") ?? "").trim();
   const year = yearRaw ? Number(yearRaw) : null;
+  const academicYear = String(formData.get("academicYear") ?? "").trim() || null;
   const file = formData.get("file") as File | null;
   const batchId = String(formData.get("batchId") ?? "").trim() || null;
 
@@ -847,12 +879,122 @@ export async function uploadResourceAction(formData: FormData) {
   }
 
   const resource = await prisma.resource.create({
-    data: { subjectId, type, title, year, fileUrl, fileName, fileSize, fileHash, batchId },
+    data: { subjectId, type, title, year, academicYear, fileUrl, fileName, fileSize, fileHash, batchId },
   });
 
   revalidatePath(`/admin/subjects/${subjectId}`);
   revalidatePath(`/subjects/${subjectId}`);
+  revalidatePath("/admin/resources");
+  revalidatePath("/admin/batches");
 
+  return { status: "created" as const, resourceId: resource.id };
+}
+
+type DirectUploadMetadata = {
+  subjectId: string;
+  type: "NOTES" | "PYQ";
+  title: string;
+  year: number | null;
+  academicYear: string | null;
+  batchId: string | null;
+  fileName: string;
+  fileSize: number;
+  fileHash: string;
+};
+
+function parseDirectUploadMetadata(formData: FormData): DirectUploadMetadata {
+  const type = String(formData.get("type") ?? "PYQ") as "NOTES" | "PYQ";
+  const yearRaw = String(formData.get("year") ?? "").trim();
+  const metadata = {
+    subjectId: String(formData.get("subjectId") ?? "").trim(),
+    type,
+    title: String(formData.get("title") ?? "").trim(),
+    year: yearRaw ? Number(yearRaw) : null,
+    academicYear: String(formData.get("academicYear") ?? "").trim() || null,
+    batchId: String(formData.get("batchId") ?? "").trim() || null,
+    fileName: String(formData.get("fileName") ?? "paper.pdf").trim(),
+    fileSize: Number(formData.get("fileSize") ?? 0),
+    fileHash: String(formData.get("fileHash") ?? "").trim(),
+  };
+  if (!metadata.subjectId) throw new Error("A subject is required.");
+  if (!metadata.title) throw new Error("A title is required.");
+  if (!metadata.fileHash || !/^[a-f0-9]{64}$/i.test(metadata.fileHash)) {
+    throw new Error("The PDF hash is invalid.");
+  }
+  if (!Number.isFinite(metadata.fileSize) || metadata.fileSize <= 0) {
+    throw new Error("The PDF size is invalid.");
+  }
+  if (metadata.year !== null && (!Number.isInteger(metadata.year) || metadata.year < 1900 || metadata.year > 2200)) {
+    throw new Error("The exam year is invalid.");
+  }
+  return metadata;
+}
+
+// First half of the production large-file path. The PDF bytes go directly
+// from the admin's browser to R2, avoiding the platform's request-body limit.
+export async function prepareDirectResourceUploadAction(formData: FormData) {
+  await requireAdmin();
+  const metadata = parseDirectUploadMetadata(formData);
+  const existing = await prisma.resource.findFirst({ where: { fileHash: metadata.fileHash } });
+  if (existing) return { status: "duplicate" as const, resourceId: existing.id };
+
+  const safeName = metadata.fileName.replace(/[^\w.\-]+/g, "_");
+  const subdir = metadata.type === "PYQ" ? "pyqs" : "notes";
+  const key = `uploads/${subdir}/${crypto.randomUUID()}-${safeName}`;
+  const target = await createDirectUploadTarget(key);
+  if (!target) return { status: "fallback" as const };
+  return { status: "ready" as const, key, ...target };
+}
+
+// Second half of the direct path. Re-checks the object and duplicate hash
+// before creating the Resource row, so the file library never points at an
+// upload that did not actually reach storage.
+export async function finalizeDirectResourceUploadAction(formData: FormData) {
+  await requireAdmin();
+  const metadata = parseDirectUploadMetadata(formData);
+  const key = String(formData.get("key") ?? "").trim();
+  const fileUrl = String(formData.get("fileUrl") ?? "").trim();
+  if (!key.startsWith("uploads/pyqs/") && !key.startsWith("uploads/notes/")) {
+    throw new Error("The upload target is invalid.");
+  }
+  const expectedFileUrl = process.env.R2_PUBLIC_URL
+    ? `${process.env.R2_PUBLIC_URL.replace(/\/$/, "")}/${key}`
+    : "";
+  if (!fileUrl || fileUrl !== expectedFileUrl) throw new Error("The uploaded file URL is invalid.");
+
+  const storedSize = await storedObjectSize(key);
+  if (storedSize === null || storedSize <= 0) throw new Error("The PDF did not reach storage.");
+
+  const existing = await prisma.resource.findFirst({ where: { fileHash: metadata.fileHash } });
+  if (existing) {
+    await deleteByUrl(fileUrl);
+    return { status: "duplicate" as const, resourceId: existing.id };
+  }
+  if (metadata.batchId) {
+    await prisma.uploadBatch.upsert({
+      where: { id: metadata.batchId },
+      create: { id: metadata.batchId },
+      update: {},
+    });
+  }
+  const resource = await prisma.resource.create({
+    data: {
+      subjectId: metadata.subjectId,
+      type: metadata.type,
+      title: metadata.title,
+      year: metadata.year,
+      academicYear: metadata.academicYear,
+      fileUrl,
+      fileName: metadata.fileName,
+      fileSize: storedSize,
+      fileHash: metadata.fileHash,
+      batchId: metadata.batchId,
+    },
+  });
+  revalidatePath(`/admin/subjects/${metadata.subjectId}`);
+  revalidatePath(`/subjects/${metadata.subjectId}`);
+  revalidatePath("/admin/resources");
+  revalidatePath("/admin/batches");
   return { status: "created" as const, resourceId: resource.id };
 }
 
@@ -1151,6 +1293,8 @@ export async function deleteResourceAction(formData: FormData) {
   await prisma.resource.delete({ where: { id } });
   revalidatePath(`/admin/subjects/${subjectId}`);
   revalidatePath(`/subjects/${subjectId}`);
+  revalidatePath("/admin/resources");
+  revalidatePath("/admin/batches");
 }
 
 // Fixes a mistake spotted after the fact (wrong year/type/subject/title) —
@@ -1163,17 +1307,19 @@ export async function updateResourceAction(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const yearRaw = String(formData.get("year") ?? "").trim();
   const year = yearRaw ? Number(yearRaw) : null;
+  const academicYear = String(formData.get("academicYear") ?? "").trim() || null;
 
   if (!title) throw new Error("Title is required.");
   if (!subjectId) throw new Error("A subject is required.");
 
   const previous = await prisma.resource.findUnique({ where: { id }, select: { subjectId: true } });
-  await prisma.resource.update({ where: { id }, data: { subjectId, type, title, year } });
+  await prisma.resource.update({ where: { id }, data: { subjectId, type, title, year, academicYear } });
 
   if (previous) revalidatePath(`/admin/subjects/${previous.subjectId}`);
   revalidatePath(`/admin/subjects/${subjectId}`);
   revalidatePath(`/subjects/${subjectId}`);
   revalidatePath("/admin/batches");
+  revalidatePath("/admin/resources");
 }
 
 // ---------- Questions (PYQ bank / repeated questions) ----------

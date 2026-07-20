@@ -2,7 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { MagnifyingGlass, Notebook } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, MagnifyingGlass, Notebook } from "@phosphor-icons/react/dist/ssr";
 
 type Suggestion = { id: string; name: string; context: string };
 
@@ -18,7 +18,9 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
   // showing anything once they submit and land on the full /search page.
   useEffect(() => {
     const query = value.trim();
-    if (!query) return;
+    if (!query) {
+      return;
+    }
     const controller = new AbortController();
     const timer = setTimeout(() => {
       fetch(`/api/search-suggestions?q=${encodeURIComponent(query)}`, {
@@ -29,7 +31,11 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           setSuggestions(data.results);
           setOpen(true);
         })
-        .catch(() => {});
+        .catch((error: unknown) => {
+          if (error instanceof DOMException && error.name === "AbortError") return;
+          setSuggestions([]);
+          setOpen(false);
+        });
     }, 200);
     return () => {
       clearTimeout(timer);
@@ -56,7 +62,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
 
   return (
     <div ref={containerRef} className={`relative ${compact ? "w-full max-w-xs" : "w-full max-w-xl"}`}>
-      <form onSubmit={onSubmit}>
+      <form onSubmit={onSubmit} className="relative">
         <label className="relative block">
           <span className="sr-only">Search subjects, notes, PYQs</span>
           <MagnifyingGlass
@@ -66,13 +72,30 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           <input
             type="search"
             value={value}
-            onChange={(e) => setValue(e.target.value)}
+            onChange={(e) => {
+              const nextValue = e.target.value;
+              setValue(nextValue);
+              if (!nextValue.trim()) {
+                setSuggestions([]);
+                setOpen(false);
+              }
+            }}
             onFocus={() => suggestions.length > 0 && setOpen(true)}
             placeholder="Search a subject, program, or topic..."
             autoComplete="off"
-            className="w-full rounded-lg border border-border bg-surface py-2.5 pl-10 pr-3 text-sm text-foreground placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20"
+            className={`w-full rounded-xl border border-border bg-surface py-3 pl-10 text-sm text-foreground shadow-sm placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 ${compact ? "pr-3" : "pr-14"}`}
           />
         </label>
+        {!compact && (
+          <button
+            type="submit"
+            aria-label="Search"
+            disabled={!value.trim()}
+            className="absolute top-1/2 right-2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg bg-brand text-brand-foreground hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <ArrowRight size={16} weight="bold" />
+          </button>
+        )}
       </form>
 
       {open && value.trim() && (

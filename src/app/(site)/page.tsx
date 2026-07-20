@@ -1,183 +1,210 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import {
+  ArrowRight,
   BookOpen,
   CompassRose,
   Exam,
   GraduationCap,
-  ImageSquare,
   Notebook,
   Sparkle,
 } from "@phosphor-icons/react/dist/ssr";
 import { SearchBar } from "@/components/search-bar";
-import { getStats, getProgramsByLevel, getSiteSettings } from "@/lib/data";
+import { getProgramsByLevel, getResourceHighlights, getSiteSettings, getStats } from "@/lib/data";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 
 export default async function HomePage() {
-  const [stats, programs, siteSettings] = await Promise.all([
+  const [stats, programs, siteSettings, highlights] = await Promise.all([
     getStats(),
     getProgramsByLevel("COLLEGE"),
     getSiteSettings(),
+    getResourceHighlights(),
   ]);
   const heroImage = siteSettings.heroImageUrl;
-  const jumpData = programs.map((p) => ({
-    id: p.id,
-    name: p.name,
-    slug: p.slug,
-    terms: p.terms.map((t) => ({ id: t.id, name: t.name })),
+  const latestResource = highlights.latestPyq ?? highlights.latestNote;
+  const jumpData = programs.map((program) => ({
+    id: program.id,
+    name: program.name,
+    slug: program.slug,
+    terms: program.terms.map((term) => ({ id: term.id, name: term.name })),
   }));
 
   return (
     <div>
-      <section className="relative -mt-[92px] min-h-[680px] overflow-hidden bg-[linear-gradient(180deg,#54d1ff,#42c3f3_55%,#62d8ff)]">
+      <section className="relative -mt-[92px] min-h-[720px] overflow-hidden bg-brand">
+        {!heroImage && (
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,255,255,.24),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(255,255,255,.15),transparent_30%)]"
+          />
+        )}
         {heroImage && (
-          // Plain <img>, not next/image: the admin can upload any image at
-          // any aspect ratio. Used here as a full-bleed background behind
-          // the headline, so it's cropped to fill (object-cover) — the
-          // uncropped, full-image view still lives on the admin Settings
-          // preview, where reviewing the actual file (not a composited
-          // background) is what matters.
+          // The image is uploaded by an admin at an arbitrary aspect ratio,
+          // so a full-bleed native image is more appropriate than next/image.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={heroImage}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover object-center"
+            className="absolute inset-0 h-full w-full object-cover object-[center_58%] sm:object-center"
           />
         )}
-        {heroImage && (
-          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/10 to-black/45" />
-        )}
-        {/* The hero doesn't end on a hard edge — it fades into the page
-            background over its bottom third, so the floating cards below
-            (which overlap this fade) read as part of one continuous surface
-            instead of sitting on a seam. */}
-        <div className="absolute inset-x-0 bottom-0 h-56 bg-gradient-to-b from-transparent to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/70" />
+        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-b from-transparent via-black/15 to-black/60" />
 
-        <div className="relative z-10 mx-auto flex min-h-[680px] max-w-4xl flex-col items-center justify-center px-4 pt-[160px] pb-28 text-center sm:px-6">
-          <h1 className="font-display text-5xl leading-[0.95] font-extrabold tracking-[-0.02em] whitespace-pre-line text-white drop-shadow-sm sm:text-7xl">
+        <div className="relative z-10 mx-auto flex min-h-[720px] max-w-5xl flex-col items-center justify-center px-4 pt-40 pb-36 text-center sm:px-6">
+          <p className="mb-5 text-xs font-semibold tracking-[0.2em] text-white/80 uppercase">
+            Built for Delhi University students
+          </p>
+          <h1 className="max-w-4xl text-balance font-display text-5xl leading-[0.93] font-extrabold tracking-[-0.04em] whitespace-pre-line text-white sm:text-7xl lg:text-[5.25rem]">
             {siteSettings.heroHeadline}
           </h1>
-          <p className="mx-auto mt-6 inline-flex items-center rounded-full bg-black/25 px-5 py-2.5 text-sm font-bold text-white backdrop-blur-md sm:text-base">
+          <p className="mt-6 max-w-2xl text-pretty text-base font-medium leading-relaxed text-white/90 sm:text-lg">
             {siteSettings.heroSubtitle}
           </p>
-          <div className="mx-auto mt-8 w-full max-w-xl">
-            <Suspense fallback={<div className="h-[46px] w-full" />}>
+          <div className="mt-8 w-full max-w-2xl">
+            <Suspense fallback={<div className="h-14 w-full" />}>
               <SearchBar />
             </Suspense>
           </div>
-
-          {!heroImage && (
-            <div className="mt-10 flex flex-col items-center gap-2 text-white/80">
-              <ImageSquare size={32} weight="bold" />
-              <p className="text-sm font-medium">
-                Upload a hero illustration from{" "}
-                <Link href="/admin/settings" className="underline">
-                  Admin → Settings
-                </Link>{" "}
-                to show it here.
-              </p>
-            </div>
-          )}
+          <p className="mt-4 text-sm text-white/70">Search a subject, paper title, program, or topic.</p>
         </div>
       </section>
 
-      {/* Floating action cards: pulled up over the hero's fade with a
-          negative margin so they visually straddle both sections. */}
-      <div className="relative z-10 mx-auto -mt-24 max-w-6xl px-4 sm:px-6">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <div className="rounded-3xl border border-border bg-surface p-6 shadow-[0_15px_40px_rgba(15,23,42,.08)] transition duration-200 ease-out hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(15,23,42,.12)] lg:col-span-2">
-            <div className="flex items-center gap-3">
-              <span className="flex size-11 items-center justify-center rounded-2xl bg-brand-soft text-brand">
+      <div className="relative z-10 mx-auto -mt-8 max-w-6xl px-4 sm:-mt-14 sm:px-6 lg:-mt-20">
+        <section className="overflow-hidden rounded-2xl bg-surface shadow-[0_8px_24px_rgba(31,35,90,.12)] lg:grid lg:grid-cols-[1.35fr_.65fr]">
+          <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
+            <div className="flex items-start gap-4">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-xl bg-brand-soft text-brand">
                 <GraduationCap size={22} weight="bold" />
               </span>
               <div>
-                <p className="font-display text-lg font-bold">Course &amp; semester</p>
-                <p className="text-xs text-muted">Jump straight to your papers</p>
+                <h2 className="font-display text-2xl font-bold tracking-tight">Take me to my semester</h2>
+                <p className="mt-1 text-sm leading-relaxed text-muted">
+                  Pick your course once and jump directly to the papers that matter.
+                </p>
               </div>
             </div>
             {jumpData.length > 0 ? (
-              <div className="mt-4">
+              <div className="mt-6">
                 <CourseSemesterJump programs={jumpData} embedded />
               </div>
             ) : (
-              <p className="mt-4 text-sm text-muted">No courses added yet.</p>
+              <p className="mt-6 text-sm text-muted">Courses are being added. Browse the archive in the meantime.</p>
             )}
           </div>
 
-          <ActionCard
-            icon={<CompassRose size={22} weight="bold" />}
-            title="Explore PYQs"
-            description="Browse every course, semester, and subject."
-            href="/browse/college"
-            cta="Browse all →"
-          />
-
-          <ActionCard
-            icon={<BookOpen size={22} weight="bold" />}
-            title="Read full papers"
-            description="Open the complete OCR text of every supplied paper."
-            href="/pyq-notes"
-            cta="Open archive →"
-          />
-
-          <ActionCard
-            icon={<Sparkle size={22} weight="bold" />}
-            title="AI study tools"
-            description="Flashcards, quizzes, concept maps, and more."
-            href="/tools/exam-kit"
-            cta="Open exam kit →"
-          />
-        </div>
+          <nav aria-label="Study shortcuts" className="border-t border-border lg:border-t-0 lg:border-l">
+            <Shortcut
+              icon={<CompassRose size={20} weight="bold" />}
+              title="I need a PYQ"
+              detail="Browse by course and semester"
+              href="/browse/college"
+            />
+            <Shortcut
+              icon={<BookOpen size={20} weight="bold" />}
+              title="I want the full paper"
+              detail="Read OCR text without downloading"
+              href="/pyq-notes"
+            />
+            <Shortcut
+              icon={<Sparkle size={20} weight="bold" />}
+              title="Test me before the exam"
+              detail="Build a quiz, flashcards, or a map"
+              href="/tools/exam-kit"
+            />
+          </nav>
+        </section>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6">
-        <section className="grid grid-cols-2 gap-4 border-y border-border py-8 sm:grid-cols-4">
-          <Stat icon={<GraduationCap size={18} weight="bold" />} label="Programs" value={stats.programs} />
-          <Stat icon={<Notebook size={18} weight="bold" />} label="Subjects" value={stats.subjects} />
-          <Stat icon={<BookOpen size={18} weight="bold" />} label="Notes & PYQs" value={stats.resources} />
-          <Stat icon={<Exam size={18} weight="bold" />} label="Bank questions" value={stats.questions} />
+      <div className="mx-auto max-w-6xl px-4 pt-20 pb-24 sm:px-6 sm:pt-24">
+        <section aria-labelledby="vault-pulse" className="overflow-hidden rounded-2xl bg-brand text-brand-foreground">
+          <div className="grid gap-8 p-7 sm:p-9 lg:grid-cols-[1fr_auto] lg:items-end lg:p-12">
+            <div>
+              <p className="text-sm font-semibold text-brand-foreground/70">Just added to the vault</p>
+              <h2 id="vault-pulse" className="mt-3 max-w-3xl text-balance font-display text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
+                {latestResource ? formatResourceHeading(latestResource) : "Your next paper is already waiting in the library."}
+              </h2>
+              <p className="mt-3 max-w-2xl text-pretty text-sm leading-relaxed text-brand-foreground/75 sm:text-base">
+                Open the newest upload now, or search the full archive by subject and semester.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {latestResource && (
+                <Link
+                  href={`/subjects/${latestResource.subject.id}`}
+                  className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-surface px-5 py-3 text-sm font-semibold text-foreground hover:-translate-y-0.5"
+                >
+                  Open newest paper
+                  <ArrowRight size={16} weight="bold" className="transition-transform group-hover:translate-x-0.5" />
+                </Link>
+              )}
+              <Link
+                href="/browse/college"
+                className="inline-flex min-h-11 items-center rounded-xl border border-brand-foreground/25 px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-foreground/10"
+              >
+                Browse everything
+              </Link>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 border-t border-brand-foreground/15 sm:grid-cols-4">
+            <Stat icon={<GraduationCap size={17} weight="bold" />} label="Programs" value={stats.programs} />
+            <Stat icon={<Notebook size={17} weight="bold" />} label="Subjects" value={stats.subjects} />
+            <Stat icon={<BookOpen size={17} weight="bold" />} label="Notes & PYQs" value={stats.resources} />
+            <Stat icon={<Exam size={17} weight="bold" />} label="Bank questions" value={stats.questions} />
+          </div>
         </section>
       </div>
     </div>
   );
 }
 
-function ActionCard({
+function Shortcut({
   icon,
   title,
-  description,
+  detail,
   href,
-  cta,
 }: {
   icon: React.ReactNode;
   title: string;
-  description: string;
+  detail: string;
   href: string;
-  cta: string;
 }) {
   return (
     <Link
       href={href}
-      className="group flex flex-col rounded-3xl border border-border bg-surface p-6 shadow-[0_15px_40px_rgba(15,23,42,.08)] transition duration-200 ease-out hover:-translate-y-2 hover:shadow-[0_20px_50px_rgba(15,23,42,.12)]"
+      className="group flex min-h-28 items-center gap-4 border-b border-border px-6 py-5 last:border-b-0 hover:bg-brand-soft sm:px-8"
     >
-      <span className="flex size-11 items-center justify-center rounded-2xl bg-brand-soft text-brand transition-transform duration-200 group-hover:scale-110">
+      <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-surface-muted text-brand group-hover:bg-brand group-hover:text-brand-foreground">
         {icon}
       </span>
-      <p className="mt-3 font-display text-lg font-bold">{title}</p>
-      <p className="mt-1 text-sm text-muted">{description}</p>
-      <span className="mt-4 text-sm font-semibold text-brand">{cta}</span>
+      <span className="min-w-0">
+        <span className="block font-semibold text-foreground">{title}</span>
+        <span className="mt-1 block text-sm text-muted">{detail}</span>
+      </span>
+      <ArrowRight
+        size={17}
+        weight="bold"
+        className="ml-auto shrink-0 text-muted transition-transform group-hover:translate-x-1 group-hover:text-brand"
+      />
     </Link>
   );
 }
 
 function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
   return (
-    <div className="flex flex-col gap-2">
-      <span className="flex items-center gap-2 text-muted">
+    <div className="border-r border-b border-brand-foreground/15 px-5 py-6 last:border-r-0 sm:border-b-0 sm:px-7">
+      <span className="flex items-center gap-2 text-brand-foreground/65">
         {icon}
-        <span className="text-xs tracking-wide uppercase">{label}</span>
+        <span className="text-xs font-medium">{label}</span>
       </span>
-      <span className="font-mono text-2xl font-semibold text-foreground">{value}</span>
+      <span className="mt-2 block font-mono text-2xl font-semibold tabular-nums">{value.toLocaleString()}</span>
     </div>
   );
+}
+
+function formatResourceHeading(resource: { title: string; subject: { name: string } }) {
+  const title = resource.title.trim();
+  const subject = resource.subject.name.trim();
+  return title.toLocaleLowerCase().startsWith(subject.toLocaleLowerCase()) ? title : `${subject}: ${title}`;
 }

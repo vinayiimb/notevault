@@ -25,6 +25,18 @@ questions at `/admin`.
 (Configured via `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` in `.env`, applied when you
 run the seed script below.)
 
+### AI metadata matching
+
+Consolidated Upload can match loose PDFs and ZIP contents to the course,
+semester, subject, and academic year in the catalog. Configure
+`OPENAI_API_KEY` to use the OpenAI Responses API; `OPENAI_MATCH_MODEL` is
+optional and defaults to `gpt-5.6-luna`. If no OpenAI key is present, the
+existing `GROQ_API_KEY` integration is used as a narrower fallback.
+
+Large production PDFs upload directly to R2 through short-lived signed URLs.
+The R2 bucket must allow browser `PUT` requests from the deployed site origin;
+smaller files automatically fall back to the server upload path when needed.
+
 ## Database
 
 SQLite database lives at `prisma/dev.db` (gitignored). Useful commands:

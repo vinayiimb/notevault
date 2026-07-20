@@ -2,10 +2,11 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Sparkle, UploadSimple } from "@phosphor-icons/react/dist/ssr";
+import { ChartBar, Eye, Sparkle, Table, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import { updateSubjectNotesAction, uploadResourceAction } from "@/lib/actions";
 import { generateSubjectAnalysisAction } from "@/lib/subject-analysis-actions";
 import { GamifiedLoader } from "@/components/ui/gamified-loader";
+import { NotesRenderer, resolveNotesTheme } from "@/components/subjects/notes-renderer";
 
 const THEMES = [
   { value: "sky", label: "Sky", dot: "bg-sky-dark" },
@@ -37,6 +38,7 @@ export function NotesEditor({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [hasPyqs, setHasPyqs] = useState(pyqCount > 0);
+  const [editorMode, setEditorMode] = useState<"write" | "preview">("write");
 
   async function runGenerate() {
     const result = await generateSubjectAnalysisAction(subjectId);
@@ -122,13 +124,18 @@ export function NotesEditor({
 
   const busy = generating || uploading;
 
+  function insertBlock(block: string) {
+    setContent((current) => `${current.trimEnd()}${current.trim() ? "\n\n" : ""}${block}\n`);
+    setEditorMode("write");
+    setSaved(false);
+  }
+
   return (
     <div className="mt-4 flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs text-muted">
-          Paste text (plain or markdown — bold section headings like{" "}
-          <strong>**I. Section Title**</strong> become real headings automatically), generate a
-          first draft from PYQs already uploaded, or upload one directly below.
+        <p className="max-w-2xl text-xs leading-5 text-muted">
+          Build rich notes with headings, tables, analysis, flow diagrams, and data charts. Upload
+          markdown or generate a first draft from readable PYQs, then review it before publishing.
         </p>
         <div className="flex shrink-0 items-center gap-2">
           <button
@@ -187,26 +194,96 @@ export function NotesEditor({
       {genError && <p className="text-xs text-red-500">{genError}</p>}
       {generating && <GamifiedLoader size="sm" />}
 
-      <textarea
-        value={content}
-        onChange={(e) => setContent(e.target.value)}
-        onDragOver={(e) => {
-          e.preventDefault();
-          setDragOver(true);
-        }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={(e) => {
-          e.preventDefault();
-          setDragOver(false);
-          const file = e.dataTransfer.files?.[0];
-          if (file) loadMarkdownFile(file);
-        }}
-        rows={12}
-        placeholder="Paste your notes here, or drag & drop a .md file..."
-        className={`rounded-lg border px-3 py-2 font-mono text-sm focus:border-accent focus:outline-none ${
-          dragOver ? "border-accent bg-accent-soft/30" : "border-border bg-background"
-        }`}
-      />
+      <div className="overflow-hidden rounded-xl border border-border">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-surface-muted/55 px-3 py-2">
+          <div className="flex items-center gap-1" role="tablist" aria-label="Notes editor view">
+            <button
+              type="button"
+              role="tab"
+              aria-selected={editorMode === "write"}
+              onClick={() => setEditorMode("write")}
+              className={`rounded-md px-3 py-1.5 text-xs font-semibold ${editorMode === "write" ? "bg-surface text-foreground" : "text-muted hover:text-foreground"}`}
+            >
+              Write
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={editorMode === "preview"}
+              onClick={() => setEditorMode("preview")}
+              className={`flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-semibold ${editorMode === "preview" ? "bg-surface text-foreground" : "text-muted hover:text-foreground"}`}
+            >
+              <Eye size={14} weight="bold" />
+              Preview
+            </button>
+          </div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="mr-1 text-[11px] text-muted">Insert</span>
+            <button
+              type="button"
+              onClick={() => insertBlock("## Analysis\n\n**Key finding:** Explain the pattern and why it matters.\n\n- Evidence:\n- Interpretation:\n- Exam takeaway:")}
+              className="rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs font-medium hover:border-accent"
+            >
+              Analysis
+            </button>
+            <button
+              type="button"
+              onClick={() => insertBlock("| Topic | Evidence | Exam priority |\n| --- | --- | --- |\n| Topic A | Add evidence | High |\n| Topic B | Add evidence | Medium |")}
+              className="flex items-center gap-1 rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs font-medium hover:border-accent"
+            >
+              <Table size={14} weight="bold" /> Table
+            </button>
+            <button
+              type="button"
+              onClick={() => insertBlock("```chart\ntype: bar\ntitle: Questions by unit\nlabels: Unit 1, Unit 2, Unit 3, Unit 4\nvalues: 4, 7, 5, 3\n```")}
+              className="flex items-center gap-1 rounded-md border border-border bg-surface px-2.5 py-1.5 text-xs font-medium hover:border-accent"
+            >
+              <ChartBar size={14} weight="bold" /> Chart
+            </button>
+          </div>
+        </div>
+
+        {editorMode === "write" ? (
+          <textarea
+            value={content}
+            onChange={(e) => {
+              setContent(e.target.value);
+              setSaved(false);
+            }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setDragOver(false);
+              const file = e.dataTransfer.files?.[0];
+              if (file) loadMarkdownFile(file);
+            }}
+            rows={18}
+            placeholder="Write notes here, or drag and drop a .md file…"
+            className={`block w-full resize-y border-0 px-4 py-3 font-mono text-sm leading-6 outline-none ${
+              dragOver ? "bg-accent-soft/30" : "bg-background"
+            }`}
+          />
+        ) : (
+          <div className="max-h-[760px] min-h-72 overflow-y-auto bg-background p-4 sm:p-6">
+            {content.trim() ? (
+              <NotesRenderer content={content} theme={resolveNotesTheme(theme)} />
+            ) : (
+              <div className="flex min-h-64 items-center justify-center text-sm text-muted">
+                Add some notes to see the published preview.
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      <p className="text-xs leading-5 text-muted">
+        Charts use a fenced <code className="rounded bg-surface-muted px-1 py-0.5">chart</code> block with
+        matching comma-separated labels and values. Use <code className="rounded bg-surface-muted px-1 py-0.5">type: line</code> for a trend graph.
+      </p>
 
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium text-muted">Color theme</label>

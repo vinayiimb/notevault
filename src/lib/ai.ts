@@ -358,7 +358,7 @@ const PaperAnalysisSchema = z.object({
   compiledNotes: z
     .string()
     .describe(
-      "Well-organised study notes (markdown-style headings) covering every topic these papers actually test, synthesized across all the papers given"
+      "Well-organised markdown study notes covering every topic these papers actually test. Use concise headings, comparison tables where useful, an explicit analysis section, and a fenced chart block (type, title, labels, values) only when the papers contain a real quantitative pattern"
     ),
   mostRepeated: z
     .array(RepeatedQuestionItemSchema)
@@ -392,7 +392,7 @@ export async function analyzeSubjectPapers(
   return callStructured(
     PaperAnalysisSchema,
     "You are an expert exam-pattern analyst for Indian university (Delhi University) previous-year question papers. You read multiple years of the same subject's papers, identify questions (or close variants) that repeat across years, compile the material into organised study notes, and predict which questions are likely to reappear based on the repetition pattern. Be specific and grounded — never invent facts not present in the papers.",
-    `Subject: ${subjectName}\n\nHere are ${papers.length} previous year question papers for this subject:${combined}\n\nAnalyze these papers: identify the most repeated questions across years, compile organised study notes covering everything these papers test, and predict a likely paper for the next exam based on the repetition pattern.`
+    `Subject: ${subjectName}\n\nHere are ${papers.length} previous year question papers for this subject:${combined}\n\nAnalyze these papers: identify the most repeated questions across years, compile organised markdown study notes covering everything these papers test, and predict a likely paper for the next exam based on the repetition pattern. In compiledNotes, include a clear \"Pattern analysis\" section and use markdown tables for comparisons. When there is a genuine count-by-year, count-by-unit, or repeat-frequency pattern, include one chart using exactly this syntax:\n\n\`\`\`chart\ntype: bar\ntitle: Descriptive title\nlabels: Label 1, Label 2\nvalues: 3, 5\n\`\`\`\n\nNever invent numbers merely to create a chart.`
   );
 }
 

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { ConsolidatedUploadClient } from "@/components/bulk-upload/consolidated-upload-client";
 
@@ -42,12 +43,16 @@ export default async function AdminConsolidatedUploadPage() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-semibold">Consolidated upload</h1>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-2xl font-semibold">Consolidated upload</h1>
+        <Link href="/admin/resources" className="text-sm font-medium text-accent hover:underline">
+          Browse uploaded PDFs →
+        </Link>
+      </div>
       <p className="mt-1 max-w-2xl text-sm text-muted">
-        Drop a zip organized as <code className="rounded bg-surface-muted px-1 py-0.5 text-xs">Semester_I/Subject Name/2017-18.pdf</code>,
-        or a flat dump of PDFs whose course/semester/year are just in the filename. Map each
-        detected group to a course once, and every file in it uploads to the matching semester
-        automatically — corrections are remembered for next time.
+        Add loose PDFs or ZIPs organized as <code className="rounded bg-surface-muted px-1 py-0.5 text-xs">Semester_I/Subject Name/2017-18.pdf</code>.
+        NoteVault reads folder names, filenames, and available PDF text; AI can then match each
+        paper to the real course, semester, subject, and academic year before upload.
       </p>
       <div className="mt-6">
         <ConsolidatedUploadClient programs={data} existingHashes={existingHashes} courseMemory={courseMemory} />

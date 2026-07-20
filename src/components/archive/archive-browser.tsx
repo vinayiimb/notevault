@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Check, FunnelSimple, GraduationCap } from "@phosphor-icons/react/dist/ssr";
+import { ArrowLeft, ArrowRight, Check, FunnelSimple, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { useMemo, useState } from "react";
 
 export type ArchivePaperData = {
@@ -26,18 +26,25 @@ type ProgramGroup = {
   name: string;
   slug: string;
   papers: ArchivePaperData[];
-  subjects: SubjectGroup[];
 };
 
-type SubjectGroup = {
-  id: string;
+type DirectorySemester = {
+  key: string;
   name: string;
-  termName: string;
-  termOrder: number;
+  order: number;
+};
+
+type DirectorySubject = {
+  key: string;
+  courseName: string;
+  courseSlug: string;
+  name: string;
   papers: ArchivePaperData[];
+  semesters: DirectorySemester[];
 };
 
 const ALL = "all";
+const DIRECTORY_SEMESTERS = [1, 2, 3, 4, 5, 6];
 
 function paperYear(paper: ArchivePaperData) {
   return paper.academicYear ?? (paper.year ? String(paper.year) : "Year not set");
@@ -47,20 +54,28 @@ function termKey(paper: ArchivePaperData) {
   return `${paper.subject.term.order}:${paper.subject.term.name}`;
 }
 
+function subjectKey(paper: ArchivePaperData) {
+  return `${paper.subject.term.program.slug}:${paper.subject.name.trim().toLocaleLowerCase()}`;
+}
+
 function sortYears(a: string, b: string) {
   const aYear = Number(a.match(/\d{4}/)?.[0] ?? 0);
   const bYear = Number(b.match(/\d{4}/)?.[0] ?? 0);
   return bYear - aYear || b.localeCompare(a);
 }
 
-function subjectYearRange(subject: SubjectGroup) {
-  const years = [...new Set(subject.papers.map(paperYear))].sort(sortYears);
-  if (years.length === 1) return years[0];
-  return `${years[years.length - 1]} to ${years[0]}`;
+function sortPapers(a: ArchivePaperData, b: ArchivePaperData) {
+  return (
+    a.subject.term.order - b.subject.term.order ||
+    a.subject.name.localeCompare(b.subject.name) ||
+    sortYears(paperYear(a), paperYear(b)) ||
+    a.title.localeCompare(b.title)
+  );
 }
 
 export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
   const [course, setCourse] = useState(ALL);
+  const [selectedSubjectKey, setSelectedSubjectKey] = useState("");
   const [semester, setSemester] = useState(ALL);
   const [year, setYear] = useState(ALL);
 
@@ -80,23 +95,77 @@ export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
     [course, papers],
   );
 
+  const directorySubjects = useMemo(() => {
+    const groups = new Map<
+      string,
+      Omit<DirectorySubject, "semesters"> & { semesterMap: Map<string, DirectorySemester> }
+    >();
+
+    for (const paper of coursePapers) {
+      const key = subjectKey(paper);
+      const existing = groups.get(key);
+      const semesterOption = {
+        key: termKey(paper),
+        name: paper.subject.term.name,
+        order: paper.subject.term.order,
+      };
+
+      if (existing) {
+        existing.papers.push(paper);
+        existing.semesterMap.set(semesterOption.key, semesterOption);
+      } else {
+        groups.set(key, {
+          key,
+          courseName: paper.subject.term.program.name,
+          courseSlug: paper.subject.term.program.slug,
+          name: paper.subject.name,
+          papers: [paper],
+          semesterMap: new Map([[semesterOption.key, semesterOption]]),
+        });
+      }
+    }
+
+    return [...groups.values()]
+      .map(({ semesterMap, ...subject }) => ({
+        ...subject,
+        papers: subject.papers.toSorted(sortPapers),
+        semesters: [...semesterMap.values()].sort(
+          (a, b) => a.order - b.order || a.name.localeCompare(b.name),
+        ),
+      }))
+      .sort(
+        (a, b) =>
+          a.courseName.localeCompare(b.courseName) || a.name.localeCompare(b.name),
+      );
+  }, [coursePapers]);
+
+  const subjectPapers = useMemo(
+    () =>
+      selectedSubjectKey
+        ? coursePapers.filter((paper) => subjectKey(paper) === selectedSubjectKey)
+        : coursePapers,
+    [coursePapers, selectedSubjectKey],
+  );
+
   const semesterOptions = useMemo(() => {
     const terms = new Map<string, { name: string; order: number }>();
-    for (const paper of coursePapers) {
+    for (const paper of subjectPapers) {
       terms.set(termKey(paper), {
         name: paper.subject.term.name,
         order: paper.subject.term.order,
       });
     }
-    return [...terms].sort((a, b) => a[1].order - b[1].order || a[1].name.localeCompare(b[1].name));
-  }, [coursePapers]);
+    return [...terms].sort(
+      (a, b) => a[1].order - b[1].order || a[1].name.localeCompare(b[1].name),
+    );
+  }, [subjectPapers]);
 
   const semesterPapers = useMemo(
     () =>
       semester === ALL
-        ? coursePapers
-        : coursePapers.filter((paper) => termKey(paper) === semester),
-    [coursePapers, semester],
+        ? subjectPapers
+        : subjectPapers.filter((paper) => termKey(paper) === semester),
+    [semester, subjectPapers],
   );
 
   const yearOptions = useMemo(
@@ -112,8 +181,6 @@ export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
     [semesterPapers, year],
   );
 
-  const showSubjectIndex = semester === ALL && year === ALL;
-
   const compactSemesterOptions = useMemo(
     () => [
       { value: ALL, label: "All", accessibleLabel: "All semesters" },
@@ -127,7 +194,7 @@ export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
   );
 
   const programs = useMemo(() => {
-    const groups = new Map<string, Omit<ProgramGroup, "subjects">>();
+    const groups = new Map<string, ProgramGroup>();
     for (const paper of filteredPapers) {
       const { name, slug } = paper.subject.term.program;
       const existing = groups.get(slug);
@@ -137,43 +204,20 @@ export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
 
     return [...groups.values()]
       .sort((a, b) => a.name.localeCompare(b.name))
-      .map((program) => {
-        const sortedPapers = program.papers.toSorted(
-          (a, b) =>
-            a.subject.term.order - b.subject.term.order ||
-            a.subject.name.localeCompare(b.subject.name) ||
-            sortYears(paperYear(a), paperYear(b)) ||
-            a.title.localeCompare(b.title),
-        );
-        const subjects = new Map<string, SubjectGroup>();
-        for (const paper of sortedPapers) {
-          const existing = subjects.get(paper.subject.id);
-          if (existing) existing.papers.push(paper);
-          else {
-            subjects.set(paper.subject.id, {
-              id: paper.subject.id,
-              name: paper.subject.name,
-              termName: paper.subject.term.name,
-              termOrder: paper.subject.term.order,
-              papers: [paper],
-            });
-          }
-        }
-
-        return {
-          ...program,
-          papers: sortedPapers,
-          subjects: [...subjects.values()].sort(
-            (a, b) => a.termOrder - b.termOrder || a.name.localeCompare(b.name),
-          ),
-        };
-      });
+      .map((program) => ({ ...program, papers: program.papers.toSorted(sortPapers) }));
   }, [filteredPapers]);
 
-  const visibleSubjectCount = programs.reduce((total, program) => total + program.subjects.length, 0);
+  const selectedSubjectName = selectedSubjectKey
+    ? coursePapers.find((paper) => subjectKey(paper) === selectedSubjectKey)?.subject.name
+    : undefined;
+  const showSubjectDirectory = !selectedSubjectKey && semester === ALL && year === ALL;
+  const directoryCourseCount = new Set(
+    directorySubjects.map((subject) => subject.courseSlug),
+  ).size;
 
   function selectCourse(nextCourse: string) {
     setCourse(nextCourse);
+    setSelectedSubjectKey("");
     setSemester(ALL);
     setYear(ALL);
   }
@@ -183,11 +227,27 @@ export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
     setYear(ALL);
   }
 
-  function clearFilters() {
-    setCourse(ALL);
+  function openSubject(subject: DirectorySubject, nextSemester = ALL) {
+    setCourse(subject.courseSlug);
+    setSelectedSubjectKey(subject.key);
+    setSemester(nextSemester);
+    setYear(ALL);
+  }
+
+  function backToSubjectList() {
+    setSelectedSubjectKey("");
     setSemester(ALL);
     setYear(ALL);
   }
+
+  function clearFilters() {
+    setCourse(ALL);
+    setSelectedSubjectKey("");
+    setSemester(ALL);
+    setYear(ALL);
+  }
+
+  const hasResults = showSubjectDirectory ? directorySubjects.length > 0 : programs.length > 0;
 
   return (
     <>
@@ -204,7 +264,7 @@ export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
               Find your question paper
             </h2>
             <p className="mt-1 text-sm leading-6 text-muted">
-              Every choice updates the archive immediately. You do not need to press Done.
+              Choose from the filters or use a subject row below. Every choice updates immediately.
             </p>
           </div>
         </div>
@@ -228,36 +288,39 @@ export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
               ))}
             </select>
             <p className="mt-2 text-xs leading-5 text-muted">
-              Selecting a course shows all of its available papers first.
+              Select a course to shorten the subject table.
             </p>
           </div>
 
           <fieldset>
             <legend className="text-sm font-semibold">2. Semester</legend>
             <div className="mt-2 flex flex-wrap gap-2">
-              {compactSemesterOptions.map(
-                ({ value, label, accessibleLabel }) => (
-                  <label key={value} className="cursor-pointer">
-                    <input
-                      type="radio"
-                      name="archive-semester"
-                      value={value}
-                      aria-label={accessibleLabel}
-                      checked={semester === value}
-                      onChange={() => selectSemester(value)}
-                      className="peer sr-only"
-                    />
-                    <span className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition hover:border-accent/50 peer-checked:border-accent peer-checked:bg-accent-soft peer-checked:text-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent">
-                      <span className="flex size-4 items-center justify-center rounded border border-current" aria-hidden="true">
-                        {semester === value ? <Check size={12} weight="bold" /> : null}
-                      </span>
-                      {label}
+              {compactSemesterOptions.map(({ value, label, accessibleLabel }) => (
+                <label key={value} className="cursor-pointer">
+                  <input
+                    type="radio"
+                    name="archive-semester"
+                    value={value}
+                    aria-label={accessibleLabel}
+                    checked={semester === value}
+                    onChange={() => selectSemester(value)}
+                    className="peer sr-only"
+                  />
+                  <span className="inline-flex min-h-11 min-w-11 items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-foreground transition hover:border-accent/50 peer-checked:border-accent peer-checked:bg-accent-soft peer-checked:text-accent peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-accent">
+                    <span
+                      className="flex size-4 items-center justify-center rounded border border-current"
+                      aria-hidden="true"
+                    >
+                      {semester === value ? <Check size={12} weight="bold" /> : null}
                     </span>
-                  </label>
-                ),
-              )}
+                    {label}
+                  </span>
+                </label>
+              ))}
             </div>
-            <p className="mt-2 text-xs leading-5 text-muted">Choose directly—semester options are not hidden in a menu.</p>
+            <p className="mt-2 text-xs leading-5 text-muted">
+              A semester selection always starts with all years.
+            </p>
           </fieldset>
 
           <div>
@@ -277,41 +340,49 @@ export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
                 </option>
               ))}
             </select>
-            <p className="mt-2 text-xs leading-5 text-muted">
-              Choosing a semester shows its papers from all years first.
-            </p>
           </div>
         </div>
       </section>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-muted" aria-live="polite" aria-atomic="true">
-          {showSubjectIndex ? (
+          {showSubjectDirectory ? (
             <>
-              Browsing <strong className="font-semibold text-foreground">{visibleSubjectCount}</strong> subject
-              {visibleSubjectCount === 1 ? "" : "s"} across {programs.length} course
-              {programs.length === 1 ? "" : "s"}.
+              Browsing <strong className="font-semibold text-foreground">{directorySubjects.length}</strong>{" "}
+              subject{directorySubjects.length === 1 ? "" : "s"} across {directoryCourseCount} course
+              {directoryCourseCount === 1 ? "" : "s"}.
             </>
           ) : (
             <>
               Showing <strong className="font-semibold text-foreground">{filteredPapers.length}</strong> paper
-              {filteredPapers.length === 1 ? "" : "s"} across {programs.length} course
-              {programs.length === 1 ? "" : "s"}.
+              {filteredPapers.length === 1 ? "" : "s"}
+              {selectedSubjectName ? <> for <strong className="font-semibold text-foreground">{selectedSubjectName}</strong></> : null}.
             </>
           )}
         </p>
-        {(course !== ALL || semester !== ALL || year !== ALL) && (
-          <button
-            type="button"
-            onClick={clearFilters}
-            className="min-h-11 rounded-xl px-3 text-sm font-semibold text-accent outline-none transition hover:bg-accent-soft focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-          >
-            Clear all filters
-          </button>
-        )}
+        <div className="flex flex-wrap items-center gap-2">
+          {selectedSubjectKey ? (
+            <button
+              type="button"
+              onClick={backToSubjectList}
+              className="inline-flex min-h-11 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-foreground outline-none transition hover:bg-surface-muted focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            >
+              <ArrowLeft aria-hidden="true" size={16} weight="bold" /> Back to subject list
+            </button>
+          ) : null}
+          {(course !== ALL || selectedSubjectKey || semester !== ALL || year !== ALL) && (
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="min-h-11 rounded-xl px-3 text-sm font-semibold text-accent outline-none transition hover:bg-accent-soft focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+            >
+              Clear all filters
+            </button>
+          )}
+        </div>
       </div>
 
-      {programs.length === 0 ? (
+      {!hasResults ? (
         <div className="mt-6 rounded-2xl border border-dashed border-border bg-surface-muted p-8 text-center">
           <p className="font-semibold">No papers match these filters.</p>
           <p className="mt-2 text-sm text-muted">Try another semester or choose All years.</p>
@@ -323,30 +394,30 @@ export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
             Show the full archive
           </button>
         </div>
+      ) : showSubjectDirectory ? (
+        <SubjectDirectoryTable subjects={directorySubjects} onOpenSubject={openSubject} />
       ) : (
         <div className="mt-6 space-y-8">
           {programs.map((program) => (
-            <section key={program.slug} aria-labelledby={`course-${program.slug}`} className="overflow-hidden rounded-2xl border border-border bg-surface">
+            <section
+              key={program.slug}
+              aria-labelledby={`course-${program.slug}`}
+              className="overflow-hidden rounded-2xl border border-border bg-surface"
+            >
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-muted/60 px-5 py-4 sm:px-6">
                 <div>
                   <h2 id={`course-${program.slug}`} className="flex items-center gap-2 text-lg font-semibold">
                     <GraduationCap aria-hidden="true" size={19} weight="bold" className="text-accent" />
                     {program.name}
+                    {selectedSubjectName ? <span className="text-muted">· {selectedSubjectName}</span> : null}
                   </h2>
                   <p className="mt-1 text-sm text-muted">
-                    {showSubjectIndex ? (
-                      <>{program.subjects.length} subject{program.subjects.length === 1 ? "" : "s"}</>
-                    ) : (
-                      <>{program.papers.length} paper{program.papers.length === 1 ? "" : "s"}</>
-                    )}
+                    {program.papers.length} paper{program.papers.length === 1 ? "" : "s"}
                   </p>
                 </div>
-                <span className="text-xs font-medium text-muted">
-                  {showSubjectIndex ? "Select a subject to open its latest paper" : "Select a subject to read the full paper"}
-                </span>
+                <span className="text-xs font-medium text-muted">Select a paper to read its full OCR</span>
               </div>
-
-              {showSubjectIndex ? <SubjectIndexTable program={program} /> : <PaperTable papers={program.papers} />}
+              <PaperTable papers={program.papers} />
             </section>
           ))}
         </div>
@@ -355,51 +426,75 @@ export function ArchiveBrowser({ papers }: { papers: ArchivePaperData[] }) {
   );
 }
 
-function SubjectIndexTable({ program }: { program: ProgramGroup }) {
+function SubjectDirectoryTable({
+  subjects,
+  onOpenSubject,
+}: {
+  subjects: DirectorySubject[];
+  onOpenSubject: (subject: DirectorySubject, semester?: string) => void;
+}) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[620px] border-collapse text-left text-sm">
-        <thead className="bg-surface-muted/35 text-xs text-muted">
-          <tr>
-            <th scope="col" className="px-5 py-3 font-semibold sm:px-6">Subject</th>
-            <th scope="col" className="px-4 py-3 font-semibold">Semester</th>
-            <th scope="col" className="px-4 py-3 font-semibold">Years available</th>
-            <th scope="col" className="px-4 py-3 font-semibold">Papers</th>
-            <th scope="col" className="w-12 px-4 py-3"><span className="sr-only">Open latest paper</span></th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
-          {program.subjects.map((subject) => {
-            const latestPaper = subject.papers[0];
-            return (
-              <tr key={subject.id} className="transition-colors hover:bg-accent-soft/35 focus-within:bg-accent-soft/35">
-                <th scope="row" className="px-5 py-4 font-medium sm:px-6">
-                  <Link
-                    href={`/pyq-notes/${latestPaper.id}`}
-                    className="rounded-sm text-foreground outline-none transition hover:text-accent hover:underline focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+    <section aria-labelledby="subject-directory-title" className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface-muted/60 px-5 py-4 sm:px-6">
+        <div>
+          <h2 id="subject-directory-title" className="text-lg font-semibold">Subject directory</h2>
+          <p className="mt-1 text-sm text-muted">One row per subject across all available years.</p>
+        </div>
+        <span className="text-xs font-medium text-muted">Select the subject for all semesters, or choose 1–6</span>
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[720px] border-collapse text-left text-sm">
+          <thead className="bg-surface-muted/35 text-xs text-muted">
+            <tr>
+              <th scope="col" className="px-5 py-3 font-semibold sm:px-6">Course</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Subject</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Semester</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {subjects.map((subject) => (
+              <tr key={subject.key} className="relative transition-colors hover:bg-accent-soft/35 focus-within:bg-accent-soft/35">
+                <td className="max-w-64 px-5 py-4 text-muted sm:px-6">{subject.courseName}</td>
+                <th scope="row" className="px-4 py-4 font-medium">
+                  <button
+                    type="button"
+                    onClick={() => onOpenSubject(subject)}
+                    className="inline-flex min-h-9 items-center gap-2 rounded-lg text-left font-semibold text-foreground outline-none transition before:absolute before:inset-0 before:content-[''] hover:text-accent hover:underline focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                   >
                     {subject.name}
-                    <span className="sr-only"> — open latest available paper</span>
-                  </Link>
+                    <ArrowRight aria-hidden="true" size={15} weight="bold" className="shrink-0 text-muted" />
+                  </button>
                 </th>
-                <td className="px-4 py-4 text-muted">{subject.termName}</td>
-                <td className="px-4 py-4 text-muted">{subjectYearRange(subject)}</td>
-                <td className="px-4 py-4 text-muted">{subject.papers.length}</td>
-                <td className="px-4 py-4 text-right">
-                  <Link
-                    href={`/pyq-notes/${latestPaper.id}`}
-                    aria-label={`Open latest ${subject.name} paper`}
-                    className="inline-flex size-9 items-center justify-center rounded-lg text-muted outline-none transition hover:bg-accent-soft hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-                  >
-                    <ArrowRight aria-hidden="true" size={17} weight="bold" />
-                  </Link>
+                <td className="px-4 py-3">
+                  <div className="relative z-10 flex items-center gap-1.5" aria-label={`Available semesters for ${subject.name}`}>
+                    {DIRECTORY_SEMESTERS.map((semesterNumber) => {
+                      const option = subject.semesters.find((item) => item.order === semesterNumber);
+                      return (
+                        <button
+                          key={semesterNumber}
+                          type="button"
+                          disabled={!option}
+                          onClick={() => option && onOpenSubject(subject, option.key)}
+                          aria-label={
+                            option
+                              ? `Open ${subject.name}, semester ${semesterNumber}, all years`
+                              : `${subject.name} has no semester ${semesterNumber} papers`
+                          }
+                          className="inline-flex size-9 items-center justify-center rounded-lg border border-border bg-background text-sm font-semibold text-foreground outline-none transition hover:border-accent hover:bg-accent-soft hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:bg-surface-muted disabled:text-muted/45 disabled:hover:border-border"
+                        >
+                          {semesterNumber}
+                        </button>
+                      );
+                    })}
+                  </div>
                 </td>
               </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
   );
 }
 

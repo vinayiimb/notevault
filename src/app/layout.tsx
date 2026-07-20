@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
@@ -51,10 +52,12 @@ export default function RootLayout({
       suppressHydrationWarning
       className={`${inter.variable} ${fraunces.variable} ${mono.variable} h-full antialiased`}
     >
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      </head>
-      <body className="flex min-h-full flex-col bg-background text-foreground">{children}</body>
+      <body className="flex min-h-full flex-col bg-background text-foreground">
+        {children}
+        <Script id="notevault-theme" strategy="beforeInteractive">
+          {themeInitScript}
+        </Script>
+      </body>
     </html>
   );
 }

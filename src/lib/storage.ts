@@ -11,8 +11,41 @@ const PUBLIC_ROOT = path.join(process.cwd(), "public");
 // hit). Vercel Blob support is kept only so deleteByUrl can still clean up
 // any not-yet-migrated legacy URLs. Locally, with none of these configured,
 // we fall back to writing straight into public/.
-function r2Enabled() {
+export function r2Enabled() {
   return !!(process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY && process.env.R2_ENDPOINT);
+}
+
+// Large PDFs should not travel through a Vercel Server Action body. In
+// production, authorize a short-lived browser -> R2 PUT instead, then let a
+// separate authenticated action finalize the database row. Local development
+// and older Blob-only deployments continue to use saveUploadedFile().
+export async function createDirectUploadTarget(key: string, contentType = "application/pdf") {
+  if (!r2Enabled()) return null;
+  const [{ PutObjectCommand }, { getSignedUrl }] = await Promise.all([
+    import("@aws-sdk/client-s3"),
+    import("@aws-sdk/s3-request-presigner"),
+  ]);
+  const client = await r2Client();
+  const uploadUrl = await getSignedUrl(
+    client,
+    new PutObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: key,
+      ContentType: contentType,
+    }),
+    { expiresIn: 15 * 60 },
+  );
+  return { uploadUrl, fileUrl: r2PublicUrl(key) };
+}
+
+export async function storedObjectSize(key: string): Promise<number | null> {
+  if (!r2Enabled()) return null;
+  const { HeadObjectCommand } = await import("@aws-sdk/client-s3");
+  const client = await r2Client();
+  const result = await client.send(
+    new HeadObjectCommand({ Bucket: process.env.R2_BUCKET_NAME, Key: key }),
+  );
+  return result.ContentLength ?? null;
 }
 
 function blobEnabled() {
@@ -32,7 +65,7 @@ async function r2Client() {
 }
 
 function r2PublicUrl(key: string) {
-  return `${process.env.R2_PUBLIC_URL}/${key}`;
+  return `${process.env.R2_PUBLIC_URL?.replace(/\/$/, "")}/${key}`;
 }
 
 // Uploads bytes under `key` (e.g. "uploads/pyqs/<uuid>-file.pdf" or
