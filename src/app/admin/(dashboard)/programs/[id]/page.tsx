@@ -65,7 +65,7 @@ export default async function AdminProgramDetailPage({
 
       {program.terms.length > 0 && (
         <div className="mt-8">
-          <TermPapersSection terms={program.terms} papers={termPapers} programId={program.id} />
+          <TermPapersSection terms={program.terms} papers={termPapers} />
         </div>
       )}
 
