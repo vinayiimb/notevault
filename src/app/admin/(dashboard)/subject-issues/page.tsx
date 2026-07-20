@@ -97,9 +97,16 @@ export default async function SubjectIssuesPage({
                         <Link href={`/admin/subjects/${issue.merge.id}`} className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold hover:border-accent hover:text-accent">
                           <MagnifyingGlass size={14} weight="bold" /> Inspect
                         </Link>
-                        <form action={mergeSubjectsAction}>
+                        <form action={mergeSubjectsAction} className="flex items-center gap-2">
                           <input type="hidden" name="sourceId" value={issue.merge.id} />
                           <input type="hidden" name="targetId" value={issue.keep.id} />
+                          <input
+                            type="text"
+                            name="mergedName"
+                            defaultValue={issue.keep.name}
+                            title="Name to give the merged subject"
+                            className="w-36 rounded-lg border border-border bg-background px-2 py-1.5 text-xs focus:border-accent focus:outline-none"
+                          />
                           <button type="submit" className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent-hover">
                             <ArrowsMerge size={14} weight="bold" /> Merge
                           </button>

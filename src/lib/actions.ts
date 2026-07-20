@@ -808,6 +808,7 @@ export async function mergeSubjectsAction(formData: FormData) {
   await requireAdmin();
   const sourceId = String(formData.get("sourceId") ?? "").trim();
   const targetId = String(formData.get("targetId") ?? "").trim();
+  const mergedName = String(formData.get("mergedName") ?? "").trim();
   if (!sourceId || !targetId) throw new Error("Both subjects are required.");
   if (sourceId === targetId) throw new Error("Can't merge a subject into itself.");
 
@@ -820,12 +821,37 @@ export async function mergeSubjectsAction(formData: FormData) {
   ]);
   if (!source || !target) throw new Error("Subject not found.");
 
+  // Give the target a unique slug if the admin renamed it, so the rename
+  // can't collide with an unrelated subject already in the same term.
+  let renameSlug: string | null = null;
+  if (mergedName && mergedName !== target.name) {
+    const baseSlug = slugify(mergedName) || "subject";
+    renameSlug = baseSlug;
+    let suffix = 2;
+    while (
+      renameSlug !== target.slug &&
+      (await prisma.subject.findUnique({ where: { termId_slug: { termId: target.termId, slug: renameSlug } } }))
+    ) {
+      renameSlug = `${baseSlug}-${suffix}`;
+      suffix += 1;
+    }
+  }
+
   await prisma.$transaction([
     prisma.resource.updateMany({ where: { subjectId: sourceId }, data: { subjectId: targetId } }),
     prisma.question.updateMany({ where: { subjectId: sourceId }, data: { subjectId: targetId } }),
-    ...(source.notes && !target.notes
-      ? [prisma.subjectNotes.update({ where: { id: source.notes.id }, data: { subjectId: targetId } })]
-      : []),
+    // Notes are admin-authored content — combine both instead of silently
+    // dropping the source's when the target already has its own.
+    ...(source.notes && target.notes
+      ? [
+          prisma.subjectNotes.update({
+            where: { id: target.notes.id },
+            data: { content: `${target.notes.content}\n\n---\n\n${source.notes.content}` },
+          }),
+        ]
+      : source.notes && !target.notes
+        ? [prisma.subjectNotes.update({ where: { id: source.notes.id }, data: { subjectId: targetId } })]
+        : []),
     ...(source.analysis && !target.analysis
       ? [
           prisma.subjectAnalysis.update({
@@ -834,6 +860,7 @@ export async function mergeSubjectsAction(formData: FormData) {
           }),
         ]
       : []),
+    ...(renameSlug ? [prisma.subject.update({ where: { id: targetId }, data: { name: mergedName, slug: renameSlug } })] : []),
     prisma.subject.delete({ where: { id: sourceId } }),
   ]);
 
@@ -841,7 +868,7 @@ export async function mergeSubjectsAction(formData: FormData) {
   revalidatePath("/admin/subject-issues");
   revalidatePath(`/admin/subjects/${targetId}`);
   revalidatePath(`/subjects/${targetId}`);
-  redirect(`/admin/subjects/${targetId}`);
+  redirect("/admin/subject-issues");
 }
 
 // ---------- Resources (Notes / PYQs) ----------
@@ -1003,6 +1030,148 @@ export async function finalizeDirectResourceUploadAction(formData: FormData) {
 // for programmatic callers like Bulk Upload and the Restore tool).
 export async function uploadResourceFormAction(formData: FormData) {
   await uploadResourceAction(formData);
+}
+
+// ---------- Term papers (one combined file for a whole Program+Semester) ----------
+
+type DirectTermPaperMetadata = {
+  termId: string;
+  year: number | null;
+  academicYear: string | null;
+  batchId: string | null;
+  fileName: string;
+  fileSize: number;
+  fileHash: string;
+};
+
+function parseDirectTermPaperMetadata(formData: FormData): DirectTermPaperMetadata {
+  const yearRaw = String(formData.get("year") ?? "").trim();
+  const metadata = {
+    termId: String(formData.get("termId") ?? "").trim(),
+    year: yearRaw ? Number(yearRaw) : null,
+    academicYear: String(formData.get("academicYear") ?? "").trim() || null,
+    batchId: String(formData.get("batchId") ?? "").trim() || null,
+    fileName: String(formData.get("fileName") ?? "paper.pdf").trim(),
+    fileSize: Number(formData.get("fileSize") ?? 0),
+    fileHash: String(formData.get("fileHash") ?? "").trim(),
+  };
+  if (!metadata.termId) throw new Error("A program and semester are required.");
+  if (!metadata.fileHash || !/^[a-f0-9]{64}$/i.test(metadata.fileHash)) {
+    throw new Error("The PDF hash is invalid.");
+  }
+  if (!Number.isFinite(metadata.fileSize) || metadata.fileSize <= 0) {
+    throw new Error("The PDF size is invalid.");
+  }
+  if (metadata.year !== null && (!Number.isInteger(metadata.year) || metadata.year < 1900 || metadata.year > 2200)) {
+    throw new Error("The exam year is invalid.");
+  }
+  return metadata;
+}
+
+// First half of the direct-to-storage path, mirroring
+// prepareDirectResourceUploadAction — these combined papers bundle every
+// subject together so they tend to be large files.
+export async function prepareTermPaperUploadAction(formData: FormData) {
+  await requireAdmin();
+  const metadata = parseDirectTermPaperMetadata(formData);
+  const existing = await prisma.termPaper.findFirst({ where: { fileHash: metadata.fileHash } });
+  if (existing) return { status: "duplicate" as const, termPaperId: existing.id };
+
+  const safeName = metadata.fileName.replace(/[^\w.\-]+/g, "_");
+  const key = `uploads/term-papers/${crypto.randomUUID()}-${safeName}`;
+  const target = await createDirectUploadTarget(key);
+  if (!target) return { status: "fallback" as const };
+  return { status: "ready" as const, key, ...target };
+}
+
+// Second half of the direct path — creates the TermPaper row once the file
+// has actually reached storage.
+export async function finalizeTermPaperUploadAction(formData: FormData) {
+  await requireAdmin();
+  const metadata = parseDirectTermPaperMetadata(formData);
+  const key = String(formData.get("key") ?? "").trim();
+  const fileUrl = String(formData.get("fileUrl") ?? "").trim();
+  if (!key.startsWith("uploads/term-papers/")) throw new Error("The upload target is invalid.");
+  const expectedFileUrl = process.env.R2_PUBLIC_URL
+    ? `${process.env.R2_PUBLIC_URL.replace(/\/$/, "")}/${key}`
+    : "";
+  if (!fileUrl || fileUrl !== expectedFileUrl) throw new Error("The uploaded file URL is invalid.");
+
+  const storedSize = await storedObjectSize(key);
+  if (storedSize === null || storedSize <= 0) throw new Error("The PDF did not reach storage.");
+
+  const existing = await prisma.termPaper.findFirst({ where: { fileHash: metadata.fileHash } });
+  if (existing) {
+    await deleteByUrl(fileUrl);
+    return { status: "duplicate" as const, termPaperId: existing.id };
+  }
+  if (metadata.batchId) {
+    await prisma.uploadBatch.upsert({ where: { id: metadata.batchId }, create: { id: metadata.batchId }, update: {} });
+  }
+  const term = await prisma.term.findUnique({ where: { id: metadata.termId }, select: { programId: true } });
+  if (!term) throw new Error("That program/semester no longer exists.");
+
+  const termPaper = await prisma.termPaper.create({
+    data: {
+      termId: metadata.termId,
+      year: metadata.year,
+      academicYear: metadata.academicYear,
+      fileUrl,
+      fileName: metadata.fileName,
+      fileSize: storedSize,
+      fileHash: metadata.fileHash,
+      batchId: metadata.batchId,
+    },
+  });
+  revalidatePath(`/admin/programs/${term.programId}`);
+  revalidatePath(`/terms/${metadata.termId}`);
+  return { status: "created" as const, termPaperId: termPaper.id };
+}
+
+// Small-file fallback for term papers, mirroring uploadResourceAction — only
+// used when the R2 CORS/direct-upload path isn't available.
+export async function uploadTermPaperAction(formData: FormData) {
+  await requireAdmin();
+  const termId = String(formData.get("termId") ?? "").trim();
+  const yearRaw = String(formData.get("year") ?? "").trim();
+  const year = yearRaw ? Number(yearRaw) : null;
+  const academicYear = String(formData.get("academicYear") ?? "").trim() || null;
+  const file = formData.get("file") as File | null;
+  const batchId = String(formData.get("batchId") ?? "").trim() || null;
+
+  if (!termId) throw new Error("A program and semester are required.");
+  if (!file || file.size === 0) throw new Error("A file is required.");
+
+  const fileHash = await hashFile(file);
+  const existing = await prisma.termPaper.findFirst({ where: { fileHash } });
+  if (existing) return { status: "duplicate" as const, termPaperId: existing.id };
+
+  const { fileUrl, fileName, fileSize } = await saveUploadedFile(file, "term-papers");
+  if (batchId) {
+    await prisma.uploadBatch.upsert({ where: { id: batchId }, create: { id: batchId }, update: {} });
+  }
+  const term = await prisma.term.findUnique({ where: { id: termId }, select: { programId: true } });
+  if (!term) throw new Error("That program/semester no longer exists.");
+
+  const termPaper = await prisma.termPaper.create({
+    data: { termId, year, academicYear, fileUrl, fileName, fileSize, fileHash, batchId },
+  });
+  revalidatePath(`/admin/programs/${term.programId}`);
+  revalidatePath(`/terms/${termId}`);
+  return { status: "created" as const, termPaperId: termPaper.id };
+}
+
+// Removes a combined term paper — the underlying file is deleted from
+// storage too, since (unlike a Resource) nothing else can reference it.
+export async function deleteTermPaperAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "").trim();
+  const termPaper = await prisma.termPaper.findUnique({ where: { id }, include: { term: true } });
+  if (!termPaper) return;
+  await prisma.termPaper.delete({ where: { id } });
+  await deleteByUrl(termPaper.fileUrl);
+  revalidatePath(`/admin/programs/${termPaper.term.programId}`);
+  revalidatePath(`/terms/${termPaper.termId}`);
 }
 
 // Keeps a copy of a PDF that couldn't be uploaded (no subject match, or a

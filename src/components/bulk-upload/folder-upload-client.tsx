@@ -48,6 +48,58 @@ function detectYear(segment: string): string | null {
   return null;
 }
 
+// Ordinal/roman word -> semester roman numeral, for names that spell the
+// semester out inline (e.g. "B.A.(H) History-1st Semester-2017") rather
+// than putting it in its own folder.
+const SEM_WORD_TO_ROMAN: Record<string, string> = {
+  "1st": "I", first: "I", ist: "I", i: "I",
+  "2nd": "II", second: "II", iind: "II", ii: "II",
+  "3rd": "III", third: "III", iiird: "III", iii: "III",
+  "4th": "IV", fourth: "IV", ivth: "IV", iv: "IV",
+  "5th": "V", fifth: "V", vth: "V", v: "V",
+  "6th": "VI", sixth: "VI", vith: "VI", vi: "VI",
+};
+const SEMESTER_PHRASE_RE = /([a-z0-9]+)\s*[-–—]?\s*semesters?\b|\bsemesters?\s*[-–—]?\s*([a-z0-9]+)/i;
+
+// Finds a semester phrase embedded anywhere in a longer string (as opposed
+// to detectSemester, which requires the whole segment to be just that).
+function extractSemesterFromText(text: string): { roman: string | null; span: [number, number] | null } {
+  const m = text.match(SEMESTER_PHRASE_RE);
+  if (!m || m.index === undefined) return { roman: null, span: null };
+  const token = (m[1] ?? m[2] ?? "").toLowerCase();
+  const roman = SEM_WORD_TO_ROMAN[token];
+  if (!roman) return { roman: null, span: null };
+  return { roman, span: [m.index, m.index + m[0].length] };
+}
+
+// Finds a year (range or bare) embedded anywhere in a longer string.
+function extractYearFromText(text: string): { year: string | null; span: [number, number] | null } {
+  const range = text.match(/(?:19|20)\d{2}\s*[-–]\s*\d{2,4}/);
+  if (range && range.index !== undefined) {
+    const [y1, y2raw] = range[0].split(/[-–]/).map((s) => s.trim());
+    const y2 = y2raw.length === 4 ? y2raw.slice(-2) : y2raw;
+    return { year: `${y1}-${y2}`, span: [range.index, range.index + range[0].length] };
+  }
+  const single = text.match(/(?:19|20)\d{2}/);
+  if (single && single.index !== undefined) {
+    return { year: single[0], span: [single.index, single.index + single[0].length] };
+  }
+  return { year: null, span: null };
+}
+
+// Removes the given spans from text (in reverse order so earlier spans'
+// indices stay valid) and tidies up the leftover punctuation/whitespace.
+function stripSpans(text: string, spans: Array<[number, number] | null>): string {
+  const sorted = spans.filter((s): s is [number, number] => s !== null).sort((a, b) => b[0] - a[0]);
+  let out = text;
+  for (const [s, e] of sorted) out = out.slice(0, s) + " " + out.slice(e);
+  return out
+    .replace(/^[\s\-_.,]+|[\s\-_.,]+$/g, "")
+    .replace(/\s*-\s*/g, " ")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 // Works regardless of whether the tree is Semester/Course/Year.pdf or
 // Semester/Year/Course/whatever.pdf — finds the semester folder anywhere,
 // then tries the filename and every remaining folder for a year, and
@@ -81,9 +133,87 @@ function parsePath(relativePath: string) {
     }
   }
 
-  const courseFolder = courseParts.length > 0 ? courseParts[courseParts.length - 1] : nameStem;
+  let courseFolder = courseParts.length > 0 ? courseParts[courseParts.length - 1] : nameStem;
+
+  // Slow path: course, semester, and year are all packed into one combined
+  // segment, e.g. "B.A.(H) History-1st Semester-2017" — pull the semester
+  // and year phrases out of it instead of requiring their own folders.
+  if (!semesterRoman || !year) {
+    const semMatch = !semesterRoman ? extractSemesterFromText(courseFolder) : { roman: null, span: null };
+    const yearMatch = !year ? extractYearFromText(courseFolder) : { year: null, span: null };
+    if (semMatch.roman || yearMatch.year) {
+      if (semMatch.roman) semesterRoman = semMatch.roman;
+      if (yearMatch.year) year = yearMatch.year;
+      courseFolder = stripSpans(courseFolder, [semMatch.span, yearMatch.span]) || courseFolder;
+    }
+  }
 
   return { semesterRoman, courseFolder, year: year ?? "" };
+}
+
+// Best-guess Program name for a handful of well-known short folder/course
+// names — matched case-insensitively against the real Program list at
+// runtime. This is just a fast path; matchProgram() below does the real
+// (fuzzy) work for everything else.
+const SUGGESTED_PROGRAM_NAME: Record<string, string> = {
+  biochemistry: "B.Sc. (Hons.) Biochemistry",
+  botany: "B.Sc. (Hons.) Botany",
+  chemistry: "B.Sc. (Hons.) Chemistry",
+  mathematics: "B.Sc. (Hons.) Mathematics",
+  physics: "B.Sc. (Hons.) Physics",
+  zoology: "B.Sc. (Hons.) Zoology",
+  "b.a(h) economics": "B.A. (Hons.) Economics",
+  "b.a(h) english": "B.A. (Hons.) English",
+  "b.a(h) hindi": "B.A. (Hons.) Hindi",
+  "b.a(h) history": "B.A. (Hons.) History",
+  "b.a(h) political science": "B.A. (Hons.) Political Science",
+  "b.a(h) sanskrit": "B.A. (Hons.) Sanskrit",
+  "b.a(prog)": "B.A. (Programme)",
+  "b.com(h)": "B.Com (Hons) — DU Official Syllabus",
+  "b.sc(prog) life sciences": "B.Sc. (Programme) Life Science",
+  "b.sc(hons & prog) sec": "Common Pool (VAC / AEC / SEC)",
+  "b.sc(hons) generic elective": "GE Pool (Generic Electives)",
+};
+
+// Degree-level words to strip/canonicalize so differently-punctuated or
+// abbreviated versions of the same course ("B.A.(H) History" vs "B. A.
+// (Honours) History") collapse to the same normalized word set.
+const MINIMAL_NOISE = new Set(["b", "a", "of", "the", "and"]);
+const WORD_SYNONYMS: Record<string, string> = {
+  h: "hons", hon: "hons", hons: "hons", honours: "hons", honors: "hons",
+  prog: "prog", programme: "prog", program: "prog",
+  pol: "political",
+};
+
+function normalizeCourseWords(s: string): string[] {
+  return s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, " ")
+    .split(" ")
+    .filter(Boolean)
+    .filter((w) => !MINIMAL_NOISE.has(w))
+    .map((w) => WORD_SYNONYMS[w] ?? w);
+}
+
+// Fuzzy-matches a course-folder name against the real Program list by
+// significant-word overlap, e.g. "B.A.(H) History" -> "B.A. (Hons.) History".
+function matchProgram(courseGuess: string, programs: Program[]): Program | null {
+  const guessWords = new Set(normalizeCourseWords(courseGuess));
+  if (guessWords.size === 0) return null;
+  let best: { program: Program; score: number } | null = null;
+  for (const p of programs) {
+    const nameWords = normalizeCourseWords(p.name);
+    const score = nameWords.filter((w) => guessWords.has(w)).length;
+    if (score > 0 && (!best || score > best.score)) best = { program: p, score };
+  }
+  return best?.program ?? null;
+}
+
+function guessProgramId(courseFolder: string, programs: Program[]): string {
+  const suggestedName = SUGGESTED_PROGRAM_NAME[courseFolder.trim().toLowerCase()];
+  const exact = suggestedName ? programs.find((p) => p.name === suggestedName) : undefined;
+  if (exact) return exact.id;
+  return matchProgram(courseFolder, programs)?.id ?? "";
 }
 
 // Real PDFs always start with "%PDF-". Catches the broken-download case
@@ -179,6 +309,20 @@ export function FolderUploadClient({
           if (!ok) updateRow(row.key, { status: "invalid", message: "Not a real PDF (broken download?)" });
         });
       }
+
+      // Auto-assign a course for any newly-seen course folder — but never
+      // touch one the admin has already picked (or explicitly cleared).
+      const newFolders = new Set(additions.map((r) => r.courseFolder));
+      setCourseProgram((prevProgram) => {
+        const next = { ...prevProgram };
+        for (const folder of newFolders) {
+          if (next[folder] !== undefined) continue;
+          const guess = guessProgramId(folder, programs);
+          if (guess) next[folder] = guess;
+        }
+        return next;
+      });
+
       return [...prev, ...additions];
     });
   }
@@ -434,11 +578,20 @@ export function FolderUploadClient({
         </p>
         <div className="mt-3 flex flex-col gap-2">
           {courseFolders.map((folder) => {
-            const count = rows.filter((r) => r.courseFolder === folder).length;
+            const folderRows = rows.filter((r) => r.courseFolder === folder);
+            const count = folderRows.length;
+            const semesters = Array.from(new Set(folderRows.map((r) => r.semesterRoman).filter(Boolean))).sort(
+              (a, b) => ROMAN_TO_ORDER[a] - ROMAN_TO_ORDER[b]
+            );
+            const years = Array.from(new Set(folderRows.map((r) => r.year).filter(Boolean))).sort();
             return (
               <div key={folder} className="flex flex-wrap items-center gap-3">
                 <span className="min-w-[240px] text-sm font-medium">{folder}</span>
                 <span className="text-xs text-muted">{count} file{count === 1 ? "" : "s"}</span>
+                {semesters.length > 0 && (
+                  <span className="text-xs text-muted">Sem {semesters.join(", ")}</span>
+                )}
+                {years.length > 0 && <span className="text-xs text-muted">{years.join(", ")}</span>}
                 <select
                   value={courseProgram[folder] ?? ""}
                   onChange={(e) =>

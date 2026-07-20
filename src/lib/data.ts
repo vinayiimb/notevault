@@ -28,6 +28,7 @@ export function getTermById(id: string) {
     include: {
       program: true,
       subjects: { orderBy: { name: "asc" }, include: { resources: true, questions: true } },
+      termPapers: { orderBy: { createdAt: "desc" } },
     },
   });
 }

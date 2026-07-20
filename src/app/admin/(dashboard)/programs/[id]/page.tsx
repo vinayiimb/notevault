@@ -8,6 +8,7 @@ import {
   deleteTermAction,
 } from "@/lib/actions";
 import { levelLabel } from "@/lib/utils";
+import { TermPapersSection } from "@/components/admin/term-papers-section";
 
 export default async function AdminProgramDetailPage({
   params,
@@ -20,6 +21,9 @@ export default async function AdminProgramDetailPage({
     include: {
       terms: { orderBy: { order: "asc" }, include: { subjects: { orderBy: { name: "asc" } } } },
     },
+  });
+  const termPapers = await prisma.termPaper.findMany({
+    where: { term: { programId: id } },
   });
   if (!program) notFound();
 
@@ -58,6 +62,12 @@ export default async function AdminProgramDetailPage({
           Add term
         </button>
       </form>
+
+      {program.terms.length > 0 && (
+        <div className="mt-8">
+          <TermPapersSection terms={program.terms} papers={termPapers} programId={program.id} />
+        </div>
+      )}
 
       <div className="mt-8 flex flex-col gap-6">
         {program.terms.map((term) => (

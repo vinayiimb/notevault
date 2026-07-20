@@ -47,7 +47,8 @@ model Term {
   order     Int      @default(1)
   createdAt DateTime @default(now())
 
-  subjects Subject[]
+  subjects   Subject[]
+  termPapers TermPaper[]
 
   @@unique([programId, order])
 }
@@ -123,13 +124,37 @@ model Resource {
   @@index([batchId])
 }
 
+// A single combined paper covering every subject for one Program+Semester
+// at once (as opposed to a Resource, which always belongs to one Subject) —
+// e.g. a scanned "B.Com (H) Semester 1" booklet that bundles all subjects'
+// question papers together instead of being split per subject. Shown on
+// that term's public page alongside its per-subject resources.
+model TermPaper {
+  id           String       @id @default(cuid())
+  termId       String
+  term         Term         @relation(fields: [termId], references: [id], onDelete: Cascade)
+  year         Int?
+  academicYear String?
+  fileUrl      String
+  fileName     String
+  fileSize     Int
+  fileHash     String?
+  batchId      String?
+  batch        UploadBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  createdAt    DateTime     @default(now())
+
+  @@index([fileHash])
+  @@index([batchId])
+}
+
 // One row per "Upload N files" click in Bulk Upload — lets the admin later
 // browse back through what was uploaded together and fix a mistake (wrong
 // year/subject/type) without having to hunt for the resource elsewhere.
 model UploadBatch {
-  id        String     @id @default(cuid())
-  createdAt DateTime   @default(now())
-  resources Resource[]
+  id         String      @id @default(cuid())
+  createdAt  DateTime    @default(now())
+  resources  Resource[]
+  termPapers TermPaper[]
 }
 
 // A row an admin either couldn't assign a subject to, or that failed to
