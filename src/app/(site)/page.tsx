@@ -31,7 +31,9 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="relative -mt-[92px] min-h-[720px] overflow-hidden bg-brand">
+      <section
+        className={`relative -mt-[92px] min-h-[560px] overflow-hidden sm:min-h-[640px] lg:min-h-[720px] ${heroImage ? "bg-[#2c82d6]" : "bg-brand"}`}
+      >
         {!heroImage && (
           <div
             aria-hidden="true"
@@ -39,19 +41,21 @@ export default async function HomePage() {
           />
         )}
         {heroImage && (
-          // The image is uploaded by an admin at an arbitrary aspect ratio,
-          // so a full-bleed native image is more appropriate than next/image.
+          // The image is uploaded by an admin at an arbitrary aspect ratio and
+          // is designed to be shown in full (never cropped), sitting flush
+          // against the section below it — object-contain + object-bottom
+          // keeps the whole image on screen and anchors its own bottom edge
+          // to the section's bottom edge, wherever that lands per viewport.
           // eslint-disable-next-line @next/next/no-img-element
           <img
             src={heroImage}
             alt=""
-            className="absolute inset-0 h-full w-full object-cover object-[center_58%] sm:object-center"
+            className="absolute inset-0 h-full w-full object-contain object-bottom"
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/70" />
-        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-b from-transparent via-black/15 to-black/60" />
 
-        <div className="relative z-10 mx-auto flex min-h-[720px] max-w-5xl flex-col items-center justify-center px-4 pt-40 pb-36 text-center sm:px-6">
+        <div className="relative z-10 mx-auto flex min-h-[560px] max-w-5xl flex-col items-center justify-center px-4 pt-32 pb-16 text-center sm:min-h-[640px] sm:pt-36 sm:pb-24 lg:min-h-[720px] lg:pt-40 lg:pb-36 sm:px-6">
           <p className="mb-5 text-xs font-semibold tracking-[0.2em] text-white/80 uppercase">
             Built for Delhi University students
           </p>
@@ -70,7 +74,7 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <div className="relative z-10 mx-auto -mt-8 max-w-6xl px-4 sm:-mt-14 sm:px-6 lg:-mt-20">
+      <div className="relative z-10 mx-auto mt-6 max-w-6xl px-4 sm:mt-8 sm:px-6 lg:mt-10">
         <section className="overflow-hidden rounded-2xl bg-surface shadow-[0_8px_24px_rgba(31,35,90,.12)] lg:grid lg:grid-cols-[1.35fr_.65fr]">
           <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
             <div className="flex items-start gap-4">
