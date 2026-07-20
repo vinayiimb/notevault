@@ -593,9 +593,20 @@ export function ConsolidatedUploadClient({
             uploadForm.set("fileUrl", prepared.fileUrl);
             result = await finalizeDirectResourceUploadAction(uploadForm);
           } catch (directError) {
-            // Small PDFs still have a reliable compatibility path for R2
-            // buckets whose browser CORS policy has not yet been updated.
-            if (file.bytes.byteLength > 24 * 1024 * 1024) throw directError;
+            // Small PDFs still have a compatibility path for R2 buckets whose
+            // browser CORS policy hasn't been set up: route the file through
+            // the server action instead. But Vercel enforces a hard ~4.5MB
+            // request-body cap on serverless functions that the app's own
+            // 25mb serverActions config cannot raise — anything past that
+            // fails with an opaque "unexpected response" error, so only
+            // attempt this path well under that ceiling, and fail clearly
+            // (not with the fallback's own error) once it's out of reach.
+            if (file.bytes.byteLength > 4 * 1024 * 1024) {
+              throw new Error(
+                "This PDF is too large for the direct-to-storage upload, which failed (likely the R2 bucket's CORS policy) — " +
+                  "large files can't use the backup path either, since Vercel caps request size well below this file's size. Fix the R2 CORS policy and retry.",
+              );
+            }
             uploadForm.set("file", new File([file.bytes], originalName, { type: "application/pdf" }));
             result = await uploadResourceAction(uploadForm);
           }
