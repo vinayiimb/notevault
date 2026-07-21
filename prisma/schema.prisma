@@ -35,7 +35,9 @@ model Program {
   summary   String?
   createdAt DateTime       @default(now())
 
-  terms Term[]
+  terms         Term[]
+  sessionLinks  SessionProgramLink[]
+  driveSubjects DriveSubject[]
 }
 
 // e.g. "Semester 1" for college, or just "Full Year" for school
@@ -54,14 +56,13 @@ model Term {
 }
 
 model Subject {
-  id               String   @id @default(cuid())
-  termId           String
-  term             Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
-  name             String
-  slug             String
-  description      String?
-  questionPaperUrl String?  // Google Drive folder link for question papers
-  createdAt        DateTime @default(now())
+  id          String   @id @default(cuid())
+  termId      String
+  term        Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  name        String
+  slug        String
+  description String?
+  createdAt   DateTime @default(now())
 
   resources Resource[]
   questions Question[]
@@ -146,6 +147,86 @@ model TermPaper {
 
   @@index([fileHash])
   @@index([batchId])
+}
+
+// A yearly/period exam session, e.g. "2026 (May-June)". Listed publicly as
+// rows; each links to a program-level Google Drive folder table rather than
+// individual files — Drive itself is the file browser at that level.
+model ExamSession {
+  id             String   @id @default(cuid())
+  label          String   @unique // e.g. "2026 (May-June) Question Papers"
+  order          Int      @default(0) // display order, desc = newest first
+  masterDriveUrl String? // optional "ALL Search by Name" master-folder link
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  links SessionProgramLink[]
+}
+
+// One row per (session, program): the Drive folder for that program's
+// papers in that session. Upserted on [sessionId, programId] so re-running
+// an import is idempotent and never duplicates — this is what replaced the
+// old per-Subject exact-name-match import, which silently created duplicate
+// Subject rows whenever a name varied slightly between yearly imports.
+model SessionProgramLink {
+  id        String      @id @default(cuid())
+  sessionId String
+  session   ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  programId String
+  program   Program     @relation(fields: [programId], references: [id], onDelete: Cascade)
+  // Distinguishes multiple links to the same Program within one session —
+  // e.g. DU's SEC/VAC/AEC electives all map to the single "Common Pool"
+  // Program, but the spreadsheet gives each its own Drive folder. Empty
+  // string (never null, so the unique index actually enforces uniqueness)
+  // for the normal one-link-per-course case.
+  variantLabel String   @default("")
+  driveUrl     String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  driveFiles DriveFileMatch[]
+
+  @@unique([sessionId, programId, variantLabel])
+}
+
+// A subject derived directly from Drive PDF filenames (e.g. "Corporate
+// Accounting  3319.pdf" -> "Corporate Accounting"), scoped to a Program so
+// the same subject is reused across every session/year for that course
+// instead of re-matching against the old, messy, code-prefixed Subject
+// taxonomy (that legacy list stays exactly as-is elsewhere on the site —
+// this is a separate, parallel structure just for the Drive-driven flow).
+model DriveSubject {
+  id        String   @id @default(cuid())
+  programId String
+  program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  name      String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  files DriveFileMatch[]
+
+  @@unique([programId, slug])
+}
+
+// One PDF found inside a SessionProgramLink's Drive folder, matched to a
+// DriveSubject derived from its own filename. We only store the Drive
+// file's id and link here, never the bytes — the PDF stays on Google Drive.
+model DriveFileMatch {
+  id             String             @id @default(cuid())
+  linkId         String
+  link           SessionProgramLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  driveSubjectId String?
+  driveSubject   DriveSubject?      @relation(fields: [driveSubjectId], references: [id], onDelete: SetNull)
+  driveFileId    String
+  fileName       String
+  webViewLink    String
+  year           Int?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@unique([linkId, driveFileId])
+  @@index([driveSubjectId])
 }
 
 // One row per "Upload N files" click in Bulk Upload — lets the admin later

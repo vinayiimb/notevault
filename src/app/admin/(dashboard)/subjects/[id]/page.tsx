@@ -7,7 +7,6 @@ import {
   deleteQuestionAction,
   deleteResourceAction,
   uploadResourceFormAction,
-  updateSubjectQuestionPaperUrlAction,
 } from "@/lib/actions";
 import { formatBytes } from "@/lib/utils";
 import { PdfDropzone } from "@/components/admin/pdf-dropzone";
@@ -62,41 +61,6 @@ export default async function AdminSubjectPage({
           initialTheme={subject.notes?.theme ?? "sky"}
           pyqCount={subject.resources.filter((r) => r.type === "PYQ").length}
         />
-      </section>
-
-      <section className="mt-6 rounded-xl border border-border bg-surface p-5">
-        <h2 className="font-medium">Question papers (Google Drive)</h2>
-        <p className="mt-1 text-sm text-muted">
-          Add a link to a Google Drive folder containing question papers for this subject.
-        </p>
-        <form action={updateSubjectQuestionPaperUrlAction} className="mt-4 flex flex-col gap-3">
-          <input type="hidden" name="subjectId" value={subject.id} />
-          <input
-            type="url"
-            name="questionPaperUrl"
-            defaultValue={subject.questionPaperUrl ?? ""}
-            placeholder="https://drive.google.com/drive/folders/..."
-            className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
-          />
-          <div className="flex gap-2">
-            <button
-              type="submit"
-              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90"
-            >
-              Save
-            </button>
-            {subject.questionPaperUrl && (
-              <a
-                href={subject.questionPaperUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="rounded-lg border border-accent px-4 py-2 text-sm font-medium text-accent transition hover:bg-accent/5"
-              >
-                Open folder →
-              </a>
-            )}
-          </div>
-        </form>
       </section>
 
       <section className="mt-6 rounded-xl border border-border bg-surface p-5">

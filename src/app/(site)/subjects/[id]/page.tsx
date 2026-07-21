@@ -99,26 +99,6 @@ export default async function SubjectPage({
         <PyqsByYear resources={pyqs} />
       </section>
 
-      {subject.questionPaperUrl && (
-        <section className="mt-10">
-          <h2 className="flex items-center gap-2 text-lg font-medium">
-            <FileText size={20} weight="bold" className="text-accent" />
-            Question papers (Google Drive)
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            Access question papers from Google Drive.
-          </p>
-          <a
-            href={subject.questionPaperUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-4 inline-flex items-center gap-2 rounded-lg bg-accent px-4 py-3 font-medium text-accent-foreground transition hover:opacity-90"
-          >
-            Open on Google Drive
-            <ArrowSquareOut size={16} weight="bold" />
-          </a>
-        </section>
-      )}
 
       <ExamWeightage questions={subject.questions} />
 

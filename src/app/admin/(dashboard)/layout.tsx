@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  CalendarBlank,
   ClockCounterClockwise,
   FileArchive,
   FileArrowUp,
@@ -52,6 +53,13 @@ export default async function AdminDashboardLayout({
           >
             <GraduationCap size={16} />
             Programs
+          </Link>
+          <Link
+            href="/admin/exam-sessions"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <CalendarBlank size={16} />
+            Exam sessions
           </Link>
           <Link
             href="/admin/restore"

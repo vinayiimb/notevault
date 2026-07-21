@@ -357,6 +357,295 @@ export async function deleteProgramAction(formData: FormData) {
   revalidatePath("/admin/programs");
 }
 
+// ---------- Exam sessions (year -> course -> Drive link) ----------
+
+export async function createExamSessionAction(formData: FormData) {
+  await requireAdmin();
+  const label = String(formData.get("label") ?? "").trim();
+  const order = Number(formData.get("order") ?? 0) || 0;
+  const masterDriveUrl = String(formData.get("masterDriveUrl") ?? "").trim() || null;
+  if (!label) throw new Error("Session label is required.");
+
+  await prisma.examSession.create({ data: { label, order, masterDriveUrl } });
+  revalidatePath("/admin/exam-sessions");
+  revalidatePath("/exam-sessions");
+}
+
+export async function updateExamSessionAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const label = String(formData.get("label") ?? "").trim();
+  const order = Number(formData.get("order") ?? 0) || 0;
+  const masterDriveUrl = String(formData.get("masterDriveUrl") ?? "").trim() || null;
+  if (!label) throw new Error("Session label is required.");
+
+  await prisma.examSession.update({ where: { id }, data: { label, order, masterDriveUrl } });
+  revalidatePath("/admin/exam-sessions");
+  revalidatePath(`/admin/exam-sessions/${id}`);
+  revalidatePath("/exam-sessions");
+  revalidatePath(`/exam-sessions/${id}`);
+}
+
+export async function deleteExamSessionAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await prisma.examSession.delete({ where: { id } });
+  revalidatePath("/admin/exam-sessions");
+  revalidatePath("/exam-sessions");
+}
+
+// Manually links (or edits) one Program's Drive folder for a session —
+// used both for one-off edits and to resolve a CSV row the auto-matcher
+// flagged as "needs-review". Upserted, so re-submitting the same
+// session+program never creates a duplicate row.
+export async function linkProgramToSessionAction(formData: FormData) {
+  await requireAdmin();
+  const sessionId = String(formData.get("sessionId"));
+  const programId = String(formData.get("programId"));
+  const variantLabel = String(formData.get("variantLabel") ?? "").trim();
+  const driveUrl = String(formData.get("driveUrl") ?? "").trim();
+  if (!sessionId || !programId) throw new Error("Session and course are required.");
+  if (!driveUrl) throw new Error("A Drive link is required.");
+
+  await prisma.sessionProgramLink.upsert({
+    where: { sessionId_programId_variantLabel: { sessionId, programId, variantLabel } },
+    update: { driveUrl },
+    create: { sessionId, programId, variantLabel, driveUrl },
+  });
+
+  revalidatePath(`/admin/exam-sessions/${sessionId}`);
+  revalidatePath(`/exam-sessions/${sessionId}`);
+}
+
+export async function deleteSessionProgramLinkAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const sessionId = String(formData.get("sessionId"));
+  await prisma.sessionProgramLink.delete({ where: { id } });
+  revalidatePath(`/admin/exam-sessions/${sessionId}`);
+  revalidatePath(`/exam-sessions/${sessionId}`);
+}
+
+export type SessionCsvRowResult = {
+  courseLabel: string;
+  driveUrl: string;
+  status: "linked" | "needs-review" | "invalid";
+  matchedProgramId?: string;
+  matchedProgramName?: string;
+  confidence?: number;
+  message?: string;
+};
+
+// Bulk-imports a session's course -> Drive-link table from a pasted/uploaded
+// CSV (columns: course/program/name, url/link/drive/folder). Matches each
+// row against the existing, small, stable Program list — never against
+// individual Subjects — so minor name variants across yearly re-imports
+// resolve to the same Program instead of the old bug where a fresh row (and
+// effectively a whole duplicate "folder") got created for every spelling
+// variant. High-confidence matches (>=0.9) are linked automatically;
+// anything less confident is left unlinked and reported back as
+// "needs-review" for the admin to resolve by hand via
+// linkProgramToSessionAction — nothing is ever silently auto-created.
+export async function importSessionLinksFromCsvAction(
+  formData: FormData
+): Promise<{ results: SessionCsvRowResult[] }> {
+  await requireAdmin();
+  const sessionId = String(formData.get("sessionId"));
+  const file = formData.get("file") as File | null;
+  if (!sessionId) throw new Error("A session is required.");
+  if (!file || file.size === 0) throw new Error("A CSV file is required.");
+
+  const { parseCsv } = await import("@/lib/csv");
+  const { matchProgramName } = await import("@/lib/subject-quality");
+  const text = await file.text();
+  const rows = parseCsv(text);
+  if (rows.length === 0) {
+    throw new Error(
+      "Could not read any rows from that file — check it's a real CSV (comma, semicolon, or tab-separated) with a header row."
+    );
+  }
+
+  const programs = await prisma.program.findMany();
+  const results: SessionCsvRowResult[] = [];
+  let touched = false;
+
+  for (const row of rows) {
+    const courseLabel = (row.course || row.program || row.name || "").trim();
+    const driveUrl = (row.url || row.link || row.drive || row.folder || "").trim();
+
+    if (!courseLabel) {
+      results.push({ courseLabel: "(blank)", driveUrl, status: "invalid", message: "No course/program column found" });
+      continue;
+    }
+    if (!driveUrl) {
+      results.push({ courseLabel, driveUrl: "", status: "invalid", message: "No Drive link found" });
+      continue;
+    }
+
+    const { program, confidence, variantLabel } = matchProgramName(programs, courseLabel);
+    if (program && confidence >= 0.9) {
+      await prisma.sessionProgramLink.upsert({
+        where: { sessionId_programId_variantLabel: { sessionId, programId: program.id, variantLabel } },
+        update: { driveUrl },
+        create: { sessionId, programId: program.id, variantLabel, driveUrl },
+      });
+      touched = true;
+      results.push({
+        courseLabel,
+        driveUrl,
+        status: "linked",
+        matchedProgramId: program.id,
+        matchedProgramName: variantLabel ? `${program.name} (${variantLabel})` : program.name,
+        confidence,
+      });
+    } else {
+      results.push({
+        courseLabel,
+        driveUrl,
+        status: "needs-review",
+        matchedProgramId: program?.id,
+        matchedProgramName: program?.name,
+        confidence,
+        message: program
+          ? `Closest match "${program.name}" is only ${Math.round(confidence * 100)}% confident`
+          : "No similar course found",
+      });
+    }
+  }
+
+  if (touched) {
+    revalidatePath(`/admin/exam-sessions/${sessionId}`);
+    revalidatePath(`/exam-sessions/${sessionId}`);
+  }
+
+  return { results };
+}
+
+export type DriveSyncRowResult = {
+  fileName: string;
+  subjectName: string;
+  isNewSubject: boolean;
+};
+
+// Lists the PDFs inside a SessionProgramLink's Drive folder and, for each
+// one, derives a subject name straight from the filename (see
+// deriveSubjectNameFromFilename) rather than matching against the old
+// code-prefixed Subject taxonomy. The derived name is then matched against
+// DriveSubjects already known for this Program (across every session/year)
+// so a re-sync next year — even with different capitalization, "(H)" vs
+// "(Hons)" wording, or a small typo in the filename — reuses the same
+// subject instead of creating a near-duplicate. Never downloads the PDFs;
+// only stores id/name/link. Safe to re-run (upsert on [linkId, driveFileId]).
+export async function syncDriveFilesForLinkAction(
+  formData: FormData
+): Promise<{ results: DriveSyncRowResult[] }> {
+  await requireAdmin();
+  const linkId = String(formData.get("linkId"));
+  if (!linkId) throw new Error("A course link is required.");
+
+  const link = await prisma.sessionProgramLink.findUnique({ where: { id: linkId } });
+  if (!link) throw new Error("That course link no longer exists.");
+
+  const { extractDriveFolderId, listDriveFolderPdfs } = await import("@/lib/google-drive");
+  const folderId = extractDriveFolderId(link.driveUrl);
+  if (!folderId) throw new Error("Could not find a folder id in that Drive link.");
+
+  const files = await listDriveFolderPdfs(folderId);
+
+  const { guessYear } = await import("@/lib/subject-match");
+  const { deriveSubjectNameFromFilename, matchDriveSubjectName } = await import("@/lib/subject-quality");
+
+  let driveSubjects = await prisma.driveSubject.findMany({ where: { programId: link.programId } });
+
+  const results: DriveSyncRowResult[] = [];
+
+  for (const file of files) {
+    const rawName = deriveSubjectNameFromFilename(file.name) || file.name.replace(/\.pdf$/i, "");
+    const year = guessYear(file.name);
+
+    const { subject, confidence } = matchDriveSubjectName(driveSubjects, rawName);
+    let driveSubjectId: string;
+    let isNewSubject = false;
+    if (subject && confidence >= 0.85) {
+      driveSubjectId = subject.id;
+    } else {
+      const slug = await uniqueSlug(rawName, async (s) => {
+        const found = await prisma.driveSubject.findUnique({
+          where: { programId_slug: { programId: link.programId, slug: s } },
+        });
+        return !!found;
+      });
+      const created = await prisma.driveSubject.create({
+        data: { programId: link.programId, name: rawName, slug },
+      });
+      driveSubjects.push(created);
+      driveSubjectId = created.id;
+      isNewSubject = true;
+    }
+
+    await prisma.driveFileMatch.upsert({
+      where: { linkId_driveFileId: { linkId, driveFileId: file.id } },
+      update: { fileName: file.name, webViewLink: file.webViewLink, year, driveSubjectId },
+      create: {
+        linkId,
+        driveFileId: file.id,
+        fileName: file.name,
+        webViewLink: file.webViewLink,
+        year,
+        driveSubjectId,
+      },
+    });
+
+    results.push({
+      fileName: file.name,
+      subjectName: driveSubjects.find((s) => s.id === driveSubjectId)?.name ?? rawName,
+      isNewSubject,
+    });
+  }
+
+  revalidatePath(`/admin/exam-sessions/${link.sessionId}`);
+  revalidatePath(`/exam-sessions/${link.sessionId}/${link.id}`);
+
+  return { results };
+}
+
+// Renames a DriveSubject (e.g. to merge a wording the auto-matcher didn't
+// catch, or just to tidy up a name straight from a messy filename).
+export async function renameDriveSubjectAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) throw new Error("A name is required.");
+
+  const subject = await prisma.driveSubject.findUnique({ where: { id } });
+  if (!subject) throw new Error("That subject no longer exists.");
+
+  const slug = await uniqueSlug(name, async (s) => {
+    if (s === subject.slug) return false;
+    const found = await prisma.driveSubject.findUnique({
+      where: { programId_slug: { programId: subject.programId, slug: s } },
+    });
+    return !!found;
+  });
+
+  await prisma.driveSubject.update({ where: { id }, data: { name, slug } });
+  revalidatePath(`/admin/exam-sessions`);
+}
+
+// Merges one DriveSubject into another (moves all its files over, then
+// deletes the now-empty one) — for the rare case the auto-matcher created
+// two subjects for what's really the same one.
+export async function mergeDriveSubjectsAction(formData: FormData) {
+  await requireAdmin();
+  const fromId = String(formData.get("fromId"));
+  const intoId = String(formData.get("intoId"));
+  if (!fromId || !intoId || fromId === intoId) throw new Error("Pick two different subjects to merge.");
+
+  await prisma.driveFileMatch.updateMany({ where: { driveSubjectId: fromId }, data: { driveSubjectId: intoId } });
+  await prisma.driveSubject.delete({ where: { id: fromId } });
+  revalidatePath(`/admin/exam-sessions`);
+}
+
 // ---------- Terms ----------
 
 export async function createTermAction(formData: FormData) {
@@ -489,21 +778,6 @@ export async function updateSubjectNotesAction(formData: FormData) {
       update: { content, theme },
     });
   }
-
-  revalidatePath(`/admin/subjects/${subjectId}`);
-  revalidatePath(`/subjects/${subjectId}`);
-}
-
-export async function updateSubjectQuestionPaperUrlAction(formData: FormData) {
-  await requireAdmin();
-  const subjectId = String(formData.get("subjectId"));
-  const url = String(formData.get("questionPaperUrl") ?? "").trim();
-  if (!subjectId) throw new Error("Subject is required.");
-
-  await prisma.subject.update({
-    where: { id: subjectId },
-    data: { questionPaperUrl: url || null },
-  });
 
   revalidatePath(`/admin/subjects/${subjectId}`);
   revalidatePath(`/subjects/${subjectId}`);

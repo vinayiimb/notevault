@@ -113,6 +113,12 @@ export default async function HomePage() {
               detail="Build a quiz, flashcards, or a map"
               href="/tools/exam-kit"
             />
+            <Shortcut
+              icon={<Exam size={20} weight="bold" />}
+              title="I need this session's paper"
+              detail="Every year, every course, straight from Drive"
+              href="/exam-sessions"
+            />
           </nav>
         </section>
       </div>

@@ -46,6 +46,36 @@ export function getSubjectById(id: string) {
   });
 }
 
+export function getExamSessions() {
+  return prisma.examSession.findMany({
+    include: { _count: { select: { links: true } } },
+    orderBy: { order: "desc" },
+  });
+}
+
+export function getExamSessionById(id: string) {
+  return prisma.examSession.findUnique({
+    where: { id },
+    include: {
+      links: {
+        include: { program: true },
+        orderBy: [{ program: { name: "asc" } }, { variantLabel: "asc" }],
+      },
+    },
+  });
+}
+
+export function getSessionLinkWithSubjects(linkId: string) {
+  return prisma.sessionProgramLink.findUnique({
+    where: { id: linkId },
+    include: {
+      session: true,
+      program: true,
+      driveFiles: { include: { driveSubject: true }, orderBy: { fileName: "asc" } },
+    },
+  });
+}
+
 /** Lightweight index for the complete OCR archive. The text itself stays out
  * of this query; individual paper pages load it only when opened. */
 export function getPyqArchiveIndex() {
