@@ -142,17 +142,8 @@ export function TermPapersSection({ terms, papers }: { terms: Term[]; papers: Te
           message: result.status === "duplicate" ? "Already uploaded" : "Uploaded",
         });
         if (result.status === "created") {
-          setExistingPapers((prev) => [
-            ...prev,
-            {
-              id: result.termPaperId,
-              termId,
-              academicYear: item.year.trim(),
-              year: Number(yearStart) || null,
-              fileName: item.file.name,
-              fileUrl: "",
-            },
-          ]);
+          // Don't add to existingPapers yet - it will be fetched fresh on page reload
+          // This avoids showing incomplete entries with empty fileUrl
         }
       } catch (err) {
         updatePendingStatus(termId, item.key, {
@@ -173,14 +164,20 @@ export function TermPapersSection({ terms, papers }: { terms: Term[]; papers: Te
   }
 
   return (
-    <div className="rounded-xl border border-border bg-surface p-4">
-      <h3 className="font-medium">Term papers</h3>
-      <p className="mt-1 text-xs text-muted">
-        One combined PDF per semester, covering every subject at once. Click a semester to open it, then
-        drop in the PDFs for each year — the only thing to fill in per file is the year.
-      </p>
+    <div className="rounded-2xl border border-border bg-gradient-to-br from-surface to-surface-muted/30 p-6">
+      <div className="flex items-start justify-between">
+        <div>
+          <h3 className="text-lg font-semibold text-foreground">Term Papers</h3>
+          <p className="mt-2 text-sm text-muted max-w-2xl">
+            Upload one combined PDF per semester covering every subject. Click a semester to expand it, then drop in PDFs for each year — only the year needs filling in.
+          </p>
+        </div>
+        <div className="shrink-0 flex h-10 w-10 items-center justify-center rounded-lg bg-accent/10 text-accent">
+          <FileArchive size={20} weight="bold" />
+        </div>
+      </div>
 
-      <div className="mt-4 flex flex-wrap gap-2">
+      <div className="mt-6 grid gap-2 sm:grid-cols-2">
         {sortedTerms.map((term) => {
           const count = existingPapers.filter((p) => p.termId === term.id).length;
           return (
@@ -188,53 +185,78 @@ export function TermPapersSection({ terms, papers }: { terms: Term[]; papers: Te
               key={term.id}
               type="button"
               onClick={() => setOpenTermId(openTermId === term.id ? null : term.id)}
-              className={`flex flex-col items-center gap-0.5 rounded-lg border px-4 py-2 text-sm font-medium transition ${
+              className={`group flex items-center justify-between gap-3 rounded-lg border px-4 py-3 text-sm font-medium transition ${
                 openTermId === term.id
-                  ? "border-accent bg-accent text-accent-foreground"
-                  : "border-border bg-background hover:border-accent"
+                  ? "border-accent bg-gradient-to-r from-accent to-accent/80 text-accent-foreground shadow-lg shadow-accent/20"
+                  : "border-border bg-background/50 hover:border-accent hover:bg-background hover:shadow-md"
               }`}
             >
-              <span>{term.name}</span>
-              <span className={`text-[10px] ${openTermId === term.id ? "text-accent-foreground/80" : "text-muted"}`}>
-                {count} paper{count === 1 ? "" : "s"}
-              </span>
+              <div className="text-left flex-1">
+                <p className="font-medium">{term.name}</p>
+                <p className={`text-xs mt-0.5 ${openTermId === term.id ? "text-accent-foreground/70" : "text-muted group-hover:text-muted/80"}`}>
+                  {count} paper{count === 1 ? "" : "s"}
+                </p>
+              </div>
+              <div className={`text-lg transition ${openTermId === term.id ? "rotate-180" : ""}`}>
+                ⌄
+              </div>
             </button>
           );
         })}
       </div>
 
       {openTermId && (
-        <div className="mt-4 rounded-lg border border-border bg-background p-4">
+        <div className="mt-4 space-y-4 rounded-xl border border-accent/20 bg-gradient-to-br from-accent/5 to-transparent p-4">
           {(() => {
             const term = sortedTerms.find((t) => t.id === openTermId)!;
             const termPapers = existingPapers.filter((p) => p.termId === openTermId);
             const pending = pendingByTerm[openTermId] ?? [];
             return (
               <>
-                <p className="text-sm font-medium">{term.name}</p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{term.name}</p>
+                    {termPapers.length > 0 && (
+                      <p className="mt-1 text-xs text-muted">{termPapers.length} uploaded paper{termPapers.length === 1 ? "" : "s"}</p>
+                    )}
+                  </div>
+                </div>
 
                 {termPapers.length > 0 && (
-                  <ul className="mt-3 flex flex-col gap-1.5">
+                  <ul className="space-y-2">
                     {termPapers.map((paper) => (
-                      <li key={paper.id} className="flex items-center justify-between gap-2 rounded-lg border border-border px-3 py-1.5 text-sm">
+                      <li key={paper.id} className={`group flex items-center justify-between gap-3 rounded-lg border px-3 py-2.5 text-sm transition ${
+                        paper.fileUrl
+                          ? "border-green-500/30 bg-green-500/5 hover:border-green-500/50 hover:bg-green-500/10"
+                          : "border-amber-500/30 bg-amber-500/5 hover:border-amber-500/50"
+                      }`}>
                         {paper.fileUrl ? (
                           <a
                             href={paper.fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 hover:text-accent"
+                            className="flex flex-1 items-center gap-2 text-foreground hover:text-accent transition truncate"
                           >
-                            <FileArchive size={14} />
-                            {paper.academicYear ?? paper.year ?? "Undated"} · {paper.fileName}
+                            <FileArchive size={14} weight="bold" className="shrink-0" />
+                            <span className="truncate">
+                              {paper.academicYear ?? paper.year ?? "Undated"} · {paper.fileName}
+                            </span>
                           </a>
                         ) : (
-                          <span className="flex items-center gap-2 text-muted">
-                            <FileArchive size={14} />
-                            {paper.academicYear ?? paper.year ?? "Undated"} · {paper.fileName}
+                          <span className="flex flex-1 items-center gap-2 text-muted truncate">
+                            <FileArchive size={14} weight="bold" className="shrink-0" />
+                            <span className="truncate">
+                              {paper.academicYear ?? paper.year ?? "Undated"} · {paper.fileName}
+                            </span>
+                            <span className="shrink-0 ml-auto text-xs bg-amber-500/20 text-amber-700 px-2 py-0.5 rounded">Processing</span>
                           </span>
                         )}
-                        <button type="button" onClick={() => handleDelete(paper.id)} className="text-red-500 hover:underline">
-                          <Trash size={14} />
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(paper.id)}
+                          className="shrink-0 text-muted opacity-0 hover:text-red-500 transition group-hover:opacity-100"
+                        >
+                          <Trash size={16} weight="bold" />
                         </button>
                       </li>
                     ))}
@@ -242,7 +264,7 @@ export function TermPapersSection({ terms, papers }: { terms: Term[]; papers: Te
                 )}
 
                 <label
-                  className="mt-3 flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-border bg-surface p-6 text-center transition hover:border-accent"
+                  className="group relative flex flex-col items-center justify-center gap-2.5 rounded-xl border-2 border-dashed border-accent/30 bg-gradient-to-br from-accent/5 to-accent/0 p-8 text-center transition cursor-pointer hover:border-accent hover:from-accent/10 hover:to-accent/5"
                   onDragOver={(e) => e.preventDefault()}
                   onDrop={(e) => {
                     e.preventDefault();
@@ -250,9 +272,14 @@ export function TermPapersSection({ terms, papers }: { terms: Term[]; papers: Te
                     if (dropped.length > 0) addFiles(openTermId, dropped);
                   }}
                 >
-                  <FileArchive size={22} weight="bold" className="text-muted" />
-                  <span className="text-sm font-medium">Drop {term.name} PDFs here (one or more years)</span>
-                  <span className="text-xs text-muted">or click to select multiple files</span>
+                  <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-accent/10 text-accent transition group-hover:bg-accent/20">
+                    <FileArchive size={24} weight="bold" />
+                  </div>
+                  <div>
+                    <span className="text-sm font-semibold text-foreground">Drop PDFs here</span>
+                    <p className="mt-0.5 text-xs text-muted">or click to select multiple files (one or more years)</p>
+                  </div>
+                  <span className="mt-2 text-xs text-muted/70 font-medium uppercase tracking-wide">PDF Only</span>
                   <input
                     type="file"
                     accept=".pdf,application/pdf"
@@ -267,66 +294,76 @@ export function TermPapersSection({ terms, papers }: { terms: Term[]; papers: Te
                 </label>
 
                 {pending.length > 0 && (
-                  <div className="mt-3 overflow-x-auto rounded-lg border border-border">
-                    <table className="w-full text-sm">
-                      <thead className="bg-surface-muted text-xs font-semibold tracking-wide text-muted uppercase">
-                        <tr>
-                          <th className="px-3 py-2 text-left">File</th>
-                          <th className="px-3 py-2 text-left">Year</th>
-                          <th className="px-3 py-2 text-left">Status</th>
-                          <th className="px-3 py-2 text-left"></th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-border">
-                        {pending.map((item) => (
-                          <tr key={item.key}>
-                            <td className="max-w-[220px] truncate px-3 py-2 text-xs" title={item.file.name}>
-                              {item.file.name}
-                            </td>
-                            <td className="px-3 py-2">
-                              <input
-                                type="text"
-                                value={item.year}
-                                onChange={(e) => updatePendingYear(openTermId, item.key, e.target.value)}
-                                placeholder="2024-25"
-                                className={`w-24 rounded-lg border bg-background px-2 py-1 text-xs focus:border-accent focus:outline-none ${
-                                  item.year.trim() ? "border-border" : "border-amber-500"
-                                }`}
-                              />
-                            </td>
-                            <td className="px-3 py-2 text-xs">
-                              {item.status === "uploading" && <span className="text-accent">Uploading...</span>}
-                              {item.status === "done" && <span className="text-green-600">Uploaded</span>}
-                              {item.status === "duplicate" && <span className="text-muted">{item.message}</span>}
-                              {item.status === "error" && <span className="text-red-500">{item.message}</span>}
-                              {item.status === "idle" && <span className="text-muted">Ready</span>}
-                            </td>
-                            <td className="px-3 py-2">
-                              <button
-                                type="button"
-                                onClick={() => removePending(openTermId, item.key)}
-                                className="text-xs text-red-500 hover:underline"
-                              >
-                                Remove
-                              </button>
-                            </td>
+                  <div className="space-y-3">
+                    <div className="overflow-x-auto rounded-lg border border-border/50 bg-background/30">
+                      <table className="w-full text-sm">
+                        <thead className="bg-accent/5 text-xs font-semibold tracking-wide text-muted uppercase border-b border-border/50">
+                          <tr>
+                            <th className="px-3 py-2 text-left">File</th>
+                            <th className="px-3 py-2 text-left">Year</th>
+                            <th className="px-3 py-2 text-center">Status</th>
+                            <th className="px-3 py-2 w-16"></th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                        </thead>
+                        <tbody className="divide-y divide-border/30">
+                          {pending.map((item) => (
+                            <tr key={item.key} className="hover:bg-accent/5 transition">
+                              <td className="max-w-[220px] truncate px-3 py-2 text-xs text-muted" title={item.file.name}>
+                                {item.file.name}
+                              </td>
+                              <td className="px-3 py-2">
+                                <input
+                                  type="text"
+                                  value={item.year}
+                                  onChange={(e) => updatePendingYear(openTermId, item.key, e.target.value)}
+                                  placeholder="2024-25"
+                                  className={`w-24 rounded-md border bg-background px-2 py-1 text-xs transition focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent/20 ${
+                                    item.year.trim() ? "border-border" : "border-amber-500/50 bg-amber-500/5"
+                                  }`}
+                                />
+                              </td>
+                              <td className="px-3 py-2 text-xs text-center">
+                                {item.status === "uploading" && (
+                                  <span className="inline-flex items-center gap-1 bg-blue-500/10 text-blue-600 px-2 py-1 rounded-md font-medium">
+                                    <span className="animate-spin">⟳</span> Uploading
+                                  </span>
+                                )}
+                                {item.status === "done" && (
+                                  <span className="inline-flex items-center gap-1 bg-green-500/10 text-green-600 px-2 py-1 rounded-md font-medium">✓ Uploaded</span>
+                                )}
+                                {item.status === "duplicate" && (
+                                  <span className="text-muted text-xs">{item.message}</span>
+                                )}
+                                {item.status === "error" && (
+                                  <span className="text-red-600 font-medium">{item.message}</span>
+                                )}
+                                {item.status === "idle" && <span className="text-muted">Ready</span>}
+                              </td>
+                              <td className="px-3 py-2 text-right">
+                                <button
+                                  type="button"
+                                  onClick={() => removePending(openTermId, item.key)}
+                                  className="text-xs text-muted hover:text-red-500 transition font-medium"
+                                >
+                                  Remove
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
 
-                {pending.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => uploadPending(openTermId)}
-                    disabled={uploading}
-                    className="mt-3 flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50"
-                  >
-                    <UploadSimple size={16} weight="bold" />
-                    {uploading ? "Uploading..." : `Upload ${pending.filter((p) => p.status !== "done" && p.status !== "duplicate").length} file(s)`}
-                  </button>
+                    <button
+                      type="button"
+                      onClick={() => uploadPending(openTermId)}
+                      disabled={uploading}
+                      className="w-full flex items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-accent to-accent/80 px-4 py-3 text-sm font-semibold text-accent-foreground transition hover:shadow-lg hover:shadow-accent/30 disabled:opacity-50 disabled:hover:shadow-none"
+                    >
+                      <UploadSimple size={18} weight="bold" />
+                      {uploading ? "Uploading..." : `Upload ${pending.filter((p) => p.status !== "done" && p.status !== "duplicate").length} file(s)`}
+                    </button>
+                  </div>
                 )}
               </>
             );
