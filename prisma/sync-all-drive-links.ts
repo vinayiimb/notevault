@@ -14,7 +14,22 @@ import { extractDriveFolderId, listDriveFolderPdfs } from "../src/lib/google-dri
 import { guessYear } from "../src/lib/subject-match";
 import { deriveSubjectNameFromFilename, matchDriveSubjectName } from "../src/lib/subject-quality";
 
-const prisma = new PrismaClient();
+// Neon's pooled connection has a small shared connection limit — the app's
+// own dev/prod server is drawing from the same pool, so this script caps
+// itself to a couple of connections instead of Prisma's default (which was
+// enough on its own to starve the dev server's pool and 500 it mid-run).
+function scriptDatabaseUrl() {
+  const base = process.env.DATABASE_URL;
+  if (!base) throw new Error("DATABASE_URL is not set.");
+  const url = new URL(base);
+  url.searchParams.set("connection_limit", "2");
+  url.searchParams.set("pool_timeout", "30");
+  return url.toString();
+}
+
+const prisma = new PrismaClient({ datasources: { db: { url: scriptDatabaseUrl() } } });
+const PAUSE_MS = 400;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function uniqueSlug(base: string, programId: string) {
   const root = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "subject";
@@ -92,6 +107,7 @@ async function main() {
       failures.push({ session: link.session.label, program: link.program.name, variant: link.variantLabel, reason });
       console.log(`  ✗ ${label} — ${reason}`);
     }
+    await sleep(PAUSE_MS);
   }
 
   console.log(`\nDone. Synced ${synced}/${targets.length} links, ${totalFiles} files total, ${failures.length} failure(s).`);
