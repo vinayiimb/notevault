@@ -54,13 +54,14 @@ model Term {
 }
 
 model Subject {
-  id          String   @id @default(cuid())
-  termId      String
-  term        Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
-  name        String
-  slug        String
-  description String?
-  createdAt   DateTime @default(now())
+  id               String   @id @default(cuid())
+  termId           String
+  term             Term     @relation(fields: [termId], references: [id], onDelete: Cascade)
+  name             String
+  slug             String
+  description      String?
+  questionPaperUrl String?  // Google Drive folder link for question papers
+  createdAt        DateTime @default(now())
 
   resources Resource[]
   questions Question[]

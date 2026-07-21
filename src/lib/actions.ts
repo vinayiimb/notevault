@@ -494,6 +494,21 @@ export async function updateSubjectNotesAction(formData: FormData) {
   revalidatePath(`/subjects/${subjectId}`);
 }
 
+export async function updateSubjectQuestionPaperUrlAction(formData: FormData) {
+  await requireAdmin();
+  const subjectId = String(formData.get("subjectId"));
+  const url = String(formData.get("questionPaperUrl") ?? "").trim();
+  if (!subjectId) throw new Error("Subject is required.");
+
+  await prisma.subject.update({
+    where: { id: subjectId },
+    data: { questionPaperUrl: url || null },
+  });
+
+  revalidatePath(`/admin/subjects/${subjectId}`);
+  revalidatePath(`/subjects/${subjectId}`);
+}
+
 // Shared by moveSubjectsToTermAction (UI-driven) and
 // matchUnsortedFromCsvAction (CSV-driven) — grouped by destination term,
 // then done in as few queries as possible: subjects whose existing slug
