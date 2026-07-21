@@ -11,6 +11,8 @@
     "seed:du-syllabus": "tsx prisma/seed-du-syllabus.ts",
     "seed:biochemistry": "tsx prisma/seed-biochemistry.ts",
     "seed:course-match-memory": "tsx prisma/seed-course-match-memory.ts",
+    "seed:historical-exam-sessions": "tsx prisma/seed-historical-exam-sessions.ts",
+    "sync:drive-links": "tsx prisma/sync-all-drive-links.ts",
     "import:core-pyqs": "tsx prisma/import-core-pyqs.ts",
     "migrate:export": "tsx prisma/migrate-to-postgres-blob.ts export",
     "migrate:import": "tsx prisma/migrate-to-postgres-blob.ts import"
