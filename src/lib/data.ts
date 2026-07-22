@@ -115,6 +115,34 @@ export function getPyqResourceById(id: string) {
   });
 }
 
+// Flat index of every Drive-linked paper across every exam session — the
+// actual bulk of "Full archive" content now that papers are synced from
+// Google Drive folders rather than uploaded+OCR'd one at a time (see
+// ExamSession/SessionProgramLink/DriveSubject/DriveFileMatch in the schema).
+// Unmatched files (driveSubjectId null — the sync couldn't derive a subject
+// name) are excluded since the browser groups by subject.
+export function getFullDriveArchiveIndex() {
+  return prisma.driveFileMatch.findMany({
+    where: { driveSubjectId: { not: null } },
+    select: {
+      id: true,
+      fileName: true,
+      year: true,
+      webViewLink: true,
+      driveSubject: {
+        select: { id: true, name: true, program: { select: { name: true, slug: true } } },
+      },
+      link: {
+        select: {
+          variantLabel: true,
+          session: { select: { id: true, label: true, order: true } },
+        },
+      },
+    },
+    orderBy: [{ link: { session: { order: "desc" } } }, { fileName: "asc" }],
+  });
+}
+
 // SQLite's `contains` is case-sensitive, so filter in JS for a case-insensitive match.
 //
 // Ranked, not just filtered — a short query like "ma" or "international"
