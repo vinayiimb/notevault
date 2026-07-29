@@ -2,6 +2,7 @@
 
 import {
   ArrowSquareOut,
+  CaretDown,
   FunnelSimple,
   MagnifyingGlass,
   WarningCircle,
@@ -140,6 +141,20 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   const [session, setSession] = useState(ALL);
   const [search, setSearch] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
+  // Subjects render as a collapsed list — a subject's sessions/papers only
+  // appear once its row is clicked, so picking a course surfaces every
+  // matching subject on the same page without dumping every session and
+  // paper for all of them at once.
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  function toggleExpanded(key: string) {
+    setExpanded((current) => {
+      const next = new Set(current);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   const courses = useMemo(
     () => [...new Set(papers.map((paper) => paper.course))].sort((a, b) => a.localeCompare(b)),
@@ -172,6 +187,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
     setSession(ALL);
     setSearch("");
     setVisibleCount(PAGE_SIZE);
+    setExpanded(new Set());
   }
 
   const hasFilters = course !== ALL || session !== ALL || search.trim().length > 0;
@@ -305,82 +321,30 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
             Show the full archive
           </button>
         </div>
+      ) : course === ALL ? (
+        <section aria-label="Archive results" className="mt-6 space-y-6">
+          {groupByCourse(visibleGroups).map(([courseName, courseGroups]) => (
+            <section
+              key={courseName}
+              aria-labelledby={`course-${courseName.replace(/[^a-z0-9]+/gi, "-")}`}
+              className="overflow-hidden rounded-2xl border border-border bg-surface"
+            >
+              <header className="border-b border-border bg-accent-soft px-5 py-4 sm:px-6">
+                <p className="text-xs font-semibold uppercase tracking-wider text-accent">Course</p>
+                <h2 id={`course-${courseName.replace(/[^a-z0-9]+/gi, "-")}`} className="mt-1 text-xl font-semibold text-foreground">
+                  {courseName}
+                </h2>
+              </header>
+              <SubjectList groups={courseGroups} expanded={expanded} onToggle={toggleExpanded} />
+            </section>
+          ))}
+        </section>
       ) : (
         <section
-          aria-label="Archive results"
-          className="mt-6 space-y-6"
+          aria-label={`Subjects for ${course}`}
+          className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface"
         >
-          {groupByCourse(visibleGroups).map(
-            ([courseName, courseGroups]) => (
-              <section
-                key={courseName}
-                aria-labelledby={`course-${courseName.replace(/[^a-z0-9]+/gi, "-")}`}
-                className="overflow-hidden rounded-2xl border border-border bg-surface"
-              >
-                <header className="border-b border-border bg-accent-soft px-5 py-4 sm:px-6">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-accent">Course</p>
-                  <h2
-                    id={`course-${courseName.replace(/[^a-z0-9]+/gi, "-")}`}
-                    className="mt-1 text-xl font-semibold text-foreground"
-                  >
-                    {courseName}
-                  </h2>
-                </header>
-                <div className="divide-y divide-border">
-                  {courseGroups.map((group) => (
-                    <article key={group.key}>
-                      <div className="bg-surface-muted/55 px-5 py-4 sm:px-6">
-                        <h3 className="font-semibold text-foreground">{group.subject}</h3>
-                        <p className="mt-1 text-xs text-muted">
-                          {group.paperCount} file{group.paperCount === 1 ? "" : "s"}
-                        </p>
-                      </div>
-                      <div className="divide-y divide-border">
-                        {group.sessions.map((sessionGroup) => (
-                          <div
-                            key={sessionGroup.key}
-                            className="grid gap-3 px-5 py-4 sm:grid-cols-[minmax(180px,0.7fr)_minmax(0,1.3fr)] sm:px-6"
-                          >
-                            <div>
-                              <p className="text-sm font-medium">{sessionGroup.yearRange}</p>
-                              <p className="mt-0.5 text-xs text-muted">
-                                Semesters {sessionGroup.semesterGroup}
-                              </p>
-                            </div>
-                            <div className="flex flex-wrap gap-2 sm:justify-end">
-                              {sessionGroup.papers.map((paper, index) => {
-                                const multiple = sessionGroup.papers.length > 1;
-                                const label = multiple ? `Option ${index + 1}` : "Open final PDF";
-                                const origin = sourceLabel(paper);
-                                return (
-                                  <a
-                                    key={paper.id}
-                                    href={paper.pdfUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    title={`${fileName(paper)}${paper.note ? ` — ${paper.note}` : ""}`}
-                                    className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border px-3 py-2 text-sm font-semibold text-foreground outline-none hover:border-accent hover:bg-accent-soft hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-                                  >
-                                    {label}
-                                    {origin || paper.note ? (
-                                      <span className="max-w-32 truncate text-xs font-normal text-muted">
-                                        {origin ?? paper.note}
-                                      </span>
-                                    ) : null}
-                                    <ArrowSquareOut aria-hidden="true" size={15} weight="bold" />
-                                  </a>
-                                );
-                              })}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            ),
-          )}
+          <SubjectList groups={visibleGroups} expanded={expanded} onToggle={toggleExpanded} />
         </section>
       )}
 
@@ -422,5 +386,86 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
         </div>
       </aside>
     </>
+  );
+}
+
+function SubjectList({
+  groups,
+  expanded,
+  onToggle,
+}: {
+  groups: SubjectGroup[];
+  expanded: Set<string>;
+  onToggle: (key: string) => void;
+}) {
+  return (
+    <div className="divide-y divide-border">
+      {groups.map((group) => {
+        const isOpen = expanded.has(group.key);
+        return (
+          <article key={group.key}>
+            <button
+              type="button"
+              onClick={() => onToggle(group.key)}
+              aria-expanded={isOpen}
+              className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition hover:bg-surface-muted/60 sm:px-6"
+            >
+              <span>
+                <span className="font-semibold text-foreground">{group.subject}</span>
+                <span className="mt-0.5 block text-xs text-muted">
+                  {group.paperCount} file{group.paperCount === 1 ? "" : "s"} · {group.sessions.length} session
+                  {group.sessions.length === 1 ? "" : "s"}
+                </span>
+              </span>
+              <CaretDown
+                aria-hidden="true"
+                size={16}
+                weight="bold"
+                className={`shrink-0 text-muted transition-transform ${isOpen ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {isOpen && (
+              <div className="divide-y divide-border border-t border-border bg-surface-muted/40">
+                {group.sessions.map((sessionGroup) => (
+                  <div
+                    key={sessionGroup.key}
+                    className="grid gap-3 px-5 py-4 sm:grid-cols-[minmax(180px,0.7fr)_minmax(0,1.3fr)] sm:px-6"
+                  >
+                    <div>
+                      <p className="text-sm font-medium">{sessionGroup.yearRange}</p>
+                      <p className="mt-0.5 text-xs text-muted">Semesters {sessionGroup.semesterGroup}</p>
+                    </div>
+                    <div className="flex flex-wrap gap-2 sm:justify-end">
+                      {sessionGroup.papers.map((paper, index) => {
+                        const multiple = sessionGroup.papers.length > 1;
+                        const label = multiple ? `Option ${index + 1}` : "Open final PDF";
+                        const origin = sourceLabel(paper);
+                        return (
+                          <a
+                            key={paper.id}
+                            href={paper.pdfUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            title={`${fileName(paper)}${paper.note ? ` — ${paper.note}` : ""}`}
+                            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-foreground outline-none hover:border-accent hover:bg-accent-soft hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                          >
+                            {label}
+                            {origin || paper.note ? (
+                              <span className="max-w-32 truncate text-xs font-normal text-muted">{origin ?? paper.note}</span>
+                            ) : null}
+                            <ArrowSquareOut aria-hidden="true" size={15} weight="bold" />
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </article>
+        );
+      })}
+    </div>
   );
 }
