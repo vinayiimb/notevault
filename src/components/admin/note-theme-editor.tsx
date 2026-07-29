@@ -6,12 +6,12 @@ import {
   ArrowCounterClockwise,
   ArrowClockwise,
   ArrowLeft,
-  Check,
   DesktopTower,
   DeviceMobile,
   DeviceTablet,
   DownloadSimple,
   UploadSimple,
+  X,
 } from "@phosphor-icons/react/dist/ssr";
 import {
   saveNoteThemeDraftAction,
@@ -46,6 +46,7 @@ const FONT_OPTIONS = [
   { value: "inter", label: "Inter" },
   { value: "manrope", label: "Manrope" },
   { value: "fraunces", label: "Fraunces" },
+  { value: "comic", label: "Comic Sans (Comic Neue)" },
 ];
 const COMPONENT_LABELS: Record<NoteComponentKey, string> = {
   summary: "Summary",
@@ -263,95 +264,123 @@ export function NoteThemeEditor({
   ];
 
   const previewMaxWidth = previewWidth === "desktop" ? "100%" : previewWidth === "tablet" ? "640px" : "375px";
+  const hasOverride = (group: Group) => scope !== "GLOBAL" && group !== "advanced" && !!(draft as Record<string, unknown>)[group];
 
   return (
-    <div className="flex h-[100dvh] flex-col">
-      <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border bg-surface px-6 py-3">
-        <div className="flex items-center gap-3">
-          <Link href="/admin/note-themes" className="flex items-center gap-1 text-sm text-muted hover:text-foreground">
-            <ArrowLeft size={16} /> Note Designer
+    <div className="flex h-[100dvh] flex-col bg-surface-muted/40">
+      <header className="flex flex-wrap items-center justify-between gap-4 border-b border-border bg-surface px-6 py-3.5">
+        <div className="flex items-center gap-4">
+          <Link
+            href="/admin/note-themes"
+            className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-sm font-medium text-muted transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <ArrowLeft size={16} weight="bold" /> Note Designer
           </Link>
+          <div className="h-6 w-px bg-border" />
           <div>
-            <p className="font-semibold">
-              {name} <span className="text-xs font-normal text-muted">({scope.toLowerCase()}{subjectName ? ` · ${subjectName}` : ""})</span>
+            <p className="font-semibold text-foreground">{name}</p>
+            <p className="text-xs text-muted capitalize">
+              {scope.toLowerCase()} theme{subjectName ? ` · ${subjectName}` : ""}
             </p>
           </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button type="button" onClick={undo} disabled={historyIndex === 0} className="rounded-lg p-2 text-muted hover:bg-surface-muted disabled:opacity-30" aria-label="Undo">
-            <ArrowCounterClockwise size={16} />
-          </button>
-          <button type="button" onClick={redo} disabled={historyIndex >= history.length - 1} className="rounded-lg p-2 text-muted hover:bg-surface-muted disabled:opacity-30" aria-label="Redo">
-            <ArrowClockwise size={16} />
-          </button>
-          <div className="mx-1 flex items-center gap-1 rounded-lg border border-border p-0.5">
-            <button type="button" onClick={() => setPreviewWidth("desktop")} className={`rounded-md p-1.5 ${previewWidth === "desktop" ? "bg-accent-soft text-accent" : "text-muted"}`} aria-label="Desktop preview">
-              <DesktopTower size={15} />
+
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-0.5">
+            <button type="button" onClick={undo} disabled={historyIndex === 0} className="rounded-lg p-2 text-muted transition hover:bg-surface-muted disabled:opacity-30" aria-label="Undo">
+              <ArrowCounterClockwise size={16} />
             </button>
-            <button type="button" onClick={() => setPreviewWidth("tablet")} className={`rounded-md p-1.5 ${previewWidth === "tablet" ? "bg-accent-soft text-accent" : "text-muted"}`} aria-label="Tablet preview">
-              <DeviceTablet size={15} />
-            </button>
-            <button type="button" onClick={() => setPreviewWidth("mobile")} className={`rounded-md p-1.5 ${previewWidth === "mobile" ? "bg-accent-soft text-accent" : "text-muted"}`} aria-label="Mobile preview">
-              <DeviceMobile size={15} />
+            <button type="button" onClick={redo} disabled={historyIndex >= history.length - 1} className="rounded-lg p-2 text-muted transition hover:bg-surface-muted disabled:opacity-30" aria-label="Redo">
+              <ArrowClockwise size={16} />
             </button>
           </div>
-          <button type="button" disabled={!!busy} onClick={saveDraft} className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-surface-muted disabled:opacity-50">
-            Save draft
-          </button>
-          <button type="button" disabled={!!busy} onClick={publish} className="rounded-lg bg-accent px-3 py-1.5 text-sm font-semibold text-accent-foreground hover:bg-accent-hover disabled:opacity-50">
-            Publish
-          </button>
-          {scope === "GLOBAL" && !isDefaultGlobal && publishedJson != null && (
-            <button type="button" disabled={!!busy} onClick={makeDefault} className="rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-surface-muted disabled:opacity-50">
-              Set as site default
+
+          <div className="flex items-center gap-0.5 rounded-lg border border-border bg-surface-muted p-1">
+            <button type="button" onClick={() => setPreviewWidth("desktop")} className={`rounded-md p-1.5 transition ${previewWidth === "desktop" ? "bg-surface text-accent shadow-sm" : "text-muted hover:text-foreground"}`} aria-label="Desktop preview">
+              <DesktopTower size={15} weight="bold" />
             </button>
-          )}
+            <button type="button" onClick={() => setPreviewWidth("tablet")} className={`rounded-md p-1.5 transition ${previewWidth === "tablet" ? "bg-surface text-accent shadow-sm" : "text-muted hover:text-foreground"}`} aria-label="Tablet preview">
+              <DeviceTablet size={15} weight="bold" />
+            </button>
+            <button type="button" onClick={() => setPreviewWidth("mobile")} className={`rounded-md p-1.5 transition ${previewWidth === "mobile" ? "bg-surface text-accent shadow-sm" : "text-muted hover:text-foreground"}`} aria-label="Mobile preview">
+              <DeviceMobile size={15} weight="bold" />
+            </button>
+          </div>
+
+          <div className="h-6 w-px bg-border" />
+
+          <div className="flex items-center gap-2">
+            <button type="button" disabled={!!busy} onClick={saveDraft} className="rounded-lg border border-border px-3.5 py-2 text-sm font-semibold text-foreground transition hover:bg-surface-muted disabled:opacity-50">
+              Save draft
+            </button>
+            <button type="button" disabled={!!busy} onClick={publish} className="rounded-lg bg-accent px-3.5 py-2 text-sm font-semibold text-accent-foreground transition hover:bg-accent-hover disabled:opacity-50">
+              Publish
+            </button>
+            {scope === "GLOBAL" && !isDefaultGlobal && publishedJson != null && (
+              <button type="button" disabled={!!busy} onClick={makeDefault} className="rounded-lg border border-border px-3.5 py-2 text-sm font-semibold text-foreground transition hover:bg-surface-muted disabled:opacity-50">
+                Set as site default
+              </button>
+            )}
+          </div>
         </div>
       </header>
 
-      {message && <p className="border-b border-border bg-accent-soft px-6 py-2 text-sm text-accent">{message}</p>}
+      {message && (
+        <p className="flex items-center justify-between border-b border-border bg-accent-soft px-6 py-2.5 text-sm font-medium text-accent">
+          {message}
+          <button type="button" onClick={() => setMessage(null)} aria-label="Dismiss" className="rounded p-1 hover:bg-accent/10">
+            <X size={14} weight="bold" />
+          </button>
+        </p>
+      )}
 
-      <div className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[220px_1fr_320px]">
+      <div className="grid flex-1 grid-cols-1 overflow-hidden lg:grid-cols-[240px_1fr_360px]">
         {/* Left panel: presets + group navigator + version history */}
-        <aside className="overflow-y-auto border-b border-border bg-surface-muted/40 p-4 lg:border-r lg:border-b-0">
-          <p className="text-xs font-bold tracking-wide text-muted uppercase">Presets</p>
-          <div className="mt-2 flex flex-col gap-1">
+        <aside className="overflow-y-auto border-b border-border bg-surface p-5 lg:border-r lg:border-b-0">
+          <p className="text-xs font-bold tracking-wider text-muted uppercase">Presets</p>
+          <div className="mt-3 flex flex-col gap-1.5">
             {NOTE_THEME_PRESETS.map((preset) => (
               <button
                 key={preset.name}
                 type="button"
                 onClick={() => applyPreset(preset.values)}
-                className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm hover:bg-surface"
+                className="flex items-center gap-2.5 rounded-xl border border-transparent p-2 text-left transition hover:border-border hover:bg-surface-muted"
               >
-                <span className="size-3 rounded-full border border-black/10" style={{ backgroundColor: preset.values.colors.primaryAccent }} />
-                Apply {preset.name}
+                <span className="flex h-6 shrink-0 overflow-hidden rounded-md border border-border" style={{ width: 34 }}>
+                  {[preset.values.colors.background, preset.values.colors.primaryAccent, preset.values.colors.highlightYellow].map((c, i) => (
+                    <span key={i} className="h-full flex-1" style={{ backgroundColor: c }} />
+                  ))}
+                </span>
+                <span className="truncate text-sm font-medium">{preset.name}</span>
               </button>
             ))}
           </div>
 
-          <p className="mt-5 text-xs font-bold tracking-wide text-muted uppercase">Groups</p>
-          <div className="mt-2 flex flex-col gap-1">
+          <p className="mt-6 text-xs font-bold tracking-wider text-muted uppercase">Groups</p>
+          <div className="mt-3 flex flex-col gap-1">
             {GROUPS.map((g) => (
               <button
                 key={g.key}
                 type="button"
                 onClick={() => setActiveGroup(g.key)}
-                className={`rounded-lg px-2 py-1.5 text-left text-sm ${activeGroup === g.key ? "bg-accent-soft font-semibold text-accent" : "hover:bg-surface"}`}
+                className={`flex items-center justify-between rounded-lg px-3 py-2 text-left text-sm font-medium transition ${
+                  activeGroup === g.key ? "bg-accent-soft text-accent" : "text-foreground/80 hover:bg-surface-muted"
+                }`}
               >
                 {g.label}
-                {scope !== "GLOBAL" && g.key !== "advanced" && (draft as Record<string, unknown>)[g.key] ? " •" : ""}
+                {hasOverride(g.key) && <span className="size-1.5 shrink-0 rounded-full bg-accent" aria-label="Overridden" />}
               </button>
             ))}
           </div>
 
           {versions.length > 0 && (
             <>
-              <p className="mt-5 text-xs font-bold tracking-wide text-muted uppercase">Version history</p>
-              <ul className="mt-2 flex flex-col gap-1">
+              <p className="mt-6 text-xs font-bold tracking-wider text-muted uppercase">Version history</p>
+              <ul className="mt-3 flex flex-col gap-2.5">
                 {versions.map((v) => (
-                  <li key={v.id} className="flex items-center justify-between gap-2 text-xs text-muted">
-                    <span>{new Date(v.createdAt).toLocaleString()}</span>
-                    <button type="button" disabled={!!busy} onClick={() => restoreVersion(v.id)} className="rounded px-1.5 py-0.5 font-semibold text-accent hover:bg-accent-soft disabled:opacity-50">
+                  <li key={v.id} className="flex items-center justify-between gap-2 text-xs">
+                    <span className="text-muted">{new Date(v.createdAt).toLocaleString()}</span>
+                    <button type="button" disabled={!!busy} onClick={() => restoreVersion(v.id)} className="shrink-0 rounded-md px-2 py-1 font-semibold text-accent transition hover:bg-accent-soft disabled:opacity-50">
                       Restore
                     </button>
                   </li>
@@ -362,19 +391,21 @@ export function NoteThemeEditor({
         </aside>
 
         {/* Center panel: live preview */}
-        <main className="overflow-y-auto bg-surface-muted/30 p-6">
-          <div className="mx-auto transition-all" style={{ maxWidth: previewMaxWidth }}>
-            <div className="rounded-2xl border border-border bg-white shadow-sm">
+        <main className="overflow-y-auto p-8">
+          <div className="mx-auto transition-all duration-200" style={{ maxWidth: previewMaxWidth }}>
+            <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-[0_1px_2px_rgba(15,23,42,.04),0_12px_32px_rgba(15,23,42,.08)]">
               <StructuredNoteRenderer note={SAMPLE_NOTE} theme={effectiveTheme} />
             </div>
           </div>
         </main>
 
         {/* Right panel: controls for the active group */}
-        <aside className="overflow-y-auto border-t border-border bg-surface p-4 lg:border-t-0 lg:border-l">
+        <aside className="overflow-y-auto border-t border-border bg-surface p-5 lg:border-t-0 lg:border-l">
           {scope !== "GLOBAL" && activeGroup !== "advanced" && (
-            <div className="mb-3 flex items-center justify-between rounded-lg bg-surface-muted p-2 text-xs">
-              <span>{(draft as Record<string, unknown>)[activeGroup] ? "Overriding this group" : "Inheriting from global"}</span>
+            <div className="mb-4 flex items-center justify-between rounded-xl bg-surface-muted px-3 py-2.5 text-xs">
+              <span className="font-medium text-muted">
+                {hasOverride(activeGroup) ? "Overriding this group" : "Inheriting from global"}
+              </span>
               <button type="button" onClick={() => resetGroup(activeGroup)} className="font-semibold text-accent hover:underline">
                 Reset to inherited
               </button>
@@ -382,112 +413,145 @@ export function NoteThemeEditor({
           )}
 
           {activeGroup === "colors" && (
+            <div className="flex flex-col gap-5">
+              <div className="flex flex-col gap-1">
+                {(Object.keys(effectiveTheme.colors) as (keyof ThemeValues["colors"])[]).map((key) => (
+                  <ColorField
+                    key={key}
+                    label={key}
+                    value={effectiveTheme.colors[key]}
+                    onChange={(v) => updateGroupField("colors", key, v)}
+                  />
+                ))}
+              </div>
+
+              <div>
+                <p className="text-xs font-bold tracking-wider text-muted uppercase">Contrast (WCAG AA)</p>
+                <div className="mt-2.5 flex flex-col gap-2">
+                  {contrastChecks.map((check) => {
+                    const ratio = contrastRatio(check.a, check.b);
+                    const passes = meetsWcagAa(check.a, check.b);
+                    return (
+                      <div key={check.label} className="flex items-center justify-between gap-2 text-xs">
+                        <span className="text-muted">{check.label}</span>
+                        <span
+                          className={`rounded-full px-2 py-0.5 font-semibold ${
+                            passes ? "bg-success-soft text-success" : "bg-red-100 text-red-700 dark:bg-red-950/40 dark:text-red-300"
+                          }`}
+                        >
+                          {ratio ? ratio.toFixed(2) : "—"}:1 {passes ? "AA" : "fail"}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {activeGroup === "typography" && (
+            <div className="flex flex-col gap-4">
+              <SelectField label="Heading font" value={effectiveTheme.typography.headingFont} options={FONT_OPTIONS} onChange={(v) => updateGroupField("typography", "headingFont", v)} preview={fontFamilyFor(effectiveTheme.typography.headingFont)} />
+              <SelectField label="Sub-heading font" value={effectiveTheme.typography.subHeadingFont} options={FONT_OPTIONS} onChange={(v) => updateGroupField("typography", "subHeadingFont", v)} preview={fontFamilyFor(effectiveTheme.typography.subHeadingFont)} />
+              <SelectField label="Body font" value={effectiveTheme.typography.bodyFont} options={FONT_OPTIONS} onChange={(v) => updateGroupField("typography", "bodyFont", v)} preview={fontFamilyFor(effectiveTheme.typography.bodyFont)} />
+              <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+                <NumberField label="Body size (px)" value={effectiveTheme.typography.bodySize} min={14} max={24} step={1} onChange={(v) => updateGroupField("typography", "bodySize", v)} />
+                <NumberField label="Heading scale" value={effectiveTheme.typography.headingScale} min={1} max={2} step={0.05} onChange={(v) => updateGroupField("typography", "headingScale", v)} />
+                <NumberField label="Line height" value={effectiveTheme.typography.lineHeight} min={1} max={2.2} step={0.05} onChange={(v) => updateGroupField("typography", "lineHeight", v)} />
+                <NumberField label="Letter spacing (em)" value={effectiveTheme.typography.letterSpacing} min={-0.05} max={0.1} step={0.01} onChange={(v) => updateGroupField("typography", "letterSpacing", v)} />
+                <NumberField label="Paragraph spacing (rem)" value={effectiveTheme.typography.paragraphSpacing} min={0.5} max={3} step={0.05} onChange={(v) => updateGroupField("typography", "paragraphSpacing", v)} />
+                <NumberField label="List indent (px)" value={effectiveTheme.typography.listIndentation} min={0} max={40} step={1} onChange={(v) => updateGroupField("typography", "listIndentation", v)} />
+              </div>
+            </div>
+          )}
+
+          {activeGroup === "layout" && (
+            <div className="flex flex-col gap-4">
+              <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+                <NumberField label="Reading width (px)" value={effectiveTheme.layout.readingWidth} min={620} max={840} step={10} onChange={(v) => updateGroupField("layout", "readingWidth", v)} />
+                <NumberField label="Page padding (px)" value={effectiveTheme.layout.pagePadding} min={0} max={64} step={2} onChange={(v) => updateGroupField("layout", "pagePadding", v)} />
+                <NumberField label="Section spacing (px)" value={effectiveTheme.layout.sectionSpacing} min={0} max={64} step={2} onChange={(v) => updateGroupField("layout", "sectionSpacing", v)} />
+                <NumberField label="Border radius (px)" value={effectiveTheme.layout.borderRadius} min={0} max={16} step={1} onChange={(v) => updateGroupField("layout", "borderRadius", v)} />
+              </div>
+              <SelectField label="Shadow intensity" value={effectiveTheme.layout.shadowIntensity} options={[{ value: "none", label: "None" }, { value: "subtle", label: "Subtle" }, { value: "medium", label: "Medium" }]} onChange={(v) => updateGroupField("layout", "shadowIntensity", v)} />
+              <SelectField label="Table of contents" value={effectiveTheme.layout.tocPosition} options={[{ value: "left", label: "Left" }, { value: "right", label: "Right" }, { value: "top", label: "Top" }, { value: "hidden", label: "Hidden" }]} onChange={(v) => updateGroupField("layout", "tocPosition", v)} />
+              <CheckboxField label="Show borders" checked={effectiveTheme.layout.borderVisible} onChange={(v) => updateGroupField("layout", "borderVisible", v)} />
+            </div>
+          )}
+
+          {activeGroup === "components" && (
             <div className="flex flex-col gap-3">
-              {(Object.keys(effectiveTheme.colors) as (keyof ThemeValues["colors"])[]).map((key) => (
-                <ColorField
-                  key={key}
-                  label={key}
-                  value={effectiveTheme.colors[key]}
-                  onChange={(v) => updateGroupField("colors", key, v)}
-                />
-              ))}
-              <p className="mt-2 text-xs font-bold tracking-wide text-muted uppercase">Contrast (WCAG AA)</p>
-              {contrastChecks.map((check) => {
-                const ratio = contrastRatio(check.a, check.b);
-                const passes = meetsWcagAa(check.a, check.b);
+              {(Object.keys(COMPONENT_LABELS) as NoteComponentKey[]).map((key) => {
+                const style = effectiveTheme.components[key] ?? { background: "#FFFFFF", border: "#E5E7EB", text: "#172033" };
                 return (
-                  <div key={check.label} className="flex items-center justify-between text-xs">
-                    <span className="text-muted">{check.label}</span>
-                    <span className={passes ? "font-semibold text-success" : "font-semibold text-red-600"}>
-                      {ratio ? ratio.toFixed(2) : "—"}:1 {passes ? <Check size={11} weight="bold" className="inline" /> : "fail"}
-                    </span>
+                  <div key={key} className="rounded-xl border border-border p-3">
+                    <div className="flex items-center gap-2.5">
+                      <span
+                        className="flex h-7 w-10 shrink-0 items-center justify-center rounded-md border text-[10px] font-bold"
+                        style={{ backgroundColor: style.background, borderColor: style.border, color: style.text }}
+                      >
+                        Aa
+                      </span>
+                      <p className="text-sm font-semibold">{COMPONENT_LABELS[key]}</p>
+                    </div>
+                    <div className="mt-2.5 grid grid-cols-3 gap-2">
+                      <ColorField compact label="Background" value={style.background} onChange={(v) => updateComponentField(key, "background", v)} />
+                      <ColorField compact label="Border" value={style.border} onChange={(v) => updateComponentField(key, "border", v)} />
+                      <ColorField compact label="Text" value={style.text} onChange={(v) => updateComponentField(key, "text", v)} />
+                    </div>
                   </div>
                 );
               })}
             </div>
           )}
 
-          {activeGroup === "typography" && (
-            <div className="flex flex-col gap-3">
-              <SelectField label="Body font" value={effectiveTheme.typography.bodyFont} options={FONT_OPTIONS} onChange={(v) => updateGroupField("typography", "bodyFont", v)} preview={fontFamilyFor(effectiveTheme.typography.bodyFont)} />
-              <SelectField label="Heading font" value={effectiveTheme.typography.headingFont} options={FONT_OPTIONS} onChange={(v) => updateGroupField("typography", "headingFont", v)} preview={fontFamilyFor(effectiveTheme.typography.headingFont)} />
-              <NumberField label="Body size (px)" value={effectiveTheme.typography.bodySize} min={14} max={24} step={1} onChange={(v) => updateGroupField("typography", "bodySize", v)} />
-              <NumberField label="Heading scale" value={effectiveTheme.typography.headingScale} min={1} max={2} step={0.05} onChange={(v) => updateGroupField("typography", "headingScale", v)} />
-              <NumberField label="Line height" value={effectiveTheme.typography.lineHeight} min={1} max={2.2} step={0.05} onChange={(v) => updateGroupField("typography", "lineHeight", v)} />
-              <NumberField label="Letter spacing (em)" value={effectiveTheme.typography.letterSpacing} min={-0.05} max={0.1} step={0.01} onChange={(v) => updateGroupField("typography", "letterSpacing", v)} />
-              <NumberField label="Paragraph spacing (rem)" value={effectiveTheme.typography.paragraphSpacing} min={0.5} max={3} step={0.05} onChange={(v) => updateGroupField("typography", "paragraphSpacing", v)} />
-              <NumberField label="List indentation (px)" value={effectiveTheme.typography.listIndentation} min={0} max={40} step={1} onChange={(v) => updateGroupField("typography", "listIndentation", v)} />
-            </div>
-          )}
+          {activeGroup === "visuals" && (
+            <div className="flex flex-col gap-5">
+              <SwatchRow label="Node colors" colors={effectiveTheme.visuals.nodeColors} onChange={(i, v) => updateArrayField("visuals", "nodeColors", i, v)} />
+              <SwatchRow label="Timeline colors" colors={effectiveTheme.visuals.timelineColors} onChange={(i, v) => updateArrayField("visuals", "timelineColors", i, v)} />
+              <SwatchRow label="Chart palette" colors={effectiveTheme.visuals.chartPalette} onChange={(i, v) => updateArrayField("visuals", "chartPalette", i, v)} />
 
-          {activeGroup === "layout" && (
-            <div className="flex flex-col gap-3">
-              <NumberField label="Reading width (px)" value={effectiveTheme.layout.readingWidth} min={620} max={840} step={10} onChange={(v) => updateGroupField("layout", "readingWidth", v)} />
-              <NumberField label="Page padding (px)" value={effectiveTheme.layout.pagePadding} min={0} max={64} step={2} onChange={(v) => updateGroupField("layout", "pagePadding", v)} />
-              <NumberField label="Section spacing (px)" value={effectiveTheme.layout.sectionSpacing} min={0} max={64} step={2} onChange={(v) => updateGroupField("layout", "sectionSpacing", v)} />
-              <NumberField label="Border radius (px)" value={effectiveTheme.layout.borderRadius} min={0} max={16} step={1} onChange={(v) => updateGroupField("layout", "borderRadius", v)} />
-              <CheckboxField label="Show borders" checked={effectiveTheme.layout.borderVisible} onChange={(v) => updateGroupField("layout", "borderVisible", v)} />
-              <SelectField label="Shadow intensity" value={effectiveTheme.layout.shadowIntensity} options={[{ value: "none", label: "None" }, { value: "subtle", label: "Subtle" }, { value: "medium", label: "Medium" }]} onChange={(v) => updateGroupField("layout", "shadowIntensity", v)} />
-              <SelectField label="Table of contents" value={effectiveTheme.layout.tocPosition} options={[{ value: "left", label: "Left" }, { value: "right", label: "Right" }, { value: "top", label: "Top" }, { value: "hidden", label: "Hidden" }]} onChange={(v) => updateGroupField("layout", "tocPosition", v)} />
-            </div>
-          )}
+              <div className="flex flex-col gap-1">
+                <ColorField label="Connector color" value={effectiveTheme.visuals.connectorColor} onChange={(v) => updateGroupField("visuals", "connectorColor", v)} />
+                <ColorField label="Diagram background" value={effectiveTheme.visuals.diagramBackground} onChange={(v) => updateGroupField("visuals", "diagramBackground", v)} />
+              </div>
 
-          {activeGroup === "components" && (
-            <div className="flex flex-col gap-4">
-              {(Object.keys(COMPONENT_LABELS) as NoteComponentKey[]).map((key) => (
-                <div key={key} className="rounded-lg border border-border p-2">
-                  <p className="text-xs font-semibold">{COMPONENT_LABELS[key]}</p>
-                  <div className="mt-1.5 grid grid-cols-3 gap-1.5">
-                    <ColorField compact label="bg" value={effectiveTheme.components[key]?.background ?? "#FFFFFF"} onChange={(v) => updateComponentField(key, "background", v)} />
-                    <ColorField compact label="border" value={effectiveTheme.components[key]?.border ?? "#E5E7EB"} onChange={(v) => updateComponentField(key, "border", v)} />
-                    <ColorField compact label="text" value={effectiveTheme.components[key]?.text ?? "#172033"} onChange={(v) => updateComponentField(key, "text", v)} />
+              <div className="grid grid-cols-2 gap-x-3 gap-y-4">
+                <SelectField label="Flowchart nodes" value={effectiveTheme.visuals.flowchartNodeStyle} options={[{ value: "rounded", label: "Rounded" }, { value: "sharp", label: "Sharp" }]} onChange={(v) => updateGroupField("visuals", "flowchartNodeStyle", v)} />
+                <SelectField label="Arrowheads" value={effectiveTheme.visuals.arrowheadStyle} options={[{ value: "classic", label: "Classic" }, { value: "round", label: "Round" }]} onChange={(v) => updateGroupField("visuals", "arrowheadStyle", v)} />
+                <NumberField label="Connector width" value={effectiveTheme.visuals.connectorThickness} min={1} max={4} step={0.5} onChange={(v) => updateGroupField("visuals", "connectorThickness", v)} />
+              </div>
+
+              <div>
+                <p className="mb-2 text-xs font-bold tracking-wider text-muted uppercase">Highlighted node</p>
+                <div className="rounded-xl border border-border p-3">
+                  <span
+                    className="mb-2.5 flex h-7 w-16 items-center justify-center rounded-md text-[10px] font-bold"
+                    style={{
+                      backgroundColor: effectiveTheme.visuals.highlightedNode.background,
+                      border: `1px solid ${effectiveTheme.visuals.highlightedNode.border}`,
+                      color: effectiveTheme.visuals.highlightedNode.text,
+                    }}
+                  >
+                    Node
+                  </span>
+                  <div className="grid grid-cols-3 gap-2">
+                    <ColorField compact label="Background" value={effectiveTheme.visuals.highlightedNode.background} onChange={(v) => updateGroupField("visuals", "highlightedNode", { ...effectiveTheme.visuals.highlightedNode, background: v })} />
+                    <ColorField compact label="Border" value={effectiveTheme.visuals.highlightedNode.border} onChange={(v) => updateGroupField("visuals", "highlightedNode", { ...effectiveTheme.visuals.highlightedNode, border: v })} />
+                    <ColorField compact label="Text" value={effectiveTheme.visuals.highlightedNode.text} onChange={(v) => updateGroupField("visuals", "highlightedNode", { ...effectiveTheme.visuals.highlightedNode, text: v })} />
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-
-          {activeGroup === "visuals" && (
-            <div className="flex flex-col gap-3">
-              <p className="text-xs font-semibold">Node colors</p>
-              <div className="grid grid-cols-5 gap-1.5">
-                {effectiveTheme.visuals.nodeColors.map((c, i) => (
-                  <input key={i} type="color" value={c} onChange={(e) => updateArrayField("visuals", "nodeColors", i, e.target.value)} className="h-8 w-full rounded border border-border" />
-                ))}
-              </div>
-              <SelectField label="Flowchart node style" value={effectiveTheme.visuals.flowchartNodeStyle} options={[{ value: "rounded", label: "Rounded" }, { value: "sharp", label: "Sharp" }]} onChange={(v) => updateGroupField("visuals", "flowchartNodeStyle", v)} />
-              <ColorField label="Connector color" value={effectiveTheme.visuals.connectorColor} onChange={(v) => updateGroupField("visuals", "connectorColor", v)} />
-              <NumberField label="Connector thickness" value={effectiveTheme.visuals.connectorThickness} min={1} max={4} step={0.5} onChange={(v) => updateGroupField("visuals", "connectorThickness", v)} />
-              <SelectField label="Arrowhead style" value={effectiveTheme.visuals.arrowheadStyle} options={[{ value: "classic", label: "Classic" }, { value: "round", label: "Round" }]} onChange={(v) => updateGroupField("visuals", "arrowheadStyle", v)} />
-              <ColorField label="Diagram background" value={effectiveTheme.visuals.diagramBackground} onChange={(v) => updateGroupField("visuals", "diagramBackground", v)} />
-              <p className="text-xs font-semibold">Timeline colors</p>
-              <div className="grid grid-cols-4 gap-1.5">
-                {effectiveTheme.visuals.timelineColors.map((c, i) => (
-                  <input key={i} type="color" value={c} onChange={(e) => updateArrayField("visuals", "timelineColors", i, e.target.value)} className="h-8 w-full rounded border border-border" />
-                ))}
-              </div>
-              <p className="text-xs font-semibold">Chart palette</p>
-              <div className="grid grid-cols-4 gap-1.5">
-                {effectiveTheme.visuals.chartPalette.map((c, i) => (
-                  <input key={i} type="color" value={c} onChange={(e) => updateArrayField("visuals", "chartPalette", i, e.target.value)} className="h-8 w-full rounded border border-border" />
-                ))}
-              </div>
-              <p className="text-xs font-semibold">Highlighted node</p>
-              <div className="grid grid-cols-3 gap-1.5">
-                <ColorField compact label="bg" value={effectiveTheme.visuals.highlightedNode.background} onChange={(v) => updateGroupField("visuals", "highlightedNode", { ...effectiveTheme.visuals.highlightedNode, background: v })} />
-                <ColorField compact label="border" value={effectiveTheme.visuals.highlightedNode.border} onChange={(v) => updateGroupField("visuals", "highlightedNode", { ...effectiveTheme.visuals.highlightedNode, border: v })} />
-                <ColorField compact label="text" value={effectiveTheme.visuals.highlightedNode.text} onChange={(v) => updateGroupField("visuals", "highlightedNode", { ...effectiveTheme.visuals.highlightedNode, text: v })} />
               </div>
             </div>
           )}
 
           {activeGroup === "advanced" && (
-            <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-5">
               <div>
-                <p className="text-xs font-bold tracking-wide text-muted uppercase">Import / export</p>
-                <div className="mt-2 flex flex-col gap-2">
-                  <button type="button" onClick={exportJson} className="flex items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-surface-muted">
-                    <DownloadSimple size={15} /> Download theme JSON
+                <p className="text-xs font-bold tracking-wider text-muted uppercase">Import / export</p>
+                <div className="mt-3 flex flex-col gap-2">
+                  <button type="button" onClick={exportJson} className="flex items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium transition hover:bg-surface-muted">
+                    <DownloadSimple size={15} weight="bold" /> Download theme JSON
                   </button>
                   <input
                     ref={importInputRef}
@@ -500,17 +564,38 @@ export function NoteThemeEditor({
                       e.target.value = "";
                     }}
                   />
-                  <button type="button" onClick={() => importInputRef.current?.click()} disabled={!!busy} className="flex items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-sm font-medium hover:bg-surface-muted disabled:opacity-50">
-                    <UploadSimple size={15} /> Upload theme JSON
+                  <button type="button" onClick={() => importInputRef.current?.click()} disabled={!!busy} className="flex items-center justify-center gap-1.5 rounded-lg border border-border px-3 py-2 text-sm font-medium transition hover:bg-surface-muted disabled:opacity-50">
+                    <UploadSimple size={15} weight="bold" /> Upload theme JSON
                   </button>
                 </div>
               </div>
-              <p className="text-xs text-muted">
-                {isPreset ? "This is a built-in preset — duplicate it from the Note Designer list to customize a copy." : "Card radius stays clamped 0–16px and reading width 620–840px regardless of what's imported, per the design system's own limits."}
+              <p className="rounded-xl bg-surface-muted p-3 text-xs leading-5 text-muted">
+                {isPreset
+                  ? "This is a built-in preset — duplicate it from the Note Designer list to customize a copy."
+                  : "Card radius stays clamped 0–16px and reading width 620–840px regardless of what's imported, per the design system's own limits."}
               </p>
             </div>
           )}
         </aside>
+      </div>
+    </div>
+  );
+}
+
+function SwatchRow({ label, colors, onChange }: { label: string; colors: string[]; onChange: (index: number, value: string) => void }) {
+  return (
+    <div>
+      <p className="mb-2 text-xs font-bold tracking-wider text-muted uppercase">{label}</p>
+      <div className="flex flex-wrap gap-2">
+        {colors.map((c, i) => (
+          <label key={i} className="relative">
+            <input type="color" value={c} onChange={(e) => onChange(i, e.target.value)} className="sr-only" />
+            <span
+              className="block size-9 cursor-pointer rounded-lg border border-border ring-offset-2 transition hover:ring-2 hover:ring-accent/30"
+              style={{ backgroundColor: c }}
+            />
+          </label>
+        ))}
       </div>
     </div>
   );
@@ -527,20 +612,42 @@ function ColorField({
   onChange: (value: string) => void;
   compact?: boolean;
 }) {
+  const displayLabel = label.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
+
+  if (compact) {
+    return (
+      <label className="flex flex-col gap-1">
+        <span className="text-[11px] font-medium text-muted">{label}</span>
+        <span className="relative flex h-8 items-center overflow-hidden rounded-lg border border-border">
+          <input type="color" value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#ffffff"} onChange={(e) => onChange(e.target.value)} className="size-8 shrink-0 cursor-pointer border-0" />
+          <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className="min-w-0 flex-1 bg-background px-1.5 font-mono text-[11px] outline-none" />
+        </span>
+      </label>
+    );
+  }
+
   return (
-    <label className="flex items-center gap-2 text-xs">
-      {!compact && <span className="w-32 shrink-0 text-muted capitalize">{label.replace(/([A-Z])/g, " $1")}</span>}
-      <input type="color" value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#ffffff"} onChange={(e) => onChange(e.target.value)} className="h-7 w-9 shrink-0 rounded border border-border" />
-      <input type="text" value={value} onChange={(e) => onChange(e.target.value)} className="min-w-0 flex-1 rounded border border-border bg-background px-1.5 py-1 font-mono text-xs" />
-      {compact && <span className="shrink-0 text-muted">{label}</span>}
+    <label className="flex items-center justify-between gap-3 py-1.5">
+      <span className="text-sm text-foreground/80">{displayLabel}</span>
+      <span className="flex items-center gap-2">
+        <span className="relative flex h-8 w-8 shrink-0 overflow-hidden rounded-lg border border-border">
+          <input type="color" value={/^#[0-9a-f]{6}$/i.test(value) ? value : "#ffffff"} onChange={(e) => onChange(e.target.value)} className="size-full cursor-pointer border-0 p-0" />
+        </span>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-24 rounded-lg border border-border bg-background px-2 py-1.5 text-right font-mono text-xs outline-none focus:border-accent"
+        />
+      </span>
     </label>
   );
 }
 
 function NumberField({ label, value, onChange, min, max, step }: { label: string; value: number; onChange: (value: number) => void; min: number; max: number; step: number }) {
   return (
-    <label className="flex items-center justify-between gap-2 text-xs">
-      <span className="text-muted">{label}</span>
+    <label className="flex flex-col gap-1.5">
+      <span className="text-xs font-medium text-muted">{label}</span>
       <input
         type="number"
         value={value}
@@ -548,7 +655,7 @@ function NumberField({ label, value, onChange, min, max, step }: { label: string
         max={max}
         step={step}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="w-20 rounded border border-border bg-background px-1.5 py-1 text-xs"
+        className="min-h-9 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
       />
     </label>
   );
@@ -568,9 +675,14 @@ function SelectField({
   preview?: string;
 }) {
   return (
-    <label className="flex flex-col gap-1 text-xs">
-      <span className="text-muted">{label}</span>
-      <select value={value} onChange={(e) => onChange(e.target.value)} className="rounded border border-border bg-background px-1.5 py-1 text-xs" style={preview ? { fontFamily: preview } : undefined}>
+    <label className="flex flex-col gap-1.5">
+      <span className="text-xs font-medium text-muted">{label}</span>
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="min-h-9 w-full rounded-lg border border-border bg-background px-2.5 text-sm outline-none focus:border-accent focus:ring-2 focus:ring-accent/15"
+        style={preview ? { fontFamily: preview } : undefined}
+      >
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}
@@ -583,9 +695,9 @@ function SelectField({
 
 function CheckboxField({ label, checked, onChange }: { label: string; checked: boolean; onChange: (value: boolean) => void }) {
   return (
-    <label className="flex items-center justify-between gap-2 text-xs">
-      <span className="text-muted">{label}</span>
-      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-4" />
+    <label className="flex min-h-9 items-center justify-between gap-2 rounded-lg border border-border px-3">
+      <span className="text-sm text-foreground/80">{label}</span>
+      <input type="checkbox" checked={checked} onChange={(e) => onChange(e.target.checked)} className="size-4 accent-accent" />
     </label>
   );
 }

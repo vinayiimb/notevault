@@ -52,6 +52,7 @@ export const ThemeValuesSchema = z.object({
   typography: z.object({
     bodyFont: z.string(),
     headingFont: z.string(),
+    subHeadingFont: z.string().default("winkle"),
     bodySize: z.number(), // px
     headingScale: z.number(), // multiplier applied per heading level
     lineHeight: z.number(),
@@ -202,6 +203,7 @@ export const DEFAULT_THEME: ThemeValues = {
   typography: {
     bodyFont: "winkle",
     headingFont: "winkle",
+    subHeadingFont: "winkle",
     bodySize: 18,
     headingScale: 1.35,
     lineHeight: 1.75,
@@ -318,11 +320,82 @@ const MIDNIGHT_FOCUS: ThemeValues = {
   visuals: { ...DEFAULT_THEME.visuals, connectorColor: "#79A6FF", diagramBackground: "#1A2030", nodeColors: ["#79A6FF", "#263B66", "#4A3D28", "#3B2430", "#2A2650"] },
 };
 
+const SUNSET_AMBER: ThemeValues = {
+  ...DEFAULT_THEME,
+  colors: {
+    ...DEFAULT_THEME.colors,
+    background: "#FFF8F2",
+    primaryText: "#3A2216",
+    primaryAccent: "#EA7317",
+    highlightYellow: "#FDE4B8",
+    highlightPink: "#FBE0D2",
+    selection: "#FDE4B8",
+  },
+  visuals: { ...DEFAULT_THEME.visuals, connectorColor: "#EA7317", nodeColors: ["#EA7317", "#FDE4B8", "#FBE0D2", "#DDF7E8", "#E8E1FF"] },
+};
+
+const OCEAN_TEAL: ThemeValues = {
+  ...DEFAULT_THEME,
+  colors: {
+    ...DEFAULT_THEME.colors,
+    background: "#F2FAFB",
+    primaryText: "#0F2E33",
+    primaryAccent: "#0E8A97",
+    highlightMint: "#CFF3EE",
+    selection: "#CFF3EE",
+  },
+  visuals: { ...DEFAULT_THEME.visuals, connectorColor: "#0E8A97", nodeColors: ["#0E8A97", "#CFF3EE", "#FEF3C7", "#FCE7F3", "#E8E1FF"] },
+};
+
+const TERRACOTTA_CLAY: ThemeValues = {
+  ...DEFAULT_THEME,
+  colors: {
+    ...DEFAULT_THEME.colors,
+    background: "#FBF6F1",
+    primaryText: "#3D2A20",
+    primaryAccent: "#B5542A",
+    highlightYellow: "#F3DCC0",
+    highlightPink: "#F1D9CE",
+    selection: "#F3DCC0",
+  },
+  visuals: { ...DEFAULT_THEME.visuals, connectorColor: "#B5542A", nodeColors: ["#B5542A", "#F3DCC0", "#F1D9CE", "#DDF7E8", "#E8E1FF"] },
+};
+
+const GRAPHITE_MONO: ThemeValues = {
+  ...DEFAULT_THEME,
+  colors: {
+    ...DEFAULT_THEME.colors,
+    background: "#17181C",
+    surface: "#1F2126",
+    primaryText: "#EDEDEF",
+    secondaryText: "#9A9CA3",
+    primaryAccent: "#E0A458",
+    border: "#2E3038",
+    link: "#E0A458",
+    highlightYellow: "#3A331F",
+    highlightMint: "#1E2B26",
+    highlightPink: "#2E2226",
+    highlightLavender: "#26242E",
+    selection: "#332B1C",
+  },
+  components: baseComponents(
+    { yellow: "#3A331F", mint: "#1E2B26", pink: "#2E2226", lavender: "#26242E" },
+    "#1F2126",
+    "#2E3038",
+    "#EDEDEF",
+  ),
+  visuals: { ...DEFAULT_THEME.visuals, connectorColor: "#E0A458", diagramBackground: "#1F2126", nodeColors: ["#E0A458", "#332B1C", "#3A331F", "#2E2226", "#26242E"] },
+};
+
 export const NOTE_THEME_PRESETS: { name: string; values: ThemeValues; isDefaultGlobal?: boolean }[] = [
   { name: "Default", values: DEFAULT_THEME, isDefaultGlobal: true },
   { name: "Scholar Blue", values: SCHOLAR_BLUE },
   { name: "Botanical", values: BOTANICAL },
   { name: "Lavender Study", values: LAVENDER_STUDY },
   { name: "Rose Ink", values: ROSE_INK },
+  { name: "Sunset Amber", values: SUNSET_AMBER },
+  { name: "Ocean Teal", values: OCEAN_TEAL },
+  { name: "Terracotta Clay", values: TERRACOTTA_CLAY },
   { name: "Midnight Focus", values: MIDNIGHT_FOCUS },
+  { name: "Graphite Mono", values: GRAPHITE_MONO },
 ];

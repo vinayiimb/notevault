@@ -1,13 +1,15 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { FileText, NotePencil } from "@phosphor-icons/react/dist/ssr";
+import { FileText, NotePencil, Swatches } from "@phosphor-icons/react/dist/ssr";
 import { prisma } from "@/lib/prisma";
 import {
+  createNoteThemeAction,
   createQuestionAction,
   deleteQuestionAction,
   deleteResourceAction,
   uploadResourceFormAction,
 } from "@/lib/actions";
+import { DEFAULT_THEME, ThemeValuesSchema } from "@/lib/note-theme";
 import { formatBytes } from "@/lib/utils";
 import { PdfDropzone } from "@/components/admin/pdf-dropzone";
 import { NotesEditor } from "@/components/admin/notes-editor";
@@ -30,6 +32,16 @@ export default async function AdminSubjectPage({
     },
   });
   if (!subject) notFound();
+
+  const subjectTheme = await prisma.noteTheme.findFirst({
+    where: { scope: "SUBJECT", subjectId: subject.id },
+  });
+  const subjectThemeColors = subjectTheme
+    ? (() => {
+        const full = ThemeValuesSchema.safeParse(subjectTheme.publishedJson ?? subjectTheme.draftJson);
+        return full.success ? full.data.colors : DEFAULT_THEME.colors;
+      })()
+    : null;
 
   return (
     <div className="p-8">
@@ -65,6 +77,51 @@ export default async function AdminSubjectPage({
         <div className="mt-4">
           <StructuredNoteGenerator subjectId={subject.id} hasStructuredNote={subject.notes?.format === "STRUCTURED"} />
         </div>
+      </section>
+
+      <section className="mt-6 rounded-xl border border-border bg-surface p-5">
+        <h2 className="flex items-center gap-2 font-medium">
+          <Swatches size={18} weight="bold" className="text-accent" />
+          Note design
+        </h2>
+        <p className="mt-1 text-sm text-muted">
+          Fonts (heading, sub-heading, body), colors, and layout for this subject&apos;s structured notes.
+          Falls back to the site-wide default until customized here.
+        </p>
+
+        {subjectTheme ? (
+          <div className="mt-4 flex items-center gap-4">
+            <div className="flex overflow-hidden rounded-lg border border-border">
+              {[
+                subjectThemeColors!.background,
+                subjectThemeColors!.primaryAccent,
+                subjectThemeColors!.highlightYellow,
+                subjectThemeColors!.highlightMint,
+                subjectThemeColors!.highlightPink,
+              ].map((c, i) => (
+                <span key={i} className="h-8 w-8" style={{ backgroundColor: c }} />
+              ))}
+            </div>
+            <Link
+              href={`/admin/note-themes/${subjectTheme.id}`}
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90"
+            >
+              Edit fonts &amp; colors for this subject
+            </Link>
+          </div>
+        ) : (
+          <form action={createNoteThemeAction} className="mt-4">
+            <input type="hidden" name="scope" value="SUBJECT" />
+            <input type="hidden" name="subjectId" value={subject.id} />
+            <input type="hidden" name="name" value={`${subject.name} theme`} />
+            <button
+              type="submit"
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90"
+            >
+              Customize fonts &amp; colors for this subject
+            </button>
+          </form>
+        )}
       </section>
 
       <section className="mt-6 rounded-xl border border-border bg-surface p-5">

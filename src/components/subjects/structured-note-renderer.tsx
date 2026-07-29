@@ -8,6 +8,7 @@ const FONT_VARS: Record<string, string> = {
   inter: "var(--font-inter)",
   manrope: "var(--font-manrope)",
   fraunces: "var(--font-fraunces)",
+  comic: "var(--font-comic)",
 };
 
 /** Resolves a theme's stored font key ("winkle", "inter", ...) to the actual
@@ -177,7 +178,7 @@ export function StructuredNoteRenderer({
               <section key={id} id={id} className="scroll-mt-24">
                 <h2
                   className="font-semibold"
-                  style={{ fontFamily: fontFamilyFor(theme.typography.headingFont), fontSize: theme.typography.bodySize * theme.typography.headingScale }}
+                  style={{ fontFamily: fontFamilyFor(theme.typography.subHeadingFont), fontSize: theme.typography.bodySize * theme.typography.headingScale }}
                 >
                   {section.heading}
                 </h2>

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Fraunces, Inter, JetBrains_Mono, Manrope } from "next/font/google";
+import { Comic_Neue, Fraunces, Inter, JetBrains_Mono, Manrope } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
@@ -30,6 +30,16 @@ const fraunces = Fraunces({
 const mono = JetBrains_Mono({
   variable: "--font-mono",
   subsets: ["latin"],
+});
+
+// Comic Sans MS itself isn't a licensable web font — Comic Neue is the
+// open-source Google Fonts stand-in, purpose-built as a modern Comic Sans
+// replacement. Selectable as a heading/sub-heading/body font option in the
+// Note Designer's typography controls (src/lib/note-theme.ts).
+const comicNeue = Comic_Neue({
+  variable: "--font-comic",
+  subsets: ["latin"],
+  weight: ["400", "700"],
 });
 
 // Commercial license confirmed paid directly with the author — safe to use
@@ -70,7 +80,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${fraunces.variable} ${mono.variable} ${winkle.variable} ${manrope.variable} h-full antialiased`}
+      className={`${inter.variable} ${fraunces.variable} ${mono.variable} ${winkle.variable} ${manrope.variable} ${comicNeue.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
         {children}
