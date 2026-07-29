@@ -12,7 +12,11 @@ config({ path: path.join(process.cwd(), ".env") });
 import { PrismaClient } from "../src/generated/prisma";
 import { extractDriveFolderId, listDriveFolderPdfs } from "../src/lib/google-drive";
 import { guessYear } from "../src/lib/subject-match";
-import { deriveSubjectNameFromFilename, matchDriveSubjectName } from "../src/lib/subject-quality";
+import {
+  classifyDriveFilename,
+  deriveSubjectNameFromFilename,
+  matchDriveSubjectName,
+} from "../src/lib/subject-quality";
 
 // Neon's pooled connection has a small shared connection limit — the app's
 // own dev/prod server is drawing from the same pool, so this script caps
@@ -49,11 +53,38 @@ async function syncLink(link: { id: string; driveUrl: string; programId: string;
   if (!folderId) return { ok: false, reason: "no folder id in URL", count: 0 };
 
   const files = await listDriveFolderPdfs(folderId);
-  const driveSubjects = await prisma.driveSubject.findMany({ where: { programId: link.programId } });
+  const [driveSubjects, allPrograms] = await Promise.all([
+    prisma.driveSubject.findMany({ where: { programId: link.programId } }),
+    prisma.program.findMany({ select: { id: true, name: true } }),
+  ]);
 
   for (const file of files) {
     const rawName = deriveSubjectNameFromFilename(file.name) || file.name.replace(/\.pdf$/i, "");
     const year = guessYear(file.name);
+
+    // Shared Drive folders hold every program's own combined booklet side by
+    // side — only this program's own booklet belongs here; a sibling
+    // program's leaks in from the shared folder and is dropped.
+    const classification = classifyDriveFilename(allPrograms, link.programId, rawName);
+    if (classification === "foreign_booklet") continue;
+
+    if (classification === "own_booklet") {
+      await prisma.driveFileMatch.upsert({
+        where: { linkId_driveFileId: { linkId: link.id, driveFileId: file.id } },
+        update: { fileName: file.name, webViewLink: file.webViewLink, year, driveSubjectId: null, isCourseBooklet: true },
+        create: {
+          linkId: link.id,
+          driveFileId: file.id,
+          fileName: file.name,
+          webViewLink: file.webViewLink,
+          year,
+          driveSubjectId: null,
+          isCourseBooklet: true,
+        },
+      });
+      continue;
+    }
+
     const { subject, confidence } = matchDriveSubjectName(driveSubjects, rawName);
 
     let driveSubjectId: string;

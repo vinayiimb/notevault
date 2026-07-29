@@ -100,13 +100,13 @@ export function NotesRenderer({
           h2: ({ children }) => (
             <h2
               id={slugFor(children)}
-              className={`mt-8 scroll-mt-24 border-t pt-6 font-display text-2xl font-bold first:mt-0 first:border-0 first:pt-0 ${t.heading} ${t.divider}`}
+              className={`mt-8 scroll-mt-24 border-t pt-6 font-comic text-2xl font-normal first:mt-0 first:border-0 first:pt-0 ${t.heading} ${t.divider}`}
             >
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 id={slugFor(children)} className={`mt-6 scroll-mt-24 text-lg font-bold ${t.heading}`}>
+            <h3 id={slugFor(children)} className={`mt-6 scroll-mt-24 font-comic text-xl font-normal ${t.heading}`}>
               {children}
             </h3>
           ),

@@ -1,6 +1,10 @@
 import { extractNotesHeadings, preprocessNotesMarkdown } from "@/lib/notes-markdown";
 import { NotesRenderer, resolveNotesTheme } from "./notes-renderer";
 import { DownloadNotesButton } from "./download-notes-button";
+import { StructuredNoteRenderer } from "./structured-note-renderer";
+import { StructuredNoteExportBar } from "./structured-note-export-bar";
+import { StructuredNoteSchema } from "@/lib/note-schema";
+import type { ThemeValues } from "@/lib/note-theme";
 
 // Notes get more room than the rest of the (fairly narrow) subject page —
 // this breaks out to a wide, centered container regardless of the parent's
@@ -12,12 +16,45 @@ export function NotesSection({
   content,
   theme,
   subjectName,
+  format = "MARKDOWN",
+  structuredJson,
+  resolvedTheme,
 }: {
   content: string;
   theme: string;
   subjectName: string;
+  format?: "MARKDOWN" | "STRUCTURED";
+  structuredJson?: unknown;
+  resolvedTheme?: ThemeValues | null;
 }) {
-  const resolvedTheme = resolveNotesTheme(theme);
+  // format defaults to MARKDOWN and structuredJson stays null for every note
+  // created before this feature existed — this branch only ever fires for
+  // rows an admin has actually generated/authored as a structured note, so
+  // every already-published note keeps rendering exactly as before.
+  if (format === "STRUCTURED" && structuredJson && resolvedTheme) {
+    const parsed = StructuredNoteSchema.safeParse(structuredJson);
+    if (parsed.success) {
+      return (
+        <div className="relative mt-4 ml-[50%] w-screen -translate-x-1/2 px-4 sm:px-6">
+          <div className="mx-auto w-[95%] max-w-[1900px]">
+            <div className="flex justify-end">
+              <StructuredNoteExportBar note={parsed.data} theme={resolvedTheme} />
+            </div>
+            <div
+              className="mt-3 overflow-hidden rounded-2xl border"
+              style={{ borderColor: resolvedTheme.colors.border, backgroundColor: resolvedTheme.colors.background }}
+            >
+              <StructuredNoteRenderer note={parsed.data} theme={resolvedTheme} />
+            </div>
+          </div>
+        </div>
+      );
+    }
+    // Falls through to the markdown path below if the stored JSON somehow
+    // doesn't validate — better to show the plain-text fallback than nothing.
+  }
+
+  const resolvedNotesTheme = resolveNotesTheme(theme);
   const headings = extractNotesHeadings(preprocessNotesMarkdown(content));
 
   return (
@@ -49,7 +86,7 @@ export function NotesSection({
               </div>
             </nav>
           )}
-          <NotesRenderer content={content} theme={resolvedTheme} />
+          <NotesRenderer content={content} theme={resolvedNotesTheme} />
         </div>
       </div>
     </div>

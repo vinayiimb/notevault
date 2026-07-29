@@ -5,11 +5,12 @@ import { loginAction } from "@/lib/actions";
 
 const initialState = { error: undefined as string | undefined };
 
-export function LoginForm() {
+export function LoginForm({ nextPath = "/admin" }: { nextPath?: string }) {
   const [state, formAction, pending] = useActionState(loginAction, initialState);
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
+      <input type="hidden" name="next" value={nextPath} />
       <div className="flex flex-col gap-1.5">
         <label htmlFor="email" className="text-sm font-medium">
           Email

@@ -17,11 +17,20 @@ import { heroImageExtensionsFor } from "@/lib/hero-image";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
 import { normalizeMemoryKey } from "@/lib/subject-match";
 import {
+  getCatalogYearRanges,
+  getSemesterGroupsForYear,
+  isCatalogCourseSubject,
+} from "@/lib/pyq-catalog";
+import {
   createSessionCookie,
   destroySessionCookie,
   getSession,
   verifyPassword,
 } from "@/lib/auth";
+import type { Prisma } from "@/generated/prisma";
+import { DEFAULT_THEME, ThemeValuesSchema } from "@/lib/note-theme";
+import { generateStructuredNote } from "@/lib/ai";
+import { detectSourceKind, extractSourceTextFromUpload, saveSourceFile } from "@/lib/note-ingestion";
 
 async function requireAdmin() {
   const session = await getSession();
@@ -316,6 +325,7 @@ export async function reformatNextOcrPaperAction() {
 export async function loginAction(_prevState: unknown, formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
+  const requestedPath = String(formData.get("next") ?? "").trim();
 
   const admin = await prisma.admin.findUnique({ where: { email } });
   if (!admin || !(await verifyPassword(password, admin.passwordHash))) {
@@ -323,7 +333,12 @@ export async function loginAction(_prevState: unknown, formData: FormData) {
   }
 
   await createSessionCookie({ adminId: admin.id, email: admin.email, name: admin.name });
-  redirect("/admin");
+  const safePath =
+    (requestedPath === "/admin" || requestedPath.startsWith("/admin/")) &&
+    !requestedPath.startsWith("//")
+      ? requestedPath
+      : "/admin";
+  redirect(safePath);
 }
 
 export async function logoutAction() {
@@ -553,15 +568,45 @@ export async function syncDriveFilesForLinkAction(
   const files = await listDriveFolderPdfs(folderId);
 
   const { guessYear } = await import("@/lib/subject-match");
-  const { deriveSubjectNameFromFilename, matchDriveSubjectName } = await import("@/lib/subject-quality");
+  const { deriveSubjectNameFromFilename, matchDriveSubjectName, classifyDriveFilename } = await import(
+    "@/lib/subject-quality"
+  );
 
-  let driveSubjects = await prisma.driveSubject.findMany({ where: { programId: link.programId } });
+  const [driveSubjectsInit, allPrograms] = await Promise.all([
+    prisma.driveSubject.findMany({ where: { programId: link.programId } }),
+    prisma.program.findMany({ select: { id: true, name: true } }),
+  ]);
+  const driveSubjects = driveSubjectsInit;
 
   const results: DriveSyncRowResult[] = [];
 
   for (const file of files) {
     const rawName = deriveSubjectNameFromFilename(file.name) || file.name.replace(/\.pdf$/i, "");
     const year = guessYear(file.name);
+
+    // A shared Drive folder can hold every program's own combined booklet
+    // side by side — only this program's own booklet belongs here at all;
+    // another program's leaks in from the shared folder and is dropped.
+    const classification = classifyDriveFilename(allPrograms, link.programId, rawName);
+    if (classification === "foreign_booklet") continue;
+
+    if (classification === "own_booklet") {
+      await prisma.driveFileMatch.upsert({
+        where: { linkId_driveFileId: { linkId, driveFileId: file.id } },
+        update: { fileName: file.name, webViewLink: file.webViewLink, year, driveSubjectId: null, isCourseBooklet: true },
+        create: {
+          linkId,
+          driveFileId: file.id,
+          fileName: file.name,
+          webViewLink: file.webViewLink,
+          year,
+          driveSubjectId: null,
+          isCourseBooklet: true,
+        },
+      });
+      results.push({ fileName: file.name, subjectName: "(combined booklet — not yet split)", isNewSubject: false });
+      continue;
+    }
 
     const { subject, confidence } = matchDriveSubjectName(driveSubjects, rawName);
     let driveSubjectId: string;
@@ -644,6 +689,22 @@ export async function mergeDriveSubjectsAction(formData: FormData) {
   await prisma.driveFileMatch.updateMany({ where: { driveSubjectId: fromId }, data: { driveSubjectId: intoId } });
   await prisma.driveSubject.delete({ where: { id: fromId } });
   revalidatePath(`/admin/exam-sessions`);
+}
+
+// Links a DriveSubject (filename-derived, e.g. "Company Law III") to its
+// matching catalog Subject (syllabus-derived, e.g. "DSC-2.2 — Company Law")
+// so its Drive-matched papers count toward that subject's coverage on the
+// Course Coverage page. Several DriveSubjects can point at the same catalog
+// Subject; pass an empty subjectId to unlink. See
+// prisma/link-drive-subjects-to-catalog.ts for the auto-linker this backs up.
+export async function linkDriveSubjectToSubjectAction(formData: FormData) {
+  await requireAdmin();
+  const driveSubjectId = String(formData.get("driveSubjectId"));
+  const subjectId = String(formData.get("subjectId") ?? "").trim() || null;
+  if (!driveSubjectId) throw new Error("A Drive subject is required.");
+
+  await prisma.driveSubject.update({ where: { id: driveSubjectId }, data: { subjectId } });
+  revalidatePath("/admin/course-coverage");
 }
 
 // ---------- Terms ----------
@@ -1321,6 +1382,90 @@ export async function uploadResourceFormAction(formData: FormData) {
   await uploadResourceAction(formData);
 }
 
+// ---------- Official-library catalog coverage ----------
+
+export type CatalogPaperUploadResult = {
+  ok: boolean;
+  status: "created" | "duplicate" | "error";
+  message: string;
+};
+
+export async function uploadCatalogPaperAction(
+  formData: FormData,
+): Promise<CatalogPaperUploadResult> {
+  await requireAdmin();
+
+  const course = String(formData.get("course") ?? "").trim();
+  const subject = String(formData.get("subject") ?? "").trim();
+  const yearRange = String(formData.get("yearRange") ?? "").trim();
+  const semesterGroup = String(formData.get("semesterGroup") ?? "").trim();
+  const semesterRaw = String(formData.get("semester") ?? "").trim();
+  const semester = semesterRaw ? Number(semesterRaw) : null;
+  const file = formData.get("file");
+
+  if (!isCatalogCourseSubject(course, subject)) {
+    return { ok: false, status: "error", message: "That course and subject are not in the catalog." };
+  }
+  if (!getCatalogYearRanges().includes(yearRange)) {
+    return { ok: false, status: "error", message: "Choose a valid source year/session." };
+  }
+  if (!getSemesterGroupsForYear(yearRange).includes(semesterGroup)) {
+    return { ok: false, status: "error", message: "Choose a valid semester group for that session." };
+  }
+  if (semester !== null && (!Number.isInteger(semester) || semester < 1 || semester > 7)) {
+    return { ok: false, status: "error", message: "Semester must be between 1 and 7." };
+  }
+  if (!(file instanceof File) || file.size === 0) {
+    return { ok: false, status: "error", message: "Choose a PDF to upload." };
+  }
+  if (!file.name.toLowerCase().endsWith(".pdf")) {
+    return { ok: false, status: "error", message: "Only PDF files can be added to the archive." };
+  }
+  if (file.size > 25 * 1024 * 1024) {
+    return { ok: false, status: "error", message: "The PDF is larger than the 25 MB upload limit." };
+  }
+
+  const fileHash = await hashFile(file);
+  const duplicate = await prisma.catalogPaperUpload.findUnique({ where: { fileHash } });
+  if (duplicate) {
+    return {
+      ok: true,
+      status: "duplicate",
+      message: "This exact PDF is already in the catalog.",
+    };
+  }
+
+  const stored = await saveUploadedFile(file, "pyqs");
+  try {
+    await prisma.catalogPaperUpload.create({
+      data: {
+        course,
+        subject,
+        yearRange,
+        semesterGroup,
+        semester,
+        fileUrl: stored.fileUrl,
+        fileName: stored.fileName,
+        fileSize: stored.fileSize,
+        fileHash,
+        note: "Admin upload",
+      },
+    });
+  } catch (error) {
+    await deleteByUrl(stored.fileUrl);
+    throw error;
+  }
+
+  revalidatePath("/pyq-notes");
+  revalidatePath("/admin/course-coverage");
+  revalidatePath(`/admin/course-coverage/${slugify(course)}`);
+  return {
+    ok: true,
+    status: "created",
+    message: "Paper uploaded and added to the Full Archive.",
+  };
+}
+
 // ---------- Term papers (one combined file for a whole Program+Semester) ----------
 
 type DirectTermPaperMetadata = {
@@ -1908,4 +2053,261 @@ export async function updateSiteSettingsAction(formData: FormData) {
 
   revalidatePath("/");
   revalidatePath("/admin/settings");
+}
+
+// ---------- Note Designer: themes ----------
+// A NoteTheme's draftJson/publishedJson holds a ThemeValues object for
+// GLOBAL scope (must be complete — it's every note's ultimate fallback) or
+// a Partial<ThemeValues> for SUBJECT/NOTE scope, where a top-level group key
+// (colors/typography/layout/components/visuals) is present only when the
+// admin has actually turned on "override this group" for that scope — see
+// resolveEffectiveTheme/mergeThemeLayers in src/lib/note-theme.ts, which
+// only overrides a group a layer actually sets.
+
+function revalidateNoteTheme(theme: { scope: string; subjectId: string | null }) {
+  revalidatePath("/admin/note-themes");
+  if (theme.scope === "GLOBAL") {
+    // A GLOBAL publish potentially changes every note's rendering.
+    revalidatePath("/subjects", "layout");
+  } else if (theme.subjectId) {
+    revalidatePath(`/subjects/${theme.subjectId}`);
+  }
+}
+
+export async function createNoteThemeAction(formData: FormData) {
+  await requireAdmin();
+  const name = String(formData.get("name") ?? "").trim();
+  const scope = String(formData.get("scope") ?? "GLOBAL") as "GLOBAL" | "SUBJECT" | "NOTE";
+  const subjectId = String(formData.get("subjectId") ?? "").trim() || null;
+  const subjectNotesId = String(formData.get("subjectNotesId") ?? "").trim() || null;
+  const basedOnId = String(formData.get("basedOnId") ?? "").trim() || null;
+
+  if (!name) throw new Error("A theme name is required.");
+  if (scope === "SUBJECT" && !subjectId) throw new Error("A subject is required for a subject-scoped theme.");
+  if (scope === "NOTE" && !subjectNotesId) throw new Error("A note is required for a note-scoped theme.");
+
+  let draftJson: object = scope === "GLOBAL" ? DEFAULT_THEME : {};
+  if (basedOnId) {
+    const base = await prisma.noteTheme.findUnique({ where: { id: basedOnId } });
+    if (base) draftJson = (base.publishedJson ?? base.draftJson) as object;
+  }
+
+  const theme = await prisma.noteTheme.create({
+    data: {
+      name,
+      scope,
+      subjectId: scope === "SUBJECT" ? subjectId : null,
+      subjectNotesId: scope === "NOTE" ? subjectNotesId : null,
+      draftJson,
+      isPreset: false,
+    },
+  });
+
+  revalidatePath("/admin/note-themes");
+  redirect(`/admin/note-themes/${theme.id}`);
+}
+
+export async function duplicateNoteThemeAction(formData: FormData) {
+  await requireAdmin();
+  const sourceId = String(formData.get("themeId") ?? "");
+  const source = await prisma.noteTheme.findUniqueOrThrow({ where: { id: sourceId } });
+
+  const copy = await prisma.noteTheme.create({
+    data: {
+      name: `${source.name} (copy)`,
+      scope: source.scope,
+      subjectId: source.subjectId,
+      // A NOTE-scoped theme is @unique on subjectNotesId — a duplicate of
+      // one can't also target that same note, so it's created unscoped
+      // (GLOBAL-shaped draft the admin can then re-home) rather than
+      // silently failing the unique constraint.
+      subjectNotesId: null,
+      draftJson: (source.publishedJson ?? source.draftJson) as object,
+      isPreset: false,
+    },
+  });
+
+  revalidatePath("/admin/note-themes");
+  redirect(`/admin/note-themes/${copy.id}`);
+}
+
+export async function deleteNoteThemeAction(formData: FormData) {
+  await requireAdmin();
+  const themeId = String(formData.get("themeId") ?? "");
+  const theme = await prisma.noteTheme.findUniqueOrThrow({ where: { id: themeId } });
+  if (theme.isPreset) throw new Error("Built-in presets can't be deleted — duplicate one instead.");
+  if (theme.isDefaultGlobal) throw new Error("Can't delete the current global default theme.");
+
+  await prisma.noteTheme.delete({ where: { id: themeId } });
+  revalidatePath("/admin/note-themes");
+}
+
+/** Saves the in-progress editor state — does not go live until published. */
+export async function saveNoteThemeDraftAction(formData: FormData) {
+  await requireAdmin();
+  const themeId = String(formData.get("themeId") ?? "");
+  const draftRaw = String(formData.get("draftJson") ?? "{}");
+
+  const theme = await prisma.noteTheme.findUniqueOrThrow({ where: { id: themeId } });
+  let parsedDraft: unknown;
+  try {
+    parsedDraft = JSON.parse(draftRaw);
+  } catch {
+    throw new Error("The theme data isn't valid JSON.");
+  }
+
+  const schema = theme.scope === "GLOBAL" ? ThemeValuesSchema : ThemeValuesSchema.partial();
+  const result = schema.safeParse(parsedDraft);
+  if (!result.success) throw new Error("That theme data doesn't match the expected shape.");
+
+  await prisma.noteTheme.update({ where: { id: themeId }, data: { draftJson: result.data } });
+  revalidatePath(`/admin/note-themes/${themeId}`);
+}
+
+/** Publishes the current draft — snapshots the outgoing published value into
+ * NoteThemeVersion first, so publishing can never lose the prior version. */
+export async function publishNoteThemeAction(formData: FormData) {
+  await requireAdmin();
+  const themeId = String(formData.get("themeId") ?? "");
+  const label = String(formData.get("label") ?? "").trim() || null;
+
+  const theme = await prisma.noteTheme.findUniqueOrThrow({ where: { id: themeId } });
+
+  await prisma.$transaction(async (tx) => {
+    if (theme.publishedJson != null) {
+      await tx.noteThemeVersion.create({
+        data: { themeId, snapshotJson: theme.publishedJson, label },
+      });
+    }
+    await tx.noteTheme.update({ where: { id: themeId }, data: { publishedJson: theme.draftJson as Prisma.InputJsonValue } });
+  });
+
+  revalidateNoteTheme(theme);
+  revalidatePath(`/admin/note-themes/${themeId}`);
+}
+
+/** Restores a prior published version — copies its snapshot back into both
+ * draftJson (so the editor reopens showing the restored state) and
+ * publishedJson (so it's live immediately, matching "restore" rather than
+ * "load into the editor for review first"). */
+export async function restoreNoteThemeVersionAction(formData: FormData) {
+  await requireAdmin();
+  const versionId = String(formData.get("versionId") ?? "");
+  const version = await prisma.noteThemeVersion.findUniqueOrThrow({ where: { id: versionId } });
+
+  const theme = await prisma.noteTheme.update({
+    where: { id: version.themeId },
+    data: { draftJson: version.snapshotJson as object, publishedJson: version.snapshotJson as object },
+  });
+
+  revalidateNoteTheme(theme);
+  revalidatePath(`/admin/note-themes/${theme.id}`);
+}
+
+/** Exactly one GLOBAL theme should be the site default at a time — enforced
+ * here (not the schema) since Postgres has no native "at most one true"
+ * constraint without a partial unique index, which Prisma doesn't model. */
+export async function setDefaultGlobalThemeAction(formData: FormData) {
+  await requireAdmin();
+  const themeId = String(formData.get("themeId") ?? "");
+  const theme = await prisma.noteTheme.findUniqueOrThrow({ where: { id: themeId } });
+  if (theme.scope !== "GLOBAL") throw new Error("Only a global theme can be the site default.");
+  if (theme.publishedJson == null) throw new Error("Publish this theme at least once before making it the default.");
+
+  await prisma.$transaction([
+    prisma.noteTheme.updateMany({ where: { scope: "GLOBAL", isDefaultGlobal: true }, data: { isDefaultGlobal: false } }),
+    prisma.noteTheme.update({ where: { id: themeId }, data: { isDefaultGlobal: true } }),
+  ]);
+
+  revalidatePath("/admin/note-themes");
+  revalidatePath("/subjects", "layout");
+}
+
+/** Import: validates pasted/uploaded theme JSON and stores it as the draft
+ * (does not publish) — export is a client-side "download draftJson/
+ * publishedJson as a file" with no server action needed. */
+export async function importNoteThemeJsonAction(formData: FormData) {
+  await requireAdmin();
+  const themeId = String(formData.get("themeId") ?? "");
+  const jsonText = String(formData.get("json") ?? "");
+
+  const theme = await prisma.noteTheme.findUniqueOrThrow({ where: { id: themeId } });
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(jsonText);
+  } catch {
+    throw new Error("That file isn't valid JSON.");
+  }
+
+  const schema = theme.scope === "GLOBAL" ? ThemeValuesSchema : ThemeValuesSchema.partial();
+  const result = schema.safeParse(parsed);
+  if (!result.success) throw new Error("That theme JSON doesn't match the expected shape.");
+
+  await prisma.noteTheme.update({ where: { id: themeId }, data: { draftJson: result.data } });
+  revalidatePath(`/admin/note-themes/${themeId}`);
+}
+
+// ---------- Note Designer: AI generation ----------
+
+/**
+ * Uploads a source file (or, for images, receives text already OCR'd
+ * client-side — see src/lib/note-ocr-client.ts) and runs it through the
+ * chunked AI pipeline (src/lib/ai.ts's generateStructuredNote), saving the
+ * result as this subject's structured note. Never partially saves: if
+ * generation fails at any step, nothing about the existing note changes.
+ */
+export async function generateStructuredNoteAction(formData: FormData) {
+  await requireAdmin();
+  const subjectId = String(formData.get("subjectId") ?? "").trim();
+  const chapter = String(formData.get("chapter") ?? "").trim();
+  const file = formData.get("file") as File | null;
+  const clientExtractedText = String(formData.get("extractedText") ?? "").trim();
+
+  if (!subjectId) throw new Error("A subject is required.");
+  if (!file || file.size === 0) throw new Error("A source file is required.");
+
+  const subject = await prisma.subject.findUniqueOrThrow({ where: { id: subjectId } });
+  const kind = detectSourceKind(file.name, file.type);
+  if (kind === "unsupported") {
+    throw new Error("Unsupported file type — use PDF, DOCX, PPTX, Markdown/text, or JPG/PNG.");
+  }
+
+  const { fileUrl, fileName, bytes } = await saveSourceFile(file, "note-sources");
+
+  let sourceText: string;
+  if (kind === "image") {
+    if (!clientExtractedText) throw new Error("No OCR text was provided for this image.");
+    sourceText = clientExtractedText;
+  } else {
+    sourceText = await extractSourceTextFromUpload(fileUrl, bytes, kind);
+  }
+
+  if (sourceText.length < 80) {
+    throw new Error("Couldn't extract enough text from this file to generate a note.");
+  }
+
+  const result = await generateStructuredNote(sourceText, { subjectName: subject.name, chapter: chapter || undefined });
+  if (!result.ok) throw new Error(result.error);
+
+  await prisma.subjectNotes.upsert({
+    where: { subjectId },
+    create: {
+      subjectId,
+      content: result.data.summary,
+      format: "STRUCTURED",
+      structuredJson: result.data,
+      sourceFileUrl: fileUrl,
+      sourceFileName: fileName,
+    },
+    update: {
+      format: "STRUCTURED",
+      structuredJson: result.data,
+      sourceFileUrl: fileUrl,
+      sourceFileName: fileName,
+    },
+  });
+
+  revalidatePath(`/admin/subjects/${subjectId}`);
+  revalidatePath(`/subjects/${subjectId}`);
+  return { ok: true as const, title: result.data.metadata.title };
 }

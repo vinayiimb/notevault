@@ -13,9 +13,11 @@ import {
   GridFour,
   House,
   MagnifyingGlass,
+  PaintBrush,
   Shuffle,
   SignOut,
   Stack,
+  Table,
   WarningCircle,
 } from "@phosphor-icons/react/dist/ssr";
 import { logoutAction } from "@/lib/actions";
@@ -111,6 +113,13 @@ export default async function AdminDashboardLayout({
             PYQ coverage
           </Link>
           <Link
+            href="/admin/course-coverage"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Table size={16} />
+            Catalog coverage
+          </Link>
+          <Link
             href="/admin/import-pyq-metadata"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
           >
@@ -144,6 +153,13 @@ export default async function AdminDashboardLayout({
           >
             <WarningCircle size={16} />
             Failed uploads
+          </Link>
+          <Link
+            href="/admin/note-themes"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <PaintBrush size={16} />
+            Note Designer
           </Link>
           <Link
             href="/admin/settings"

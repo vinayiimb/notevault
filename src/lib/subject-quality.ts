@@ -152,6 +152,23 @@ export function deriveSubjectNameFromFilename(filename: string): string {
   return base.replace(/[_]+/g, " ").replace(/\s+/g, " ").trim();
 }
 
+// Word pairs that are near-identical strings (short edit distance) but name
+// opposite/different subjects — a plain similarity score alone would happily
+// match "Introductory Microeconomics" to "Introductory Macroeconomics" at
+// well above the confidence bar, silently filing one subject's papers under
+// the other. Checked as substrings (not whole-word tokens) since filenames
+// are inconsistently spaced ("Micro Economics" vs "Microeconomics").
+const OPPOSING_TERMS: [string, string][] = [["micro", "macro"]];
+
+function hasOpposingTerm(a: string, b: string): boolean {
+  const la = a.toLowerCase();
+  const lb = b.toLowerCase();
+  return OPPOSING_TERMS.some(
+    ([x, y]) => (la.includes(x) && !la.includes(y) && lb.includes(y) && !lb.includes(x)) ||
+      (la.includes(y) && !la.includes(x) && lb.includes(x) && !lb.includes(y)),
+  );
+}
+
 // Finds the best existing DriveSubject (within the same Program, across all
 // sessions/years) that a freshly-derived subject name likely refers to, so
 // re-syncing a folder next year reuses the same subject instead of creating
@@ -167,12 +184,15 @@ export function matchDriveSubjectName<T extends { id: string; name: string }>(
   const normalized = normalizeLooseName(canonical);
   if (!normalized) return { subject: null, confidence: 0 };
 
-  const exact = existing.find((s) => normalizeLooseName(canonicalizeCourseLabel(s.name)) === normalized);
+  const exact = existing.find(
+    (s) => normalizeLooseName(canonicalizeCourseLabel(s.name)) === normalized && !hasOpposingTerm(rawName, s.name),
+  );
   if (exact) return { subject: exact, confidence: 1 };
 
   let best: T | null = null;
   let bestScore = 0;
   for (const s of existing) {
+    if (hasOpposingTerm(rawName, s.name)) continue;
     const score = similarity(canonical, canonicalizeCourseLabel(s.name));
     if (score > bestScore) {
       bestScore = score;
@@ -233,6 +253,71 @@ export function matchProgramName<T extends { id: string; name: string }>(
     }
   }
   return { program: best, confidence: bestScore, variantLabel: "" };
+}
+
+// A Drive PDF filename occasionally *is* a whole program's own name rather
+// than a subject ("B.Com(Prog).pdf", "B.Sc(H) Botany.pdf") — a single
+// combined booklet covering every subject for that course, not yet split.
+// This happens when one Drive folder is shared across several programs'
+// SessionProgramLinks (each program's own unsplit booklet sits alongside
+// everyone else's in the same folder) — see classifyDriveFilename below.
+//
+// Deliberately narrower than matchProgramName: that function also accepts a
+// bare course-type token ("sec", "dse", ...) anywhere in the string as a
+// 0.95-confidence match, which is fine for a human-reviewed CSV import but
+// too eager here, since a real per-subject filename can plausibly contain
+// one of those short tokens on its own (e.g. a "DSE-5.1 ..." filename). Only
+// an exact or whole-name substring match counts, plus one narrow, explicit
+// exception for DU's "All Course(s) <pool>" whole-pool-dump naming
+// convention (distinct from a coincidental bare token elsewhere).
+const ALL_COURSE_PREFIX = /^all\s*courses?\s+/i;
+
+export function matchWholeCourseBooklet<T extends { id: string; name: string }>(
+  programs: T[],
+  rawName: string,
+): T | null {
+  const canonical = canonicalizeCourseLabel(rawName);
+  const normalized = normalizeLooseName(canonical);
+  if (normalized.length >= 6) {
+    for (const program of programs) {
+      const pn = normalizeLooseName(canonicalizeCourseLabel(program.name));
+      if (pn.length < 6) continue;
+      if (pn === normalized || pn.includes(normalized) || normalized.includes(pn)) {
+        return program;
+      }
+    }
+  }
+
+  if (ALL_COURSE_PREFIX.test(rawName.trim())) {
+    const poolToken = rawName.trim().replace(ALL_COURSE_PREFIX, "").trim().toLowerCase();
+    if (["sec", "vac", "aec", "gsec", "aecc"].includes(poolToken)) {
+      return programs.find((p) => normalizeLooseName(p.name).includes("commonpool")) ?? null;
+    }
+    if (poolToken === "ge") {
+      return programs.find((p) => normalizeLooseName(p.name).includes("gepool")) ?? null;
+    }
+  }
+
+  return null;
+}
+
+export type DriveFileClassification = "own_booklet" | "foreign_booklet" | "subject";
+
+// Classifies a Drive-synced filename before it's turned into a DriveSubject:
+// "own_booklet" means it's the current program's own unsplit combined paper
+// (keep the file, but don't create a fake subject for it); "foreign_booklet"
+// means it's a *different* program's booklet that leaked in because the Drive
+// folder is shared across programs (drop the file for this link entirely —
+// the owning program's own link independently syncs the same file); "subject"
+// means proceed with normal per-subject matching, unchanged.
+export function classifyDriveFilename<T extends { id: string; name: string }>(
+  programs: T[],
+  currentProgramId: string,
+  rawName: string,
+): DriveFileClassification {
+  const matched = matchWholeCourseBooklet(programs, rawName);
+  if (!matched) return "subject";
+  return matched.id === currentProgramId ? "own_booklet" : "foreign_booklet";
 }
 
 export function findSubjectIssues(subjects: QualitySubject[]) {

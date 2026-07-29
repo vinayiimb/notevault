@@ -42,6 +42,24 @@ export function getSubjectById(id: string) {
       questions: { orderBy: [{ isRepeated: "desc" }, { repeatCount: "desc" }] },
       analysis: true,
       notes: true,
+      // Papers matched off Google Drive folders (see the Drive-sync flow in
+      // src/lib/actions.ts) — kept separate from `resources` above (which are
+      // PDFs we actually store) since these stay on Drive: no bytes copied,
+      // no storage cost, just a direct link. isCourseBooklet excludes a
+      // whole-course combined paper not yet split into per-subject files.
+      driveSubjects: {
+        select: {
+          files: {
+            where: { isCourseBooklet: false },
+            select: {
+              id: true,
+              fileName: true,
+              webViewLink: true,
+              link: { select: { session: { select: { label: true } } } },
+            },
+          },
+        },
+      },
     },
   });
 }

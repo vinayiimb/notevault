@@ -12,6 +12,7 @@ import { formatBytes } from "@/lib/utils";
 import { PdfDropzone } from "@/components/admin/pdf-dropzone";
 import { NotesEditor } from "@/components/admin/notes-editor";
 import { MergeSubjectPicker } from "@/components/admin/merge-subject-picker";
+import { StructuredNoteGenerator } from "@/components/admin/structured-note-generator";
 
 export default async function AdminSubjectPage({
   params,
@@ -61,6 +62,9 @@ export default async function AdminSubjectPage({
           initialTheme={subject.notes?.theme ?? "sky"}
           pyqCount={subject.resources.filter((r) => r.type === "PYQ").length}
         />
+        <div className="mt-4">
+          <StructuredNoteGenerator subjectId={subject.id} hasStructuredNote={subject.notes?.format === "STRUCTURED"} />
+        </div>
       </section>
 
       <section className="mt-6 rounded-xl border border-border bg-surface p-5">

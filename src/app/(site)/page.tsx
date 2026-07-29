@@ -12,6 +12,7 @@ import {
 import { SearchBar } from "@/components/search-bar";
 import { getProgramsByLevel, getResourceHighlights, getSiteSettings, getStats } from "@/lib/data";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
+import { FeaturedEconomicsVault } from "@/components/featured-economics-vault";
 
 export default async function HomePage() {
   const [stats, programs, siteSettings, highlights] = await Promise.all([
@@ -121,6 +122,8 @@ export default async function HomePage() {
             />
           </nav>
         </section>
+
+        <FeaturedEconomicsVault className="mt-8" />
       </div>
 
       <div className="mx-auto max-w-6xl px-4 pt-20 pb-24 sm:px-6 sm:pt-24">

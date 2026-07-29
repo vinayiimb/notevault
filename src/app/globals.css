@@ -145,6 +145,9 @@
   --font-sans: var(--font-inter);
   --font-display: var(--font-fraunces);
   --font-mono: var(--font-mono);
+  /* Playful hand-drawn face used only for notes headings — commercial use
+     requires a license from the font author, see layout.tsx. */
+  --font-comic: var(--font-winkle);
 }
 
 body {
