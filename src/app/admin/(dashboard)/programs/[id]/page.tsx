@@ -9,6 +9,7 @@ import {
 } from "@/lib/actions";
 import { levelLabel } from "@/lib/utils";
 import { TermPapersSection } from "@/components/admin/term-papers-section";
+import { ConfirmSubmitButton } from "@/components/admin/confirm-submit-button";
 
 export default async function AdminProgramDetailPage({
   params,
@@ -91,17 +92,12 @@ export default async function AdminProgramDetailPage({
               <form action={deleteTermAction} className="inline shrink-0">
                 <input type="hidden" name="id" value={term.id} />
                 <input type="hidden" name="programId" value={program.id} />
-                <button
-                  type="submit"
+                <ConfirmSubmitButton
+                  confirmMessage={`Delete entire semester "${term.name}"? This will also delete all ${term.subjects.length} subject${term.subjects.length === 1 ? "" : "s"}.`}
                   className="px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-500/10 rounded-lg transition border border-red-500/20 hover:border-red-500/50"
-                  onClick={(e) => {
-                    if (!confirm(`Delete entire semester "${term.name}"? This will also delete all ${term.subjects.length} subject${term.subjects.length === 1 ? "" : "s"}.`)) {
-                      e.preventDefault();
-                    }
-                  }}
                 >
                   🗑️ Delete Semester
-                </button>
+                </ConfirmSubmitButton>
               </form>
             </div>
 
@@ -119,17 +115,12 @@ export default async function AdminProgramDetailPage({
                       <form action={deleteSubjectAction} className="inline">
                         <input type="hidden" name="id" value={subject.id} />
                         <input type="hidden" name="programId" value={program.id} />
-                        <button
-                          type="submit"
+                        <ConfirmSubmitButton
+                          confirmMessage={`Delete "${subject.name}"?`}
                           className="text-xs text-red-500 opacity-0 group-hover:opacity-100 hover:text-red-600 transition font-medium"
-                          onClick={(e) => {
-                            if (!confirm(`Delete "${subject.name}"?`)) {
-                              e.preventDefault();
-                            }
-                          }}
                         >
                           ✕ Remove
-                        </button>
+                        </ConfirmSubmitButton>
                       </form>
                     </div>
                   ))}
