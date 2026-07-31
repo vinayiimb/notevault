@@ -14,6 +14,12 @@ import { getProgramsByLevel, getResourceHighlights, getSiteSettings, getStats } 
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 import { FeaturedEconomicsVault } from "@/components/featured-economics-vault";
 
+// updateSiteSettingsAction already calls revalidatePath("/") on save, which
+// should purge this immediately — this is a safety net in case that signal
+// is ever missed or delayed, so an edited headline/subtitle self-corrects
+// within a minute instead of looking permanently stuck on old cached text.
+export const revalidate = 60;
+
 export default async function HomePage() {
   const [stats, programs, siteSettings, highlights] = await Promise.all([
     getStats(),
