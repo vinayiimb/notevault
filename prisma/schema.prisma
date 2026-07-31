@@ -455,3 +455,17 @@ model OrangeEvent {
   reason    String // "daily_visit" | "resource_view" | "exam_kit_session"
   createdAt DateTime @default(now())
 }
+
+// A message submitted through the public /feedback page, optionally with a
+// screenshot attached. No login required — anyone can submit. Reviewed by
+// an admin at /admin/feedback, where `read` tracks what's already been seen.
+model Feedback {
+  id             String   @id @default(cuid())
+  message        String   @db.Text
+  screenshotUrl  String?
+  screenshotName String?
+  read           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([read])
+}

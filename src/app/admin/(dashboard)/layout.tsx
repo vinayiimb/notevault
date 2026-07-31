@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
   CalendarBlank,
+  ChatCircleText,
   ClockCounterClockwise,
   FileArchive,
   FileArrowUp,
@@ -20,6 +21,7 @@ import {
   Table,
   WarningCircle,
 } from "@phosphor-icons/react/dist/ssr";
+import { prisma } from "@/lib/prisma";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 
@@ -30,6 +32,7 @@ export default async function AdminDashboardLayout({
 }) {
   const session = await getSession();
   if (!session) redirect("/admin/login");
+  const unreadFeedbackCount = await prisma.feedback.count({ where: { read: false } });
 
   return (
     <div className="flex min-h-[100dvh]">
@@ -160,6 +163,18 @@ export default async function AdminDashboardLayout({
           >
             <PaintBrush size={16} />
             Note Designer
+          </Link>
+          <Link
+            href="/admin/feedback"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <ChatCircleText size={16} />
+            Feedback
+            {unreadFeedbackCount > 0 && (
+              <span className="ml-auto rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-foreground">
+                {unreadFeedbackCount}
+              </span>
+            )}
           </Link>
           <Link
             href="/admin/settings"
