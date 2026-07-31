@@ -38,11 +38,16 @@ function resolveFetchUrl(paper: { source: string; pdfUrl: string }): URL | null 
   return allowed ? url : null;
 }
 
-export async function POST(request: NextRequest) {
-  const body = await request.json().catch(() => null);
-  const course = typeof body?.course === "string" ? body.course : "";
-  const subject = typeof body?.subject === "string" ? body.subject : "";
-  const semLabel = typeof body?.semesterLabel === "string" ? body.semesterLabel : "";
+// GET (not POST) so the client can point a plain <a href> at this route and
+// let the browser's own download handling take over — a real navigation
+// with a Content-Disposition response is far more reliable across mobile
+// browsers than a fetch-blob-createObjectURL dance, which is flaky on some
+// mobile Safari versions.
+export async function GET(request: NextRequest) {
+  const params = request.nextUrl.searchParams;
+  const course = params.get("course") ?? "";
+  const subject = params.get("subject") ?? "";
+  const semLabel = params.get("semesterLabel") ?? "";
   if (!course || !subject) {
     return NextResponse.json({ error: "Missing course or subject." }, { status: 400 });
   }

@@ -450,34 +450,19 @@ function SemesterGroupedList({
   );
 }
 
-// One entry per group.key currently being combined/downloaded, so one
-// subject's spinner doesn't affect any other subject's button.
-type DownloadStatus = "combining" | "error" | undefined;
-
-async function downloadCombinedPdf(group: SubjectGroup) {
-  const res = await fetch("/api/catalog-combined-pdf", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      course: group.course,
-      subject: group.subject,
-      semesterLabel: group.semesterLabel,
-    }),
+// A real <a href> to a GET route, not a fetch+blob+createObjectURL dance —
+// letting the browser's own download handling take over is far more
+// reliable across mobile browsers (blob-URL downloads are flaky on some
+// mobile Safari versions). target="_blank" so a merge failure (the route
+// returns a JSON error, not a PDF, when every source file is unreachable)
+// opens in a new tab instead of navigating the user away from the archive.
+function combinedDownloadHref(group: SubjectGroup) {
+  const params = new URLSearchParams({
+    course: group.course,
+    subject: group.subject,
+    semesterLabel: group.semesterLabel,
   });
-  if (!res.ok) throw new Error("Combine failed");
-
-  const blob = await res.blob();
-  const disposition = res.headers.get("Content-Disposition") ?? "";
-  const filename = disposition.match(/filename="([^"]+)"/)?.[1] ?? `${group.subject}-combined.pdf`;
-
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = filename;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+  return `/api/catalog-combined-pdf?${params.toString()}`;
 }
 
 function SubjectList({
@@ -489,23 +474,11 @@ function SubjectList({
   expanded: Set<string>;
   onToggle: (key: string) => void;
 }) {
-  const [downloadStatus, setDownloadStatus] = useState<Record<string, DownloadStatus>>({});
-
-  async function handleDownloadCombined(group: SubjectGroup) {
-    setDownloadStatus((current) => ({ ...current, [group.key]: "combining" }));
-    try {
-      await downloadCombinedPdf(group);
-      setDownloadStatus((current) => ({ ...current, [group.key]: undefined }));
-    } catch {
-      setDownloadStatus((current) => ({ ...current, [group.key]: "error" }));
-    }
-  }
 
   return (
     <div className="divide-y divide-border">
       {groups.map((group) => {
         const isOpen = expanded.has(group.key);
-        const status = downloadStatus[group.key];
         return (
           <article key={group.key}>
             <button
@@ -543,20 +516,15 @@ function SubjectList({
                     <p className="text-xs text-muted">
                       Download every year for {group.subject} as one combined PDF.
                     </p>
-                    <div className="flex items-center gap-2">
-                      {status === "error" && (
-                        <span className="text-xs font-medium text-red-500">Couldn&apos;t combine — try again.</span>
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => handleDownloadCombined(group)}
-                        disabled={status === "combining"}
-                        className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground outline-none hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
-                      >
-                        <DownloadSimple aria-hidden="true" size={15} weight="bold" />
-                        {status === "combining" ? "Combining…" : "Download all combined"}
-                      </button>
-                    </div>
+                    <a
+                      href={combinedDownloadHref(group)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground outline-none hover:bg-accent-hover"
+                    >
+                      <DownloadSimple aria-hidden="true" size={15} weight="bold" />
+                      Download all combined
+                    </a>
                   </div>
                 )}
                 {group.sessions.map((sessionGroup) => (
