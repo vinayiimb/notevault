@@ -6,7 +6,6 @@ import {
   CalendarBlank,
   ChatCircleText,
   FileText,
-  Flask,
   Headset,
   SquaresFour,
   Wrench,
@@ -15,7 +14,6 @@ import {
 const NAV = [
   { href: "/browse/college", label: "PYQ", match: "/browse", Icon: FileText },
   { href: "/exam-sessions", label: "Question Papers", match: "/exam-sessions", Icon: CalendarBlank },
-  { href: "/notes-lab", label: "Notes Lab", match: "/notes-lab", Icon: Flask },
   { href: "/tools", label: "Tools", match: "/tools", Icon: Wrench },
   { href: "/dashboard", label: "Dashboard", match: "/dashboard", Icon: SquaresFour },
 ] as const;

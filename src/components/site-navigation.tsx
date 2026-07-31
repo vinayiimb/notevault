@@ -9,7 +9,6 @@ const LINKS = [
   { href: "/browse/college", label: "PYQ", match: "/browse" },
   { href: "/pyq-notes", label: "Full archive", match: "/pyq-notes" },
   { href: "/exam-sessions", label: "Question Papers", match: "/exam-sessions" },
-  { href: "/notes-lab", label: "Notes Lab", match: "/notes-lab" },
   { href: "/tools", label: "Tools", match: "/tools" },
   { href: "/feedback", label: "Feedback", match: "/feedback" },
   { href: "https://wa.me/919376180015", label: "Help", match: "__external__", external: true },
