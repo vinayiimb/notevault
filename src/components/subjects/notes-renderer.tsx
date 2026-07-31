@@ -13,6 +13,8 @@ import { preprocessNotesMarkdown, slugify } from "@/lib/notes-markdown";
 import { MermaidDiagram } from "./mermaid-diagram";
 import { DataChart } from "./data-chart";
 import { detectCallout, CALLOUT_STYLES, type CalloutKind } from "./notes-callout";
+import { fontFamilyFor } from "./structured-note-renderer";
+import type { ThemeValues } from "@/lib/note-theme";
 
 const CALLOUT_ICONS: Record<CalloutKind, typeof Article> = {
   definition: Article,
@@ -72,12 +74,33 @@ export function resolveNotesTheme(value: string | null | undefined): NotesTheme 
 export function NotesRenderer({
   content,
   theme = "sky",
+  resolvedTheme,
 }: {
   content: string;
   theme?: NotesTheme;
+  // When set, this Note Designer theme (see src/lib/note-theme.ts) takes over
+  // colors/fonts entirely — the fixed sky/violet/emerald/amber palette below
+  // is only the fallback for subjects that haven't been given one.
+  resolvedTheme?: ThemeValues | null;
 }) {
   const markdown = preprocessNotesMarkdown(content);
   const t = THEME_CLASSES[theme];
+
+  const cardStyle: React.CSSProperties | undefined = resolvedTheme
+    ? {
+        backgroundColor: resolvedTheme.colors.surface,
+        borderColor: resolvedTheme.colors.border,
+        color: resolvedTheme.colors.primaryText,
+        fontFamily: fontFamilyFor(resolvedTheme.typography.bodyFont),
+        fontSize: resolvedTheme.typography.bodySize,
+        lineHeight: resolvedTheme.typography.lineHeight,
+      }
+    : undefined;
+  const headingFont = resolvedTheme ? fontFamilyFor(resolvedTheme.typography.headingFont) : undefined;
+  const subHeadingFont = resolvedTheme ? fontFamilyFor(resolvedTheme.typography.subHeadingFont) : undefined;
+  const accentColor = resolvedTheme?.colors.primaryAccent;
+  const borderColor = resolvedTheme?.colors.border;
+  const linkColor = resolvedTheme?.colors.link;
 
   // Assigns the same slug (and de-dupes the same way) as
   // extractNotesHeadings, since both walk the headings in document order —
@@ -93,22 +116,36 @@ export function NotesRenderer({
   }
 
   return (
-    <div className={`rounded-2xl border p-5 sm:p-8 ${t.card}`}>
+    <div className={`rounded-2xl border p-5 sm:p-8 ${resolvedTheme ? "" : t.card}`} style={cardStyle}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
           h2: ({ children }) => (
             <h2
               id={slugFor(children)}
-              className={`mt-8 scroll-mt-24 border-t pt-6 font-comic text-2xl font-normal first:mt-0 first:border-0 first:pt-0 ${t.heading} ${t.divider}`}
+              className={`mt-8 scroll-mt-24 border-t pt-6 text-2xl font-normal first:mt-0 first:border-0 first:pt-0 ${resolvedTheme ? "" : `font-comic ${t.heading} ${t.divider}`}`}
+              style={resolvedTheme ? { color: accentColor, borderColor, fontFamily: headingFont } : undefined}
             >
               {children}
             </h2>
           ),
           h3: ({ children }) => (
-            <h3 id={slugFor(children)} className={`mt-6 scroll-mt-24 font-comic text-xl font-normal ${t.heading}`}>
+            <h3
+              id={slugFor(children)}
+              className={`mt-6 scroll-mt-24 text-xl font-normal ${resolvedTheme ? "" : `font-comic ${t.heading}`}`}
+              style={resolvedTheme ? { color: accentColor, fontFamily: subHeadingFont } : undefined}
+            >
               {children}
             </h3>
+          ),
+          a: ({ children, href }) => (
+            <a
+              href={href}
+              className={resolvedTheme ? "underline underline-offset-2" : "text-accent hover:underline"}
+              style={resolvedTheme ? { color: linkColor } : undefined}
+            >
+              {children}
+            </a>
           ),
           p: ({ children }) => {
             const callout = detectCallout(children);
@@ -138,12 +175,18 @@ export function NotesRenderer({
           ),
           li: ({ children }) => (
             <li className="flex gap-2 pl-1 leading-relaxed">
-              <span className={`mt-2.5 size-1.5 shrink-0 rounded-full ${t.bullet}`} />
+              <span
+                className={`mt-2.5 size-1.5 shrink-0 rounded-full ${resolvedTheme ? "" : t.bullet}`}
+                style={resolvedTheme ? { backgroundColor: accentColor } : undefined}
+              />
               <span className="-mt-px flex-1">{children}</span>
             </li>
           ),
           table: ({ children }) => (
-            <div className="mt-6 overflow-hidden overflow-x-auto rounded-xl border border-border bg-surface">
+            <div
+              className={`mt-6 overflow-hidden overflow-x-auto rounded-xl border ${resolvedTheme ? "" : "border-border bg-surface"}`}
+              style={resolvedTheme ? { borderColor, backgroundColor: resolvedTheme.colors.surface } : undefined}
+            >
               <table className="w-full border-collapse text-sm">{children}</table>
             </div>
           ),

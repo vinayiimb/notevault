@@ -52,10 +52,9 @@ export default async function SubjectPage({
   }
   const driveYears = [...driveFilesByYear.keys()].sort((a, b) => b - a);
 
-  const resolvedNoteTheme =
-    subject.notes && subject.notes.format === "STRUCTURED"
-      ? await getResolvedThemeForNote(subject.id, subject.notes.id)
-      : null;
+  const resolvedNoteTheme = subject.notes
+    ? await getResolvedThemeForNote(subject.id, subject.notes.id)
+    : null;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">

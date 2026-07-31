@@ -10,11 +10,14 @@ import {
   uploadResourceFormAction,
 } from "@/lib/actions";
 import { DEFAULT_THEME, ThemeValuesSchema } from "@/lib/note-theme";
+import { getResolvedThemeForNote } from "@/lib/note-theme-data";
+import { StructuredNoteSchema } from "@/lib/note-schema";
 import { formatBytes } from "@/lib/utils";
 import { PdfDropzone } from "@/components/admin/pdf-dropzone";
 import { NotesEditor } from "@/components/admin/notes-editor";
 import { MergeSubjectPicker } from "@/components/admin/merge-subject-picker";
 import { StructuredNoteGenerator } from "@/components/admin/structured-note-generator";
+import { StructuredNoteEditor } from "@/components/admin/structured-note-editor";
 
 export default async function AdminSubjectPage({
   params,
@@ -42,6 +45,15 @@ export default async function AdminSubjectPage({
         return full.success ? full.data.colors : DEFAULT_THEME.colors;
       })()
     : null;
+
+  const resolvedTheme = await getResolvedThemeForNote(subject.id, subject.notes?.id);
+  const structuredNote =
+    subject.notes?.format === "STRUCTURED" && subject.notes.structuredJson
+      ? (() => {
+          const parsed = StructuredNoteSchema.safeParse(subject.notes!.structuredJson);
+          return parsed.success ? parsed.data : null;
+        })()
+      : null;
 
   return (
     <div className="p-8">
@@ -73,10 +85,14 @@ export default async function AdminSubjectPage({
           initialContent={subject.notes?.content ?? ""}
           initialTheme={subject.notes?.theme ?? "sky"}
           pyqCount={subject.resources.filter((r) => r.type === "PYQ").length}
+          resolvedTheme={resolvedTheme}
         />
         <div className="mt-4">
           <StructuredNoteGenerator subjectId={subject.id} hasStructuredNote={subject.notes?.format === "STRUCTURED"} />
         </div>
+        {structuredNote && (
+          <StructuredNoteEditor subjectId={subject.id} note={structuredNote} theme={resolvedTheme} />
+        )}
       </section>
 
       <section className="mt-6 rounded-xl border border-border bg-surface p-5">

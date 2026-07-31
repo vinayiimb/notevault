@@ -86,7 +86,7 @@ export function NotesSection({
               </div>
             </nav>
           )}
-          <NotesRenderer content={content} theme={resolvedNotesTheme} />
+          <NotesRenderer content={content} theme={resolvedNotesTheme} resolvedTheme={resolvedTheme} />
         </div>
       </div>
     </div>
