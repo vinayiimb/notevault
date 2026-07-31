@@ -3,12 +3,14 @@
 import {
   ArrowSquareOut,
   CaretDown,
+  DownloadSimple,
   FunnelSimple,
   MagnifyingGlass,
+  Star,
   WarningCircle,
 } from "@phosphor-icons/react/dist/ssr";
 import { useMemo, useState } from "react";
-import type { CatalogPaper } from "@/lib/pyq-catalog-types";
+import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import {
   canonicalSubjectKey,
   preferredSubjectLabel,
@@ -25,8 +27,10 @@ type SubjectGroup = {
   key: string;
   course: string;
   subject: string;
+  semesterLabel: string;
   sessions: SessionGroup[];
   paperCount: number;
+  highlighted: boolean;
 };
 
 const ALL = "all";
@@ -37,6 +41,11 @@ function sourceLabel(paper: CatalogPaper) {
   if (paper.source === "drive") return "Google Drive PDF";
   if (paper.source === "upload") return "NoteVault upload";
   return null;
+}
+
+function semesterSortKey(label: string) {
+  if (label === NO_SEMESTER) return 99;
+  return Number(label.match(/\d+/)?.[0] ?? 99);
 }
 
 function yearStart(value: string) {
@@ -68,20 +77,25 @@ function buildGroups(papers: CatalogPaper[]) {
     {
       course: string;
       subject: string;
+      semesterLabel: string;
       sessions: Map<string, SessionGroup>;
       paperCount: number;
+      highlighted: boolean;
     }
   >();
 
   for (const paper of papers) {
-    const subjectKey = `${paper.course}\u0000${canonicalSubjectKey(paper.subject)}`;
+    const semLabel = semesterLabel(paper);
+    const subjectKey = `${paper.course}\u0000${semLabel}\u0000${canonicalSubjectKey(paper.subject)}`;
     let subject = subjects.get(subjectKey);
     if (!subject) {
       subject = {
         course: paper.course,
         subject: paper.subject,
+        semesterLabel: semLabel,
         sessions: new Map(),
         paperCount: 0,
+        highlighted: false,
       };
       subjects.set(subjectKey, subject);
     } else {
@@ -90,6 +104,7 @@ function buildGroups(papers: CatalogPaper[]) {
         paper.subject,
       ]);
     }
+    if (paper.highlighted) subject.highlighted = true;
 
     const sessionKey = `${paper.yearRange}\u0000${paper.semesterGroup}`;
     const session = subject.sessions.get(sessionKey);
@@ -111,7 +126,9 @@ function buildGroups(papers: CatalogPaper[]) {
         key,
         course: subject.course,
         subject: subject.subject,
+        semesterLabel: subject.semesterLabel,
         paperCount: subject.paperCount,
+        highlighted: subject.highlighted,
         sessions: [...subject.sessions.values()]
           .map((session) => ({ ...session, papers: session.papers.toSorted(sortPapers) }))
           .sort(
@@ -122,7 +139,10 @@ function buildGroups(papers: CatalogPaper[]) {
       }),
     )
     .sort(
-      (a, b) => a.course.localeCompare(b.course) || a.subject.localeCompare(b.subject),
+      (a, b) =>
+        a.course.localeCompare(b.course) ||
+        semesterSortKey(a.semesterLabel) - semesterSortKey(b.semesterLabel) ||
+        a.subject.localeCompare(b.subject),
     );
 }
 
@@ -134,6 +154,18 @@ function groupByCourse(groups: SubjectGroup[]) {
     else courses.set(group.course, [group]);
   }
   return [...courses.entries()];
+}
+
+function groupBySemester(groups: SubjectGroup[]) {
+  const semesters = new Map<string, SubjectGroup[]>();
+  for (const group of groups) {
+    const existing = semesters.get(group.semesterLabel);
+    if (existing) existing.push(group);
+    else semesters.set(group.semesterLabel, [group]);
+  }
+  return [...semesters.entries()].sort(
+    (a, b) => semesterSortKey(a[0]) - semesterSortKey(b[0]),
+  );
 }
 
 export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
@@ -335,7 +367,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
                   {courseName}
                 </h2>
               </header>
-              <SubjectList groups={courseGroups} expanded={expanded} onToggle={toggleExpanded} />
+              <SemesterGroupedList groups={courseGroups} expanded={expanded} onToggle={toggleExpanded} />
             </section>
           ))}
         </section>
@@ -344,7 +376,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
           aria-label={`Subjects for ${course}`}
           className="mt-6 overflow-hidden rounded-2xl border border-border bg-surface"
         >
-          <SubjectList groups={visibleGroups} expanded={expanded} onToggle={toggleExpanded} />
+          <SemesterGroupedList groups={visibleGroups} expanded={expanded} onToggle={toggleExpanded} />
         </section>
       )}
 
@@ -389,7 +421,11 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   );
 }
 
-function SubjectList({
+// Splits a course's subjects into "Semester 1", "Semester 2", ... sections
+// before handing each slice to SubjectList — without this, a course with
+// 70+ subjects renders as one long alphabetical list with no way to tell
+// which semester a subject belongs to.
+function SemesterGroupedList({
   groups,
   expanded,
   onToggle,
@@ -400,18 +436,93 @@ function SubjectList({
 }) {
   return (
     <div className="divide-y divide-border">
+      {groupBySemester(groups).map(([semLabel, semGroups]) => (
+        <div key={semLabel}>
+          <div className="bg-surface-muted px-5 py-2.5 sm:px-6">
+            <p className="text-xs font-semibold uppercase tracking-wider text-muted">
+              {semLabel}
+            </p>
+          </div>
+          <SubjectList groups={semGroups} expanded={expanded} onToggle={onToggle} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// One entry per group.key currently being combined/downloaded, so one
+// subject's spinner doesn't affect any other subject's button.
+type DownloadStatus = "combining" | "error" | undefined;
+
+async function downloadCombinedPdf(group: SubjectGroup) {
+  const res = await fetch("/api/catalog-combined-pdf", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      course: group.course,
+      subject: group.subject,
+      semesterLabel: group.semesterLabel,
+    }),
+  });
+  if (!res.ok) throw new Error("Combine failed");
+
+  const blob = await res.blob();
+  const disposition = res.headers.get("Content-Disposition") ?? "";
+  const filename = disposition.match(/filename="([^"]+)"/)?.[1] ?? `${group.subject}-combined.pdf`;
+
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+function SubjectList({
+  groups,
+  expanded,
+  onToggle,
+}: {
+  groups: SubjectGroup[];
+  expanded: Set<string>;
+  onToggle: (key: string) => void;
+}) {
+  const [downloadStatus, setDownloadStatus] = useState<Record<string, DownloadStatus>>({});
+
+  async function handleDownloadCombined(group: SubjectGroup) {
+    setDownloadStatus((current) => ({ ...current, [group.key]: "combining" }));
+    try {
+      await downloadCombinedPdf(group);
+      setDownloadStatus((current) => ({ ...current, [group.key]: undefined }));
+    } catch {
+      setDownloadStatus((current) => ({ ...current, [group.key]: "error" }));
+    }
+  }
+
+  return (
+    <div className="divide-y divide-border">
       {groups.map((group) => {
         const isOpen = expanded.has(group.key);
+        const status = downloadStatus[group.key];
         return (
           <article key={group.key}>
             <button
               type="button"
               onClick={() => onToggle(group.key)}
               aria-expanded={isOpen}
-              className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition hover:bg-surface-muted/60 sm:px-6"
+              className={`flex w-full items-center justify-between gap-3 px-5 py-4 text-left transition hover:bg-surface-muted/60 sm:px-6 ${
+                group.highlighted ? "bg-yellow-soft/60 hover:bg-yellow-soft" : ""
+              }`}
             >
               <span>
-                <span className="font-semibold text-foreground">{group.subject}</span>
+                <span className="flex items-center gap-1.5 font-semibold text-foreground">
+                  {group.highlighted && (
+                    <Star aria-label="Highlighted" size={14} weight="fill" className="shrink-0 text-warning" />
+                  )}
+                  {group.subject}
+                </span>
                 <span className="mt-0.5 block text-xs text-muted">
                   {group.paperCount} file{group.paperCount === 1 ? "" : "s"} · {group.sessions.length} session
                   {group.sessions.length === 1 ? "" : "s"}
@@ -427,6 +538,27 @@ function SubjectList({
 
             {isOpen && (
               <div className="divide-y divide-border border-t border-border bg-surface-muted/40">
+                {group.paperCount > 1 && (
+                  <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-6">
+                    <p className="text-xs text-muted">
+                      Download every year for {group.subject} as one combined PDF.
+                    </p>
+                    <div className="flex items-center gap-2">
+                      {status === "error" && (
+                        <span className="text-xs font-medium text-red-500">Couldn&apos;t combine — try again.</span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => handleDownloadCombined(group)}
+                        disabled={status === "combining"}
+                        className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-accent px-3 py-2 text-sm font-semibold text-accent-foreground outline-none hover:bg-accent-hover disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <DownloadSimple aria-hidden="true" size={15} weight="bold" />
+                        {status === "combining" ? "Combining…" : "Download all combined"}
+                      </button>
+                    </div>
+                  </div>
+                )}
                 {group.sessions.map((sessionGroup) => (
                   <div
                     key={sessionGroup.key}
