@@ -67,6 +67,9 @@ const themeInitScript = `
     if (stored === "dark" || (!stored && prefersDark)) {
       document.documentElement.classList.add("dark");
     }
+    if (localStorage.getItem("notevault-sidebar-collapsed") === "true") {
+      document.documentElement.classList.add("sidebar-collapsed");
+    }
   } catch (e) {}
 })();
 `;
