@@ -9,35 +9,31 @@ const LINKS = [
   { href: "/browse/college", label: "PYQ", match: "/browse" },
   { href: "/pyq-notes", label: "Full archive", match: "/pyq-notes" },
   { href: "/exam-sessions", label: "Question Papers", match: "/exam-sessions" },
+  { href: "/notes-lab", label: "Notes Lab", match: "/notes-lab" },
   { href: "/tools", label: "Tools", match: "/tools" },
   { href: "/feedback", label: "Feedback", match: "/feedback" },
   { href: "https://wa.me/919376180015", label: "Help", match: "__external__", external: true },
   { href: "/dashboard", label: "Dashboard", match: "/dashboard", icon: true },
 ] as const;
 
+// Every other link (PYQ, Question Papers, Notes Lab, Tools, Dashboard,
+// Feedback, Help) lives in SiteSidebar now — this is deliberately just the
+// one item so the header stays a single clean pill next to the logo.
 export function SiteNavigation() {
   const pathname = usePathname();
+  const active = pathname === "/pyq-notes" || pathname.startsWith("/pyq-notes/");
 
   return (
     <nav className="hidden items-center gap-1 text-sm font-medium md:flex" aria-label="Main navigation">
-      {LINKS.map((link) => {
-        const isExternal = "external" in link && link.external;
-        const active = !isExternal && (pathname === link.href || pathname.startsWith(`${link.match}/`));
-        return (
-          <Link
-            key={link.href}
-            href={link.href}
-            {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-            aria-current={active ? "page" : undefined}
-            className={`flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-2 ${
-              active ? "bg-brand-soft text-brand" : "text-muted hover:bg-surface-muted hover:text-foreground"
-            }`}
-          >
-            {"icon" in link && link.icon && <ChartBar size={16} weight="bold" />}
-            {link.label}
-          </Link>
-        );
-      })}
+      <Link
+        href="/pyq-notes"
+        aria-current={active ? "page" : undefined}
+        className={`flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-2 ${
+          active ? "bg-brand-soft text-brand" : "text-muted hover:bg-surface-muted hover:text-foreground"
+        }`}
+      >
+        Full archive
+      </Link>
     </nav>
   );
 }
