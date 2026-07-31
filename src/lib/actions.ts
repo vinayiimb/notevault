@@ -1926,85 +1926,6 @@ export async function updateResourceAction(formData: FormData) {
   revalidatePath("/admin/resources");
 }
 
-// ---------- Full Archive customization (rename / re-semester / merge / highlight) ----------
-
-// Renames, re-assigns the semester, and/or highlights a (course, subject)
-// pairing in the public Full Archive. subjectKey is canonicalSubjectKey()
-// of the subject's ORIGINAL label, computed by the admin page from the raw
-// archive data — it stays stable even after the display name changes.
-export async function upsertCatalogSubjectOverrideAction(formData: FormData) {
-  await requireAdmin();
-  const course = String(formData.get("course") ?? "").trim();
-  const subjectKey = String(formData.get("subjectKey") ?? "").trim();
-  const displayName = String(formData.get("displayName") ?? "").trim() || null;
-  const semesterRaw = String(formData.get("semester") ?? "").trim();
-  const semesterOverride = semesterRaw ? Number(semesterRaw) : null;
-  const highlight = formData.get("highlight") === "on";
-  const courseSlug = String(formData.get("courseSlug") ?? "").trim();
-
-  if (!course || !subjectKey) throw new Error("A course and subject are required.");
-
-  await prisma.catalogSubjectOverride.upsert({
-    where: { course_subjectKey: { course, subjectKey } },
-    create: { course, subjectKey, displayName, semesterOverride, highlight },
-    update: { displayName, semesterOverride, highlight },
-  });
-
-  revalidatePath("/pyq-notes");
-  if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
-}
-
-// Makes `subjectKey` display identically to `targetSubjectKey` (same name +
-// semester) so they collapse into one group in the archive browser, which
-// groups purely by canonicalSubjectKey() of the (possibly overridden) text.
-export async function mergeCatalogSubjectsAction(formData: FormData) {
-  await requireAdmin();
-  const course = String(formData.get("course") ?? "").trim();
-  const subjectKey = String(formData.get("subjectKey") ?? "").trim();
-  const courseSlug = String(formData.get("courseSlug") ?? "").trim();
-
-  // Packed as "targetSubjectKeytargetDisplayNametargetSemester"
-  // by the <select> in archive-customize/[courseSlug]/page.tsx (see
-  // MERGE_SEP there) — a plain form has no client JS to split a select's
-  // value into separate fields before submit, so it's parsed back apart here.
-  const mergeTarget = String(formData.get("mergeTarget") ?? "");
-  const [, targetDisplayName = "", targetSemesterRaw = ""] = mergeTarget.split("");
-
-  if (!course || !subjectKey || !targetDisplayName.trim()) {
-    throw new Error("A merge target is required.");
-  }
-
-  await prisma.catalogSubjectOverride.upsert({
-    where: { course_subjectKey: { course, subjectKey } },
-    create: {
-      course,
-      subjectKey,
-      displayName: targetDisplayName,
-      semesterOverride: targetSemesterRaw ? Number(targetSemesterRaw) : null,
-    },
-    update: {
-      displayName: targetDisplayName,
-      semesterOverride: targetSemesterRaw ? Number(targetSemesterRaw) : null,
-    },
-  });
-
-  revalidatePath("/pyq-notes");
-  if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
-}
-
-// Reverts a subject back to its original scraped/imported name and semester.
-export async function resetCatalogSubjectOverrideAction(formData: FormData) {
-  await requireAdmin();
-  const id = String(formData.get("id") ?? "").trim();
-  const courseSlug = String(formData.get("courseSlug") ?? "").trim();
-  if (!id) throw new Error("Nothing to reset.");
-
-  await prisma.catalogSubjectOverride.delete({ where: { id } }).catch(() => {});
-
-  revalidatePath("/pyq-notes");
-  if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
-}
-
 // ---------- Questions (PYQ bank / repeated questions) ----------
 
 export async function createQuestionAction(formData: FormData) {
@@ -2429,4 +2350,45 @@ export async function updateStructuredNoteAction(formData: FormData) {
   revalidatePath(`/admin/subjects/${subjectId}`);
   revalidatePath(`/subjects/${subjectId}`);
   return { ok: true as const };
+}
+
+// ---------- Feedback ----------
+// Anonymous — no login required to submit, matches the public /feedback
+// page. requireAdmin only guards the admin-side read/triage action below.
+
+export async function submitFeedbackAction(formData: FormData) {
+  const message = String(formData.get("message") ?? "").trim();
+  if (!message) throw new Error("Feedback can't be empty.");
+  if (message.length > 5000) throw new Error("That's a bit long — keep it under 5000 characters.");
+
+  const screenshot = formData.get("screenshot") as File | null;
+  let screenshotUrl: string | null = null;
+  let screenshotName: string | null = null;
+  if (screenshot && screenshot.size > 0) {
+    if (!screenshot.type.startsWith("image/")) throw new Error("Screenshot must be an image file.");
+    const saved = await saveUploadedFile(screenshot, "feedback");
+    screenshotUrl = saved.fileUrl;
+    screenshotName = saved.fileName;
+  }
+
+  await prisma.feedback.create({ data: { message, screenshotUrl, screenshotName } });
+  revalidatePath("/admin/feedback");
+  return { ok: true as const };
+}
+
+export async function markFeedbackReadAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const read = formData.get("read") === "true";
+  await prisma.feedback.update({ where: { id }, data: { read } });
+  revalidatePath("/admin/feedback");
+}
+
+export async function deleteFeedbackAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const feedback = await prisma.feedback.findUnique({ where: { id } });
+  if (feedback?.screenshotUrl) await deleteByUrl(feedback.screenshotUrl);
+  await prisma.feedback.delete({ where: { id } });
+  revalidatePath("/admin/feedback");
 }
