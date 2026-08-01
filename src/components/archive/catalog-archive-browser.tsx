@@ -30,6 +30,7 @@ type SubjectGroup = {
   semesterLabel: string;
   sessions: SessionGroup[];
   paperCount: number;
+  combinableCount: number;
   highlighted: boolean;
 };
 
@@ -80,6 +81,7 @@ function buildGroups(papers: CatalogPaper[]) {
       semesterLabel: string;
       sessions: Map<string, SessionGroup>;
       paperCount: number;
+      combinableCount: number;
       highlighted: boolean;
     }
   >();
@@ -95,6 +97,7 @@ function buildGroups(papers: CatalogPaper[]) {
         semesterLabel: semLabel,
         sessions: new Map(),
         paperCount: 0,
+        combinableCount: 0,
         highlighted: false,
       };
       subjects.set(subjectKey, subject);
@@ -118,6 +121,10 @@ function buildGroups(papers: CatalogPaper[]) {
       });
     }
     subject.paperCount += 1;
+    // Matches the exclusion in /api/catalog-combined-pdf: "notevault" (read
+    // online) rows have no backing PDF file, so they can never be part of a
+    // merge — this only counts papers the combine endpoint could actually use.
+    if (paper.source !== "notevault") subject.combinableCount += 1;
   }
 
   return [...subjects.entries()]
@@ -128,6 +135,7 @@ function buildGroups(papers: CatalogPaper[]) {
         subject: subject.subject,
         semesterLabel: subject.semesterLabel,
         paperCount: subject.paperCount,
+        combinableCount: subject.combinableCount,
         highlighted: subject.highlighted,
         sessions: [...subject.sessions.values()]
           .map((session) => ({ ...session, papers: session.papers.toSorted(sortPapers) }))
@@ -499,6 +507,9 @@ function SubjectList({
                 <span className="mt-0.5 block text-xs text-muted">
                   {group.paperCount} file{group.paperCount === 1 ? "" : "s"} · {group.sessions.length} session
                   {group.sessions.length === 1 ? "" : "s"}
+                  {group.combinableCount > 1 && (
+                    <span title="Every year can be downloaded as one combined PDF"> · ⭐ combinable</span>
+                  )}
                 </span>
               </span>
               <CaretDown
@@ -511,7 +522,7 @@ function SubjectList({
 
             {isOpen && (
               <div className="divide-y divide-border border-t border-border bg-surface-muted/40">
-                {group.paperCount > 1 && (
+                {group.combinableCount > 1 && (
                   <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-6">
                     <p className="text-xs text-muted">
                       Download every year for {group.subject} as one combined PDF.
