@@ -38,43 +38,60 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className={`relative -mt-[92px] ${heroImage ? "bg-[#2c82d6]" : "bg-brand"}`}>
-        <div className="relative min-h-[460px] sm:min-h-[520px]">
-          {!heroImage && (
+      <section className={`relative -mt-[92px] ${heroImage ? "" : "bg-brand"}`}>
+        {heroImage ? (
+          // The image is uploaded by an admin at an arbitrary aspect ratio and
+          // is designed to be shown in full — never cropped, never squeezed
+          // into a fixed box. It renders at its natural width-derived height
+          // (like a normal inline image); hero-image-fade masks its bottom
+          // edge to transparent and hero-image-overlay blends that fade into
+          // the page background, so the banner dissolves into the copy below
+          // instead of ending on a hard edge or needing a text scrim.
+          // eslint-disable-next-line @next/next/no-img-element
+          <div className="relative">
+            <img src={heroImage} alt="" className="hero-image-fade block h-auto w-full" />
+            <div aria-hidden="true" className="hero-image-overlay absolute inset-0" />
+          </div>
+        ) : (
+          <div className="relative min-h-[460px] sm:min-h-[520px]">
             <div
               aria-hidden="true"
               className="absolute inset-0 min-h-[720px] bg-[radial-gradient(circle_at_18%_22%,rgba(255,255,255,.24),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(255,255,255,.15),transparent_30%)]"
             />
-          )}
-          {heroImage && (
-            // The image is uploaded by an admin at an arbitrary aspect ratio and
-            // is designed to be shown in full — never cropped, never squeezed
-            // into a fixed box. It renders at its natural width-derived height
-            // (like a normal inline image) and the section simply grows as
-            // tall as that requires; min-height above is only a floor so the
-            // headline has room on a very short/wide image, it never crops it.
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={heroImage} alt="" className="block w-full h-auto" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/30 to-black/10" />
-
-          <div className="absolute inset-x-0 top-0 z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-32 pb-16 text-center sm:px-6 sm:pt-36 lg:pt-40">
-            <p className="mb-5 text-xs font-semibold tracking-[0.2em] text-white/80 uppercase">
-              {siteSettings.heroEyebrow}
-            </p>
-            <h1 className="max-w-4xl text-balance font-display text-5xl leading-[0.93] font-extrabold tracking-[-0.04em] whitespace-pre-line text-white sm:text-7xl lg:text-[5.25rem]">
-              {siteSettings.heroHeadline}
-            </h1>
-            <p className="mt-6 max-w-2xl text-pretty text-base font-medium leading-relaxed text-white/90 sm:text-lg">
-              {siteSettings.heroSubtitle}
-            </p>
-            <div className="mt-8 w-full max-w-2xl">
-              <Suspense fallback={<div className="h-14 w-full" />}>
-                <SearchBar />
-              </Suspense>
-            </div>
-            <p className="mt-4 text-sm text-white/70">{siteSettings.heroSearchCaption}</p>
+            <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/30 to-black/10" />
           </div>
+        )}
+
+        <div
+          className={
+            heroImage
+              ? "relative mx-auto flex max-w-5xl flex-col items-center px-4 pt-8 pb-16 text-center sm:px-6 sm:pt-10"
+              : "absolute inset-x-0 top-0 z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-32 pb-16 text-center sm:px-6 sm:pt-36 lg:pt-40"
+          }
+        >
+          <p
+            className={`mb-5 text-xs font-semibold tracking-[0.2em] uppercase ${heroImage ? "text-muted" : "text-white/80"}`}
+          >
+            {siteSettings.heroEyebrow}
+          </p>
+          <h1
+            className={`max-w-4xl text-balance font-display text-5xl leading-[0.93] font-extrabold tracking-[-0.04em] whitespace-pre-line sm:text-7xl lg:text-[5.25rem] ${heroImage ? "text-foreground" : "text-white"}`}
+          >
+            {siteSettings.heroHeadline}
+          </h1>
+          <p
+            className={`mt-6 max-w-2xl text-pretty text-base font-medium leading-relaxed sm:text-lg ${heroImage ? "text-muted" : "text-white/90"}`}
+          >
+            {siteSettings.heroSubtitle}
+          </p>
+          <div className="mt-8 w-full max-w-2xl">
+            <Suspense fallback={<div className="h-14 w-full" />}>
+              <SearchBar />
+            </Suspense>
+          </div>
+          <p className={`mt-4 text-sm ${heroImage ? "text-muted" : "text-white/70"}`}>
+            {siteSettings.heroSearchCaption}
+          </p>
         </div>
       </section>
 
