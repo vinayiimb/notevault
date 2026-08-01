@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Comic_Neue, Fraunces, Inter, JetBrains_Mono, Manrope } from "next/font/google";
 import localFont from "next/font/local";
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const inter = Inter({
@@ -87,6 +88,7 @@ export default function RootLayout({
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
         {children}
+        <Analytics />
         <Script id="notevault-theme" strategy="beforeInteractive">
           {themeInitScript}
         </Script>
