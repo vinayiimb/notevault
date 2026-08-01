@@ -221,6 +221,29 @@ model CatalogPaperUpload {
   @@index([course, subject, yearRange])
 }
 
+// Admin override layered on top of the Full Archive (/pyq-notes) at render
+// time — lets an admin rename a subject, force which semester it's grouped
+// under, or highlight it, without touching the underlying scraped library
+// catalog, uploads, NoteVault resources, or Drive files it was built from.
+// subjectKey is canonicalSubjectKey() of the ORIGINAL (pre-override) subject
+// label, so it stays stable no matter what the admin renames it to.
+// "Merging" two subjects is just giving both the same displayName +
+// semesterOverride — canonicalSubjectKey() then hashes them to the same
+// group in the archive browser, no separate merge-target column needed.
+model CatalogSubjectOverride {
+  id               String   @id @default(cuid())
+  course           String
+  subjectKey       String
+  displayName      String?
+  semesterOverride Int?
+  highlight        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([course, subjectKey])
+}
+
+
 // A single combined paper covering every subject for one Program+Semester
 // at once (as opposed to a Resource, which always belongs to one Subject) —
 // e.g. a scanned "B.Com (H) Semester 1" booklet that bundles all subjects'
@@ -388,12 +411,14 @@ model Question {
 // Singleton row (id is always "singleton") for the small set of homepage
 // text fields an admin can safely edit without any risk of breaking a page.
 model SiteSettings {
-  id              String   @id @default("singleton")
-  heroHeadline    String?
-  heroSubtitle    String?
-  heroImageUrl    String?
-  currencyIconUrl String?
-  updatedAt       DateTime @updatedAt
+  id                 String   @id @default("singleton")
+  heroEyebrow        String?
+  heroHeadline       String?
+  heroSubtitle       String?
+  heroSearchCaption  String?
+  heroImageUrl       String?
+  currencyIconUrl    String?
+  updatedAt          DateTime @updatedAt
 }
 
 model Admin {

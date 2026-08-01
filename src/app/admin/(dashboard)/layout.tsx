@@ -16,6 +16,7 @@ import {
   MagnifyingGlass,
   PaintBrush,
   Shuffle,
+  Sparkle,
   SignOut,
   Stack,
   Table,
@@ -121,6 +122,13 @@ export default async function AdminDashboardLayout({
           >
             <Table size={16} />
             Catalog coverage
+          </Link>
+          <Link
+            href="/admin/archive-customize"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Sparkle size={16} />
+            Customize Full Archive
           </Link>
           <Link
             href="/admin/import-pyq-metadata"

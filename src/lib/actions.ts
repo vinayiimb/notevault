@@ -1926,6 +1926,85 @@ export async function updateResourceAction(formData: FormData) {
   revalidatePath("/admin/resources");
 }
 
+// ---------- Full Archive customization (rename / re-semester / merge / highlight) ----------
+
+// Renames, re-assigns the semester, and/or highlights a (course, subject)
+// pairing in the public Full Archive. subjectKey is canonicalSubjectKey()
+// of the subject's ORIGINAL label, computed by the admin page from the raw
+// archive data — it stays stable even after the display name changes.
+export async function upsertCatalogSubjectOverrideAction(formData: FormData) {
+  await requireAdmin();
+  const course = String(formData.get("course") ?? "").trim();
+  const subjectKey = String(formData.get("subjectKey") ?? "").trim();
+  const displayName = String(formData.get("displayName") ?? "").trim() || null;
+  const semesterRaw = String(formData.get("semester") ?? "").trim();
+  const semesterOverride = semesterRaw ? Number(semesterRaw) : null;
+  const highlight = formData.get("highlight") === "on";
+  const courseSlug = String(formData.get("courseSlug") ?? "").trim();
+
+  if (!course || !subjectKey) throw new Error("A course and subject are required.");
+
+  await prisma.catalogSubjectOverride.upsert({
+    where: { course_subjectKey: { course, subjectKey } },
+    create: { course, subjectKey, displayName, semesterOverride, highlight },
+    update: { displayName, semesterOverride, highlight },
+  });
+
+  revalidatePath("/pyq-notes");
+  if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
+}
+
+// Makes `subjectKey` display identically to the merge target (same name +
+// semester) so they collapse into one group in the archive browser, which
+// groups purely by canonicalSubjectKey() of the (possibly overridden) text.
+// The <select> in archive-customize/[courseSlug]/page.tsx packs
+// "targetSubjectKey<SEP>targetDisplayName<SEP>targetSemester" into a single
+// "mergeTarget" field (see MERGE_SEP there) since that plain form has no
+// client JS to split a select's value into separate fields before submit.
+export async function mergeCatalogSubjectsAction(formData: FormData) {
+  await requireAdmin();
+  const course = String(formData.get("course") ?? "").trim();
+  const subjectKey = String(formData.get("subjectKey") ?? "").trim();
+  const courseSlug = String(formData.get("courseSlug") ?? "").trim();
+
+  const mergeTarget = String(formData.get("mergeTarget") ?? "");
+  const [, targetDisplayName = "", targetSemesterRaw = ""] = mergeTarget.split("");
+
+  if (!course || !subjectKey || !targetDisplayName.trim()) {
+    throw new Error("A merge target is required.");
+  }
+
+  await prisma.catalogSubjectOverride.upsert({
+    where: { course_subjectKey: { course, subjectKey } },
+    create: {
+      course,
+      subjectKey,
+      displayName: targetDisplayName,
+      semesterOverride: targetSemesterRaw ? Number(targetSemesterRaw) : null,
+    },
+    update: {
+      displayName: targetDisplayName,
+      semesterOverride: targetSemesterRaw ? Number(targetSemesterRaw) : null,
+    },
+  });
+
+  revalidatePath("/pyq-notes");
+  if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
+}
+
+// Reverts a subject back to its original scraped/imported name and semester.
+export async function resetCatalogSubjectOverrideAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "").trim();
+  const courseSlug = String(formData.get("courseSlug") ?? "").trim();
+  if (!id) throw new Error("Nothing to reset.");
+
+  await prisma.catalogSubjectOverride.delete({ where: { id } }).catch(() => {});
+
+  revalidatePath("/pyq-notes");
+  if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
+}
+
 // ---------- Questions (PYQ bank / repeated questions) ----------
 
 export async function createQuestionAction(formData: FormData) {
@@ -2043,13 +2122,21 @@ export async function removeCurrencyIconAction() {
 
 export async function updateSiteSettingsAction(formData: FormData) {
   await requireAdmin();
+  const heroEyebrow = String(formData.get("heroEyebrow") ?? "").trim();
   const heroHeadline = String(formData.get("heroHeadline") ?? "").trim();
   const heroSubtitle = String(formData.get("heroSubtitle") ?? "").trim();
+  const heroSearchCaption = String(formData.get("heroSearchCaption") ?? "").trim();
 
+  const data = {
+    heroEyebrow: heroEyebrow || null,
+    heroHeadline: heroHeadline || null,
+    heroSubtitle: heroSubtitle || null,
+    heroSearchCaption: heroSearchCaption || null,
+  };
   await prisma.siteSettings.upsert({
     where: { id: "singleton" },
-    create: { id: "singleton", heroHeadline: heroHeadline || null, heroSubtitle: heroSubtitle || null },
-    update: { heroHeadline: heroHeadline || null, heroSubtitle: heroSubtitle || null },
+    create: { id: "singleton", ...data },
+    update: data,
   });
 
   revalidatePath("/");

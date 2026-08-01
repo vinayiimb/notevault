@@ -140,7 +140,10 @@ export async function getCoverageCatalogCourses() {
 // 4. files previously synced from exam-session Google Drive folders.
 // Nothing is silently de-duplicated: if two sources really contain separate
 // files for the same subject/session, the browser presents them as options.
-export async function getUnifiedPyqArchive(): Promise<CatalogPaper[]> {
+// This is the RAW union, before admin overrides (rename/semester/merge/
+// highlight, see CatalogSubjectOverride) are applied — the admin editor
+// reads this directly so it can show what a subject looked like originally.
+export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
   const [catalog, readOnline, driveFiles] = await Promise.all([
     getFullPyqCatalog(),
     getPyqArchiveIndex(),
@@ -179,6 +182,44 @@ export async function getUnifiedPyqArchive(): Promise<CatalogPaper[]> {
   });
 
   return [...catalog, ...readOnlinePapers, ...sessionPapers];
+}
+
+function overrideMapKey(course: string, subjectKey: string) {
+  return `${course} ${subjectKey}`;
+}
+
+export async function getCatalogSubjectOverrides() {
+  return prisma.catalogSubjectOverride.findMany({ orderBy: { updatedAt: "desc" } });
+}
+
+async function getOverridesByKey() {
+  const rows = await getCatalogSubjectOverrides();
+  const map = new Map<string, (typeof rows)[number]>();
+  for (const row of rows) map.set(overrideMapKey(row.course, row.subjectKey), row);
+  return map;
+}
+
+function applyOverride(
+  paper: CatalogPaper,
+  overrides: Map<string, { displayName: string | null; semesterOverride: number | null; highlight: boolean }>,
+): CatalogPaper {
+  const override = overrides.get(overrideMapKey(paper.course, canonicalSubjectKey(paper.subject)));
+  if (!override) return paper;
+  return {
+    ...paper,
+    subject: override.displayName || paper.subject,
+    semester: override.semesterOverride != null ? String(override.semesterOverride) : paper.semester,
+    highlighted: override.highlight || undefined,
+  };
+}
+
+// The public-facing archive: raw union with admin overrides layered on top.
+export async function getUnifiedPyqArchive(): Promise<CatalogPaper[]> {
+  const [papers, overrides] = await Promise.all([
+    getRawUnifiedPyqArchive(),
+    getOverridesByKey(),
+  ]);
+  return papers.map((paper) => applyOverride(paper, overrides));
 }
 
 export function isCatalogCourseSubject(course: string, subject: string) {
