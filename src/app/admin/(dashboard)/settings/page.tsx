@@ -22,11 +22,22 @@ export default async function AdminSettingsPage() {
       </p>
 
       <section className="mt-8 max-w-2xl rounded-xl border border-border bg-surface p-6">
-        <h2 className="font-medium">Homepage headline &amp; subtitle</h2>
+        <h2 className="font-medium">Homepage hero text</h2>
         <p className="mt-1 text-sm text-muted">
-          The big heading and the pill of text under it, on the homepage hero.
+          Every piece of text on the homepage&apos;s hero banner, top to bottom in the order it
+          appears.
         </p>
         <form action={updateSiteSettingsAction} className="mt-4 flex flex-col gap-4">
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-muted">
+              Eyebrow (small uppercase line above the headline)
+            </label>
+            <input
+              name="heroEyebrow"
+              defaultValue={siteSettings.heroEyebrow}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
+            />
+          </div>
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-medium text-muted">
               Headline (use a line break for the two-line look)
@@ -34,8 +45,8 @@ export default async function AdminSettingsPage() {
             <textarea
               name="heroHeadline"
               defaultValue={siteSettings.heroHeadline}
-              rows={2}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
+              rows={3}
+              className="resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -43,6 +54,16 @@ export default async function AdminSettingsPage() {
             <input
               name="heroSubtitle"
               defaultValue={siteSettings.heroSubtitle}
+              className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
+            />
+          </div>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-medium text-muted">
+              Caption under the search bar
+            </label>
+            <input
+              name="heroSearchCaption"
+              defaultValue={siteSettings.heroSearchCaption}
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
             />
           </div>

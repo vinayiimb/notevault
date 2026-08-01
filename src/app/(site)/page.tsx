@@ -60,7 +60,7 @@ export default async function HomePage() {
 
           <div className="absolute inset-x-0 top-0 z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-32 pb-16 text-center sm:px-6 sm:pt-36 lg:pt-40">
             <p className="mb-5 text-xs font-semibold tracking-[0.2em] text-white/80 uppercase">
-              Built for Delhi University students
+              {siteSettings.heroEyebrow}
             </p>
             <h1 className="max-w-4xl text-balance font-display text-5xl leading-[0.93] font-extrabold tracking-[-0.04em] whitespace-pre-line text-white sm:text-7xl lg:text-[5.25rem]">
               {siteSettings.heroHeadline}
@@ -73,7 +73,7 @@ export default async function HomePage() {
                 <SearchBar />
               </Suspense>
             </div>
-            <p className="mt-4 text-sm text-white/70">Search a subject, paper title, program, or topic.</p>
+            <p className="mt-4 text-sm text-white/70">{siteSettings.heroSearchCaption}</p>
           </div>
         </div>
       </section>

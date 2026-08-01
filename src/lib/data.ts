@@ -239,9 +239,11 @@ export async function getResourceHighlights() {
 export const getSiteSettings = cache(async () => {
   const settings = await prisma.siteSettings.findUnique({ where: { id: "singleton" } });
   return {
+    heroEyebrow: settings?.heroEyebrow || "Built for Delhi University students",
     heroHeadline: settings?.heroHeadline || "The Best, One Stop,\nStudy Platform",
     heroSubtitle:
       settings?.heroSubtitle || "Notes, PYQs and answer keys for every DU program — free, no login needed",
+    heroSearchCaption: settings?.heroSearchCaption || "Search a subject, paper title, program, or topic.",
     heroImageUrl: settings?.heroImageUrl || null,
     currencyIconUrl: settings?.currencyIconUrl || null,
   };
