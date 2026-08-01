@@ -5,15 +5,15 @@ import { ChartBar, NotePencil, Sparkle, Target } from "@phosphor-icons/react/dis
 import { generateSubjectAnalysisAction } from "@/lib/subject-analysis-actions";
 import { NotesRenderer } from "@/components/subjects/notes-renderer";
 
-type RepeatedQuestion = {
+export type RepeatedQuestion = {
   questionText: string;
   topic: string;
   yearsAppeared: string[];
   repeatCount: number;
   marks: number | null;
 };
-type PredictedQuestion = { questionText: string; reasoning: string; marks: number | null };
-type Analysis = {
+export type PredictedQuestion = { questionText: string; reasoning: string; marks: number | null };
+export type Analysis = {
   compiledNotes: string;
   mostRepeated: RepeatedQuestion[];
   predictedPaper: PredictedQuestion[];

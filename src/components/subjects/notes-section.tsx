@@ -1,5 +1,8 @@
-import { extractNotesHeadings, preprocessNotesMarkdown } from "@/lib/notes-markdown";
-import { NotesRenderer, resolveNotesTheme } from "./notes-renderer";
+import { extractContentHeadings, preprocessNotesMarkdown } from "@/lib/content/toc";
+import { themeValuesToTokens, LEGACY_NOTES_THEME_TO_PRESET } from "@/lib/content/theme-tokens";
+import { findNotesLabTheme } from "@/lib/content/theme-presets";
+import { NotesReadingChrome } from "@/components/content/notes/reading-chrome";
+import { resolveNotesTheme } from "./notes-renderer";
 import { DownloadNotesButton } from "./download-notes-button";
 import { StructuredNoteRenderer } from "./structured-note-renderer";
 import { StructuredNoteExportBar } from "./structured-note-export-bar";
@@ -55,7 +58,14 @@ export function NotesSection({
   }
 
   const resolvedNotesTheme = resolveNotesTheme(theme);
-  const headings = extractNotesHeadings(preprocessNotesMarkdown(content));
+  const preprocessed = preprocessNotesMarkdown(content);
+  const headings = extractContentHeadings(preprocessed);
+  const subjectTokens = resolvedTheme
+    ? themeValuesToTokens(resolvedTheme)
+    : findNotesLabTheme(LEGACY_NOTES_THEME_TO_PRESET[resolvedNotesTheme]).light;
+  const subjectTokensDark = resolvedTheme
+    ? themeValuesToTokens(resolvedTheme)
+    : findNotesLabTheme(LEGACY_NOTES_THEME_TO_PRESET[resolvedNotesTheme]).dark;
 
   return (
     <div className="relative mt-4 ml-[50%] w-screen -translate-x-1/2 px-4 sm:px-6">
@@ -63,30 +73,13 @@ export function NotesSection({
         <div className="flex justify-end">
           <DownloadNotesButton content={content} title={subjectName} />
         </div>
-        <div className="mt-3 grid grid-cols-1 gap-6 lg:grid-cols-[240px_1fr]">
-          {headings.length > 0 && (
-            <nav className="hidden lg:block">
-              <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl border border-border bg-surface p-4 shadow-[0_10px_30px_rgba(15,23,42,.05)]">
-                <p className="mb-2 text-xs font-semibold tracking-wide text-muted uppercase">
-                  On this page
-                </p>
-                <div className="flex flex-col gap-0.5 text-sm">
-                  {headings.map((h) => (
-                    <a
-                      key={h.slug}
-                      href={`#${h.slug}`}
-                      className={`truncate rounded-lg px-2 py-1.5 text-muted transition-all duration-150 hover:translate-x-1 hover:bg-surface-muted hover:text-foreground ${
-                        h.level === 3 ? "ml-3 text-xs" : ""
-                      }`}
-                    >
-                      {h.text}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            </nav>
-          )}
-          <NotesRenderer content={content} theme={resolvedNotesTheme} resolvedTheme={resolvedTheme} />
+        <div className="mt-3">
+          <NotesReadingChrome
+            title={subjectName}
+            content={preprocessed}
+            headings={headings}
+            subjectTheme={{ light: subjectTokens, dark: subjectTokensDark }}
+          />
         </div>
       </div>
     </div>

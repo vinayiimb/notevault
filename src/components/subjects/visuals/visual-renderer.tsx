@@ -22,7 +22,7 @@ export function VisualRenderer({ visual, visuals }: { visual: Visual; visuals: T
     case "comparison":
       return <ComparisonVisual visual={visual} />;
     case "chart":
-      return <ChartVisual visual={visual} />;
+      return <ChartVisual visual={visual} visuals={visuals} />;
     case "venn":
       return <VennVisual visual={visual} visuals={visuals} />;
     case "geometry":

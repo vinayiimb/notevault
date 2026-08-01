@@ -1,0 +1,373 @@
+/* Shared study-content design system — used by every rendered note, OCR
+   paper view, and AI analysis panel across the site (src/components/content/
+   notes/*). Every color/spacing value here reads a --nt-* custom property
+   (set per-theme by ContentThemeProvider), so this file never changes
+   between themes or between light/dark — only the variables it references
+   do. Imported once, globally, in src/app/layout.tsx; every rule is scoped
+   under .nt-root or an nt-* class name that doesn't collide with anything
+   else in the site's Tailwind-based styling. */
+
+.nt-root {
+  background: var(--nt-background);
+  color: var(--nt-text);
+  font-family: var(--nt-body-font);
+  font-size: var(--nt-font-size);
+  line-height: var(--nt-line-height);
+  min-height: 100%;
+}
+
+.nt-root ::selection {
+  background: var(--nt-selection);
+}
+
+/* ---------- Layout shell ---------- */
+
+.nt-shell {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0;
+}
+@media (min-width: 1024px) {
+  .nt-shell[data-toc="true"] {
+    grid-template-columns: minmax(0, 1fr) 260px;
+  }
+}
+
+.nt-article {
+  max-width: var(--nt-content-width);
+  margin-inline: auto;
+  padding: 2rem 1.25rem 6rem;
+}
+@media (min-width: 640px) {
+  .nt-article { padding: 2.5rem 2rem 6rem; }
+}
+
+.nt-prose > * + * { margin-top: var(--nt-paragraph-spacing); }
+.nt-prose p { color: var(--nt-text); }
+.nt-prose strong { color: var(--nt-text); font-weight: 700; }
+.nt-prose a { color: var(--nt-link); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--nt-link) 40%, transparent); text-underline-offset: 2px; }
+.nt-prose a:hover { text-decoration-color: var(--nt-link); }
+/* Left rule on blockquotes is the one place a side accent stays: it's the
+   standard, decades-old typographic convention for quoted text specifically
+   (not a generic card decoration), so it's kept intentionally rather than
+   applied as a default card/container style anywhere else in this file. */
+.nt-prose blockquote {
+  border-left: 2px solid var(--nt-border);
+  padding: .25rem 0 .25rem 1rem;
+  color: var(--nt-text-muted);
+  font-style: italic;
+}
+.nt-prose kbd {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: .85em;
+  background: var(--nt-surface-muted);
+  border: 1px solid var(--nt-border);
+  border-bottom-width: 2px;
+  border-radius: 6px;
+  padding: .1em .45em;
+}
+.nt-prose mark {
+  background: color-mix(in srgb, var(--nt-accent) 35%, transparent);
+  color: var(--nt-text);
+  border-radius: 3px;
+  padding: 0 .15em;
+}
+.nt-prose sup, .nt-prose sub { color: var(--nt-text-muted); }
+
+.nt-prose ul { list-style: none; padding-left: 0; display: flex; flex-direction: column; gap: .4rem; }
+.nt-prose ul > li { position: relative; padding-left: 1.4rem; }
+.nt-prose ul > li::before {
+  content: "";
+  position: absolute; left: .15rem; top: .65em;
+  width: .4rem; height: .4rem; border-radius: 999px;
+  background: var(--nt-primary);
+}
+.nt-prose ol { padding-left: 1.4rem; display: flex; flex-direction: column; gap: .4rem; }
+.nt-prose ol > li::marker { color: var(--nt-primary); font-weight: 700; }
+
+/* Task lists (GFM) */
+.nt-prose li:has(> input[type="checkbox"]) { list-style: none; padding-left: 1.6rem; }
+.nt-prose li:has(> input[type="checkbox"])::before { content: none; }
+.nt-prose input[type="checkbox"] {
+  position: absolute; margin-left: -1.6rem; margin-top: .3em;
+  accent-color: var(--nt-primary); width: 1rem; height: 1rem;
+}
+
+/* ---------- Headings ---------- */
+
+.nt-prose h1, .nt-prose h2, .nt-prose h3, .nt-prose h4 {
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+  scroll-margin-top: 6rem;
+}
+.nt-prose h1 { font-size: calc(2rem * var(--nt-heading-scale)); margin-top: 0; color: var(--nt-primary); }
+.nt-prose h2 {
+  font-size: calc(1.5rem * var(--nt-heading-scale));
+  margin-top: 2.5rem !important;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--nt-border);
+  color: var(--nt-primary);
+}
+.nt-prose h2:first-child { margin-top: 0 !important; padding-top: 0; border-top: none; }
+.nt-prose h3 { font-size: calc(1.2rem * var(--nt-heading-scale)); margin-top: 1.75rem !important; color: var(--nt-text); }
+.nt-prose h3::before { content: ""; display: inline-block; width: .5rem; height: .5rem; margin-right: .5rem; border-radius: 3px; background: var(--nt-secondary); vertical-align: middle; }
+.nt-prose h4 { font-size: 1rem; margin-top: 1.25rem !important; color: var(--nt-text-muted); text-transform: uppercase; letter-spacing: .04em; }
+
+/* ---------- Tables ---------- */
+
+.nt-table-wrap { overflow-x: auto; border: 1px solid var(--nt-border); border-radius: var(--nt-radius); box-shadow: var(--nt-shadow); background: var(--nt-surface); }
+.nt-table { width: 100%; border-collapse: collapse; font-size: .92em; }
+.nt-table thead th {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--nt-primary) 12%, var(--nt-surface)), var(--nt-surface));
+  color: var(--nt-primary);
+  text-align: left;
+  padding: .75rem 1rem;
+  font-weight: 700;
+  border-bottom: 2px solid var(--nt-border);
+  position: sticky; top: 0;
+}
+.nt-table td { padding: .7rem 1rem; border-bottom: 1px solid var(--nt-border); }
+.nt-table tbody tr:nth-child(even) { background: var(--nt-surface-muted); }
+.nt-table tbody tr:hover { background: color-mix(in srgb, var(--nt-primary) 8%, var(--nt-surface)); }
+
+/* ---------- Code ---------- */
+
+.nt-inline-code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  background: var(--nt-surface-muted);
+  border: 1px solid var(--nt-border);
+  border-radius: 5px;
+  padding: .1em .4em;
+  font-size: .88em;
+  color: var(--nt-secondary);
+}
+.nt-codeblock { position: relative; margin: 1rem 0; border-radius: var(--nt-radius); overflow: hidden; border: 1px solid var(--nt-border); box-shadow: var(--nt-shadow); }
+.nt-codeblock-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .5rem .9rem; background: var(--nt-surface-muted);
+  border-bottom: 1px solid var(--nt-border);
+  font-size: .78rem; color: var(--nt-text-muted);
+  font-family: ui-monospace, monospace;
+}
+.nt-copy-btn {
+  display: inline-flex; align-items: center; gap: .35rem;
+  font-size: .78rem; color: var(--nt-text-muted);
+  background: transparent; border: 1px solid var(--nt-border);
+  border-radius: 8px; padding: .3rem .6rem; cursor: pointer;
+  transition: color .15s, border-color .15s, background .15s;
+}
+.nt-copy-btn:hover { color: var(--nt-primary); border-color: var(--nt-primary); background: color-mix(in srgb, var(--nt-primary) 8%, transparent); }
+.nt-copy-btn:focus-visible { outline: 2px solid var(--nt-primary); outline-offset: 2px; }
+
+/* ---------- Info / callout cards ---------- */
+
+.nt-card {
+  border-radius: var(--nt-radius);
+  border: 1px solid var(--nt-card-border, var(--nt-border));
+  background: var(--nt-card-bg, var(--nt-surface));
+  padding: 1rem 1.15rem;
+  box-shadow: var(--nt-shadow);
+  margin: 1.1rem 0;
+}
+.nt-card-head { display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--nt-card-color, var(--nt-primary)); margin-bottom: .35rem; }
+.nt-card-head svg { flex: none; }
+
+.nt-card.definition { --nt-card-bg: color-mix(in srgb, var(--nt-info) 8%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-info) 35%, var(--nt-border)); --nt-card-color: var(--nt-info); }
+.nt-card.example    { --nt-card-bg: color-mix(in srgb, var(--nt-secondary) 8%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-secondary) 35%, var(--nt-border)); --nt-card-color: var(--nt-secondary); }
+.nt-card.tip        { --nt-card-bg: color-mix(in srgb, var(--nt-success) 8%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-success) 35%, var(--nt-border)); --nt-card-color: var(--nt-success); }
+.nt-card.warning     { --nt-card-bg: color-mix(in srgb, var(--nt-warning) 10%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-warning) 40%, var(--nt-border)); --nt-card-color: var(--nt-warning); }
+.nt-card.error       { --nt-card-bg: color-mix(in srgb, var(--nt-error) 8%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-error) 35%, var(--nt-border)); --nt-card-color: var(--nt-error); }
+.nt-card.formula     { --nt-card-bg: color-mix(in srgb, var(--nt-secondary) 6%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-secondary) 30%, var(--nt-border)); --nt-card-color: var(--nt-secondary); font-family: ui-monospace, monospace; }
+.nt-card.important   { --nt-card-bg: color-mix(in srgb, var(--nt-accent) 10%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-accent) 40%, var(--nt-border)); --nt-card-color: var(--nt-accent); }
+.nt-card.exam-tip    { --nt-card-bg: color-mix(in srgb, var(--nt-warning) 14%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-warning) 45%, var(--nt-border)); --nt-card-color: var(--nt-warning); }
+.nt-card.summary     { --nt-card-bg: color-mix(in srgb, var(--nt-primary) 8%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-primary) 35%, var(--nt-border)); --nt-card-color: var(--nt-primary); }
+.nt-card.working     { --nt-card-bg: color-mix(in srgb, var(--nt-warning) 10%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-warning) 40%, var(--nt-border)); --nt-card-color: var(--nt-warning); font-family: ui-monospace, monospace; }
+.nt-card.final       { --nt-card-bg: color-mix(in srgb, var(--nt-success) 10%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-success) 40%, var(--nt-border)); --nt-card-color: var(--nt-success); }
+.nt-card.note        { --nt-card-bg: var(--nt-surface-muted); --nt-card-border: var(--nt-border); --nt-card-color: var(--nt-text-muted); }
+
+/* ---------- Math (KaTeX) ---------- */
+
+.nt-prose .katex-display { overflow-x: auto; overflow-y: hidden; padding: .25rem 0; }
+.nt-prose .katex { font-size: 1.05em; }
+
+/* ---------- Footnotes (GFM) ---------- */
+
+.nt-prose .footnotes { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--nt-border); font-size: .85em; color: var(--nt-text-muted); }
+.nt-prose a[data-footnote-ref] { font-size: .75em; }
+
+/* ---------- Infographic layouts (safe raw HTML the sanitizer allows) ---------- */
+
+.info-grid, .key-term-grid, .stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: .9rem;
+  margin: 1.25rem 0;
+}
+.info-card {
+  border-radius: var(--nt-radius);
+  border: 1px solid var(--nt-border);
+  background: var(--nt-surface);
+  padding: 1rem 1.1rem;
+  box-shadow: var(--nt-shadow);
+}
+.info-card h3 { margin: 0 0 .4rem; font-size: 1rem; color: var(--nt-primary); }
+.info-card p { margin: 0; color: var(--nt-text-muted); font-size: .92em; }
+
+/* SWOT: 4 quadrants, each a semantic color */
+.swot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin: 1.25rem 0; }
+@media (max-width: 640px) { .swot-grid { grid-template-columns: 1fr; } }
+.swot-strengths, .swot-weaknesses, .swot-opportunities, .swot-threats {
+  border-radius: var(--nt-radius); padding: 1rem 1.1rem; box-shadow: var(--nt-shadow); border: 1px solid;
+}
+.swot-strengths h3, .swot-weaknesses h3, .swot-opportunities h3, .swot-threats h3 { margin: 0 0 .4rem; }
+.swot-strengths     { background: color-mix(in srgb, var(--nt-success) 10%, var(--nt-surface)); border-color: color-mix(in srgb, var(--nt-success) 35%, var(--nt-border)); }
+.swot-strengths h3   { color: var(--nt-success); }
+.swot-weaknesses     { background: color-mix(in srgb, var(--nt-error) 8%, var(--nt-surface)); border-color: color-mix(in srgb, var(--nt-error) 35%, var(--nt-border)); }
+.swot-weaknesses h3  { color: var(--nt-error); }
+.swot-opportunities  { background: color-mix(in srgb, var(--nt-info) 8%, var(--nt-surface)); border-color: color-mix(in srgb, var(--nt-info) 35%, var(--nt-border)); }
+.swot-opportunities h3 { color: var(--nt-info); }
+.swot-threats        { background: color-mix(in srgb, var(--nt-warning) 10%, var(--nt-surface)); border-color: color-mix(in srgb, var(--nt-warning) 35%, var(--nt-border)); }
+.swot-threats h3     { color: var(--nt-warning); }
+
+/* Advantages / disadvantages, before/after — two-column comparison */
+.compare-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .9rem; margin: 1.25rem 0; }
+@media (max-width: 640px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-left, .compare-right { border-radius: var(--nt-radius); padding: 1rem 1.1rem; box-shadow: var(--nt-shadow); border: 1px solid var(--nt-border); background: var(--nt-surface); }
+.compare-left h3 { color: var(--nt-success); margin: 0 0 .4rem; }
+.compare-right h3 { color: var(--nt-error); margin: 0 0 .4rem; }
+
+/* Process steps — numbered, connected */
+.process-steps { display: flex; flex-direction: column; gap: 0; margin: 1.25rem 0; counter-reset: nt-step; }
+.process-step { position: relative; padding: 0 0 1.5rem 2.75rem; counter-increment: nt-step; }
+.process-step:last-child { padding-bottom: 0; }
+.process-step::before {
+  content: counter(nt-step);
+  position: absolute; left: 0; top: 0;
+  width: 2rem; height: 2rem; border-radius: 999px;
+  background: linear-gradient(135deg, var(--nt-gradient-from), var(--nt-gradient-to));
+  color: var(--nt-primary-text);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 700; font-size: .9rem;
+  box-shadow: var(--nt-shadow);
+}
+.process-step:not(:last-child)::after {
+  content: ""; position: absolute; left: 1rem; top: 2.25rem; bottom: -.25rem;
+  width: 2px; background: var(--nt-border);
+}
+.process-step h4 { margin: .1rem 0 .25rem; color: var(--nt-text); }
+.process-step p { margin: 0; color: var(--nt-text-muted); }
+
+/* Timeline */
+.timeline { position: relative; margin: 1.25rem 0; padding-left: 1.75rem; border-left: 2px solid var(--nt-border); display: flex; flex-direction: column; gap: 1.25rem; }
+.timeline-event { position: relative; }
+.timeline-event::before {
+  content: ""; position: absolute; left: -2.28rem; top: .2rem;
+  width: .8rem; height: .8rem; border-radius: 999px;
+  background: var(--nt-primary); box-shadow: 0 0 0 3px var(--nt-surface), 0 0 0 4px var(--nt-border);
+}
+.timeline-date { font-weight: 700; color: var(--nt-primary); font-size: .85rem; text-transform: uppercase; letter-spacing: .04em; }
+.timeline-event h4 { margin: .15rem 0 .2rem; }
+.timeline-event p { margin: 0; color: var(--nt-text-muted); }
+
+/* Stats cards */
+.stats-grid .stat-card { text-align: center; }
+.stat-card .stat-value { display: block; font-size: 1.8rem; font-weight: 800; color: var(--nt-primary); }
+.stat-card .stat-label { display: block; margin-top: .2rem; font-size: .82rem; color: var(--nt-text-muted); }
+
+details.nt-details { border: 1px solid var(--nt-border); border-radius: var(--nt-radius); padding: .75rem 1rem; background: var(--nt-surface); box-shadow: var(--nt-shadow); margin: 1rem 0; }
+details.nt-details summary { cursor: pointer; font-weight: 600; color: var(--nt-primary); }
+
+/* ---------- Images ---------- */
+
+.nt-figure { margin: 1.25rem 0; }
+.nt-figure img {
+  width: 100%; height: auto; border-radius: var(--nt-radius);
+  border: 1px solid var(--nt-border); box-shadow: var(--nt-shadow);
+  cursor: zoom-in; transition: transform .18s ease;
+  display: block;
+}
+.nt-figure img:hover { transform: scale(1.01); }
+.nt-figure figcaption { margin-top: .5rem; text-align: center; font-size: .85rem; color: var(--nt-text-muted); font-style: italic; }
+.nt-figure.align-left { float: left; max-width: 45%; margin-right: 1.25rem; }
+.nt-figure.align-right { float: right; max-width: 45%; margin-left: 1.25rem; }
+.image-grid-2, .image-grid-3 { display: grid; gap: .9rem; margin: 1.25rem 0; }
+.image-grid-2 { grid-template-columns: 1fr 1fr; }
+.image-grid-3 { grid-template-columns: repeat(3, 1fr); }
+@media (max-width: 640px) { .image-grid-2, .image-grid-3 { grid-template-columns: 1fr; } }
+
+/* ---------- Mermaid ---------- */
+
+.nt-mermaid-wrap { position: relative; margin: 1.25rem 0; border: 1px solid var(--nt-border); border-radius: var(--nt-radius); background: var(--nt-surface); box-shadow: var(--nt-shadow); overflow: hidden; }
+.nt-mermaid-toolbar { display: flex; justify-content: flex-end; gap: .4rem; padding: .5rem .6rem; border-bottom: 1px solid var(--nt-border); background: var(--nt-surface-muted); }
+.nt-mermaid-canvas { padding: 1rem; overflow-x: auto; display: flex; justify-content: center; }
+.nt-mermaid-canvas svg { max-width: 100%; height: auto; }
+.nt-mermaid-error { padding: 1rem; color: var(--nt-error); font-size: .88rem; }
+.nt-mermaid-fullscreen { position: fixed; inset: 0; z-index: 60; background: color-mix(in srgb, var(--nt-background) 96%, transparent); backdrop-filter: blur(6px); display: flex; flex-direction: column; }
+
+/* ---------- Buttons / chips (theme accent, used by TOC, search, theme picker) --- */
+
+.nt-btn { display: inline-flex; align-items: center; gap: .4rem; border-radius: 10px; padding: .45rem .8rem; font-size: .85rem; font-weight: 600; cursor: pointer; border: 1px solid transparent; transition: all .15s; }
+.nt-btn-primary { background: linear-gradient(135deg, var(--nt-gradient-from), var(--nt-gradient-to)); color: var(--nt-primary-text); box-shadow: var(--nt-shadow); }
+.nt-btn-primary:hover { filter: brightness(1.06); }
+.nt-btn-ghost { background: transparent; border-color: var(--nt-border); color: var(--nt-text-muted); }
+.nt-btn-ghost:hover { color: var(--nt-primary); border-color: var(--nt-primary); }
+.nt-btn:focus-visible, .nt-root a:focus-visible, .nt-root button:focus-visible, .nt-root input:focus-visible { outline: 2px solid var(--nt-primary); outline-offset: 2px; }
+
+/* ---------- Sidebar TOC ---------- */
+
+.nt-toc { position: sticky; top: 5rem; max-height: calc(100vh - 7rem); overflow-y: auto; padding: 1rem; }
+.nt-toc-link { display: block; padding: .35rem .6rem; border-radius: 8px; font-size: .85rem; color: var(--nt-text-muted); border-left: 2px solid transparent; transition: all .15s; }
+.nt-toc-link:hover { color: var(--nt-text); background: var(--nt-surface-muted); }
+.nt-toc-link[data-active="true"] { color: var(--nt-primary); border-left-color: var(--nt-primary); background: color-mix(in srgb, var(--nt-primary) 8%, transparent); font-weight: 600; }
+.nt-toc-link.level-3 { padding-left: 1.3rem; font-size: .8rem; }
+
+/* ---------- In-note search ---------- */
+
+mark.nt-search-hit { background: color-mix(in srgb, var(--nt-warning) 45%, transparent); color: var(--nt-text); border-radius: 2px; }
+mark.nt-search-hit-active { background: var(--nt-warning); color: var(--nt-background); }
+
+/* ---------- Reading progress ---------- */
+
+.nt-progress-track { position: sticky; top: 0; z-index: 40; height: 3px; background: var(--nt-border); }
+/* transform: scaleX (not width) so scroll updates only ever composite, never
+   trigger layout — the component sets --nt-progress (0-1) and transform-
+   origin stays pinned left so it reads as the bar "filling in". */
+.nt-progress-bar {
+  height: 100%; width: 100%;
+  background: linear-gradient(90deg, var(--nt-gradient-from), var(--nt-gradient-to));
+  transform-origin: left center;
+  transform: scaleX(var(--nt-progress, 0));
+  transition: transform .1s linear;
+}
+
+/* ---------- Background styles ---------- */
+
+.nt-bg-gradient { background-image: radial-gradient(1200px 500px at 10% -10%, color-mix(in srgb, var(--nt-primary) 12%, transparent), transparent), radial-gradient(900px 400px at 100% 0%, color-mix(in srgb, var(--nt-secondary) 10%, transparent), transparent); }
+.nt-bg-dots { background-image: radial-gradient(color-mix(in srgb, var(--nt-text) 14%, transparent) 1px, transparent 1px); background-size: 18px 18px; }
+.nt-bg-grid { background-image: linear-gradient(color-mix(in srgb, var(--nt-text) 6%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--nt-text) 6%, transparent) 1px, transparent 1px); background-size: 32px 32px; }
+.nt-glass { background: color-mix(in srgb, var(--nt-surface) 70%, transparent); backdrop-filter: blur(14px) saturate(150%); border: 1px solid color-mix(in srgb, var(--nt-border) 70%, transparent); }
+
+/* ---------- Motion ---------- */
+
+.nt-card, .info-card, .nt-figure img {
+  transition-duration: .18s;
+}
+/* Reads the OS-level setting directly rather than a JS-detected copy of it
+   in React state — one fewer client-only read that would otherwise need an
+   effect to reconcile against server-rendered markup. */
+@media (prefers-reduced-motion: reduce) {
+  .nt-root * { animation-duration: .001ms !important; transition-duration: .001ms !important; scroll-behavior: auto !important; }
+}
+
+/* ---------- Print ---------- */
+
+@media print {
+  .nt-no-print { display: none !important; }
+  .nt-root { background: #fff !important; color: #000 !important; }
+  .nt-shell { display: block !important; }
+  .nt-article { max-width: 100% !important; padding: 0 !important; }
+  .nt-card, .info-card, .nt-table-wrap, .nt-mermaid-wrap { box-shadow: none !important; break-inside: avoid; }
+  .nt-figure img { box-shadow: none !important; }
+  a { color: #000 !important; text-decoration: underline; }
+}

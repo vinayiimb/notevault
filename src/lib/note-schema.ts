@@ -94,7 +94,7 @@ const ComparisonVisualSchema = z.object({
 const ChartVisualSchema = z.object({
   type: z.literal("chart"),
   title: z.string(),
-  chartType: z.enum(["bar", "line"]),
+  chartType: z.enum(["bar", "line", "area", "pie", "donut"]),
   labels: z.array(z.string()).min(2).max(12),
   values: z.array(z.number()).min(2).max(12),
   annotations: z.array(z.string()).max(5),

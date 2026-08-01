@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Script from "next/script";
 import { Comic_Neue, Fraunces, Inter, JetBrains_Mono, Manrope } from "next/font/google";
 import localFont from "next/font/local";
+import "katex/dist/katex.min.css";
 import "./globals.css";
+import "./notes-content.css";
 
 const inter = Inter({
   variable: "--font-inter",

@@ -4,9 +4,10 @@ import { useMemo, useRef, useState } from "react";
 import { FileArchive, FilePdf, Sparkle, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import {
   finalizeDirectResourceUploadAction,
-  findOrCreateSubjectAction,
+  findOfficialSubjectAction,
   prepareDirectResourceUploadAction,
   rememberCourseMatchAction,
+  saveFailedUploadAction,
   uploadResourceAction,
 } from "@/lib/actions";
 import {
@@ -520,7 +521,7 @@ export function ConsolidatedUploadClient({
     setUploading(true);
     // One subject per (term, subject name) combo, reused across every file
     // that maps to it, instead of re-resolving the subject id per file.
-    const subjectCache = new Map<string, string>();
+    const subjectCache = new Map<string, string | null>();
     const seenThisRun = new Set<string>();
 
     for (const file of files) {
@@ -551,19 +552,32 @@ export function ConsolidatedUploadClient({
           continue;
         }
 
+        const originalName = file.path.split("/").pop() || `${file.year || "paper"}.pdf`;
+        const yearStart = file.year.match(/(?:19|20)\d{2}/)?.[0] ?? "";
         const cacheKey = `${termId}::${file.subjectName.trim().toLowerCase()}`;
         let subjectId = subjectCache.get(cacheKey);
-        if (!subjectId) {
+        if (subjectId === undefined) {
           const subjectForm = new FormData();
           subjectForm.set("termId", termId);
-          subjectForm.set("name", file.subjectName.trim());
-          const subject = await findOrCreateSubjectAction(subjectForm);
-          subjectId = subject.id;
+          subjectForm.set("subjectName", file.subjectName.trim());
+          subjectForm.set("sourceText", `${file.path}\n${file.previewText.slice(0, 2000)}`);
+          const match = await findOfficialSubjectAction(subjectForm);
+          subjectId = match.subject?.id ?? null;
           subjectCache.set(cacheKey, subjectId);
         }
 
-        const originalName = file.path.split("/").pop() || `${file.year || "paper"}.pdf`;
-        const yearStart = file.year.match(/(?:19|20)\d{2}/)?.[0] ?? "";
+        if (!subjectId) {
+          const reviewForm = new FormData();
+          reviewForm.set("title", file.subjectName.trim() || originalName);
+          reviewForm.set("type", "PYQ");
+          if (yearStart) reviewForm.set("year", yearStart);
+          reviewForm.set("reason", `Manual review: no official subject matched ${program.name} / semester ${file.order ?? "unknown"} / ${file.subjectName}`);
+          reviewForm.set("file", new File([file.bytes], originalName, { type: "application/pdf" }));
+          await saveFailedUploadAction(reviewForm);
+          updateFile(file.key, { status: "error", message: "No official subject matched — saved for review" });
+          continue;
+        }
+
         const uploadForm = new FormData();
         uploadForm.set("subjectId", subjectId);
         uploadForm.set("type", "PYQ");
@@ -592,7 +606,7 @@ export function ConsolidatedUploadClient({
             uploadForm.set("key", prepared.key);
             uploadForm.set("fileUrl", prepared.fileUrl);
             result = await finalizeDirectResourceUploadAction(uploadForm);
-          } catch (directError) {
+          } catch {
             // Small PDFs still have a compatibility path for R2 buckets whose
             // browser CORS policy hasn't been set up: route the file through
             // the server action instead. But Vercel enforces a hard ~4.5MB

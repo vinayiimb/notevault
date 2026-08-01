@@ -128,7 +128,17 @@ export function getPyqResourceById(id: string) {
   return prisma.resource.findFirst({
     where: { id, type: "PYQ", ocrText: { not: null } },
     include: {
-      subject: { include: { term: { include: { program: true } } } },
+      subject: {
+        include: {
+          term: { include: { program: true } },
+          analysis: true,
+          resources: { where: { type: "PYQ" }, select: { id: true } },
+        },
+      },
+      // Solutions/Practice tabs on the reading page — only questions an
+      // admin has explicitly linked to this specific paper via the
+      // resourceId picker in /admin/questions/[id].
+      questions: { orderBy: [{ questionNumber: "asc" }, { createdAt: "asc" }] },
     },
   });
 }

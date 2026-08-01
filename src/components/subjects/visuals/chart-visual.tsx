@@ -1,8 +1,9 @@
 import { DataChart } from "@/components/subjects/data-chart";
+import type { ThemeValues } from "@/lib/note-theme";
 
 type ChartVisual = {
   title: string;
-  chartType: "bar" | "line";
+  chartType: "bar" | "line" | "area" | "pie" | "donut";
   labels: string[];
   values: number[];
   annotations: string[];
@@ -11,7 +12,7 @@ type ChartVisual = {
 // Reuses DataChart as-is (src/components/subjects/data-chart.tsx) by
 // converting the structured visual back into the small DSL string it
 // already parses, rather than duplicating its rendering logic.
-export function ChartVisual({ visual }: { visual: ChartVisual }) {
+export function ChartVisual({ visual, visuals }: { visual: ChartVisual; visuals?: ThemeValues["visuals"] }) {
   const source = [
     `type: ${visual.chartType}`,
     `title: ${visual.title}`,
@@ -21,7 +22,7 @@ export function ChartVisual({ visual }: { visual: ChartVisual }) {
 
   return (
     <div>
-      <DataChart source={source} />
+      <DataChart source={source} palette={visuals?.chartPalette} />
       {visual.annotations.length > 0 && (
         <ul className="mt-2 flex flex-col gap-1 text-sm text-muted">
           {visual.annotations.map((note, i) => (

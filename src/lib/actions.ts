@@ -16,6 +16,7 @@ import { slugify } from "@/lib/utils";
 import { heroImageExtensionsFor } from "@/lib/hero-image";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
 import { normalizeMemoryKey } from "@/lib/subject-match";
+import { extractUpcCandidate, matchOfficialSubject } from "@/lib/subject-normalization";
 import {
   getCatalogYearRanges,
   getSemesterGroupsForYear,
@@ -32,6 +33,12 @@ import { DEFAULT_THEME, ThemeValuesSchema } from "@/lib/note-theme";
 import { StructuredNoteSchema } from "@/lib/note-schema";
 import { generateStructuredNote } from "@/lib/ai";
 import { detectSourceKind, extractSourceTextFromUpload, saveSourceFile } from "@/lib/note-ingestion";
+import {
+  StudyContentBlockListSchema,
+  StudyContentBlockSchema,
+  createDefaultBlock,
+  type StudyContentBlockType,
+} from "@/lib/content/content-block-schema";
 
 async function requireAdmin() {
   const session = await getSession();
@@ -737,6 +744,14 @@ export async function createSubjectAction(formData: FormData) {
   const programId = String(formData.get("programId"));
   const name = String(formData.get("name") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim() || null;
+  const upc =
+    String(formData.get("upc") ?? "").trim() ||
+    extractUpcCandidate(String(formData.get("sourceText") ?? ""));
+  const paperType = String(formData.get("paperType") ?? "").trim().toUpperCase() || null;
+  const aliases = String(formData.get("aliases") ?? "")
+    .split(/[;|\n]/)
+    .map((alias) => alias.trim())
+    .filter(Boolean);
   if (!name) throw new Error("Subject name is required.");
 
   // Case, punctuation, and spacing changes should not create a second row
@@ -757,9 +772,30 @@ export async function createSubjectAction(formData: FormData) {
     return !!found;
   });
 
-  await prisma.subject.create({ data: { termId, name, description, slug } });
+  await prisma.subject.create({ data: { termId, name, description, slug, upc, paperType, aliases } });
   revalidatePath(`/admin/programs/${programId}`);
   revalidatePath("/admin/subject-issues");
+}
+
+export async function updateSubjectIdentityAction(formData: FormData) {
+  await requireAdmin();
+  const subjectId = String(formData.get("subjectId") ?? "").trim();
+  const upc = String(formData.get("upc") ?? "").trim() || null;
+  const paperType = String(formData.get("paperType") ?? "").trim().toUpperCase() || null;
+  const aliases = String(formData.get("aliases") ?? "")
+    .split(/[;|\n]/)
+    .map((alias) => alias.trim())
+    .filter(Boolean);
+  if (!subjectId) throw new Error("A subject is required.");
+
+  const subject = await prisma.subject.update({
+    where: { id: subjectId },
+    data: { upc, paperType, aliases: [...new Set(aliases)] },
+    select: { term: { select: { programId: true } } },
+  });
+  revalidatePath(`/admin/subjects/${subjectId}`);
+  revalidatePath(`/subjects/${subjectId}`);
+  revalidatePath(`/admin/programs/${subject.term.programId}`);
 }
 
 // Reuses an existing subject if one with this name already exists under the
@@ -783,6 +819,28 @@ export async function findOrCreateSubjectAction(formData: FormData) {
   if (term) revalidatePath(`/admin/programs/${term.programId}`);
   revalidatePath("/admin/subject-issues");
   return { id: created.id, name: created.name, termId };
+}
+
+// Upload/import resolver. Unlike findOrCreateSubjectAction this function is
+// deliberately read-only: a filename can match an official subject, but can
+// never become a new Subject row. The caller must send unmatched files to the
+// review queue.
+export async function findOfficialSubjectAction(formData: FormData) {
+  await requireAdmin();
+  const termId = String(formData.get("termId") ?? "").trim();
+  const subjectName = String(formData.get("subjectName") ?? formData.get("name") ?? "").trim();
+  const upc = String(formData.get("upc") ?? "").trim() || null;
+  if (!termId) throw new Error("A semester is required.");
+
+  const candidates = await prisma.subject.findMany({
+    where: { termId },
+    select: { id: true, name: true, upc: true, aliases: true },
+  });
+  const match = matchOfficialSubject(candidates, { subjectName, upc });
+  return {
+    subject: match.subject ? { id: match.subject.id, name: match.subject.name, termId } : null,
+    method: match.method,
+  };
 }
 
 // Same as createSubjectAction, but returns the created row so callers that
@@ -1050,7 +1108,7 @@ export async function createSubjectsFromCsvAction(
   }
 
   const programs = await prisma.program.findMany({
-    include: { terms: { include: { subjects: { select: { name: true, slug: true } } } } },
+    include: { terms: { include: { subjects: { select: { id: true, name: true, slug: true } } } } },
   });
 
   const results: NewSubjectCsvRowResult[] = [];
@@ -1081,21 +1139,41 @@ export async function createSubjectsFromCsvAction(
       continue;
     }
 
+    const code = (row.code || "").trim();
+    const upc = (row.upc || row.paper_code || row.course_number || code).trim() || null;
+    const paperType = (row.paper_type || row.type || row.category || "").trim().toUpperCase() || null;
+    const aliases = (row.aliases || row.alias || "")
+      .split(/[;|]/)
+      .map((alias) => alias.trim())
+      .filter(Boolean);
+    const descRaw = (row.description || "").trim();
+    const description = code ? (descRaw ? `Code: ${code} | ${descRaw}` : `Code: ${code}`) : descRaw || null;
+
     const baseSlug = slugify(name) || "subject";
-    if (term.subjects.some((s) => s.slug === baseSlug || s.name.trim().toLowerCase() === name.toLowerCase())) {
-      results.push({ name, status: "duplicate", message: `Already exists in ${program.name} · ${term.name}` });
+    const existing = term.subjects.find(
+      (subject) => subject.slug === baseSlug || subject.name.trim().toLowerCase() === name.toLowerCase(),
+    );
+    if (existing) {
+      await prisma.subject.update({
+        where: { id: existing.id },
+        data: { upc, paperType, aliases: [...new Set(aliases)], ...(description ? { description } : {}) },
+      });
+      touchedProgramIds.add(program.id);
+      results.push({
+        name,
+        status: "duplicate",
+        message: `Updated official identity for existing subject in ${program.name} · ${term.name}`,
+      });
       continue;
     }
 
     const takenSlugs = new Set(term.subjects.map((s) => s.slug));
     const slug = await uniqueSlug(name, async (s) => takenSlugs.has(s));
 
-    const code = (row.code || "").trim();
-    const descRaw = (row.description || "").trim();
-    const description = code ? (descRaw ? `Code: ${code} | ${descRaw}` : `Code: ${code}`) : descRaw || null;
-
-    await prisma.subject.create({ data: { termId: term.id, name, slug, description } });
-    term.subjects.push({ name, slug });
+    const created = await prisma.subject.create({
+      data: { termId: term.id, name, slug, description, upc, paperType, aliases: [...new Set(aliases)] },
+    });
+    term.subjects.push({ id: created.id, name, slug });
     touchedProgramIds.add(program.id);
     results.push({ name, status: "created" });
   }
@@ -1191,6 +1269,9 @@ export async function mergeSubjectsAction(formData: FormData) {
   await prisma.$transaction([
     prisma.resource.updateMany({ where: { subjectId: sourceId }, data: { subjectId: targetId } }),
     prisma.question.updateMany({ where: { subjectId: sourceId }, data: { subjectId: targetId } }),
+    prisma.driveSubject.updateMany({ where: { subjectId: sourceId }, data: { subjectId: targetId } }),
+    prisma.subjectMatchMemory.updateMany({ where: { subjectId: sourceId }, data: { subjectId: targetId } }),
+    prisma.noteTheme.updateMany({ where: { subjectId: sourceId }, data: { subjectId: targetId } }),
     // Notes are admin-authored content — combine both instead of silently
     // dropping the source's when the target already has its own.
     ...(source.notes && target.notes
@@ -1211,7 +1292,22 @@ export async function mergeSubjectsAction(formData: FormData) {
           }),
         ]
       : []),
-    ...(renameSlug ? [prisma.subject.update({ where: { id: targetId }, data: { name: mergedName, slug: renameSlug } })] : []),
+    prisma.subject.update({
+      where: { id: targetId },
+      data: {
+        name: mergedName || target.name,
+        slug: renameSlug || target.slug,
+        upc: target.upc || source.upc,
+        paperType: target.paperType || source.paperType,
+        aliases: [
+          ...new Set([
+            ...target.aliases,
+            ...source.aliases,
+            ...(source.name !== (mergedName || target.name) ? [source.name] : []),
+          ]),
+        ],
+      },
+    }),
     prisma.subject.delete({ where: { id: sourceId } }),
   ]);
 
@@ -1223,6 +1319,16 @@ export async function mergeSubjectsAction(formData: FormData) {
 }
 
 // ---------- Resources (Notes / PYQs) ----------
+
+async function requireCanonicalSubject(subjectId: string) {
+  if (!subjectId) throw new Error("A canonical subject is required.");
+  const subject = await prisma.subject.findUnique({
+    where: { id: subjectId },
+    select: { id: true, termId: true },
+  });
+  if (!subject) throw new Error("The selected official subject no longer exists.");
+  return subject;
+}
 
 export async function uploadResourceAction(formData: FormData) {
   await requireAdmin();
@@ -1237,6 +1343,7 @@ export async function uploadResourceAction(formData: FormData) {
 
   if (!title) throw new Error("Title is required.");
   if (!file || file.size === 0) throw new Error("A file is required.");
+  await requireCanonicalSubject(subjectId);
 
   // Reject exact-duplicate content (same PDF bytes) regardless of filename,
   // so re-uploading the same paper twice (same batch or a later one) is a
@@ -1249,7 +1356,8 @@ export async function uploadResourceAction(formData: FormData) {
 
   const { fileUrl, fileName, fileSize } = await saveUploadedFile(
     file,
-    type === "PYQ" ? "pyqs" : "notes"
+    type === "PYQ" ? "pyqs" : "notes",
+    subjectId,
   );
 
   if (batchId) {
@@ -1313,12 +1421,13 @@ function parseDirectUploadMetadata(formData: FormData): DirectUploadMetadata {
 export async function prepareDirectResourceUploadAction(formData: FormData) {
   await requireAdmin();
   const metadata = parseDirectUploadMetadata(formData);
+  await requireCanonicalSubject(metadata.subjectId);
   const existing = await prisma.resource.findFirst({ where: { fileHash: metadata.fileHash } });
   if (existing) return { status: "duplicate" as const, resourceId: existing.id };
 
   const safeName = metadata.fileName.replace(/[^\w.\-]+/g, "_");
   const subdir = metadata.type === "PYQ" ? "pyqs" : "notes";
-  const key = `uploads/${subdir}/${crypto.randomUUID()}-${safeName}`;
+  const key = `uploads/${subdir}/${metadata.subjectId}/${crypto.randomUUID()}-${safeName}`;
   const target = await createDirectUploadTarget(key);
   if (!target) return { status: "fallback" as const };
   return { status: "ready" as const, key, ...target };
@@ -1330,9 +1439,11 @@ export async function prepareDirectResourceUploadAction(formData: FormData) {
 export async function finalizeDirectResourceUploadAction(formData: FormData) {
   await requireAdmin();
   const metadata = parseDirectUploadMetadata(formData);
+  await requireCanonicalSubject(metadata.subjectId);
   const key = String(formData.get("key") ?? "").trim();
   const fileUrl = String(formData.get("fileUrl") ?? "").trim();
-  if (!key.startsWith("uploads/pyqs/") && !key.startsWith("uploads/notes/")) {
+  const expectedPrefix = `uploads/${metadata.type === "PYQ" ? "pyqs" : "notes"}/${metadata.subjectId}/`;
+  if (!key.startsWith(expectedPrefix)) {
     throw new Error("The upload target is invalid.");
   }
   const expectedFileUrl = process.env.R2_PUBLIC_URL
@@ -2038,6 +2149,131 @@ export async function deleteQuestionAction(formData: FormData) {
   await prisma.question.delete({ where: { id } });
   revalidatePath(`/admin/subjects/${subjectId}`);
   revalidatePath(`/subjects/${subjectId}`);
+}
+
+// Full edit of a single question, including OCR/topic/difficulty metadata
+// and its rich contentBlocks (src/lib/content/content-block-schema.ts) —
+// used by the /admin/questions/[id] editor (Phase H). Previously questions
+// could only be created or deleted, never edited in place.
+export async function updateQuestionAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const subjectId = String(formData.get("subjectId"));
+  const questionText = String(formData.get("questionText") ?? "").trim();
+  const answerText = String(formData.get("answerText") ?? "").trim();
+  const marksRaw = String(formData.get("marks") ?? "").trim();
+  const marks = marksRaw ? Number(marksRaw) : null;
+  const years = String(formData.get("years") ?? "").trim() || null;
+  const isRepeated = formData.get("isRepeated") === "on";
+  const repeatCountRaw = String(formData.get("repeatCount") ?? "1").trim();
+  const repeatCount = Number(repeatCountRaw) || 1;
+  const resourceId = String(formData.get("resourceId") ?? "").trim() || null;
+  const questionNumber = String(formData.get("questionNumber") ?? "").trim() || null;
+  const section = String(formData.get("section") ?? "").trim() || null;
+  const rawOcrText = String(formData.get("rawOcrText") ?? "").trim() || null;
+  const topicsRaw = String(formData.get("topics") ?? "").trim();
+  const topics = topicsRaw ? topicsRaw.split(",").map((t) => t.trim()).filter(Boolean) : [];
+  const difficultyRaw = String(formData.get("difficulty") ?? "");
+  const difficulty =
+    difficultyRaw === "EASY" || difficultyRaw === "MEDIUM" || difficultyRaw === "HARD" ? difficultyRaw : null;
+
+  if (!questionText || !answerText) {
+    throw new Error("Question and answer are required.");
+  }
+
+  let rawBlocks: unknown;
+  try {
+    rawBlocks = JSON.parse(String(formData.get("contentBlocksJson") ?? "[]"));
+  } catch {
+    throw new Error("Content blocks were malformed.");
+  }
+  const parsedBlocks = StudyContentBlockListSchema.safeParse(rawBlocks);
+  if (!parsedBlocks.success) {
+    throw new Error("One or more content blocks are invalid.");
+  }
+
+  await prisma.question.update({
+    where: { id },
+    data: {
+      questionText,
+      answerText,
+      marks,
+      years,
+      isRepeated,
+      repeatCount,
+      resourceId,
+      questionNumber,
+      section,
+      rawOcrText,
+      topics,
+      difficulty,
+      contentBlocks: parsedBlocks.data,
+    },
+  });
+
+  if (resourceId) revalidatePath(`/pyq-notes/${resourceId}`);
+
+  revalidatePath(`/admin/questions/${id}`);
+  revalidatePath(`/admin/subjects/${subjectId}`);
+  revalidatePath(`/subjects/${subjectId}`);
+}
+
+// ---------- Content Blocks library ----------
+// Reusable StudyContentBlocks (src/lib/content/content-block-schema.ts) an
+// admin builds once and inserts by reference into any question's
+// contentBlocks — a separate surface from per-question editing above.
+
+export async function createContentBlockAction(formData: FormData) {
+  await requireAdmin();
+  const label = String(formData.get("label") ?? "").trim();
+  if (!label) throw new Error("A label is required.");
+  const category = String(formData.get("category") ?? "").trim() || null;
+  const type = String(formData.get("type") ?? "markdown") as StudyContentBlockType;
+
+  const created = await prisma.contentBlock.create({
+    data: { label, category, block: createDefaultBlock(type), tags: [] },
+  });
+
+  revalidatePath("/admin/content-blocks");
+  redirect(`/admin/content-blocks/${created.id}`);
+}
+
+export async function updateContentBlockAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  const label = String(formData.get("label") ?? "").trim();
+  if (!label) throw new Error("A label is required.");
+  const description = String(formData.get("description") ?? "").trim() || null;
+  const category = String(formData.get("category") ?? "").trim() || null;
+  const tagsRaw = String(formData.get("tags") ?? "").trim();
+  const tags = tagsRaw ? tagsRaw.split(",").map((t) => t.trim()).filter(Boolean) : [];
+
+  let rawBlock: unknown;
+  try {
+    rawBlock = JSON.parse(String(formData.get("blockJson") ?? "{}"));
+  } catch {
+    throw new Error("The block content was malformed.");
+  }
+  const parsed = StudyContentBlockSchema.safeParse(rawBlock);
+  if (!parsed.success) {
+    throw new Error("The block content is invalid.");
+  }
+
+  await prisma.contentBlock.update({
+    where: { id },
+    data: { label, description, category, tags, block: parsed.data },
+  });
+
+  revalidatePath("/admin/content-blocks");
+  revalidatePath(`/admin/content-blocks/${id}`);
+}
+
+export async function deleteContentBlockAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id"));
+  await prisma.contentBlock.delete({ where: { id } });
+  revalidatePath("/admin/content-blocks");
+  redirect("/admin/content-blocks");
 }
 
 // ---------- Site settings ----------

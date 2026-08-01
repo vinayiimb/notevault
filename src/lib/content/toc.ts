@@ -29,9 +29,6 @@ export function preprocessNotesMarkdown(raw: string): string {
   // with \r\n or bare \r line endings. Every regex below anchors on `$`,
   // which only matches end-of-string/before \n — a trailing \r left in
   // means "line" text like "## Heading\r" silently fails to match at all.
-  // Normalizing once here keeps every downstream consumer (both this
-  // function's own heading-promotion and extractNotesHeadings, which runs
-  // on this function's output) working on plain \n-terminated lines.
   const normalized = raw.replace(/\r\n?/g, "\n");
   return normalized
     .split("\n")
@@ -46,8 +43,6 @@ export function preprocessNotesMarkdown(raw: string): string {
     .join("\n");
 }
 
-export type NotesHeading = { level: 2 | 3; text: string; slug: string };
-
 export function slugify(text: string) {
   return text
     .toLowerCase()
@@ -55,27 +50,48 @@ export function slugify(text: string) {
     .replace(/^-+|-+$/g, "");
 }
 
-// Table of contents entries, in document order — the same order
-// NotesRenderer's h2/h3 components render in, so slugs line up with the
-// anchors it assigns without needing to re-derive them from rendered React
-// children.
-export function extractNotesHeadings(preprocessedMarkdown: string): NotesHeading[] {
-  const headings: NotesHeading[] = [];
+export type ContentHeading = { level: 2 | 3; text: string; slug: string };
+
+// A single, canonical slug generator used by BOTH the server-side heading
+// extraction below and NotesMarkdown's h2/h3 render overrides. Previously
+// this codebase had two independently-duplicated copies of this exact
+// algorithm (one in notes-renderer.tsx, one in notes-lab) that had to be
+// kept in lockstep by convention alone — importing the same function in
+// both places makes them structurally unable to drift apart.
+export function createSlugAllocator() {
   const seen = new Map<string, number>();
+  return function slugFor(text: string): string {
+    let slug = slugify(text) || "section";
+    const count = seen.get(slug) ?? 0;
+    seen.set(slug, count + 1);
+    if (count > 0) slug = `${slug}-${count}`;
+    return slug;
+  };
+}
+
+// Scans the raw (preprocessed) Markdown — not the rendered tree — for ## /
+// ### lines, skipping fenced code blocks, using the exact slug algorithm
+// NotesMarkdown's own heading components use, so anchors always agree with
+// the TOC built from this list.
+export function extractContentHeadings(preprocessedMarkdown: string): ContentHeading[] {
+  const headings: ContentHeading[] = [];
+  const slugFor = createSlugAllocator();
+  let inFence = false;
 
   for (const line of preprocessedMarkdown.split("\n")) {
+    if (/^```/.test(line.trim())) {
+      inFence = !inFence;
+      continue;
+    }
+    if (inFence) continue;
+
     const h2 = line.match(/^##\s+(.+)$/);
     const h3 = !h2 && line.match(/^###\s+(.+)$/);
     const match = h2 ?? h3;
     if (!match) continue;
 
-    const text = match[1].trim();
-    let slug = slugify(text) || "section";
-    const count = seen.get(slug) ?? 0;
-    seen.set(slug, count + 1);
-    if (count > 0) slug = `${slug}-${count}`;
-
-    headings.push({ level: h2 ? 2 : 3, text, slug });
+    const text = match[1].replace(/[*_`]/g, "").trim();
+    headings.push({ level: h2 ? 2 : 3, text, slug: slugFor(text) });
   }
 
   return headings;

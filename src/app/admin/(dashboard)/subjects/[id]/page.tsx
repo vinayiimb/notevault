@@ -7,6 +7,7 @@ import {
   createQuestionAction,
   deleteQuestionAction,
   deleteResourceAction,
+  updateSubjectIdentityAction,
   uploadResourceFormAction,
 } from "@/lib/actions";
 import { DEFAULT_THEME, ThemeValuesSchema } from "@/lib/note-theme";
@@ -63,6 +64,31 @@ export default async function AdminSubjectPage({
         </Link>
       </p>
       <h1 className="text-2xl font-semibold">{subject.name}</h1>
+
+      <section className="mt-6 rounded-xl border border-border bg-surface p-5">
+        <h2 className="font-medium">Official subject identity</h2>
+        <p className="mt-1 text-sm text-muted">
+          Uploads match this fixed subject by UPC, official name, then approved aliases.
+        </p>
+        <form action={updateSubjectIdentityAction} className="mt-4 grid gap-3 md:grid-cols-3">
+          <input type="hidden" name="subjectId" value={subject.id} />
+          <label className="flex flex-col gap-1.5 text-xs font-medium text-muted">
+            UPC / paper code
+            <input name="upc" defaultValue={subject.upc ?? ""} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
+          </label>
+          <label className="flex flex-col gap-1.5 text-xs font-medium text-muted">
+            Paper type
+            <input name="paperType" defaultValue={subject.paperType ?? ""} placeholder="DSC, DSE, SEC, VAC, AEC…" className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
+          </label>
+          <label className="flex flex-col gap-1.5 text-xs font-medium text-muted">
+            Approved aliases (semicolon-separated)
+            <input name="aliases" defaultValue={subject.aliases.join("; ")} className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground" />
+          </label>
+          <button type="submit" className="w-fit rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground">
+            Save official identity
+          </button>
+        </form>
+      </section>
 
       <section className="mt-6 rounded-xl border border-border bg-surface p-5">
         <h2 className="font-medium">Merge duplicate subject</h2>
@@ -300,13 +326,18 @@ export default async function AdminSubjectPage({
                   {q.years && `Years: ${q.years}`}
                 </p>
               </div>
-              <form action={deleteQuestionAction}>
-                <input type="hidden" name="id" value={q.id} />
-                <input type="hidden" name="subjectId" value={subject.id} />
-                <button type="submit" className="shrink-0 text-xs text-red-500 hover:underline">
-                  Delete
-                </button>
-              </form>
+              <div className="flex shrink-0 items-center gap-3">
+                <Link href={`/admin/questions/${q.id}`} className="text-xs text-accent hover:underline">
+                  Edit
+                </Link>
+                <form action={deleteQuestionAction}>
+                  <input type="hidden" name="id" value={q.id} />
+                  <input type="hidden" name="subjectId" value={subject.id} />
+                  <button type="submit" className="text-xs text-red-500 hover:underline">
+                    Delete
+                  </button>
+                </form>
+              </div>
             </li>
           ))}
           {subject.questions.length === 0 && (

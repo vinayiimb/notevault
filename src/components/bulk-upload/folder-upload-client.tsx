@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { FolderOpen, UploadSimple } from "@phosphor-icons/react/dist/ssr";
-import { findOrCreateSubjectAction, uploadResourceAction } from "@/lib/actions";
+import { findOfficialSubjectAction, saveFailedUploadAction, uploadResourceAction } from "@/lib/actions";
 
 type Term = { id: string; name: string; order: number };
 type Program = { id: string; name: string; terms: Term[] };
@@ -382,7 +382,7 @@ export function FolderUploadClient({
 
   async function uploadAll() {
     setUploading(true);
-    const subjectCache = new Map<string, string>();
+    const subjectCache = new Map<string, string | null>();
     const seenThisRun = new Set<string>();
 
     for (const row of rows) {
@@ -417,15 +417,28 @@ export function FolderUploadClient({
           continue;
         }
 
-        const cacheKey = `${termId}::${row.courseFolder}`;
+        const cacheKey = `${termId}::${row.courseFolder.trim().toLocaleLowerCase()}`;
         let subjectId = subjectCache.get(cacheKey);
-        if (!subjectId) {
+        if (subjectId === undefined) {
           const subjectForm = new FormData();
           subjectForm.set("termId", termId);
-          subjectForm.set("name", row.courseFolder);
-          const subject = await findOrCreateSubjectAction(subjectForm);
-          subjectId = subject.id;
+          subjectForm.set("subjectName", row.courseFolder);
+          subjectForm.set("sourceText", row.relativePath);
+          const match = await findOfficialSubjectAction(subjectForm);
+          subjectId = match.subject?.id ?? null;
           subjectCache.set(cacheKey, subjectId);
+        }
+
+        if (!subjectId) {
+          const reviewForm = new FormData();
+          reviewForm.set("title", row.courseFolder || row.file.name);
+          reviewForm.set("type", "PYQ");
+          reviewForm.set("year", row.year.slice(0, 4));
+          reviewForm.set("reason", `Manual review: no official subject matched ${program.name} / semester ${row.semesterRoman || "unknown"} / ${row.courseFolder}`);
+          reviewForm.set("file", row.file);
+          await saveFailedUploadAction(reviewForm);
+          updateRow(row.key, { status: "error", message: "No official subject matched — saved for review" });
+          continue;
         }
 
         const uploadForm = new FormData();

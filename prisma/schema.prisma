@@ -73,6 +73,11 @@ model Subject {
   name        String
   slug        String
   description String?
+  // Official syllabus metadata. `name` remains the canonical display name;
+  // aliases are approved historical/spelling variants used only for matching.
+  upc         String?
+  paperType   String?
+  aliases     String[] @default([])
   createdAt   DateTime @default(now())
 
   resources     Resource[]
@@ -83,6 +88,7 @@ model Subject {
   noteThemes    NoteTheme[]
 
   @@unique([termId, slug])
+  @@index([upc])
 }
 
 // Admin-pasted, long-form compiled notes for a subject, rendered on the
@@ -195,10 +201,29 @@ model Resource {
   batchId        String?
   batch          UploadBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
 
+  // PYQ paper metadata surfaced on the tabbed /pyq-notes/[id] reading page
+  // (Paper tab's PYQMetadata panel) — all optional/additive since most
+  // historical rows predate this and were never asked for these fields.
+  paperCode    String?
+  session      String? // e.g. "May-June", "Nov-Dec"
+  duration     String? // free text, e.g. "3 hours"
+  maximumMarks Int?
+  // Tracks where a scanned paper is in the OCR pipeline independently of
+  // whether ocrText happens to be populated yet — lets the admin question
+  // editor (Phase H) show a real status instead of guessing from null-ness.
+  ocrStatus    OcrStatus @default(NOT_STARTED)
+
   questions Question[]
 
   @@index([fileHash])
   @@index([batchId])
+}
+
+enum OcrStatus {
+  NOT_STARTED
+  PROCESSING
+  COMPLETED
+  NEEDS_REVIEW
 }
 
 // PDFs added from the catalog coverage screen. The 2,431 college-hosted
@@ -242,7 +267,6 @@ model CatalogSubjectOverride {
 
   @@unique([course, subjectKey])
 }
-
 
 // A single combined paper covering every subject for one Program+Semester
 // at once (as opposed to a Resource, which always belongs to one Subject) —
@@ -406,19 +430,57 @@ model Question {
   repeatCount  Int       @default(1)
   years        String? // comma-separated list of years this question appeared, e.g. "2021,2022,2024"
   createdAt    DateTime  @default(now())
+
+  // Added for the admin per-question content editor (Phase H) and the PYQ
+  // reading page's Searchable Text / Solutions tabs — all optional/additive,
+  // every existing row keeps working with these unset.
+  questionNumber String? // e.g. "3", "3(a)" — as printed on the paper
+  section        String? // e.g. "Section A"
+  rawOcrText     String?             @db.Text // unedited OCR output for this question, before correction
+  topics         String[]            @default([])
+  difficulty     QuestionDifficulty?
+  // StudyContentBlock[] (src/lib/content/content-block-schema.ts), validated
+  // app-side with zod rather than at the DB layer — lets a question's answer
+  // carry LaTeX, tables, mermaid diagrams, charts, images, embedded PDF
+  // references, callouts, and quiz blocks alongside the plain answerText.
+  contentBlocks  Json?
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+// A named, reusable StudyContentBlock (src/lib/content/content-block-schema.ts)
+// admins can build once in the Content Blocks library (/admin/content-blocks)
+// and insert by reference into any question's contentBlocks — e.g. a standard
+// "Elasticity of Demand formula" block reused across many questions instead
+// of re-typing the LaTeX each time.
+model ContentBlock {
+  id          String   @id @default(cuid())
+  label       String
+  description String?
+  category    String?
+  block       Json // a single StudyContentBlock, validated app-side with zod
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
 }
 
 // Singleton row (id is always "singleton") for the small set of homepage
 // text fields an admin can safely edit without any risk of breaking a page.
 model SiteSettings {
-  id                 String   @id @default("singleton")
-  heroEyebrow        String?
-  heroHeadline       String?
-  heroSubtitle       String?
-  heroSearchCaption  String?
-  heroImageUrl       String?
-  currencyIconUrl    String?
-  updatedAt          DateTime @updatedAt
+  id                String   @id @default("singleton")
+  heroEyebrow       String?
+  heroHeadline      String?
+  heroSubtitle      String?
+  heroSearchCaption String?
+  heroImageUrl      String?
+  currencyIconUrl   String?
+  updatedAt         DateTime @updatedAt
 }
 
 model Admin {

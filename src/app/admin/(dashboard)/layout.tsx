@@ -4,6 +4,7 @@ import {
   CalendarBlank,
   ChatCircleText,
   ClockCounterClockwise,
+  CubeFocus,
   FileArchive,
   FileArrowUp,
   FileText,
@@ -15,6 +16,7 @@ import {
   House,
   MagnifyingGlass,
   PaintBrush,
+  Question,
   Shuffle,
   Sparkle,
   SignOut,
@@ -138,6 +140,13 @@ export default async function AdminDashboardLayout({
             OCR metadata
           </Link>
           <Link
+            href="/admin/questions"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Question size={16} />
+            Question bank
+          </Link>
+          <Link
             href="/admin/ocr-reformat"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
           >
@@ -171,6 +180,13 @@ export default async function AdminDashboardLayout({
           >
             <PaintBrush size={16} />
             Note Designer
+          </Link>
+          <Link
+            href="/admin/content-blocks"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <CubeFocus size={16} />
+            Content blocks
           </Link>
           <Link
             href="/admin/feedback"

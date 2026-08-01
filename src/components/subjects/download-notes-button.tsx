@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { DownloadSimple } from "@phosphor-icons/react/dist/ssr";
-import { preprocessNotesMarkdown } from "@/lib/notes-markdown";
+import { preprocessNotesMarkdown } from "@/lib/content/toc";
 
 export function DownloadNotesButton({ content, title }: { content: string; title: string }) {
   const [loading, setLoading] = useState(false);

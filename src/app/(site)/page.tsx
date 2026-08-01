@@ -6,13 +6,12 @@ import {
   CompassRose,
   Exam,
   GraduationCap,
-  Notebook,
   Sparkle,
 } from "@phosphor-icons/react/dist/ssr";
 import { SearchBar } from "@/components/search-bar";
-import { getProgramsByLevel, getResourceHighlights, getSiteSettings, getStats } from "@/lib/data";
+import { getProgramsByLevel, getSiteSettings } from "@/lib/data";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
-import { FeaturedEconomicsVault } from "@/components/featured-economics-vault";
+import { StudyAccessShowcase } from "@/components/study-access-showcase";
 
 // updateSiteSettingsAction already calls revalidatePath("/") on save, which
 // should purge this immediately — this is a safety net in case that signal
@@ -21,14 +20,11 @@ import { FeaturedEconomicsVault } from "@/components/featured-economics-vault";
 export const revalidate = 60;
 
 export default async function HomePage() {
-  const [stats, programs, siteSettings, highlights] = await Promise.all([
-    getStats(),
+  const [programs, siteSettings] = await Promise.all([
     getProgramsByLevel("COLLEGE"),
     getSiteSettings(),
-    getResourceHighlights(),
   ]);
   const heroImage = siteSettings.heroImageUrl;
-  const latestResource = highlights.latestPyq ?? highlights.latestNote;
   const jumpData = programs.map((program) => ({
     id: program.id,
     name: program.name,
@@ -61,6 +57,8 @@ export default async function HomePage() {
             <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/30 to-black/10" />
           </div>
         )}
+
+        {heroImage && <StudyAccessShowcase />}
 
         <div
           className={
@@ -145,49 +143,8 @@ export default async function HomePage() {
             />
           </nav>
         </section>
-
-        <FeaturedEconomicsVault className="mt-8" />
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 pt-20 pb-24 sm:px-6 sm:pt-24">
-        <section aria-labelledby="vault-pulse" className="overflow-hidden rounded-2xl bg-brand text-brand-foreground">
-          <div className="grid gap-8 p-7 sm:p-9 lg:grid-cols-[1fr_auto] lg:items-end lg:p-12">
-            <div>
-              <p className="text-sm font-semibold text-brand-foreground/70">Just added to the vault</p>
-              <h2 id="vault-pulse" className="mt-3 max-w-3xl text-balance font-display text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
-                {latestResource ? formatResourceHeading(latestResource) : "Your next paper is already waiting in the library."}
-              </h2>
-              <p className="mt-3 max-w-2xl text-pretty text-sm leading-relaxed text-brand-foreground/75 sm:text-base">
-                Open the newest upload now, or search the full archive by subject and semester.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {latestResource && (
-                <Link
-                  href={`/subjects/${latestResource.subject.id}`}
-                  className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-surface px-5 py-3 text-sm font-semibold text-foreground hover:-translate-y-0.5"
-                >
-                  Open newest paper
-                  <ArrowRight size={16} weight="bold" className="transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              )}
-              <Link
-                href="/browse/college"
-                className="inline-flex min-h-11 items-center rounded-xl border border-brand-foreground/25 px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-foreground/10"
-              >
-                Browse everything
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 border-t border-brand-foreground/15 sm:grid-cols-4">
-            <Stat icon={<GraduationCap size={17} weight="bold" />} label="Programs" value={stats.programs} />
-            <Stat icon={<Notebook size={17} weight="bold" />} label="Subjects" value={stats.subjects} />
-            <Stat icon={<BookOpen size={17} weight="bold" />} label="Notes & PYQs" value={stats.resources} />
-            <Stat icon={<Exam size={17} weight="bold" />} label="Bank questions" value={stats.questions} />
-          </div>
-        </section>
-      </div>
     </div>
   );
 }
@@ -222,22 +179,4 @@ function Shortcut({
       />
     </Link>
   );
-}
-
-function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
-  return (
-    <div className="border-r border-b border-brand-foreground/15 px-5 py-6 last:border-r-0 sm:border-b-0 sm:px-7">
-      <span className="flex items-center gap-2 text-brand-foreground/65">
-        {icon}
-        <span className="text-xs font-medium">{label}</span>
-      </span>
-      <span className="mt-2 block font-mono text-2xl font-semibold tabular-nums">{value.toLocaleString()}</span>
-    </div>
-  );
-}
-
-function formatResourceHeading(resource: { title: string; subject: { name: string } }) {
-  const title = resource.title.trim();
-  const subject = resource.subject.name.trim();
-  return title.toLocaleLowerCase().startsWith(subject.toLocaleLowerCase()) ? title : `${subject}: ${title}`;
 }

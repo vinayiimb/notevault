@@ -48,8 +48,8 @@ export default async function AdminBulkUploadPage() {
           <p className="mt-1 text-sm text-muted">
             Drop a .zip of PDFs (e.g. a year&apos;s worth of question papers). Each file
             gets matched to a subject automatically where the filename has a clear hint
-            &mdash; fix, or create a new subject on the spot, then upload everything at
-            once. Manual corrections are remembered for next time.
+            &mdash; choose an existing official subject when needed, then upload everything at
+            once. Unmatched files go to review, and manual corrections are remembered.
           </p>
         </div>
         <Link

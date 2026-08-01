@@ -6,7 +6,7 @@ import { createSubjectsFromCsvAction, type NewSubjectCsvRowResult } from "@/lib/
 
 const STATUS_LABEL: Record<NewSubjectCsvRowResult["status"], string> = {
   created: "Created",
-  duplicate: "Already exists there — skipped",
+  duplicate: "Existing subject — official identity updated",
   "no-program-match": "Course not recognized",
   "no-term-match": "Semester not recognized",
   "no-name": "No name column found in this row",
@@ -42,13 +42,14 @@ export function CreateSubjectsCsv() {
     <div className="rounded-xl border border-border bg-surface p-4">
       <h2 className="flex items-center gap-2 font-medium">
         <FileCsv size={18} weight="bold" className="text-accent" />
-        Create new subjects from CSV
+        Import official subjects from CSV
       </h2>
       <p className="mt-1 text-xs text-muted">
-        For subjects <strong>not in this Unsorted list at all</strong> — creates them straight
-        into their real course + semester, no holding pool. Columns: <code>name</code> (or{" "}
+        Creates missing official subjects and updates matching existing ones in their real course + semester.
+        Columns: <code>name</code> (or{" "}
         <code>subject</code>), <code>program</code> (or <code>course</code>), <code>term</code>{" "}
-        (or <code>semester</code>), and optionally <code>code</code>, <code>description</code>.
+        (or <code>semester</code>), and optionally <code>upc</code>, <code>paper_type</code>,{" "}
+        <code>aliases</code> (semicolon-separated), <code>code</code>, and <code>description</code>.
       </p>
 
       <div

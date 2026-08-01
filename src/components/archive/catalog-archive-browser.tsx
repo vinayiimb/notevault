@@ -49,6 +49,10 @@ function semesterSortKey(label: string) {
   return Number(label.match(/\d+/)?.[0] ?? 99);
 }
 
+function idPart(value: string) {
+  return value.toLocaleLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
 function yearStart(value: string) {
   return Number(value.match(/\d{4}/)?.[0] ?? 0);
 }
@@ -176,8 +180,17 @@ function groupBySemester(groups: SubjectGroup[]) {
   );
 }
 
+function sortGroupsSemesterFirst(a: SubjectGroup, b: SubjectGroup) {
+  return (
+    semesterSortKey(a.semesterLabel) - semesterSortKey(b.semesterLabel) ||
+    a.course.localeCompare(b.course) ||
+    a.subject.localeCompare(b.subject)
+  );
+}
+
 export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   const [course, setCourse] = useState(ALL);
+  const [semester, setSemester] = useState(ALL);
   const [session, setSession] = useState(ALL);
   const [search, setSearch] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -207,30 +220,49 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
       ),
     [papers],
   );
+  const semesters = useMemo(
+    () =>
+      [...new Set(papers.map((paper) => semesterLabel(paper)))].sort(
+        (a, b) => semesterSortKey(a) - semesterSortKey(b),
+      ),
+    [papers],
+  );
   const filtered = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return papers.filter(
       (paper) =>
         (course === ALL || paper.course === course) &&
+        (semester === ALL || semesterLabel(paper) === semester) &&
         (session === ALL || paper.yearRange === session) &&
         (!query ||
           paper.subject.toLocaleLowerCase().includes(query) ||
           paper.course.toLocaleLowerCase().includes(query) ||
           (paper.note ?? "").toLocaleLowerCase().includes(query)),
     );
-  }, [course, papers, search, session]);
+  }, [course, papers, search, semester, session]);
   const groups = useMemo(() => buildGroups(filtered), [filtered]);
-  const visibleGroups = groups.slice(0, visibleCount);
+  const orderedGroups = useMemo(
+    () => (course === ALL ? groups.toSorted(sortGroupsSemesterFirst) : groups),
+    [course, groups],
+  );
+  const visibleGroups = orderedGroups.slice(0, visibleCount);
+
+  function resetResultView() {
+    setVisibleCount(PAGE_SIZE);
+    setExpanded(new Set());
+  }
 
   function clearFilters() {
     setCourse(ALL);
+    setSemester(ALL);
     setSession(ALL);
     setSearch("");
     setVisibleCount(PAGE_SIZE);
     setExpanded(new Set());
   }
 
-  const hasFilters = course !== ALL || session !== ALL || search.trim().length > 0;
+  const hasFilters =
+    course !== ALL || semester !== ALL || session !== ALL || search.trim().length > 0;
 
   return (
     <>
@@ -252,7 +284,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-5 lg:grid-cols-[minmax(220px,0.8fr)_minmax(0,1.4fr)_minmax(210px,0.8fr)]">
+        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_minmax(180px,0.7fr)_minmax(260px,1.25fr)_minmax(210px,0.85fr)]">
           <div>
             <label htmlFor="catalog-course" className="block text-sm font-semibold">
               Course
@@ -262,7 +294,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
               value={course}
               onChange={(event) => {
                 setCourse(event.target.value);
-                setVisibleCount(PAGE_SIZE);
+                resetResultView();
               }}
               className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             >
@@ -270,6 +302,28 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
               {courses.map((name) => (
                 <option key={name} value={name}>
                   {name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label htmlFor="catalog-semester" className="block text-sm font-semibold">
+              Semester
+            </label>
+            <select
+              id="catalog-semester"
+              value={semester}
+              onChange={(event) => {
+                setSemester(event.target.value);
+                resetResultView();
+              }}
+              className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+            >
+              <option value={ALL}>All semesters</option>
+              {semesters.map((value) => (
+                <option key={value} value={value}>
+                  {value}
                 </option>
               ))}
             </select>
@@ -286,7 +340,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
                 value={search}
                 onChange={(event) => {
                   setSearch(event.target.value);
-                  setVisibleCount(PAGE_SIZE);
+                  resetResultView();
                 }}
                 placeholder="e.g. Corporate Accounting"
                 className="h-11 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
@@ -303,7 +357,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
               value={session}
               onChange={(event) => {
                 setSession(event.target.value);
-                setVisibleCount(PAGE_SIZE);
+                resetResultView();
               }}
               className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             >
@@ -344,8 +398,8 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
       </div>
 
       <div className="mt-5 grid gap-2 rounded-2xl border border-border bg-surface p-4 text-sm sm:grid-cols-3">
-        <p><strong className="text-accent">1.</strong> Choose a course</p>
-        <p><strong className="text-accent">2.</strong> Open a subject and year</p>
+        <p><strong className="text-accent">1.</strong> Choose a course and semester</p>
+        <p><strong className="text-accent">2.</strong> Open a subject and session</p>
         <p><strong className="text-accent">3.</strong> Open the final PDF</p>
       </div>
 
@@ -363,19 +417,41 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
         </div>
       ) : course === ALL ? (
         <section aria-label="Archive results" className="mt-6 space-y-6">
-          {groupByCourse(visibleGroups).map(([courseName, courseGroups]) => (
+          {groupBySemester(visibleGroups).map(([semLabel, semesterGroups]) => (
             <section
-              key={courseName}
-              aria-labelledby={`course-${courseName.replace(/[^a-z0-9]+/gi, "-")}`}
+              key={semLabel}
+              aria-labelledby={`archive-${idPart(semLabel)}`}
               className="overflow-hidden rounded-2xl border border-border bg-surface"
             >
               <header className="border-b border-border bg-accent-soft px-5 py-4 sm:px-6">
-                <p className="text-xs font-semibold uppercase tracking-wider text-accent">Course</p>
-                <h2 id={`course-${courseName.replace(/[^a-z0-9]+/gi, "-")}`} className="mt-1 text-xl font-semibold text-foreground">
-                  {courseName}
+                <p className="text-xs font-semibold text-accent">Semester group</p>
+                <h2 id={`archive-${idPart(semLabel)}`} className="mt-1 text-xl font-semibold text-foreground">
+                  {semLabel}
                 </h2>
+                <p className="mt-1 text-sm text-muted">
+                  {semesterGroups.length} subject{semesterGroups.length === 1 ? "" : "s"} across{" "}
+                  {groupByCourse(semesterGroups).length} course categor{groupByCourse(semesterGroups).length === 1 ? "y" : "ies"}
+                </p>
               </header>
-              <SemesterGroupedList groups={courseGroups} expanded={expanded} onToggle={toggleExpanded} />
+              <div className="space-y-4 bg-surface-muted/40 p-3 sm:p-4">
+                {groupByCourse(semesterGroups).map(([courseName, courseGroups]) => {
+                  const courseHeadingId = `archive-${idPart(semLabel)}-${idPart(courseName)}`;
+                  return (
+                    <section
+                      key={courseName}
+                      aria-labelledby={courseHeadingId}
+                      className="overflow-hidden rounded-xl border border-border bg-surface"
+                    >
+                      <header className="border-b border-border px-4 py-3 sm:px-5">
+                        <h3 id={courseHeadingId} className="font-semibold text-foreground">
+                          {courseName}
+                        </h3>
+                      </header>
+                      <SubjectList groups={courseGroups} expanded={expanded} onToggle={toggleExpanded} />
+                    </section>
+                  );
+                })}
+              </div>
             </section>
           ))}
         </section>
@@ -388,10 +464,10 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
         </section>
       )}
 
-      {visibleCount < groups.length ? (
+      {visibleCount < orderedGroups.length ? (
         <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
           <p className="text-sm text-muted">
-            {visibleGroups.length} of {groups.length} subject groups loaded
+            {visibleGroups.length} of {orderedGroups.length} subject groups loaded
           </p>
           <button
             type="button"
@@ -402,7 +478,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
           </button>
           <button
             type="button"
-            onClick={() => setVisibleCount(groups.length)}
+            onClick={() => setVisibleCount(orderedGroups.length)}
             className="min-h-11 rounded-xl px-4 py-2 text-sm font-semibold text-accent hover:bg-accent-soft"
           >
             Show all
@@ -558,7 +634,7 @@ function SubjectList({
                             href={paper.pdfUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            title={`${fileName(paper)}${paper.note ? ` — ${paper.note}` : ""}`}
+                            title={`${fileName(paper)}${paper.note ? ` - ${paper.note}` : ""}`}
                             className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-foreground outline-none hover:border-accent hover:bg-accent-soft hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
                           >
                             {label}
