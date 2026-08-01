@@ -211,21 +211,23 @@ textarea,
   animation: shimmer 1.6s ease-in-out infinite;
 }
 
-/* Homepage hero image (uploaded admin banner): fades to transparent past its
-   midpoint so it dissolves into the page instead of ending on a hard edge,
-   and the overlay blends that fade into the actual page background —
+/* Homepage hero image (uploaded admin banner): stays fully opaque for its
+   first 85% and only fades to transparent over the final 15% so it
+   dissolves into the page instead of ending on a hard edge. The overlay
+   blends that same bottom sliver into the actual page background —
    light/dark aware via --background rather than a hardcoded white. */
 .hero-image-fade {
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 0%, black 45%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, black 85%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 0%, black 85%, transparent 100%);
 }
 
 .hero-image-overlay {
   background: linear-gradient(
     to bottom,
-    transparent,
-    color-mix(in srgb, var(--background) 45%, transparent),
-    var(--background)
+    transparent 0%,
+    transparent 85%,
+    color-mix(in srgb, var(--background) 45%, transparent) 92%,
+    var(--background) 100%
   );
 }
 
