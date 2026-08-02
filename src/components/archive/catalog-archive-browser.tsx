@@ -251,36 +251,23 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   );
   const filtered = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
-    return papers.filter(
-<<<<<<< HEAD
-      (paper) =>
-        (course === ALL || paper.course === course) &&
+    return papers.filter((paper) => {
+      const cName = canonicalCourseName(paper.course);
+      return (
+        (course === ALL || cName === course) &&
         (semester === ALL || semesterLabel(paper) === semester) &&
         (paperType === ALL || paper.paperType === paperType) &&
         (session === ALL || paper.yearRange === session) &&
         (!query ||
           paper.subject.toLocaleLowerCase().includes(query) ||
-          paper.course.toLocaleLowerCase().includes(query) ||
+          cName.toLocaleLowerCase().includes(query) ||
           (paper.officialProgramme ?? "").toLocaleLowerCase().includes(query) ||
           (paper.paperType ?? "").toLocaleLowerCase().includes(query) ||
           (paper.upc ?? "").includes(query) ||
           (paper.courseNumber ?? "").toLocaleLowerCase().includes(query) ||
-          (paper.note ?? "").toLocaleLowerCase().includes(query)),
-=======
-      (paper) => {
-        const cName = canonicalCourseName(paper.course);
-        return (
-          (course === ALL || cName === course) &&
-          (semester === ALL || semesterLabel(paper) === semester) &&
-          (session === ALL || paper.yearRange === session) &&
-          (!query ||
-            paper.subject.toLocaleLowerCase().includes(query) ||
-            cName.toLocaleLowerCase().includes(query) ||
-            (paper.note ?? "").toLocaleLowerCase().includes(query))
-        );
-      },
->>>>>>> origin/main
-    );
+          (paper.note ?? "").toLocaleLowerCase().includes(query))
+      );
+    });
   }, [course, paperType, papers, search, semester, session]);
   const groups = useMemo(() => buildGroups(filtered), [filtered]);
   const orderedGroups = useMemo(
