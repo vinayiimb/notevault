@@ -12,6 +12,7 @@ import {
 import { useMemo, useState } from "react";
 import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import {
+  canonicalCourseName,
   canonicalSubjectKey,
   preferredSubjectLabel,
 } from "@/lib/subject-normalization";
@@ -92,11 +93,12 @@ function buildGroups(papers: CatalogPaper[]) {
 
   for (const paper of papers) {
     const semLabel = semesterLabel(paper);
-    const subjectKey = `${paper.course}\u0000${semLabel}\u0000${canonicalSubjectKey(paper.subject)}`;
+    const courseName = canonicalCourseName(paper.course);
+    const subjectKey = `${courseName}\u0000${semLabel}\u0000${canonicalSubjectKey(paper.subject)}`;
     let subject = subjects.get(subjectKey);
     if (!subject) {
       subject = {
-        course: paper.course,
+        course: courseName,
         subject: paper.subject,
         semesterLabel: semLabel,
         sessions: new Map(),
@@ -210,7 +212,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   }
 
   const courses = useMemo(
-    () => [...new Set(papers.map((paper) => paper.course))].sort((a, b) => a.localeCompare(b)),
+    () => [...new Set(papers.map((paper) => canonicalCourseName(paper.course)))].sort((a, b) => a.localeCompare(b)),
     [papers],
   );
   const sessions = useMemo(
@@ -230,14 +232,18 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   const filtered = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return papers.filter(
-      (paper) =>
-        (course === ALL || paper.course === course) &&
-        (semester === ALL || semesterLabel(paper) === semester) &&
-        (session === ALL || paper.yearRange === session) &&
-        (!query ||
-          paper.subject.toLocaleLowerCase().includes(query) ||
-          paper.course.toLocaleLowerCase().includes(query) ||
-          (paper.note ?? "").toLocaleLowerCase().includes(query)),
+      (paper) => {
+        const cName = canonicalCourseName(paper.course);
+        return (
+          (course === ALL || cName === course) &&
+          (semester === ALL || semesterLabel(paper) === semester) &&
+          (session === ALL || paper.yearRange === session) &&
+          (!query ||
+            paper.subject.toLocaleLowerCase().includes(query) ||
+            cName.toLocaleLowerCase().includes(query) ||
+            (paper.note ?? "").toLocaleLowerCase().includes(query))
+        );
+      },
     );
   }, [course, papers, search, semester, session]);
   const groups = useMemo(() => buildGroups(filtered), [filtered]);
@@ -423,14 +429,20 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
               aria-labelledby={`archive-${idPart(semLabel)}`}
               className="overflow-hidden rounded-2xl border border-border bg-surface"
             >
-              <header className="border-b border-border bg-accent-soft px-5 py-4 sm:px-6">
-                <p className="text-xs font-semibold text-accent">Semester group</p>
-                <h2 id={`archive-${idPart(semLabel)}`} className="mt-1 text-xl font-semibold text-foreground">
-                  {semLabel}
+              <header className="border-b border-brand/20 bg-brand-soft/80 px-5 py-4 dark:bg-brand-soft/40 sm:px-6">
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 text-xs font-bold text-brand-foreground shadow-sm">
+                    Semester {semLabel}
+                  </span>
+                  <span className="text-xs font-bold text-foreground/80">
+                    {semesterGroups.length} Subject{semesterGroups.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+                <h2 id={`archive-${idPart(semLabel)}`} className="mt-2 text-xl font-bold tracking-tight text-foreground">
+                  Semester {semLabel}
                 </h2>
-                <p className="mt-1 text-sm text-muted">
-                  {semesterGroups.length} subject{semesterGroups.length === 1 ? "" : "s"} across{" "}
-                  {groupByCourse(semesterGroups).length} course categor{groupByCourse(semesterGroups).length === 1 ? "y" : "ies"}
+                <p className="mt-1 text-xs font-medium text-foreground/70">
+                  Across {groupByCourse(semesterGroups).length} course categor{groupByCourse(semesterGroups).length === 1 ? "y" : "ies"}
                 </p>
               </header>
               <div className="space-y-4 bg-surface-muted/40 p-3 sm:p-4">

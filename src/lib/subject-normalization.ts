@@ -34,6 +34,31 @@ function tidySubjectName(value: string) {
  * Sanskrit, ...) down to an empty string, which then collapses every such
  * subject onto the same "duplicate" key regardless of actual content.
  */
+export function canonicalCourseName(courseName: string): string {
+  if (!courseName) return "General / Interdisciplinary";
+  const norm = courseName.trim().replace(/\s+/g, " ");
+
+  if (/b\.?a\.?\s*\(?h(?:ons)?\.?\)?\s*eco/i.test(norm) || /^economics$/i.test(norm)) return "B.A. (H) Economics";
+  if (/b\.?a\.?\s*\(?h(?:ons)?\.?\)?\s*geog/i.test(norm) || /^geography$/i.test(norm)) return "B.A. (H) Geography";
+  if (/b\.?a\.?\s*\(?h(?:ons)?\.?\)?\s*hist/i.test(norm) || /^history$/i.test(norm)) return "B.A. (H) History";
+  if (/b\.?a\.?\s*\(?h(?:ons)?\.?\)?\s*pol/i.test(norm) || /^political science$/i.test(norm)) return "B.A. (H) Political Science";
+  if (/b\.?a\.?\s*\(?h(?:ons)?\.?\)?\s*eng/i.test(norm) || /^english$/i.test(norm)) return "B.A. (H) English";
+  if (/b\.?a\.?\s*\(?h(?:ons)?\.?\)?\s*hin/i.test(norm) || /^hindi$/i.test(norm)) return "B.A. (H) Hindi";
+  if (/b\.?a\.?\s*\(?h(?:ons)?\.?\)?\s*skt/i.test(norm) || /^sanskrit$/i.test(norm)) return "B.A. (H) Sanskrit";
+  if (/b\.?a\.?\s*\(?h(?:ons)?\.?\)?\s*soc/i.test(norm) || /^sociology$/i.test(norm)) return "B.A. (H) Sociology";
+  if (/b\.?com\.?\s*\(?h(?:ons)?\.?\)?/i.test(norm)) return "B.Com. (H)";
+  if (/b\.?com\.?\s*\(?prog(?:ramme)?\.?\)?/i.test(norm)) return "B.Com. (Programme)";
+  if (/b\.?a\.?\s*\(?prog(?:ramme)?\.?\)?/i.test(norm)) return "B.A. (Programme)";
+
+  if (/b\.?sc\.?\s*\(?h(?:ons)?\.?\)?\s*zool/i.test(norm) || /^zoology$/i.test(norm)) return "B.Sc. (H) Zoology";
+  if (/b\.?sc\.?\s*\(?h(?:ons)?\.?\)?\s*bot/i.test(norm) || /^botany$/i.test(norm)) return "B.Sc. (H) Botany";
+  if (/b\.?sc\.?\s*\(?h(?:ons)?\.?\)?\s*chem/i.test(norm) || /^chemistry$/i.test(norm)) return "B.Sc. (H) Chemistry";
+  if (/b\.?sc\.?\s*\(?h(?:ons)?\.?\)?\s*phys/i.test(norm) || /^physics$/i.test(norm)) return "B.Sc. (H) Physics";
+  if (/b\.?sc\.?\s*\(?h(?:ons)?\.?\)?\s*math/i.test(norm) || /^mathematics$/i.test(norm)) return "B.Sc. (H) Mathematics";
+
+  return norm;
+}
+
 export function canonicalSubjectKey(value: string) {
   return tidySubjectName(value)
     .toLocaleLowerCase()
