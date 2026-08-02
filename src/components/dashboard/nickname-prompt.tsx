@@ -26,7 +26,7 @@ export function NicknamePrompt() {
   }
 
   return (
-    <div className="rounded-3xl bg-brand-soft p-5">
+    <div className="rounded-2xl bg-brand-soft p-5 sm:p-6">
       <p className="font-display text-lg font-bold">Pick a name for the leaderboard</p>
       <p className="mt-1 text-sm text-muted">
         Just for the leaderboard — no email or password needed. Your streak and oranges are
@@ -38,12 +38,12 @@ export function NicknamePrompt() {
           onChange={(e) => setValue(e.target.value)}
           maxLength={24}
           placeholder="e.g. StudyNinja"
-          className="min-w-0 flex-1 rounded-[18px] border border-border bg-surface px-3 py-2 text-sm focus:border-brand focus:outline-none"
+          className="min-h-11 min-w-0 flex-1 rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:border-brand focus:outline-none"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="shrink-0 rounded-full bg-brand px-4 py-2 text-sm font-semibold text-brand-foreground transition hover:opacity-90 disabled:opacity-50"
+          className="min-h-11 shrink-0 rounded-xl bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-hover disabled:opacity-50"
         >
           {isPending ? "Saving..." : "Save"}
         </button>

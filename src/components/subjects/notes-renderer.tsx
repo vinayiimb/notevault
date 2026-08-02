@@ -2,6 +2,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { preprocessNotesMarkdown, slugify } from "@/lib/notes-markdown";
 import { MermaidDiagram } from "./mermaid-diagram";
+import { DataChart } from "./data-chart";
 
 export const NOTES_THEMES = ["sky", "violet", "emerald", "amber"] as const;
 export type NotesTheme = (typeof NOTES_THEMES)[number];
@@ -72,7 +73,7 @@ export function NotesRenderer({
   }
 
   return (
-    <div className={`rounded-3xl border p-6 sm:p-8 ${t.card}`}>
+    <div className={`rounded-2xl border p-5 sm:p-8 ${t.card}`}>
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
         components={{
@@ -108,7 +109,7 @@ export function NotesRenderer({
             </li>
           ),
           table: ({ children }) => (
-            <div className="mt-6 overflow-hidden overflow-x-auto rounded-2xl border border-border bg-surface shadow-[0_10px_30px_rgba(15,23,42,.05)]">
+            <div className="mt-6 overflow-hidden overflow-x-auto rounded-xl border border-border bg-surface">
               <table className="w-full border-collapse text-sm">{children}</table>
             </div>
           ),
@@ -129,6 +130,9 @@ export function NotesRenderer({
           code: ({ className, children }) => {
             if (className?.includes("language-mermaid")) {
               return <MermaidDiagram chart={flattenToText(children)} />;
+            }
+            if (className?.includes("language-chart")) {
+              return <DataChart source={flattenToText(children)} />;
             }
             return (
               <code className="rounded bg-surface-muted px-1.5 py-0.5 font-mono text-[0.85em]">

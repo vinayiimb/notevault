@@ -1,8 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { FileArchive, UploadSimple } from "@phosphor-icons/react/dist/ssr";
-import { findOrCreateSubjectAction, rememberCourseMatchAction, uploadResourceAction } from "@/lib/actions";
+import { useMemo, useRef, useState } from "react";
+import { FileArchive, FilePdf, Sparkle, UploadSimple } from "@phosphor-icons/react/dist/ssr";
+import {
+  finalizeDirectResourceUploadAction,
+  findOrCreateSubjectAction,
+  prepareDirectResourceUploadAction,
+  rememberCourseMatchAction,
+  uploadResourceAction,
+} from "@/lib/actions";
+import {
+  matchConsolidatedMetadataAction,
+  type ConsolidatedMetadataInput,
+} from "@/lib/consolidated-match-actions";
 
 type Term = { id: string; name: string; order: number };
 type Program = { id: string; name: string; terms: Term[] };
@@ -18,6 +28,7 @@ type FlatFile = {
   programId: string; // editable — which course this uploads under
   order: number | null; // editable — semester (1-6)
   year: string; // editable
+  previewText: string;
   bytes: ArrayBuffer;
   status: FileStatus;
   message?: string;
@@ -90,6 +101,30 @@ async function sha256Hex(data: ArrayBuffer) {
   return Array.from(new Uint8Array(digest))
     .map((b) => b.toString(16).padStart(2, "0"))
     .join("");
+}
+
+async function extractPdfPreview(data: ArrayBuffer): Promise<string> {
+  try {
+    const pdfjsLib = await import("pdfjs-dist");
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+    const pdf = await pdfjsLib.getDocument({ data: data.slice(0) }).promise;
+    const pages: string[] = [];
+    for (let i = 1; i <= Math.min(pdf.numPages, 2); i++) {
+      const page = await pdf.getPage(i);
+      const content = await page.getTextContent();
+      pages.push(
+        content.items
+          .map((item) => ("str" in item ? item.str : ""))
+          .filter(Boolean)
+          .join(" "),
+      );
+    }
+    return pages.join("\n").replace(/\s+/g, " ").trim().slice(0, 2200);
+  } catch {
+    // Scanned, encrypted, and malformed PDFs can still be uploaded and
+    // matched from their filename/folders; text extraction is an enhancement.
+    return "";
+  }
 }
 
 function extractYearFromText(text: string): { year: string; span: [number, number] | null } {
@@ -289,6 +324,9 @@ export function ConsolidatedUploadClient({
   const [groupProgram, setGroupProgram] = useState<Record<string, string>>({});
   const [courseMemory, setCourseMemory] = useState(initialCourseMemory);
   const [uploading, setUploading] = useState(false);
+  const [aiMatching, setAiMatching] = useState(false);
+  const [batchId] = useState(() => crypto.randomUUID());
+  const inputRef = useRef<HTMLInputElement>(null);
   const knownHashes = useMemo(() => new Set(existingHashes), [existingHashes]);
 
   // One row per distinct detected group (a folder name, or an extracted
@@ -316,69 +354,86 @@ export function ConsolidatedUploadClient({
     rememberCourseMatchAction(formData).catch(() => {});
   }
 
-  async function handleZips(zipFiles: File[]) {
+  async function handleFiles(selectedFiles: File[]) {
     setError(null);
     setNotice(null);
     setExtracting(true);
     try {
-      const JSZip = (await import("jszip")).default;
-      const newEntries: { path: string; parsed: ParsedEntry; bytes: ArrayBuffer }[] = [];
-      const seen = new Set<string>(files.map((f) => f.path));
+      const newEntries: { key: string; path: string; parsed: ParsedEntry; bytes: ArrayBuffer }[] = [];
+      const seen = new Set(files.map((file) => file.key));
       let nestedZipCount = 0;
 
-      for (const zipFile of zipFiles) {
-        const zip = await JSZip.loadAsync(zipFile);
+      for (const selected of selectedFiles) {
+        if (/\.pdf$/i.test(selected.name)) {
+          const path = selected.webkitRelativePath || selected.name;
+          const key = `${path}:${selected.size}:${selected.lastModified}`;
+          if (seen.has(key)) continue;
+          const parsed = parseEntry(path);
+          if (!parsed) continue;
+          seen.add(key);
+          newEntries.push({ key, path, parsed, bytes: await selected.arrayBuffer() });
+          continue;
+        }
+        if (!/\.zip$/i.test(selected.name)) continue;
+        const JSZip = (await import("jszip")).default;
+        const zip = await JSZip.loadAsync(selected);
         for (const [path, entry] of Object.entries(zip.files)) {
           if (entry.dir) continue;
-          if (seen.has(path)) continue;
           if (/\.zip$/i.test(path)) {
             nestedZipCount++;
             continue;
           }
+          const key = `${selected.name}/${path}`;
+          if (seen.has(key)) continue;
           const parsed = parseEntry(path);
           if (!parsed) continue;
-          seen.add(path);
-          const bytes = await entry.async("arraybuffer");
-          newEntries.push({ path, parsed, bytes });
+          seen.add(key);
+          newEntries.push({ key, path: key, parsed, bytes: await entry.async("arraybuffer") });
         }
       }
 
       if (newEntries.length === 0) {
         setError(
           nestedZipCount > 0
-            ? `That zip contains ${nestedZipCount} other zip file${nestedZipCount === 1 ? "" : "s"}, not PDFs directly — open it and upload the inner zip(s) (or their extracted PDFs) instead.`
-            : "No PDF files found inside that zip."
+            ? `The selected archive contains ${nestedZipCount} nested zip file${nestedZipCount === 1 ? "" : "s"}. Upload those inner archives directly.`
+            : "No new PDF files were found in that selection.",
         );
-        setExtracting(false);
         return;
       }
 
-      // Resolve one course default per distinct group, from its first
-      // entry's course guess, so every row in the group starts consistent.
       const resolvedGroupProgram = new Map<string, string>();
       for (const { parsed } of newEntries) {
         if (resolvedGroupProgram.has(parsed.groupKey)) continue;
-        resolvedGroupProgram.set(parsed.groupKey, guessProgramId(parsed.groupKey, parsed.courseGuess, programs, courseMemory));
+        resolvedGroupProgram.set(
+          parsed.groupKey,
+          guessProgramId(parsed.groupKey, parsed.courseGuess, programs, courseMemory),
+        );
       }
 
-      const newFiles: FlatFile[] = newEntries.map(({ path, parsed, bytes }) => ({
-        key: path,
-        path,
-        groupKey: parsed.groupKey,
-        groupLabel: parsed.groupLabel,
-        subjectName: parsed.subjectName,
-        programId: resolvedGroupProgram.get(parsed.groupKey) ?? "",
-        order: parsed.order,
-        year: parsed.year,
-        bytes,
-        status: "pending",
-      }));
+      const newFiles: FlatFile[] = [];
+      for (const { key, path, parsed, bytes } of newEntries) {
+        newFiles.push({
+          key,
+          path,
+          groupKey: parsed.groupKey,
+          groupLabel: parsed.groupLabel,
+          subjectName: parsed.subjectName,
+          programId: resolvedGroupProgram.get(parsed.groupKey) ?? "",
+          order: parsed.order,
+          year: parsed.year,
+          previewText: await extractPdfPreview(bytes),
+          bytes,
+          status: "pending",
+        });
+      }
 
-      const missingSemester = newFiles.filter((f) => f.order === null).length;
-      if (missingSemester > 0) {
-        setNotice(
-          `Couldn't detect a semester for ${missingSemester} file${missingSemester === 1 ? "" : "s"} — set it manually in the Semester column before uploading those rows.`
-        );
+      const missingSemester = newFiles.filter((file) => file.order === null).length;
+      const missingText = newFiles.filter((file) => !file.previewText).length;
+      if (missingSemester > 0 || missingText > 0) {
+        const issues: string[] = [];
+        if (missingSemester > 0) issues.push(`${missingSemester} missing a semester`);
+        if (missingText > 0) issues.push(`${missingText} scanned or without selectable text`);
+        setNotice(`${issues.join("; ")}. Use AI match, then review highlighted fields before uploading.`);
       }
 
       setGroupProgram((prev) => {
@@ -388,12 +443,59 @@ export function ConsolidatedUploadClient({
         }
         return next;
       });
-
       setFiles((prev) => [...prev, ...newFiles]);
     } catch (err) {
-      setError(`Could not read that zip: ${err instanceof Error ? err.message : err}`);
+      setError(`Could not read the selected files: ${err instanceof Error ? err.message : err}`);
     } finally {
       setExtracting(false);
+    }
+  }
+
+  async function runAiMatching() {
+    const pending = files.filter((file) => file.status !== "done" && file.status !== "duplicate");
+    if (pending.length === 0) return;
+    setAiMatching(true);
+    setError(null);
+    const input: ConsolidatedMetadataInput[] = pending.map((file) => ({
+      key: file.key,
+      path: file.path,
+      previewText: file.previewText,
+      programId: file.programId || null,
+      semesterOrder: file.order,
+      subjectName: file.subjectName,
+      academicYear: file.year,
+    }));
+    try {
+      const result = await matchConsolidatedMetadataAction(input);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      const byKey = new Map(result.matches.map((match) => [match.key, match]));
+      const appliedKeys = new Set(
+        result.matches.filter((match) => match.confidence !== "low").map((match) => match.key),
+      );
+      setFiles((prev) =>
+        prev.map((file) => {
+          const match = byKey.get(file.key);
+          if (!match || match.confidence === "low") return file;
+          return {
+            ...file,
+            programId: match.programId ?? file.programId,
+            order: match.semesterOrder ?? file.order,
+            subjectName: match.subjectName.trim() || file.subjectName,
+            year: match.academicYear.trim() || (match.year ? String(match.year) : file.year),
+            message: `AI ${match.confidence}: ${match.reason}`,
+          };
+        }),
+      );
+      setNotice(
+        `${result.provider} improved ${appliedKeys.size} of ${pending.length} row${pending.length === 1 ? "" : "s"}. Review the result before uploading.`,
+      );
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "AI metadata matching failed.");
+    } finally {
+      setAiMatching(false);
     }
   }
 
@@ -460,13 +562,47 @@ export function ConsolidatedUploadClient({
           subjectCache.set(cacheKey, subjectId);
         }
 
+        const originalName = file.path.split("/").pop() || `${file.year || "paper"}.pdf`;
+        const yearStart = file.year.match(/(?:19|20)\d{2}/)?.[0] ?? "";
         const uploadForm = new FormData();
         uploadForm.set("subjectId", subjectId);
         uploadForm.set("type", "PYQ");
         uploadForm.set("title", file.year ? `${file.subjectName.trim()} — ${file.year}` : file.subjectName.trim());
-        uploadForm.set("year", file.year.slice(0, 4));
-        uploadForm.set("file", new File([file.bytes], `${file.year || "paper"}.pdf`, { type: "application/pdf" }));
-        const result = await uploadResourceAction(uploadForm);
+        uploadForm.set("year", yearStart);
+        uploadForm.set("academicYear", file.year);
+        uploadForm.set("batchId", batchId);
+        uploadForm.set("fileName", originalName);
+        uploadForm.set("fileSize", String(file.bytes.byteLength));
+        uploadForm.set("fileHash", hash);
+
+        const prepared = await prepareDirectResourceUploadAction(uploadForm);
+        let result: { status: "created" | "duplicate"; resourceId: string };
+        if (prepared.status === "duplicate") {
+          result = prepared;
+        } else if (prepared.status === "ready") {
+          try {
+            const directResponse = await fetch(prepared.uploadUrl, {
+              method: "PUT",
+              headers: { "Content-Type": "application/pdf" },
+              body: file.bytes,
+            });
+            if (!directResponse.ok) {
+              throw new Error(`Storage rejected the PDF (${directResponse.status}).`);
+            }
+            uploadForm.set("key", prepared.key);
+            uploadForm.set("fileUrl", prepared.fileUrl);
+            result = await finalizeDirectResourceUploadAction(uploadForm);
+          } catch (directError) {
+            // Small PDFs still have a reliable compatibility path for R2
+            // buckets whose browser CORS policy has not yet been updated.
+            if (file.bytes.byteLength > 24 * 1024 * 1024) throw directError;
+            uploadForm.set("file", new File([file.bytes], originalName, { type: "application/pdf" }));
+            result = await uploadResourceAction(uploadForm);
+          }
+        } else {
+          uploadForm.set("file", new File([file.bytes], originalName, { type: "application/pdf" }));
+          result = await uploadResourceAction(uploadForm);
+        }
         if (result?.status === "duplicate") {
           updateFile(file.key, { status: "duplicate", message: "Already uploaded" });
         } else {
@@ -484,7 +620,9 @@ export function ConsolidatedUploadClient({
   }
 
   const doneCount = files.filter((f) => f.status === "done" || f.status === "duplicate").length;
-  const allMapped = files.length > 0 && files.every((f) => f.programId);
+  const allMapped =
+    files.length > 0 &&
+    files.every((file) => file.programId && file.subjectName.trim() && file.order !== null);
 
   if (files.length === 0) {
     return (
@@ -494,27 +632,31 @@ export function ConsolidatedUploadClient({
           onDragOver={(e) => e.preventDefault()}
           onDrop={(e) => {
             e.preventDefault();
-            const dropped = Array.from(e.dataTransfer.files).filter((f) => /\.zip$/i.test(f.name));
-            if (dropped.length > 0) handleZips(dropped);
+            const dropped = Array.from(e.dataTransfer.files).filter((file) => /\.(zip|pdf)$/i.test(file.name));
+            if (dropped.length > 0) handleFiles(dropped);
           }}
         >
-          <FileArchive size={32} weight="bold" className="text-muted" />
+          <div className="flex items-center gap-2 text-muted">
+            <FileArchive size={30} weight="bold" />
+            <FilePdf size={30} weight="bold" />
+          </div>
           <span className="text-sm font-medium">
-            {extracting ? "Reading zip file..." : "Drop a zip containing PDFs here"}
+            {extracting ? "Reading PDFs and extracting metadata..." : "Drop PDF files or ZIP archives here"}
           </span>
           <span className="text-xs text-muted">
-            Any layout works — a Semester_X/Subject/Year.pdf structure, or a flat dump where the course/semester/year
-            are just in the filename. Every PDF found gets an editable row either way.
+            Upload one PDF, many PDFs, or ZIPs. Folder names, filenames, and selectable PDF text are used to identify
+            course, subject, semester, and year; every result remains editable.
           </span>
           <span className="text-xs text-muted">or click to browse</span>
           <input
             type="file"
-            accept=".zip,application/zip"
+            ref={inputRef}
+            accept=".zip,.pdf,application/zip,application/pdf"
             multiple
             className="hidden"
             onChange={(e) => {
               const picked = Array.from(e.target.files ?? []);
-              if (picked.length > 0) handleZips(picked);
+              if (picked.length > 0) handleFiles(picked);
               e.target.value = "";
             }}
           />
@@ -560,12 +702,43 @@ export function ConsolidatedUploadClient({
         </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <input
+        ref={inputRef}
+        type="file"
+        accept=".zip,.pdf,application/zip,application/pdf"
+        multiple
+        className="hidden"
+        onChange={(event) => {
+          const picked = Array.from(event.target.files ?? []);
+          if (picked.length > 0) handleFiles(picked);
+          event.target.value = "";
+        }}
+      />
+
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          disabled={extracting || uploading}
+          className="flex items-center gap-2 rounded-lg border border-border bg-surface px-3 py-2 text-sm font-medium transition hover:bg-surface-muted disabled:opacity-50"
+        >
+          <FilePdf size={16} weight="bold" />
+          {extracting ? "Reading..." : "Add PDFs or ZIPs"}
+        </button>
+        <button
+          type="button"
+          onClick={runAiMatching}
+          disabled={aiMatching || uploading}
+          className="flex items-center gap-2 rounded-lg border border-accent px-3 py-2 text-sm font-medium text-accent transition hover:bg-accent/10 disabled:opacity-50"
+        >
+          <Sparkle size={16} weight="fill" />
+          {aiMatching ? "Matching metadata..." : "Improve matches with AI"}
+        </button>
         <button
           type="button"
           onClick={uploadAll}
           disabled={uploading || !allMapped}
-          title={!allMapped ? "Every row needs a course selected first" : undefined}
+          title={!allMapped ? "Every row needs a course, subject, and semester before upload" : undefined}
           className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50"
         >
           <UploadSimple size={16} weight="bold" />
@@ -644,7 +817,11 @@ export function ConsolidatedUploadClient({
                   />
                 </td>
                 <td className="px-4 py-2">
-                  {f.status === "pending" && <span className="text-muted">Waiting</span>}
+                  {f.status === "pending" && (
+                    <span className="block max-w-64 text-xs text-muted" title={f.message}>
+                      {f.message ?? (f.previewText ? "PDF text read" : "Filename/folder only")}
+                    </span>
+                  )}
                   {f.status === "uploading" && <span className="text-accent">Uploading...</span>}
                   {f.status === "done" && <span className="text-green-600">Uploaded</span>}
                   {f.status === "duplicate" && <span className="text-muted">{f.message}</span>}

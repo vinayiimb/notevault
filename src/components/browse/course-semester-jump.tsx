@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { ArrowRight } from "@phosphor-icons/react";
 
 type Program = { id: string; name: string; slug: string; terms: { id: string; name: string }[] };
 
@@ -22,13 +23,11 @@ export function CourseSemesterJump({
 
   return (
     <div
-      className={
-        embedded ? "" : "rounded-2xl border border-border bg-surface p-5 shadow-[0_10px_40px_rgba(0,0,0,.06)]"
-      }
+      className={embedded ? "" : "rounded-2xl bg-surface p-5"}
     >
       {!embedded && <p className="text-sm font-semibold">Jump straight to your papers</p>}
       <div className={embedded ? "flex flex-wrap items-end gap-3" : "mt-3 flex flex-wrap items-end gap-3"}>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex w-full flex-1 flex-col gap-1.5 sm:min-w-64">
           <label className="text-xs text-muted">Course</label>
           <select
             value={programId}
@@ -36,7 +35,7 @@ export function CourseSemesterJump({
               setProgramId(e.target.value);
               setTermId("");
             }}
-            className="min-w-[220px] rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
+            className="min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
           >
             <option value="">Select course</option>
             {programs.map((p) => (
@@ -46,13 +45,13 @@ export function CourseSemesterJump({
             ))}
           </select>
         </div>
-        <div className="flex flex-col gap-1.5">
+        <div className="flex w-full flex-1 flex-col gap-1.5 sm:min-w-48">
           <label className="text-xs text-muted">Semester</label>
           <select
             value={termId}
             onChange={(e) => setTermId(e.target.value)}
             disabled={!program}
-            className="min-w-[180px] rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none disabled:opacity-50"
+            className="min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none disabled:opacity-50"
           >
             <option value="">Select semester</option>
             {program?.terms.map((t) => (
@@ -74,9 +73,10 @@ export function CourseSemesterJump({
             if (termId) router.push(`/terms/${termId}`);
             else if (program) router.push(`/programs/${program.slug}`);
           }}
-          className="rounded-full bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground transition hover:opacity-90 disabled:opacity-40"
+          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
         >
-          {termId ? "View papers →" : "Go ahead →"}
+          {termId ? "View papers" : "Go ahead"}
+          <ArrowRight size={15} weight="bold" />
         </button>
       </div>
       <p className="mt-3 text-xs text-muted">

@@ -5,11 +5,13 @@ import {
   FileArchive,
   FileArrowUp,
   FileText,
+  Files,
   FolderOpen,
   Gear,
   GraduationCap,
   GridFour,
   House,
+  MagnifyingGlass,
   Shuffle,
   SignOut,
   Stack,
@@ -87,6 +89,13 @@ export default async function AdminDashboardLayout({
             Upload batches
           </Link>
           <Link
+            href="/admin/resources"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Files size={16} />
+            PDF library
+          </Link>
+          <Link
             href="/admin/coverage"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
           >
@@ -113,6 +122,13 @@ export default async function AdminDashboardLayout({
           >
             <Shuffle size={16} />
             Unsorted subjects
+          </Link>
+          <Link
+            href="/admin/subject-issues"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <MagnifyingGlass size={16} />
+            Subject issues
           </Link>
           <Link
             href="/admin/failed-uploads"

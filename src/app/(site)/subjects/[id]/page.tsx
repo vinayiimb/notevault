@@ -7,18 +7,12 @@ import {
   Exam,
   NotePencil,
   BookOpenText,
-  CaretDown,
+  ArrowSquareOut,
 } from "@phosphor-icons/react/dist/ssr";
 import { getSubjectById } from "@/lib/data";
 import { formatBytes, levelLabel } from "@/lib/utils";
 import { PaperAnalysisPanel } from "@/components/subjects/paper-analysis-panel";
 import { NotesSection } from "@/components/subjects/notes-section";
-import {
-  FormattedOcrPaperRenderer,
-  isAiReformattedOcr,
-  OcrContents,
-  OcrPaperRenderer,
-} from "@/components/subjects/ocr-paper-renderer";
 
 export default async function SubjectPage({
   params,
@@ -79,10 +73,22 @@ export default async function SubjectPage({
       </section>
 
       <section className="mt-10">
-        <h2 className="flex items-center gap-2 text-lg font-medium">
-          <Exam size={20} weight="bold" className="text-accent" />
-          Previous year question papers
-        </h2>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="flex items-center gap-2 text-lg font-medium">
+              <Exam size={20} weight="bold" className="text-accent" />
+              Previous year question papers
+            </h2>
+            <p className="mt-1 text-sm text-muted">
+              Compare years at a glance, read extracted papers online, or keep the original PDF.
+            </p>
+          </div>
+          {pyqs.length > 0 && (
+            <span className="rounded-full bg-accent-soft px-3 py-1 text-xs font-semibold text-accent">
+              {pyqs.length} paper{pyqs.length === 1 ? "" : "s"}
+            </span>
+          )}
+        </div>
         <PyqsByYear resources={pyqs} />
       </section>
 
@@ -171,10 +177,6 @@ type PyqResource = {
   ocrText: string | null;
 };
 
-// PYQs are grouped by year (newest first) so "which year is this from" is
-// answered by the section heading, not buried in each row's fine print —
-// papers with no year on file (an unset default during bulk upload) get
-// their own "Year not set" group at the end instead of silently mixing in.
 function PyqsByYear({
   resources,
 }: {
@@ -184,90 +186,79 @@ function PyqsByYear({
     return <p className="mt-3 text-sm text-muted">No PYQs uploaded yet.</p>;
   }
 
-  const groups = new Map<string, typeof resources>();
-  for (const r of resources) {
-    const key = r.academicYear ?? (r.year ? String(r.year) : "Year not set");
-    if (!groups.has(key)) groups.set(key, []);
-    groups.get(key)!.push(r);
-  }
-  const sortedYears = Array.from(groups.keys()).sort((a, b) => {
-    if (a === "Year not set") return 1;
-    if (b === "Year not set") return -1;
-    return Number(b.slice(0, 4)) - Number(a.slice(0, 4));
+  const sorted = [...resources].sort((a, b) => {
+    const aYear = Number((a.academicYear ?? String(a.year ?? 0)).slice(0, 4));
+    const bYear = Number((b.academicYear ?? String(b.year ?? 0)).slice(0, 4));
+    return bYear - aYear || a.title.localeCompare(b.title);
   });
 
   return (
-    <div className="mt-4 flex flex-col gap-6">
-      {sortedYears.map((year) => (
-        <div key={year}>
-          <p className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-muted">
-            {year}
-            <span className="rounded-full bg-surface-muted px-2 py-0.5 font-normal normal-case text-muted">
-              {groups.get(year)!.length} paper{groups.get(year)!.length === 1 ? "" : "s"}
-            </span>
-          </p>
-          <PyqResourceList resources={groups.get(year)!} />
-        </div>
-      ))}
+    <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-surface">
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[700px] border-collapse text-left text-sm">
+          <thead className="bg-surface-muted/55 text-xs text-muted">
+            <tr>
+              <th scope="col" className="w-32 px-5 py-3 font-semibold sm:px-6">Year</th>
+              <th scope="col" className="px-4 py-3 font-semibold">Question paper</th>
+              <th scope="col" className="w-28 px-4 py-3 font-semibold">Document</th>
+              <th scope="col" className="w-56 px-5 py-3 text-right font-semibold sm:px-6">Access</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-border">
+            {sorted.map((resource) => (
+              <PyqRow key={resource.id} resource={resource} />
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
 
-function PyqResourceList({ resources }: { resources: PyqResource[] }) {
+function PyqRow({ resource }: { resource: PyqResource }) {
+  const year = resource.academicYear ?? (resource.year ? String(resource.year) : "Not set");
   return (
-    <ul className="flex flex-col gap-3">
-      {resources.map((resource) => (
-        <li
-          key={resource.id}
-          id={`paper-${resource.id}`}
-          className="overflow-hidden rounded-2xl border border-border bg-surface transition-colors hover:border-accent/40"
-        >
-          <div className="flex items-center justify-between gap-4 p-4 sm:p-5">
-            <div className="min-w-0">
-              <p className="font-medium text-foreground">{resource.title}</p>
-              <p className="mt-1 text-xs text-muted">
-                {resource.pageCount ? `${resource.pageCount} pages · ` : ""}
-                {formatBytes(resource.fileSize)}
-                {resource.ocrText ? " · Full text available" : ""}
-              </p>
-            </div>
-            <a
-              href={`/api/download/${resource.id}`}
-              download
-              className="flex shrink-0 items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground transition hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-            >
-              <DownloadSimple size={16} weight="bold" />
-              <span className="hidden sm:inline">Download PDF</span>
-              <span className="sm:hidden">PDF</span>
-            </a>
-          </div>
-
+    <tr
+      id={`paper-${resource.id}`}
+      className="transition-colors hover:bg-accent-soft/30 focus-within:bg-accent-soft/30"
+    >
+      <td className="px-5 py-4 align-top font-mono text-xs font-semibold text-foreground sm:px-6">
+        {year}
+      </td>
+      <th scope="row" className="px-4 py-4 align-top font-medium">
+        <span className="line-clamp-2 text-foreground">{resource.title}</span>
+        <span className="mt-1 block text-xs font-normal text-muted">
+          {resource.ocrText ? "Searchable full text available" : "Original PDF"}
+        </span>
+      </th>
+      <td className="px-4 py-4 align-top text-xs text-muted">
+        <span className="block">{resource.pageCount ? `${resource.pageCount} pages` : "Pages —"}</span>
+        <span className="mt-1 block">{formatBytes(resource.fileSize)}</span>
+      </td>
+      <td className="px-5 py-4 align-top sm:px-6">
+        <div className="flex justify-end gap-2">
           {resource.ocrText && (
-            <details open className="group border-t border-border">
-              <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-sm font-medium text-accent transition hover:bg-accent-soft/50 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-accent sm:px-5">
-                <span className="flex items-center gap-2">
-                  <BookOpenText size={18} weight="bold" />
-                  Read complete question paper
-                </span>
-                <CaretDown
-                  size={16}
-                  weight="bold"
-                  className="transition-transform duration-200 group-open:rotate-180"
-                />
-              </summary>
-              <article className="max-h-[78vh] overflow-y-auto border-t border-sky/25 bg-sky-soft/45 px-5 py-6 dark:border-border dark:bg-surface sm:px-8">
-                <OcrContents text={resource.ocrText} />
-                {isAiReformattedOcr(resource.ocrText) ? (
-                  <FormattedOcrPaperRenderer text={resource.ocrText} />
-                ) : (
-                  <OcrPaperRenderer text={resource.ocrText} />
-                )}
-              </article>
-            </details>
+            <Link
+              href={`/pyq-notes/${resource.id}`}
+              className="inline-flex items-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-xs font-semibold text-accent-foreground hover:bg-accent-hover"
+            >
+              <BookOpenText size={16} weight="bold" />
+              Read paper
+            </Link>
           )}
-        </li>
-      ))}
-    </ul>
+          <a
+            href={`/api/download/${resource.id}`}
+            download
+            aria-label={`Download ${resource.title}`}
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border px-3 py-2 text-xs font-semibold text-foreground hover:border-accent hover:text-accent"
+          >
+            <DownloadSimple size={16} weight="bold" />
+            PDF
+            <ArrowSquareOut size={13} aria-hidden="true" />
+          </a>
+        </div>
+      </td>
+    </tr>
   );
 }
 

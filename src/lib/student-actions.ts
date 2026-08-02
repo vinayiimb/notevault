@@ -11,5 +11,12 @@ export async function setNicknameAction(formData: FormData) {
 }
 
 export async function awardExamKitSessionAction() {
-  await awardExamKitSession();
+  // Rewards are secondary to the study workflow. A temporary database or
+  // cookie failure must never stop a student from opening their generated kit.
+  try {
+    await awardExamKitSession();
+  } catch {
+    return { awarded: false as const };
+  }
+  return { awarded: true as const };
 }

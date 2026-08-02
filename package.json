@@ -18,6 +18,7 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
     "@aws-sdk/client-s3": "^3.1090.0",
+    "@aws-sdk/s3-request-presigner": "^3.1090.0",
     "@phosphor-icons/react": "^2.1.10",
     "@prisma/client": "6.19.3",
     "@vercel/blob": "^2.6.1",
