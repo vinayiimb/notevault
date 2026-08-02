@@ -1,8 +1,18 @@
+"use client";
+
+import { usePathname } from "next/navigation";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteSidebar } from "@/components/site-sidebar";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isDashboard = pathname.startsWith("/dashboard");
+
+  if (isDashboard) {
+    return <main className="min-h-screen w-full">{children}</main>;
+  }
+
   return (
     <div className="flex w-full flex-1">
       <SiteSidebar />
