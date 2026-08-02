@@ -28,7 +28,7 @@ const NAVIGATION_SECTIONS = [
     items: [
       { href: "/dashboard", label: "Student Dashboard", desc: "Personalized course hub & saved notes", icon: GraduationCap, badge: "New UI" },
       { href: "/pyq-notes", label: "Full Archive (8,350+ Files)", desc: "Complete paper & notes catalog", icon: FileArchive, badge: "8.3k+" },
-      { href: "/admin/master-syllabus", label: "Official Master Syllabus", desc: "21 degree programs with 0% deviation", icon: BookOpenText, badge: "Official" },
+      { href: "/admin/master-syllabus", label: "Official Master Syllabus", desc: "118 degree programs, 6,295 official papers", icon: BookOpenText, badge: "Official" },
       { href: "/exam-sessions", label: "Session Question Papers", desc: "Browse by exam year & drive links", icon: Files },
     ],
   },
