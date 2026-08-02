@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -93,125 +94,128 @@ export function MobileNavMenu() {
         <List size={20} weight="bold" />
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex flex-col bg-background/95 backdrop-blur-md transition-all duration-200 animate-in fade-in">
-          {/* Mobile Drawer Header */}
-          <div className="flex h-16 items-center justify-between border-b border-border px-5">
-            <Link
-              href="/"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-2 font-display font-bold text-foreground text-lg"
-            >
-              <span className="flex size-8 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-sm">
-                <GraduationCap size={18} weight="bold" />
-              </span>
-              <span>NoteVault</span>
-            </Link>
-
-            <button
-              type="button"
-              onClick={() => setOpen(false)}
-              aria-label="Close menu"
-              className="flex size-10 items-center justify-center rounded-xl bg-surface-muted text-foreground transition hover:bg-border active:scale-95"
-            >
-              <X size={20} weight="bold" />
-            </button>
-          </div>
-
-          {/* Quick Action Navigation Grid */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-6">
-            {/* Quick Hero Cards */}
-            <div className="grid grid-cols-2 gap-3">
+      {open &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div className="fixed inset-0 z-[100] flex flex-col bg-background/98 backdrop-blur-lg transition-all duration-200 animate-in fade-in">
+            {/* Mobile Drawer Header */}
+            <div className="flex h-16 shrink-0 items-center justify-between border-b border-border/70 px-5 bg-surface">
               <Link
-                href="/dashboard"
+                href="/"
                 onClick={() => setOpen(false)}
-                className="flex flex-col justify-between rounded-2xl border border-brand/30 bg-brand-soft/40 p-4 text-brand shadow-sm active:scale-98 transition"
+                className="flex items-center gap-2 font-display font-bold text-foreground text-lg tracking-tight"
               >
-                <GraduationCap size={24} weight="bold" />
-                <div className="mt-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-brand/80">Student</p>
-                  <p className="text-sm font-bold text-foreground">Dashboard</p>
-                </div>
+                <span className="flex size-8 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-sm">
+                  <GraduationCap size={18} weight="bold" />
+                </span>
+                <span>DU PYQ Online</span>
               </Link>
 
-              <Link
-                href="/pyq-notes"
+              <button
+                type="button"
                 onClick={() => setOpen(false)}
-                className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-4 text-foreground shadow-sm active:scale-98 transition"
+                aria-label="Close menu"
+                className="flex size-10 items-center justify-center rounded-xl bg-surface-muted text-foreground transition hover:bg-border active:scale-95 shadow-2xs"
               >
-                <FileArchive size={24} weight="bold" className="text-accent" />
-                <div className="mt-3">
-                  <p className="text-xs font-bold uppercase tracking-wider text-muted">8,350+ Files</p>
-                  <p className="text-sm font-bold text-foreground">Full Archive</p>
-                </div>
-              </Link>
+                <X size={20} weight="bold" />
+              </button>
             </div>
 
-            {/* Menu Links by Section */}
-            {NAVIGATION_SECTIONS.map((section) => (
-              <div key={section.title} className="space-y-2">
-                <p className="px-1 text-[11px] font-bold uppercase tracking-wider text-muted">
-                  {section.title}
-                </p>
-                <div className="space-y-1.5">
-                  {section.items.map((item) => {
-                    const isExternal = "external" in item && item.external;
-                    const active = !isExternal && (pathname === item.href || pathname.startsWith(`${item.href}/`));
-                    const Icon = item.icon;
+            {/* Quick Action Navigation Grid */}
+            <div className="flex-1 overflow-y-auto p-5 space-y-6">
+              {/* Quick Hero Cards */}
+              <div className="grid grid-cols-2 gap-3">
+                <Link
+                  href="/dashboard"
+                  onClick={() => setOpen(false)}
+                  className="flex flex-col justify-between rounded-2xl border border-brand/30 bg-brand-soft/40 p-4 text-brand shadow-2xs active:scale-98 transition"
+                >
+                  <GraduationCap size={24} weight="bold" />
+                  <div className="mt-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-brand/80">Student</p>
+                    <p className="text-sm font-bold text-foreground">Dashboard</p>
+                  </div>
+                </Link>
 
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setOpen(false)}
-                        {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
-                        aria-current={active ? "page" : undefined}
-                        className={`flex items-center justify-between rounded-2xl border p-3.5 transition active:scale-98 ${
-                          active
-                            ? "border-brand bg-brand-soft/60 text-brand shadow-sm font-bold"
-                            : "border-border/60 bg-surface text-foreground hover:border-border"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${
-                            active ? "bg-brand text-brand-foreground" : "bg-surface-muted text-muted"
-                          }`}>
-                            <Icon size={18} weight="bold" />
-                          </span>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-sm font-bold text-foreground">{item.label}</span>
-                              {"badge" in item && item.badge && (
-                                <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
-                                  {item.badge}
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-xs text-muted leading-tight">{item.desc}</p>
-                          </div>
-                        </div>
-                        <CaretRight size={16} weight="bold" className="text-muted shrink-0" />
-                      </Link>
-                    );
-                  })}
-                </div>
+                <Link
+                  href="/pyq-notes"
+                  onClick={() => setOpen(false)}
+                  className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-4 text-foreground shadow-2xs active:scale-98 transition"
+                >
+                  <FileArchive size={24} weight="bold" className="text-accent" />
+                  <div className="mt-3">
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted">8,350+ Files</p>
+                    <p className="text-sm font-bold text-foreground">Full Archive</p>
+                  </div>
+                </Link>
               </div>
-            ))}
-          </div>
 
-          {/* Mobile Footer Quick Action */}
-          <div className="border-t border-border bg-surface p-4 text-center">
-            <Link
-              href="/admin/master-syllabus"
-              onClick={() => setOpen(false)}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-accent px-4 py-3 text-sm font-bold text-accent-foreground shadow-sm active:scale-98 transition"
-            >
-              <ShieldCheck size={18} weight="bold" />
-              <span>Explore Master Syllabus Portal</span>
-            </Link>
-          </div>
-        </div>
-      )}
+              {/* Menu Links by Section */}
+              {NAVIGATION_SECTIONS.map((section) => (
+                <div key={section.title} className="space-y-2">
+                  <p className="px-1 text-[11px] font-bold uppercase tracking-wider text-muted">
+                    {section.title}
+                  </p>
+                  <div className="space-y-1.5">
+                    {section.items.map((item) => {
+                      const isExternal = "external" in item && item.external;
+                      const active = !isExternal && (pathname === item.href || pathname.startsWith(`${item.href}/`));
+                      const Icon = item.icon;
+
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setOpen(false)}
+                          {...(isExternal ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                          aria-current={active ? "page" : undefined}
+                          className={`flex items-center justify-between rounded-2xl border p-3.5 transition active:scale-98 ${
+                            active
+                              ? "border-brand bg-brand-soft/60 text-brand shadow-sm font-bold"
+                              : "border-border/60 bg-surface text-foreground hover:border-border"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl ${
+                              active ? "bg-brand text-brand-foreground" : "bg-surface-muted text-muted"
+                            }`}>
+                              <Icon size={18} weight="bold" />
+                            </span>
+                            <div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-sm font-bold text-foreground">{item.label}</span>
+                                {"badge" in item && item.badge && (
+                                  <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
+                                    {item.badge}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-muted leading-tight">{item.desc}</p>
+                            </div>
+                          </div>
+                          <CaretRight size={16} weight="bold" className="text-muted shrink-0" />
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Footer Quick Action */}
+            <div className="border-t border-border bg-surface p-4 text-center">
+              <Link
+                href="/admin/master-syllabus"
+                onClick={() => setOpen(false)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-bold text-brand-foreground shadow-sm active:scale-98 transition"
+              >
+                <ShieldCheck size={18} weight="bold" />
+                <span>Explore Master Syllabus Portal</span>
+              </Link>
+            </div>
+          </div>,
+          document.body
+        )}
     </div>
   );
 }
