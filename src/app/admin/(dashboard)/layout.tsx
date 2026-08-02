@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  BookOpenText,
   CalendarBlank,
   ChatCircleText,
   ClockCounterClockwise,
@@ -61,6 +62,13 @@ export default async function AdminDashboardLayout({
           >
             <GraduationCap size={16} />
             Programs
+          </Link>
+          <Link
+            href="/admin/master-syllabus"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <BookOpenText size={16} />
+            Master Syllabus
           </Link>
           <Link
             href="/admin/exam-sessions"
