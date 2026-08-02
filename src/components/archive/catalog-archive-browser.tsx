@@ -9,7 +9,8 @@ import {
   Star,
   WarningCircle,
 } from "@phosphor-icons/react/dist/ssr";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import {
   canonicalCourseName,
@@ -206,17 +207,28 @@ function sortGroupsSemesterFirst(a: SubjectGroup, b: SubjectGroup) {
 }
 
 export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
-  const [course, setCourse] = useState(ALL);
+  const searchParams = useSearchParams();
+  const initialCourse = searchParams.get("course") ?? ALL;
+  const initialSearch = searchParams.get("q") ?? searchParams.get("search") ?? "";
+
+  const [course, setCourse] = useState(initialCourse);
   const [semester, setSemester] = useState(ALL);
   const [paperType, setPaperType] = useState(ALL);
   const [session, setSession] = useState(ALL);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(initialSearch);
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   // Subjects render as a collapsed list — a subject's sessions/papers only
   // appear once its row is clicked, so picking a course surfaces every
   // matching subject on the same page without dumping every session and
   // paper for all of them at once.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    const qParam = searchParams.get("q") ?? searchParams.get("search") ?? "";
+    const courseParam = searchParams.get("course") ?? ALL;
+    if (qParam !== search) setSearch(qParam);
+    if (courseParam !== course) setCourse(courseParam);
+  }, [searchParams]);
 
   function toggleExpanded(key: string) {
     setExpanded((current) => {
