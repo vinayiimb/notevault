@@ -14,7 +14,9 @@ export function proxy(request: NextRequest) {
     if (pathname === "/admin/login") return NextResponse.next();
     const hasSession = request.cookies.has(SESSION_COOKIE_NAME);
     if (!hasSession) {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+      const loginUrl = new URL("/admin/login", request.url);
+      loginUrl.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
+      return NextResponse.redirect(loginUrl);
     }
     return NextResponse.next();
   }

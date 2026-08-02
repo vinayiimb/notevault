@@ -1,9 +1,8 @@
 "use client";
 
-import { Fragment, useEffect, useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import { FileArchive, FilePdf, Sparkle } from "@phosphor-icons/react/dist/ssr";
 import {
-  quickCreateSubjectAction,
   rememberSubjectMatchAction,
   saveFailedUploadAction,
   uploadResourceAction,
@@ -11,8 +10,6 @@ import {
 import { matchSubjectsWithAI } from "@/lib/ai";
 import { guessSubject, guessYear, normalizeMemoryKey } from "@/lib/subject-match";
 import type { AcademicProgram } from "@/lib/academic-types";
-
-const NEW_SUBJECT = "__new__";
 
 type RowStatus = "pending" | "uploading" | "done" | "duplicate" | "unmatched" | "error";
 
@@ -27,12 +24,6 @@ type Row = {
   type: "PYQ" | "NOTES";
   status: RowStatus;
   message?: string;
-  creatingNew: boolean;
-  newProgramId: string;
-  newTermId: string;
-  newSubjectName: string;
-  creating: boolean;
-  createError: string | null;
 };
 
 async function sha256Hex(data: ArrayBuffer) {
@@ -51,7 +42,7 @@ export function BulkUploadClient({
   memory: Record<string, string>;
   existingHashes: string[];
 }) {
-  const [programs, setPrograms] = useState(initialPrograms);
+  const programs = initialPrograms;
   const [memory, setMemory] = useState(initialMemory);
   const [knownHashes, setKnownHashes] = useState(() => new Set(existingHashes));
   const [rows, setRows] = useState<Row[]>([]);
@@ -65,23 +56,17 @@ export function BulkUploadClient({
   // "change" link for the rare outlier file that doesn't belong.
   const [defaultSubjectId, setDefaultSubjectId] = useState("");
   const [overriddenKeys, setOverriddenKeys] = useState<Set<string>>(new Set());
-  const [creatingDefaultSubject, setCreatingDefaultSubject] = useState(false);
-  const [newDefaultSubjectName, setNewDefaultSubjectName] = useState("");
-  const [creatingDefaultSubjectBusy, setCreatingDefaultSubjectBusy] = useState(false);
-  const [creatingDefaultSubjectError, setCreatingDefaultSubjectError] = useState<string | null>(null);
   const [extracting, setExtracting] = useState(false);
   const [duplicatesInZip, setDuplicatesInZip] = useState(0);
   const [alreadyUploadedInZip, setAlreadyUploadedInZip] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({ done: 0, total: 0 });
-  const [autoCreating, setAutoCreating] = useState(false);
   const [aiMatching, setAiMatching] = useState(false);
   const [aiMatchError, setAiMatchError] = useState<string | null>(null);
   const [batchId] = useState(() => crypto.randomUUID());
   const inputRef = useRef<HTMLInputElement>(null);
   const moreInputRef = useRef<HTMLInputElement>(null);
-  const autoCreatingRef = useRef(false);
 
   const flatSubjects = useMemo(
     () =>
@@ -179,12 +164,6 @@ export function BulkUploadClient({
             type: defaultType,
             status: alreadyInDb ? "duplicate" : "pending",
             message: alreadyInDb ? "Already uploaded previously — skipped" : undefined,
-            creatingNew: false,
-            newProgramId: "",
-            newTermId: "",
-            newSubjectName: "",
-            creating: false,
-            createError: null,
           });
         }
       }
@@ -232,104 +211,12 @@ export function BulkUploadClient({
   }
 
   function onSubjectSelect(row: Row, value: string) {
-    if (value === NEW_SUBJECT) {
-      updateRow(row.key, {
-        creatingNew: true,
-        newProgramId: "",
-        newTermId: "",
-        newSubjectName: row.title,
-        createError: null,
-      });
-    } else {
-      updateRow(row.key, { subjectId: value });
-      if (value) rememberAndApply(row, value);
-    }
+    updateRow(row.key, { subjectId: value });
+    if (value) rememberAndApply(row, value);
   }
 
-  async function createSubjectForRow(row: Row) {
-    if (!row.newTermId || !row.newSubjectName.trim()) return;
-    updateRow(row.key, { creating: true, createError: null });
-    try {
-      const formData = new FormData();
-      formData.set("termId", row.newTermId);
-      formData.set("name", row.newSubjectName.trim());
-      const created = await quickCreateSubjectAction(formData);
-
-      // Make the new subject selectable everywhere, immediately.
-      setPrograms((prev) =>
-        prev.map((p) => ({
-          ...p,
-          terms: p.terms.map((t) =>
-            t.id === created.termId ? { ...t, subjects: [...t.subjects, created] } : t
-          ),
-        }))
-      );
-
-      updateRow(row.key, {
-        subjectId: created.id,
-        creatingNew: false,
-        creating: false,
-      });
-      rememberAndApply(row, created.id);
-    } catch (err) {
-      updateRow(row.key, {
-        creating: false,
-        createError: err instanceof Error ? err.message : "Could not create that subject.",
-      });
-    }
-  }
-
-  // For any row still unmatched: if a default course + semester is set,
-  // create a brand-new subject for it there automatically, named directly
-  // from the row's title/filename — no matching, no AI, nothing to review.
-  // Rows sharing the same core title (e.g. same paper, different year
-  // suffix) reuse one created subject. This runs automatically (see the
-  // effect below) as soon as a default semester is picked, so picking the
-  // course + semester and then hitting Upload is the entire workflow; the
-  // subject list this produces is a first pass meant to be cleaned up
-  // (renamed/merged/moved) later once the real syllabus mapping is known.
-  async function autoCreateRemaining() {
-    if (!defaultTermId) return;
-    if (autoCreatingRef.current) return;
-    const unmatched = rows.filter((r) => !r.subjectId && !r.creatingNew);
-    if (unmatched.length === 0) return;
-
-    autoCreatingRef.current = true;
-    setAutoCreating(true);
-    const createdForKey = new Map<string, string>();
-    for (const row of unmatched) {
-      const key = normalizeMemoryKey(row.title) || row.title.trim().toLowerCase();
-      let subjectId = createdForKey.get(key);
-      if (!subjectId) {
-        try {
-          const formData = new FormData();
-          formData.set("termId", defaultTermId);
-          formData.set("name", row.title.trim() || row.filename);
-          const created = await quickCreateSubjectAction(formData);
-          setPrograms((prev) =>
-            prev.map((p) => ({
-              ...p,
-              terms: p.terms.map((t) =>
-                t.id === created.termId ? { ...t, subjects: [...t.subjects, created] } : t
-              ),
-            }))
-          );
-          subjectId = created.id;
-          createdForKey.set(key, subjectId);
-        } catch {
-          continue; // leave unmatched — it'll be saved to Failed Uploads on upload
-        }
-      }
-      updateRow(row.key, { subjectId });
-      rememberAndApply(row, subjectId);
-    }
-    setAutoCreating(false);
-    autoCreatingRef.current = false;
-  }
-
-  async function applyDefaultsToAll() {
+  function applyDefaultsToAll() {
     setRows((prev) => prev.map((r) => ({ ...r, year: defaultYear, type: defaultType })));
-    await autoCreateRemaining();
   }
 
   // Sets the default subject and assigns it to every row that hasn't been
@@ -357,43 +244,6 @@ export function BulkUploadClient({
     });
   }
 
-  async function createDefaultSubject() {
-    if (!defaultTermId || !newDefaultSubjectName.trim()) return;
-    setCreatingDefaultSubjectBusy(true);
-    setCreatingDefaultSubjectError(null);
-    try {
-      const formData = new FormData();
-      formData.set("termId", defaultTermId);
-      formData.set("name", newDefaultSubjectName.trim());
-      const created = await quickCreateSubjectAction(formData);
-      setPrograms((prev) =>
-        prev.map((p) => ({
-          ...p,
-          terms: p.terms.map((t) =>
-            t.id === created.termId ? { ...t, subjects: [...t.subjects, created] } : t
-          ),
-        }))
-      );
-      applyDefaultSubject(created.id);
-      setCreatingDefaultSubject(false);
-    } catch (err) {
-      setCreatingDefaultSubjectError(err instanceof Error ? err.message : "Could not create that subject.");
-    } finally {
-      setCreatingDefaultSubjectBusy(false);
-    }
-  }
-
-  // Auto-fill as soon as a default semester is picked (or new files are
-  // added while one's already picked) — the admin shouldn't need to click
-  // "Apply to all rows" by hand for the common case of "just create a
-  // subject per file and let me upload."
-  useEffect(() => {
-    if (!defaultTermId || unmatchedRows.length === 0) return;
-    const id = setTimeout(() => autoCreateRemaining(), 0);
-    return () => clearTimeout(id);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [defaultTermId, unmatchedRows.length]);
-
   // Uses AI to have a second, smarter attempt at matching whatever the plain
   // filename heuristic couldn't. Scoped to the currently-picked default
   // course's own subjects (not the whole catalog) — both because that's
@@ -401,15 +251,11 @@ export function BulkUploadClient({
   // free Groq tier's per-request token cap can't fit the full 600+ subject
   // catalog anyway.
   //
-  // When the AI can't find a real match, it doesn't just suggest a name for
-  // manual creation — it creates the subject itself (same as
-  // autoCreateRemaining) and remembers the title -> subject association via
-  // rememberAndApply, so the *next* upload with a similar title matches
-  // instantly without needing AI again. That learned list is
-  // SubjectMatchMemory, persisted server-side, separate from this session.
+  // AI may select only an existing canonical subject ID. Suggestions for new
+  // names remain unmatched and are sent to review during upload.
   async function aiMatchRemaining() {
     if (!defaultProgramId) return;
-    const stillUnmatched = rows.filter((r) => !r.subjectId && !r.creatingNew);
+    const stillUnmatched = rows.filter((r) => !r.subjectId);
     if (stillUnmatched.length === 0) return;
 
     const targetProgram = programs.find((p) => p.id === defaultProgramId);
@@ -429,8 +275,6 @@ export function BulkUploadClient({
         return;
       }
       const byTitle = new Map(result.data.matches.map((m) => [m.title, m]));
-      const createdForName = new Map<string, string>();
-
       for (const row of stillUnmatched) {
         const match = byTitle.get(row.title);
         if (!match) continue;
@@ -440,33 +284,6 @@ export function BulkUploadClient({
           rememberAndApply(row, match.subjectId);
           continue;
         }
-
-        const newName = match.suggestedNewSubjectName?.trim();
-        if (!newName || !defaultTermId) continue;
-
-        let subjectId = createdForName.get(newName);
-        if (!subjectId) {
-          try {
-            const formData = new FormData();
-            formData.set("termId", defaultTermId);
-            formData.set("name", newName);
-            const created = await quickCreateSubjectAction(formData);
-            setPrograms((prev) =>
-              prev.map((p) => ({
-                ...p,
-                terms: p.terms.map((t) =>
-                  t.id === created.termId ? { ...t, subjects: [...t.subjects, created] } : t
-                ),
-              }))
-            );
-            subjectId = created.id;
-            createdForName.set(newName, subjectId);
-          } catch {
-            continue; // leave unmatched — it'll be saved to Failed Uploads on upload
-          }
-        }
-        updateRow(row.key, { subjectId });
-        rememberAndApply(row, subjectId);
       }
     } catch (err) {
       setAiMatchError(err instanceof Error ? err.message : "AI matching failed.");
@@ -651,21 +468,13 @@ export function BulkUploadClient({
             value={defaultSubjectId}
             onChange={(e) => {
               const val = e.target.value;
-              if (val === NEW_SUBJECT) {
-                setCreatingDefaultSubject(true);
-                setNewDefaultSubjectName("");
-                setCreatingDefaultSubjectError(null);
-              } else {
-                setCreatingDefaultSubject(false);
-                applyDefaultSubject(val);
-              }
+              applyDefaultSubject(val);
             }}
             disabled={!defaultTermId}
             title={!defaultTermId ? "Pick a default semester first" : "Whole batch is one subject's papers across years? Set it here."}
             className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none disabled:opacity-50"
           >
             <option value="">One subject for this whole batch?</option>
-            <option value={NEW_SUBJECT}>+ Create new subject...</option>
             {defaultTermSubjects.map((s) => (
               <option key={s.id} value={s.id}>
                 {s.name}
@@ -696,11 +505,10 @@ export function BulkUploadClient({
         <button
           type="button"
           onClick={applyDefaultsToAll}
-          disabled={autoCreating}
-          title="Subjects are created automatically as soon as you pick a semester below — use this to re-apply the default year/type, or retry any that failed to create."
-          className="rounded-lg border border-border px-3 py-2 text-sm transition hover:bg-surface-muted disabled:opacity-50"
+          title="Apply the selected year and document type to every row."
+          className="rounded-lg border border-border px-3 py-2 text-sm transition hover:bg-surface-muted"
         >
-          {autoCreating ? "Creating subjects..." : "Apply to all rows"}
+          Apply to all rows
         </button>
         <button
           type="button"
@@ -744,7 +552,6 @@ export function BulkUploadClient({
               setAlreadyUploadedInZip(0);
               setAiMatchError(null);
               setDefaultSubjectId("");
-              setCreatingDefaultSubject(false);
               setOverriddenKeys(new Set());
             }}
             className="rounded-lg border border-border px-3 py-2 text-sm transition hover:bg-surface-muted"
@@ -761,35 +568,6 @@ export function BulkUploadClient({
           </button>
         </div>
       </div>
-
-      {creatingDefaultSubject && (
-        <div className="mt-3 flex flex-wrap items-end gap-3 rounded-lg border border-accent/40 bg-accent-soft/20 p-3">
-          <div className="flex flex-1 flex-col gap-1.5">
-            <label className="text-xs font-medium text-muted">New subject name</label>
-            <input
-              value={newDefaultSubjectName}
-              onChange={(e) => setNewDefaultSubjectName(e.target.value)}
-              className="w-full min-w-[200px] rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
-            />
-          </div>
-          <button
-            type="button"
-            onClick={createDefaultSubject}
-            disabled={creatingDefaultSubjectBusy || !newDefaultSubjectName.trim() || !defaultTermId}
-            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50"
-          >
-            {creatingDefaultSubjectBusy ? "Creating..." : "Create & use for this batch"}
-          </button>
-          <button
-            type="button"
-            onClick={() => setCreatingDefaultSubject(false)}
-            className="rounded-lg border border-border px-3 py-1.5 text-sm transition hover:bg-surface-muted"
-          >
-            Cancel
-          </button>
-          {creatingDefaultSubjectError && <p className="w-full text-xs text-red-500">{creatingDefaultSubjectError}</p>}
-        </div>
-      )}
 
       {uploading && (
         <div className="mt-3 flex items-center gap-3">
@@ -809,9 +587,8 @@ export function BulkUploadClient({
 
       {!defaultTermId && (
         <p className="mt-2 text-xs text-muted">
-          Pick a default course + semester above — anything still unmatched below gets its own
-          subject created automatically (named from the file), so all that&apos;s left is to hit
-          Upload. Rename or regroup those subjects later once you know where they really belong.
+          Pick a default course and semester to limit matching to the official subject list.
+          Unmatched files are saved to Failed Uploads for manual review; no subject is created from a filename.
         </p>
       )}
       {defaultTermId && !defaultSubjectId && (
@@ -879,7 +656,6 @@ export function BulkUploadClient({
   );
 
   function renderRow(row: Row) {
-    const newProgram = programs.find((p) => p.id === row.newProgramId);
     return (
       <Fragment key={row.key}>
                   <tr>
@@ -927,14 +703,13 @@ export function BulkUploadClient({
                             className="w-full min-w-[220px] rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
                           />
                           <select
-                            value={row.creatingNew ? NEW_SUBJECT : row.subjectId}
+                            value={row.subjectId}
                             onChange={(e) => onSubjectSelect(row, e.target.value)}
                             className={`w-full min-w-[220px] rounded-lg border bg-background px-2 py-1.5 text-sm focus:outline-none ${
-                              row.subjectId || row.creatingNew ? "border-border focus:border-accent" : "border-amber-400"
+                              row.subjectId ? "border-border focus:border-accent" : "border-amber-400"
                             }`}
                           >
                             <option value="">Not matched — pick one</option>
-                            <option value={NEW_SUBJECT}>+ Create new subject...</option>
                             {grouped.map(([group, groupSubjects]) => (
                               <optgroup key={group} label={group}>
                                 {groupSubjects.map((s) => (
@@ -994,87 +769,6 @@ export function BulkUploadClient({
                       )}
                     </td>
                   </tr>
-                  {row.creatingNew && (
-                    <tr className="bg-accent-soft/30">
-                      <td colSpan={5} className="px-4 py-3">
-                        <div className="flex flex-wrap items-end gap-3">
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-medium text-muted">Program</label>
-                            <select
-                              value={row.newProgramId}
-                              onChange={(e) =>
-                                updateRow(row.key, { newProgramId: e.target.value, newTermId: "" })
-                              }
-                              className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
-                            >
-                              <option value="">Select program</option>
-                              {programs.map((p) => (
-                                <option key={p.id} value={p.id}>
-                                  {p.name}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                          <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-medium text-muted">Semester</label>
-                            <select
-                              value={row.newTermId}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                if (allSemestersTerm && val === allSemestersTerm.termId) {
-                                  updateRow(row.key, {
-                                    newTermId: val,
-                                    newProgramId: allSemestersTerm.programId,
-                                  });
-                                } else {
-                                  updateRow(row.key, { newTermId: val });
-                                }
-                              }}
-                              className="rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
-                            >
-                              <option value="">Select semester</option>
-                              {newProgram?.terms.map((t) => (
-                                <option key={t.id} value={t.id}>
-                                  {t.name}
-                                </option>
-                              ))}
-                              {allSemestersTerm && newProgram?.id !== allSemestersTerm.programId && (
-                                <option value={allSemestersTerm.termId}>
-                                  No specific semester (DSE / AEC / SEC / VAC / GE)
-                                </option>
-                              )}
-                            </select>
-                          </div>
-                          <div className="flex flex-1 flex-col gap-1.5">
-                            <label className="text-xs font-medium text-muted">New subject name</label>
-                            <input
-                              value={row.newSubjectName}
-                              onChange={(e) => updateRow(row.key, { newSubjectName: e.target.value })}
-                              className="w-full min-w-[200px] rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
-                            />
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => createSubjectForRow(row)}
-                            disabled={row.creating || !row.newTermId || !row.newSubjectName.trim()}
-                            className="rounded-lg bg-accent px-3 py-1.5 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50"
-                          >
-                            {row.creating ? "Creating..." : "Create & assign"}
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => updateRow(row.key, { creatingNew: false })}
-                            className="rounded-lg border border-border px-3 py-1.5 text-sm transition hover:bg-surface-muted"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                        {row.createError && (
-                          <p className="mt-2 text-xs text-red-500">{row.createError}</p>
-                        )}
-                      </td>
-                    </tr>
-                  )}
       </Fragment>
     );
   }

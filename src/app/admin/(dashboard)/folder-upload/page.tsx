@@ -36,7 +36,8 @@ export default async function AdminFolderUploadPage() {
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Drag in any number of folders and loose PDFs at once — no zipping required. Semester, course,
         and year are guessed from each file&apos;s folder path (in any order, any depth) and shown
-        below for you to fix up before uploading.
+        below for you to fix up before uploading. Subject names are matched only against the official
+        catalog; unmatched files are saved for review.
       </p>
       <div className="mt-6">
         <FolderUploadClient programs={data} existingHashes={existingHashes} />

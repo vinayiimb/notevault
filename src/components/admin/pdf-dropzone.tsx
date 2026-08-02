@@ -37,7 +37,14 @@ export function PdfDropzone({ name, required }: { name: string; required?: boole
             setDragOver(false);
             const dropped = e.dataTransfer.files;
             if (dropped && dropped.length > 0 && inputRef.current) {
-              inputRef.current.files = dropped;
+              // Assigning e.dataTransfer.files straight to input.files isn't
+              // reliably accepted by browsers — only a FileList built from a
+              // fresh DataTransfer is guaranteed to stick, so the file
+              // actually lands in the input instead of just updating the
+              // preview name.
+              const transfer = new DataTransfer();
+              transfer.items.add(dropped[0]);
+              inputRef.current.files = transfer.files;
               setFileName(dropped[0].name);
             }
           }}

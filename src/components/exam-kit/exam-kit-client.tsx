@@ -24,9 +24,29 @@ const SAMPLE_NOTES = `Inflation is a sustained increase in the general price lev
 
 type ModeKey = (typeof MODES)[number]["key"];
 
+// One-shot hand-off from a structured note's "Practice with Exam Kit" link
+// (src/components/subjects/structured-note-export-bar.tsx) — reads and
+// immediately clears the key so a normal page load never resurfaces stale
+// notes from a previous visit. Read via a lazy useState initializer (runs
+// once, on mount) rather than an effect, since setting state synchronously
+// inside an effect body causes an extra cascading render.
+function readExamKitPrefill(): { notes: string; subject: string } {
+  if (typeof window === "undefined") return { notes: "", subject: "" };
+  const raw = sessionStorage.getItem("notevault-exam-kit-prefill");
+  if (!raw) return { notes: "", subject: "" };
+  sessionStorage.removeItem("notevault-exam-kit-prefill");
+  try {
+    const parsed = JSON.parse(raw) as { subject?: string; notes?: string };
+    return { notes: parsed.notes ?? "", subject: parsed.subject ?? "" };
+  } catch {
+    return { notes: "", subject: "" };
+  }
+}
+
 export function ExamKitClient() {
-  const [notes, setNotes] = useState("");
-  const [subject, setSubject] = useState("");
+  const [prefill] = useState(readExamKitPrefill);
+  const [notes, setNotes] = useState(prefill.notes);
+  const [subject, setSubject] = useState(prefill.subject);
   const [stage, setStage] = useState<"input" | "study">("input");
   const [activeMode, setActiveMode] = useState<ModeKey>("flashcards");
   const [pdfStatus, setPdfStatus] = useState<string | null>(null);

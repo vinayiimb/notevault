@@ -1,0 +1,156 @@
+// Runs the same "list PDFs in a Drive folder, derive a subject from each
+// filename, upsert a DriveFileMatch" logic as syncDriveFilesForLinkAction
+// (src/lib/actions.ts) — but for every SessionProgramLink at once, since
+// clicking "Sync" one-by-one through the admin UI isn't practical for 200+
+// links. Skips links that already have synced files unless --all is passed.
+// Safe to re-run: every DriveFileMatch is upserted on [linkId, driveFileId].
+import { config } from "dotenv";
+import path from "path";
+config({ path: path.join(process.cwd(), ".env.local") });
+config({ path: path.join(process.cwd(), ".env") });
+
+import { PrismaClient } from "../src/generated/prisma";
+import { extractDriveFolderId, listDriveFolderPdfs } from "../src/lib/google-drive";
+import { guessYear } from "../src/lib/subject-match";
+import {
+  classifyDriveFilename,
+  deriveSubjectNameFromFilename,
+  matchDriveSubjectName,
+} from "../src/lib/subject-quality";
+
+// Neon's pooled connection has a small shared connection limit — the app's
+// own dev/prod server is drawing from the same pool, so this script caps
+// itself to a couple of connections instead of Prisma's default (which was
+// enough on its own to starve the dev server's pool and 500 it mid-run).
+function scriptDatabaseUrl() {
+  const base = process.env.DATABASE_URL;
+  if (!base) throw new Error("DATABASE_URL is not set.");
+  const url = new URL(base);
+  url.searchParams.set("connection_limit", "2");
+  url.searchParams.set("pool_timeout", "30");
+  return url.toString();
+}
+
+const prisma = new PrismaClient({ datasources: { db: { url: scriptDatabaseUrl() } } });
+const PAUSE_MS = 400;
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function uniqueSlug(base: string, programId: string) {
+  const root = base.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "subject";
+  let candidate = root;
+  let i = 1;
+  while (
+    await prisma.driveSubject.findUnique({ where: { programId_slug: { programId, slug: candidate } } })
+  ) {
+    i += 1;
+    candidate = `${root}-${i}`;
+  }
+  return candidate;
+}
+
+async function syncLink(link: { id: string; driveUrl: string; programId: string; program: { name: string } }) {
+  const folderId = extractDriveFolderId(link.driveUrl);
+  if (!folderId) return { ok: false, reason: "no folder id in URL", count: 0 };
+
+  const files = await listDriveFolderPdfs(folderId);
+  const [driveSubjects, allPrograms] = await Promise.all([
+    prisma.driveSubject.findMany({ where: { programId: link.programId } }),
+    prisma.program.findMany({ select: { id: true, name: true } }),
+  ]);
+
+  for (const file of files) {
+    const rawName = deriveSubjectNameFromFilename(file.name) || file.name.replace(/\.pdf$/i, "");
+    const year = guessYear(file.name);
+
+    // Shared Drive folders hold every program's own combined booklet side by
+    // side — only this program's own booklet belongs here; a sibling
+    // program's leaks in from the shared folder and is dropped.
+    const classification = classifyDriveFilename(allPrograms, link.programId, rawName);
+    if (classification === "foreign_booklet") continue;
+
+    if (classification === "own_booklet") {
+      await prisma.driveFileMatch.upsert({
+        where: { linkId_driveFileId: { linkId: link.id, driveFileId: file.id } },
+        update: { fileName: file.name, webViewLink: file.webViewLink, year, driveSubjectId: null, isCourseBooklet: true },
+        create: {
+          linkId: link.id,
+          driveFileId: file.id,
+          fileName: file.name,
+          webViewLink: file.webViewLink,
+          year,
+          driveSubjectId: null,
+          isCourseBooklet: true,
+        },
+      });
+      continue;
+    }
+
+    const { subject, confidence } = matchDriveSubjectName(driveSubjects, rawName);
+
+    let driveSubjectId: string;
+    if (subject && confidence >= 0.85) {
+      driveSubjectId = subject.id;
+    } else {
+      const slug = await uniqueSlug(rawName, link.programId);
+      const created = await prisma.driveSubject.create({ data: { programId: link.programId, name: rawName, slug } });
+      driveSubjects.push(created);
+      driveSubjectId = created.id;
+    }
+
+    await prisma.driveFileMatch.upsert({
+      where: { linkId_driveFileId: { linkId: link.id, driveFileId: file.id } },
+      update: { fileName: file.name, webViewLink: file.webViewLink, year, driveSubjectId },
+      create: { linkId: link.id, driveFileId: file.id, fileName: file.name, webViewLink: file.webViewLink, year, driveSubjectId },
+    });
+  }
+
+  return { ok: true, count: files.length };
+}
+
+async function main() {
+  const onlyUnsynced = !process.argv.includes("--all");
+  const links = await prisma.sessionProgramLink.findMany({
+    include: { program: true, session: true, _count: { select: { driveFiles: true } } },
+    orderBy: [{ session: { order: "desc" } }, { program: { name: "asc" } }],
+  });
+
+  const targets = onlyUnsynced ? links.filter((l) => l._count.driveFiles === 0) : links;
+  console.log(`Syncing ${targets.length} of ${links.length} links${onlyUnsynced ? " (unsynced only)" : ""}...\n`);
+
+  let synced = 0;
+  let totalFiles = 0;
+  const failures: { session: string; program: string; variant: string; reason: string }[] = [];
+
+  for (const link of targets) {
+    const label = `${link.session.label} · ${link.program.name}${link.variantLabel ? ` (${link.variantLabel})` : ""}`;
+    try {
+      const result = await syncLink(link);
+      if (result.ok) {
+        synced++;
+        totalFiles += result.count;
+        console.log(`  ✓ ${label} — ${result.count} file(s)`);
+      } else {
+        failures.push({ session: link.session.label, program: link.program.name, variant: link.variantLabel, reason: result.reason ?? "unknown" });
+        console.log(`  ✗ ${label} — ${result.reason}`);
+      }
+    } catch (err) {
+      const reason = err instanceof Error ? err.message : String(err);
+      failures.push({ session: link.session.label, program: link.program.name, variant: link.variantLabel, reason });
+      console.log(`  ✗ ${label} — ${reason}`);
+    }
+    await sleep(PAUSE_MS);
+  }
+
+  console.log(`\nDone. Synced ${synced}/${targets.length} links, ${totalFiles} files total, ${failures.length} failure(s).`);
+  if (failures.length) {
+    console.log("\nFailures:");
+    for (const f of failures) console.log(`  - ${f.session} · ${f.program}${f.variant ? ` (${f.variant})` : ""}: ${f.reason}`);
+  }
+}
+
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  })
+  .finally(() => prisma.$disconnect());

@@ -59,11 +59,20 @@ export function MergeSubjectPicker({
         <p className="flex items-start gap-2 text-sm">
           <WarningCircle size={18} weight="bold" className="mt-0.5 shrink-0 text-warning" />
           <span>
-            Merge <strong>{subjectName}</strong> into <strong>{target.name}</strong>? All files,
-            questions, and notes move over, and <strong>{subjectName}</strong> is deleted. This can&apos;t
-            be undone.
+            Merge <strong>{subjectName}</strong> into <strong>{target.name}</strong>? All files and
+            questions move over, notes are combined, and <strong>{subjectName}</strong> is deleted. This
+            can&apos;t be undone.
           </span>
         </p>
+        <label className="mt-3 block text-xs font-medium text-muted">
+          Name for the merged subject
+          <input
+            type="text"
+            name="mergedName"
+            defaultValue={target.name}
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
+          />
+        </label>
         <div className="mt-3 flex gap-2">
           <button
             type="submit"

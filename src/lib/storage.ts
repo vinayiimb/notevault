@@ -146,12 +146,19 @@ export async function readBytesFromUrl(url: string): Promise<Uint8Array> {
   return new Uint8Array(await readFile(path.join(PUBLIC_ROOT, url)));
 }
 
-export async function saveUploadedFile(file: File, subdir: "notes" | "pyqs" | "failed") {
+export async function saveUploadedFile(
+  file: File,
+  subdir: "notes" | "pyqs" | "failed" | "term-papers" | "feedback",
+  canonicalSubjectId?: string,
+) {
   const bytes = Buffer.from(await file.arrayBuffer());
   const safeName = file.name.replace(/[^\w.\-]+/g, "_");
   // Already unique per upload (random UUID prefix), so no collision handling needed.
   const fileName = `${crypto.randomUUID()}-${safeName}`;
-  const fileUrl = await putBytes(`uploads/${subdir}/${fileName}`, bytes);
+  const subjectPath = canonicalSubjectId
+    ? `/${canonicalSubjectId.replace(/[^A-Za-z0-9_-]/g, "")}`
+    : "";
+  const fileUrl = await putBytes(`uploads/${subdir}${subjectPath}/${fileName}`, bytes);
 
   return { fileUrl, fileName: file.name, fileSize: bytes.byteLength };
 }

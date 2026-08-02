@@ -2,6 +2,13 @@
 
 import Groq from "groq-sdk";
 import { z } from "zod";
+import {
+  StructuredNoteSchema,
+  CalloutTypeSchema,
+  type StructuredNote,
+  type NoteSection,
+  type Visual,
+} from "@/lib/note-schema";
 
 // Switched to Groq (the user doesn't have an Anthropic key yet, but does
 // have a Groq one). Groq's chat completions API supports the same kind of
@@ -455,4 +462,302 @@ export async function gradeRebuttal(
     basePrompt(notes, subject) +
       `\n\nStudent's original position: "${statement}"\nCounter-argument given: "${counterArgument}"\nStudent's rebuttal: "${rebuttal}"\n\nJudge the rebuttal.`
   );
+}
+
+// ---------- Structured note generation (JSON-schema notes, see note-schema.ts) ----------
+//
+// Groq's on-demand tier caps a single request (prompt + completion) at
+// ~8000 tokens total, and MAX_TOKENS above is deliberately small — the
+// spec's full 12-part note would blow past that in one call for any real
+// document. So generation is split into a handful of small, independently
+// schema-validated calls that get assembled and re-validated against the
+// master StructuredNoteSchema before anything is saved. Every field in the
+// schema still gets produced — just across several requests instead of one.
+
+function truncateSource(source: string, maxChars: number) {
+  return source.length > maxChars ? source.slice(0, maxChars) : source;
+}
+
+function chunkSource(source: string, chunkSize: number, maxChunks: number): string[] {
+  const chunks: string[] = [];
+  let start = 0;
+  while (start < source.length && chunks.length < maxChunks) {
+    chunks.push(source.slice(start, start + chunkSize));
+    start += chunkSize;
+  }
+  return chunks;
+}
+
+export type NoteContext = { subjectName: string; chapter?: string };
+
+const NoteOverviewSchema = z.object({
+  title: z.string(),
+  estimatedReadingMinutes: z.number().int().min(1).max(60),
+  tags: z.array(z.string()).max(8),
+  summary: z.string().describe("Two to four sentences"),
+  keyFacts: z.array(z.string()).min(3).max(7),
+  takeaway: z.string().describe("One to two sentences, the single most important thing to remember"),
+});
+
+export async function generateNoteOverview(sourceText: string, context: NoteContext) {
+  return callStructured(
+    NoteOverviewSchema,
+    "You write the opening summary of a structured educational note: a clear title, a short summary, key facts, and a final takeaway. Preserve the source's meaning and facts exactly; never invent anything not present in the source.",
+    `Subject: ${context.subjectName}${context.chapter ? `\nChapter: ${context.chapter}` : ""}\n\nSOURCE MATERIAL\n-------------------\n${truncateSource(sourceText, 5000)}\n-------------------\n\nWrite the title, 2-4 sentence summary, 3-7 key facts, and a 1-2 sentence final takeaway for this material.`
+  );
+}
+
+const SectionsChunkSchema = z.object({
+  sections: z
+    .array(
+      z.object({
+        id: z.string(),
+        heading: z.string(),
+        content: z.string(),
+        calloutType: CalloutTypeSchema,
+        calloutText: z.string().nullable(),
+      })
+    )
+    .min(1)
+    .max(3),
+});
+
+// One call per ~3500-char chunk of source (capped at 4 chunks — roughly the
+// first 14,000 characters) rather than one call for the whole document —
+// the actual "split into small calls" step the plan calls for.
+export async function generateNoteSections(sourceText: string, context: NoteContext): Promise<AiResult<NoteSection[]>> {
+  const chunks = chunkSource(sourceText, 3500, 4);
+  const sections: NoteSection[] = [];
+
+  for (let i = 0; i < chunks.length; i += 1) {
+    const result = await callStructured(
+      SectionsChunkSchema,
+      "You write one or more sections of the 'main explanation' part of a structured educational note, strictly grounded in the given source fragment. Use short paragraphs and a clear heading per logical idea. Only attach a callout (definition/important/warning/exam-tip) when the content genuinely warrants one — otherwise set calloutType to 'none' and calloutText to null.",
+      `Subject: ${context.subjectName}${context.chapter ? `\nChapter: ${context.chapter}` : ""}\nFragment ${i + 1} of ${chunks.length}.\n\nSOURCE FRAGMENT\n-------------------\n${chunks[i]}\n-------------------\n\nWrite 1-3 sections covering this fragment's content.`
+    );
+    if (!result.ok) {
+      // A later chunk failing shouldn't discard sections already produced
+      // from earlier chunks — only fail outright if nothing was produced.
+      if (sections.length === 0 && i === chunks.length - 1) return result;
+      continue;
+    }
+    for (const s of result.data.sections) {
+      sections.push({
+        id: s.id || `section-${sections.length + 1}`,
+        heading: s.heading,
+        content: s.content,
+        callout: s.calloutType === "none" ? null : { type: s.calloutType, text: s.calloutText ?? "" },
+      });
+    }
+  }
+
+  if (sections.length === 0) {
+    return { ok: false, error: "Couldn't generate any sections from this source." };
+  }
+  return { ok: true, data: sections.slice(0, 8) };
+}
+
+const NoteSupportingSchema = z.object({
+  definitions: z.array(z.object({ term: z.string(), definition: z.string() })).max(12),
+  formulas: z.array(z.object({ name: z.string(), expression: z.string(), description: z.string().nullable() })).max(8),
+  examples: z.array(z.object({ title: z.string().nullable(), prompt: z.string(), solution: z.string() })).max(6),
+  commonMistakes: z.array(z.string()).max(6),
+});
+
+export async function generateNoteSupporting(sourceText: string, context: NoteContext) {
+  return callStructured(
+    NoteSupportingSchema,
+    "You extract definitions, formulas, worked examples, and common student mistakes from educational source material. Only include what's genuinely present or directly implied by the source — empty arrays are fine when a category doesn't apply.",
+    `Subject: ${context.subjectName}${context.chapter ? `\nChapter: ${context.chapter}` : ""}\n\nSOURCE MATERIAL\n-------------------\n${truncateSource(sourceText, 5000)}\n-------------------\n\nExtract definitions, formulas, worked examples, and common mistakes.`
+  );
+}
+
+// ---------- Visual selection + generation ----------
+// Two small calls rather than one: classify first (so a note never gets a
+// forced, meaningless diagram when nothing in the source actually suits
+// one), then only generate the heavier nodes/edges/etc. payload for
+// whichever type was actually chosen.
+
+const VISUAL_SELECTION_RULES = `Choose the visual type from the content, using these rules:
+- Ordered process or procedure -> flowchart
+- Related concepts and branches -> mind-map
+- Events arranged by time -> timeline
+- Similarities and differences -> comparison
+- Quantitative information with a real numeric pattern -> chart
+- Mathematical problem needing worked steps -> solution-sheet
+- Geometry topic -> geometry
+- Two or three overlapping categories/sets -> venn
+- Hierarchical information -> concept-tree
+- Use "none" whenever no visual would genuinely improve understanding — never force one.`;
+
+const VisualClassificationSchema = z.object({
+  type: z.enum([
+    "none",
+    "flowchart",
+    "mind-map",
+    "timeline",
+    "concept-tree",
+    "comparison",
+    "chart",
+    "venn",
+    "geometry",
+    "solution-sheet",
+  ]),
+  title: z.string(),
+  reasoning: z.string().describe("One sentence: why this type fits (or why none does)"),
+});
+
+export async function classifyNoteVisual(sourceText: string, context: NoteContext) {
+  return callStructured(
+    VisualClassificationSchema,
+    `You choose the single best visual format for an educational note, or decide none fits. ${VISUAL_SELECTION_RULES}`,
+    `Subject: ${context.subjectName}${context.chapter ? `\nChapter: ${context.chapter}` : ""}\n\nSOURCE MATERIAL\n-------------------\n${truncateSource(sourceText, 4000)}\n-------------------\n\nChoose the visual type and a short title for it.`
+  );
+}
+
+const GraphDataSchema = z.object({
+  nodes: z.array(z.object({ id: z.string(), label: z.string().max(60), group: z.string().nullable(), order: z.string().nullable() })).min(2).max(7),
+  edges: z.array(z.object({ from: z.string(), to: z.string(), label: z.string().nullable() })).max(12),
+  annotations: z.array(z.string()).max(5),
+  highlight: z.string().nullable(),
+});
+const ComparisonDataSchema = z.object({
+  columns: z.array(z.string()).min(2).max(4),
+  rows: z.array(z.object({ label: z.string(), cells: z.array(z.string()) })).min(2).max(8),
+  annotations: z.array(z.string()).max(5),
+});
+const ChartDataSchema = z.object({
+  chartType: z.enum(["bar", "line"]),
+  labels: z.array(z.string()).min(2).max(12),
+  values: z.array(z.number()).min(2).max(12),
+  annotations: z.array(z.string()).max(5),
+});
+const VennDataSchema = z.object({
+  sets: z.array(z.object({ id: z.string(), label: z.string(), items: z.array(z.string()).max(6) })).min(2).max(3),
+  overlapItems: z.array(z.string()).max(6),
+  annotations: z.array(z.string()).max(5),
+});
+const GeometryDataSchema = z.object({
+  shapes: z
+    .array(
+      z.object({
+        id: z.string(),
+        kind: z.enum(["triangle", "circle", "rectangle", "line", "angle"]),
+        labels: z.array(z.string()).max(6),
+        measurements: z.array(z.string()).max(6),
+      })
+    )
+    .min(1)
+    .max(4),
+  annotations: z.array(z.string()).max(5),
+});
+const SolutionSheetDataSchema = z.object({
+  steps: z.array(z.object({ step: z.number().int().min(1), description: z.string(), expression: z.string().nullable() })).min(1).max(10),
+  annotations: z.array(z.string()).max(5),
+});
+
+/** Generates the payload for one already-chosen visual type. Returns
+ * `{ ok: true, data: { type: "none" } }` when visualType is "none" so
+ * callers don't need a special case. */
+export async function generateNoteVisualData(
+  sourceText: string,
+  visualType: Visual["type"],
+  title: string,
+  context: NoteContext
+): Promise<AiResult<Visual>> {
+  if (visualType === "none") return { ok: true, data: { type: "none" } };
+
+  const excerpt = truncateSource(sourceText, 4000);
+  const header = `Subject: ${context.subjectName}${context.chapter ? `\nChapter: ${context.chapter}` : ""}\nVisual title: ${title}\n\nSOURCE MATERIAL\n-------------------\n${excerpt}\n-------------------\n\n`;
+
+  if (visualType === "comparison") {
+    const result = await callStructured(ComparisonDataSchema, "You build a comparison table from educational source material, strictly grounded in it.", header + "Build a comparison table (2-4 columns, 2-8 rows).");
+    return result.ok ? { ok: true, data: { type: "comparison", title, ...result.data } } : result;
+  }
+  if (visualType === "chart") {
+    const result = await callStructured(
+      ChartDataSchema,
+      "You extract a real, genuine quantitative pattern from educational source material into chart data. Never invent numbers — only use this when the source actually contains a countable/measurable pattern.",
+      header + "Extract the chart data (2-12 labels with matching values)."
+    );
+    return result.ok ? { ok: true, data: { type: "chart", title, ...result.data } } : result;
+  }
+  if (visualType === "venn") {
+    const result = await callStructured(VennDataSchema, "You build a Venn diagram's set data (2-3 sets, their distinct items, and any shared/overlap items) from educational source material.", header + "Build the Venn diagram data.");
+    return result.ok ? { ok: true, data: { type: "venn", title, ...result.data } } : result;
+  }
+  if (visualType === "geometry") {
+    const result = await callStructured(GeometryDataSchema, "You build a labelled geometry diagram's shape data (1-4 shapes with labels and measurements) from educational source material.", header + "Build the geometry diagram data.");
+    return result.ok ? { ok: true, data: { type: "geometry", title, ...result.data } } : result;
+  }
+  if (visualType === "solution-sheet") {
+    const result = await callStructured(SolutionSheetDataSchema, "You break a mathematical problem's worked solution into ordered steps, strictly grounded in the source.", header + "Build the worked-solution steps (1-10 steps).");
+    return result.ok ? { ok: true, data: { type: "solution-sheet", title, ...result.data } } : result;
+  }
+
+  // flowchart | mind-map | timeline | concept-tree all share the same
+  // nodes/edges shape — only the system prompt's framing differs.
+  const framing: Record<string, string> = {
+    flowchart: "an ordered process or procedure as a flowchart (nodes = steps, edges = the order they happen in)",
+    "mind-map": "related concepts and their branches as a mind map (edges point from a parent concept to each child concept)",
+    timeline: "events arranged by time (each node's `order` field is the date/period label)",
+    "concept-tree": "hierarchical information as a tree (edges point from a parent to each child)",
+  };
+  const result = await callStructured(
+    GraphDataSchema,
+    `You build ${framing[visualType]} from educational source material, strictly grounded in it. Use 3-7 short-labelled nodes, avoid crossed connectors, and set \`highlight\` to the id of the central/final node.`,
+    header + "Build the node/edge data (3-7 nodes)."
+  );
+  return result.ok ? { ok: true, data: { type: visualType, title, ...result.data } as Visual } : result;
+}
+
+/**
+ * Orchestrates the full structured-note pipeline: overview, sections,
+ * supporting material, and visual, each as its own small Groq call (see
+ * the comment above chunkSource) — then assembles and validates everything
+ * against StructuredNoteSchema as one object. Never returns a partially
+ * generated note: if any required step fails, the whole call fails, so a
+ * broken/incomplete note is never saved.
+ */
+export async function generateStructuredNote(sourceText: string, context: NoteContext): Promise<AiResult<StructuredNote>> {
+  const [overview, sections, supporting, classification] = await Promise.all([
+    generateNoteOverview(sourceText, context),
+    generateNoteSections(sourceText, context),
+    generateNoteSupporting(sourceText, context),
+    classifyNoteVisual(sourceText, context),
+  ]);
+
+  if (!overview.ok) return overview;
+  if (!sections.ok) return sections;
+  if (!supporting.ok) return supporting;
+  if (!classification.ok) return classification;
+
+  const visual = await generateNoteVisualData(sourceText, classification.data.type, classification.data.title, context);
+  if (!visual.ok) return visual;
+
+  const assembled = {
+    metadata: {
+      subject: context.subjectName,
+      chapter: context.chapter ?? "",
+      title: overview.data.title,
+      estimatedReadingMinutes: overview.data.estimatedReadingMinutes,
+      tags: overview.data.tags,
+    },
+    summary: overview.data.summary,
+    keyFacts: overview.data.keyFacts,
+    sections: sections.data,
+    definitions: supporting.data.definitions,
+    formulas: supporting.data.formulas,
+    examples: supporting.data.examples,
+    commonMistakes: supporting.data.commonMistakes,
+    visual: visual.data,
+    takeaway: overview.data.takeaway,
+    sources: [] as string[],
+  };
+
+  const parsed = StructuredNoteSchema.safeParse(assembled);
+  if (!parsed.success) {
+    return { ok: false, error: "The generated note didn't match the expected structure. Try again." };
+  }
+  return { ok: true, data: parsed.data };
 }

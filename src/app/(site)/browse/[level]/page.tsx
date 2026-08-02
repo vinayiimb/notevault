@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
+import { ArrowRight, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { getProgramsByLevel } from "@/lib/data";
 import { levelLabel } from "@/lib/utils";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
@@ -50,31 +50,53 @@ export default async function BrowseLevelPage({
       {programs.length === 0 ? (
         <p className="mt-4 text-sm text-muted">No programs added yet. Check back soon.</p>
       ) : (
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {programs.map((program) => {
-            const subjectCount = program.terms.reduce((n, t) => n + t.subjects.length, 0);
-            return (
-              <Link
-                key={program.id}
-                href={`/programs/${program.slug}`}
-                className="flex flex-col gap-3 rounded-xl border border-border bg-surface p-5 transition hover:border-accent"
-              >
-                <span className="flex size-10 items-center justify-center rounded-lg bg-accent-soft text-accent">
-                  <GraduationCap size={20} weight="bold" />
-                </span>
-                <div>
-                  <h2 className="font-medium">{program.name}</h2>
-                  {program.summary && (
-                    <p className="mt-1 text-sm text-muted">{program.summary}</p>
-                  )}
-                </div>
-                <p className="mt-auto text-xs text-muted">
-                  {program.terms.length} term{program.terms.length === 1 ? "" : "s"} ·{" "}
-                  {subjectCount} subject{subjectCount === 1 ? "" : "s"}
-                </p>
-              </Link>
-            );
-          })}
+        <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-surface">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[560px] border-collapse text-left text-sm">
+              <thead className="bg-surface-muted/35 text-xs text-muted">
+                <tr>
+                  <th scope="col" className="px-5 py-3 font-semibold sm:px-6">Course</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Semesters</th>
+                  <th scope="col" className="px-4 py-3 font-semibold">Subjects</th>
+                  <th scope="col" className="w-12 px-4 py-3"><span className="sr-only">Open course</span></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {programs.map((program) => {
+                  const subjectCount = program.terms.reduce((n, t) => n + t.subjects.length, 0);
+                  return (
+                    <tr key={program.id} className="relative transition-colors hover:bg-accent-soft/35 focus-within:bg-accent-soft/35">
+                      <th scope="row" className="px-5 py-4 font-medium sm:px-6">
+                        <Link
+                          href={`/programs/${program.slug}`}
+                          className="inline-flex items-center gap-2 text-left text-foreground outline-none transition before:absolute before:inset-0 before:content-[''] hover:text-accent hover:underline focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                        >
+                          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent-soft text-accent">
+                            <GraduationCap size={16} weight="bold" />
+                          </span>
+                          <span>
+                            {program.name}
+                            {program.summary && (
+                              <span className="mt-0.5 block text-xs font-normal text-muted">{program.summary}</span>
+                            )}
+                          </span>
+                        </Link>
+                      </th>
+                      <td className="px-4 py-4 text-muted">
+                        {program.terms.length} term{program.terms.length === 1 ? "" : "s"}
+                      </td>
+                      <td className="px-4 py-4 text-muted">
+                        {subjectCount} subject{subjectCount === 1 ? "" : "s"}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        <ArrowRight aria-hidden="true" size={17} weight="bold" className="inline-block text-muted" />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </div>

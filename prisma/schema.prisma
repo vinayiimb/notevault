@@ -26,6 +26,17 @@ enum ResourceType {
   PYQ
 }
 
+enum NoteContentFormat {
+  MARKDOWN
+  STRUCTURED
+}
+
+enum NoteThemeScope {
+  GLOBAL
+  SUBJECT
+  NOTE
+}
+
 // e.g. "CBSE Class 12", "B.Com (Hons)", "BBA"
 model Program {
   id        String         @id @default(cuid())
@@ -35,7 +46,9 @@ model Program {
   summary   String?
   createdAt DateTime       @default(now())
 
-  terms Term[]
+  terms         Term[]
+  sessionLinks  SessionProgramLink[]
+  driveSubjects DriveSubject[]
 }
 
 // e.g. "Semester 1" for college, or just "Full Year" for school
@@ -47,7 +60,8 @@ model Term {
   order     Int      @default(1)
   createdAt DateTime @default(now())
 
-  subjects Subject[]
+  subjects   Subject[]
+  termPapers TermPaper[]
 
   @@unique([programId, order])
 }
@@ -59,27 +73,97 @@ model Subject {
   name        String
   slug        String
   description String?
+  // Official syllabus metadata. `name` remains the canonical display name;
+  // aliases are approved historical/spelling variants used only for matching.
+  upc         String?
+  paperType   String?
+  aliases     String[] @default([])
   createdAt   DateTime @default(now())
 
-  resources Resource[]
-  questions Question[]
-  analysis  SubjectAnalysis?
-  notes     SubjectNotes?
+  resources     Resource[]
+  questions     Question[]
+  analysis      SubjectAnalysis?
+  notes         SubjectNotes?
+  driveSubjects DriveSubject[]
+  noteThemes    NoteTheme[]
 
   @@unique([termId, slug])
+  @@index([upc])
 }
 
-// Admin-pasted, long-form compiled notes for a subject (markdown), rendered
-// on the public subject page with its own styling — distinct from Resource
-// rows of type NOTES, which are uploaded PDF files.
+// Admin-pasted, long-form compiled notes for a subject, rendered on the
+// public subject page with its own styling — distinct from Resource rows of
+// type NOTES, which are uploaded PDF files. `content` (markdown) is the
+// original, still-supported format; `format`/`structuredJson` are the new
+// AI/admin-authored path (see src/lib/note-schema.ts) — existing rows keep
+// rendering through the old markdown path untouched since format defaults
+// to MARKDOWN and structuredJson stays null for them.
 model SubjectNotes {
-  id        String   @id @default(cuid())
-  subjectId String   @unique
-  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
-  content   String
-  theme     String   @default("sky")
-  updatedAt DateTime @updatedAt
-  createdAt DateTime @default(now())
+  id             String            @id @default(cuid())
+  subjectId      String            @unique
+  subject        Subject           @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  content        String
+  theme          String            @default("sky")
+  format         NoteContentFormat @default(MARKDOWN)
+  structuredJson Json?
+  sourceFileUrl  String?
+  sourceFileName String?
+  updatedAt      DateTime          @updatedAt
+  createdAt      DateTime          @default(now())
+
+  noteTheme NoteTheme?
+}
+
+// A saved theme for the structured-notes design system (colors, typography,
+// layout, component and diagram styling — see src/lib/note-theme.ts for the
+// full field shape and src/lib/note-schema.ts's ThemeSchema for validation).
+// Scoped GLOBAL (site default), SUBJECT (overrides for one subject's notes),
+// or NOTE (overrides for one specific note) — resolveEffectiveTheme() merges
+// GLOBAL -> SUBJECT -> NOTE, each layer filling gaps in the one below.
+// draftJson is what the admin is currently editing; publishedJson is what's
+// actually live. "Publish" snapshots the outgoing publishedJson into
+// NoteThemeVersion first, so publishing never loses the prior version.
+model NoteTheme {
+  id              String         @id @default(cuid())
+  name            String
+  scope           NoteThemeScope
+  subjectId       String?
+  subject         Subject?       @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  subjectNotesId  String?        @unique
+  subjectNotes    SubjectNotes?  @relation(fields: [subjectNotesId], references: [id], onDelete: Cascade)
+  // Seeded built-in presets (Scholar Blue, Botanical, Lavender Study, Rose
+  // Ink, Midnight Focus) — never deletable, only duplicatable, so a preset
+  // is always recoverable even after heavy customization elsewhere.
+  isPreset        Boolean        @default(false)
+  // Exactly one GLOBAL theme should have this true at a time (enforced in
+  // src/lib/actions.ts, not the schema) — the fallback every subject/note
+  // inherits from when it has no override of its own.
+  isDefaultGlobal Boolean        @default(false)
+  draftJson       Json
+  publishedJson   Json?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  versions NoteThemeVersion[]
+
+  @@index([scope])
+  @@index([subjectId])
+}
+
+// A snapshot of a NoteTheme's publishedJson taken at the moment it was about
+// to be replaced by a new publish — this is the whole "version history /
+// restore previous version" feature: restoring just copies a chosen row's
+// snapshotJson back into NoteTheme.publishedJson (and draftJson, so the
+// editor reopens showing the restored state).
+model NoteThemeVersion {
+  id           String    @id @default(cuid())
+  themeId      String
+  theme        NoteTheme @relation(fields: [themeId], references: [id], onDelete: Cascade)
+  snapshotJson Json
+  label        String?
+  createdAt    DateTime  @default(now())
+
+  @@index([themeId])
 }
 
 // Cached result of analyzing a subject's uploaded PYQ papers: AI-compiled
@@ -117,19 +201,200 @@ model Resource {
   batchId        String?
   batch          UploadBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
 
+  // PYQ paper metadata surfaced on the tabbed /pyq-notes/[id] reading page
+  // (Paper tab's PYQMetadata panel) — all optional/additive since most
+  // historical rows predate this and were never asked for these fields.
+  paperCode    String?
+  session      String? // e.g. "May-June", "Nov-Dec"
+  duration     String? // free text, e.g. "3 hours"
+  maximumMarks Int?
+  // Tracks where a scanned paper is in the OCR pipeline independently of
+  // whether ocrText happens to be populated yet — lets the admin question
+  // editor (Phase H) show a real status instead of guessing from null-ness.
+  ocrStatus    OcrStatus @default(NOT_STARTED)
+
   questions Question[]
 
   @@index([fileHash])
   @@index([batchId])
 }
 
+enum OcrStatus {
+  NOT_STARTED
+  PROCESSING
+  COMPLETED
+  NEEDS_REVIEW
+}
+
+// PDFs added from the catalog coverage screen. The 2,431 college-hosted
+// source links live in the versioned static catalog; only new admin uploads
+// need database rows and managed file storage.
+model CatalogPaperUpload {
+  id            String   @id @default(cuid())
+  course        String
+  subject       String
+  yearRange     String
+  semesterGroup String
+  semester      Int?
+  fileUrl       String
+  fileName      String
+  fileSize      Int
+  fileHash      String   @unique
+  note          String?
+  createdAt     DateTime @default(now())
+
+  @@index([course, subject, yearRange])
+}
+
+// Admin override layered on top of the Full Archive (/pyq-notes) at render
+// time — lets an admin rename a subject, force which semester it's grouped
+// under, or highlight it, without touching the underlying scraped library
+// catalog, uploads, NoteVault resources, or Drive files it was built from.
+// subjectKey is canonicalSubjectKey() of the ORIGINAL (pre-override) subject
+// label, so it stays stable no matter what the admin renames it to.
+// "Merging" two subjects is just giving both the same displayName +
+// semesterOverride — canonicalSubjectKey() then hashes them to the same
+// group in the archive browser, no separate merge-target column needed.
+model CatalogSubjectOverride {
+  id               String   @id @default(cuid())
+  course           String
+  subjectKey       String
+  displayName      String?
+  semesterOverride Int?
+  highlight        Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([course, subjectKey])
+}
+
+// A single combined paper covering every subject for one Program+Semester
+// at once (as opposed to a Resource, which always belongs to one Subject) —
+// e.g. a scanned "B.Com (H) Semester 1" booklet that bundles all subjects'
+// question papers together instead of being split per subject. Shown on
+// that term's public page alongside its per-subject resources.
+model TermPaper {
+  id           String       @id @default(cuid())
+  termId       String
+  term         Term         @relation(fields: [termId], references: [id], onDelete: Cascade)
+  year         Int?
+  academicYear String?
+  fileUrl      String
+  fileName     String
+  fileSize     Int
+  fileHash     String?
+  batchId      String?
+  batch        UploadBatch? @relation(fields: [batchId], references: [id], onDelete: SetNull)
+  createdAt    DateTime     @default(now())
+
+  @@index([fileHash])
+  @@index([batchId])
+}
+
+// A yearly/period exam session, e.g. "2026 (May-June)". Listed publicly as
+// rows; each links to a program-level Google Drive folder table rather than
+// individual files — Drive itself is the file browser at that level.
+model ExamSession {
+  id             String   @id @default(cuid())
+  label          String   @unique // e.g. "2026 (May-June) Question Papers"
+  order          Int      @default(0) // display order, desc = newest first
+  masterDriveUrl String? // optional "ALL Search by Name" master-folder link
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  links SessionProgramLink[]
+}
+
+// One row per (session, program): the Drive folder for that program's
+// papers in that session. Upserted on [sessionId, programId] so re-running
+// an import is idempotent and never duplicates — this is what replaced the
+// old per-Subject exact-name-match import, which silently created duplicate
+// Subject rows whenever a name varied slightly between yearly imports.
+model SessionProgramLink {
+  id           String      @id @default(cuid())
+  sessionId    String
+  session      ExamSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  programId    String
+  program      Program     @relation(fields: [programId], references: [id], onDelete: Cascade)
+  // Distinguishes multiple links to the same Program within one session —
+  // e.g. DU's SEC/VAC/AEC electives all map to the single "Common Pool"
+  // Program, but the spreadsheet gives each its own Drive folder. Empty
+  // string (never null, so the unique index actually enforces uniqueness)
+  // for the normal one-link-per-course case.
+  variantLabel String      @default("")
+  driveUrl     String
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  driveFiles DriveFileMatch[]
+
+  @@unique([sessionId, programId, variantLabel])
+}
+
+// A subject derived directly from Drive PDF filenames (e.g. "Corporate
+// Accounting  3319.pdf" -> "Corporate Accounting"), scoped to a Program so
+// the same subject is reused across every session/year for that course
+// instead of re-matching against the old, messy, code-prefixed Subject
+// taxonomy (that legacy list stays exactly as-is elsewhere on the site —
+// this is a separate, parallel structure just for the Drive-driven flow).
+model DriveSubject {
+  id        String   @id @default(cuid())
+  programId String
+  program   Program  @relation(fields: [programId], references: [id], onDelete: Cascade)
+  name      String
+  slug      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Optional link to the canonical, syllabus-derived Subject catalog (DSC/DSE/SEC
+  // named rows under the same Program's Term hierarchy). Several DriveSubject
+  // naming variants across yearly syncs (e.g. "Company Law" and "Company Law III")
+  // can point at the same catalog Subject — that's why this lives here rather than
+  // the other direction. Nullable: most DriveSubjects start unlinked until an admin
+  // or the auto-linker (prisma/link-drive-subjects-to-catalog.ts) confirms a match.
+  subjectId String?
+  subject   Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+
+  files DriveFileMatch[]
+
+  @@unique([programId, slug])
+  @@index([subjectId])
+}
+
+// One PDF found inside a SessionProgramLink's Drive folder, matched to a
+// DriveSubject derived from its own filename. We only store the Drive
+// file's id and link here, never the bytes — the PDF stays on Google Drive.
+model DriveFileMatch {
+  id              String             @id @default(cuid())
+  linkId          String
+  link            SessionProgramLink @relation(fields: [linkId], references: [id], onDelete: Cascade)
+  driveSubjectId  String?
+  driveSubject    DriveSubject?      @relation(fields: [driveSubjectId], references: [id], onDelete: SetNull)
+  driveFileId     String
+  fileName        String
+  webViewLink     String
+  year            Int?
+  // True when this file is a whole-course booklet (all subjects bundled in one
+  // PDF, not yet split) rather than a single subject's paper — see
+  // classifyDriveFilename in src/lib/subject-quality.ts. driveSubjectId is always
+  // null on these rows; they're surfaced separately in the coverage UI as
+  // "pending split" instead of being counted as a real subject.
+  isCourseBooklet Boolean            @default(false)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  @@unique([linkId, driveFileId])
+  @@index([driveSubjectId])
+}
+
 // One row per "Upload N files" click in Bulk Upload — lets the admin later
 // browse back through what was uploaded together and fix a mistake (wrong
 // year/subject/type) without having to hunt for the resource elsewhere.
 model UploadBatch {
-  id        String     @id @default(cuid())
-  createdAt DateTime   @default(now())
-  resources Resource[]
+  id         String      @id @default(cuid())
+  createdAt  DateTime    @default(now())
+  resources  Resource[]
+  termPapers TermPaper[]
 }
 
 // A row an admin either couldn't assign a subject to, or that failed to
@@ -165,17 +430,57 @@ model Question {
   repeatCount  Int       @default(1)
   years        String? // comma-separated list of years this question appeared, e.g. "2021,2022,2024"
   createdAt    DateTime  @default(now())
+
+  // Added for the admin per-question content editor (Phase H) and the PYQ
+  // reading page's Searchable Text / Solutions tabs — all optional/additive,
+  // every existing row keeps working with these unset.
+  questionNumber String? // e.g. "3", "3(a)" — as printed on the paper
+  section        String? // e.g. "Section A"
+  rawOcrText     String?             @db.Text // unedited OCR output for this question, before correction
+  topics         String[]            @default([])
+  difficulty     QuestionDifficulty?
+  // StudyContentBlock[] (src/lib/content/content-block-schema.ts), validated
+  // app-side with zod rather than at the DB layer — lets a question's answer
+  // carry LaTeX, tables, mermaid diagrams, charts, images, embedded PDF
+  // references, callouts, and quiz blocks alongside the plain answerText.
+  contentBlocks  Json?
+}
+
+enum QuestionDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+// A named, reusable StudyContentBlock (src/lib/content/content-block-schema.ts)
+// admins can build once in the Content Blocks library (/admin/content-blocks)
+// and insert by reference into any question's contentBlocks — e.g. a standard
+// "Elasticity of Demand formula" block reused across many questions instead
+// of re-typing the LaTeX each time.
+model ContentBlock {
+  id          String   @id @default(cuid())
+  label       String
+  description String?
+  category    String?
+  block       Json // a single StudyContentBlock, validated app-side with zod
+  tags        String[] @default([])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
 }
 
 // Singleton row (id is always "singleton") for the small set of homepage
 // text fields an admin can safely edit without any risk of breaking a page.
 model SiteSettings {
-  id              String   @id @default("singleton")
-  heroHeadline    String?
-  heroSubtitle    String?
-  heroImageUrl    String?
-  currencyIconUrl String?
-  updatedAt       DateTime @updatedAt
+  id                String   @id @default("singleton")
+  heroEyebrow       String?
+  heroHeadline      String?
+  heroSubtitle      String?
+  heroSearchCaption String?
+  heroImageUrl      String?
+  currencyIconUrl   String?
+  updatedAt         DateTime @updatedAt
 }
 
 model Admin {
@@ -236,4 +541,18 @@ model OrangeEvent {
   amount    Int
   reason    String // "daily_visit" | "resource_view" | "exam_kit_session"
   createdAt DateTime @default(now())
+}
+
+// A message submitted through the public /feedback page, optionally with a
+// screenshot attached. No login required — anyone can submit. Reviewed by
+// an admin at /admin/feedback, where `read` tracks what's already been seen.
+model Feedback {
+  id             String   @id @default(cuid())
+  message        String   @db.Text
+  screenshotUrl  String?
+  screenshotName String?
+  read           Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  @@index([read])
 }

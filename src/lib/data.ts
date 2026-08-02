@@ -28,6 +28,7 @@ export function getTermById(id: string) {
     include: {
       program: true,
       subjects: { orderBy: { name: "asc" }, include: { resources: true, questions: true } },
+      termPapers: { orderBy: { createdAt: "desc" } },
     },
   });
 }
@@ -41,6 +42,54 @@ export function getSubjectById(id: string) {
       questions: { orderBy: [{ isRepeated: "desc" }, { repeatCount: "desc" }] },
       analysis: true,
       notes: true,
+      // Papers matched off Google Drive folders (see the Drive-sync flow in
+      // src/lib/actions.ts) — kept separate from `resources` above (which are
+      // PDFs we actually store) since these stay on Drive: no bytes copied,
+      // no storage cost, just a direct link. isCourseBooklet excludes a
+      // whole-course combined paper not yet split into per-subject files.
+      driveSubjects: {
+        select: {
+          files: {
+            where: { isCourseBooklet: false },
+            select: {
+              id: true,
+              fileName: true,
+              webViewLink: true,
+              link: { select: { session: { select: { label: true } } } },
+            },
+          },
+        },
+      },
+    },
+  });
+}
+
+export function getExamSessions() {
+  return prisma.examSession.findMany({
+    include: { _count: { select: { links: true } } },
+    orderBy: { order: "desc" },
+  });
+}
+
+export function getExamSessionById(id: string) {
+  return prisma.examSession.findUnique({
+    where: { id },
+    include: {
+      links: {
+        include: { program: true },
+        orderBy: [{ program: { name: "asc" } }, { variantLabel: "asc" }],
+      },
+    },
+  });
+}
+
+export function getSessionLinkWithSubjects(linkId: string) {
+  return prisma.sessionProgramLink.findUnique({
+    where: { id: linkId },
+    include: {
+      session: true,
+      program: true,
+      driveFiles: { include: { driveSubject: true }, orderBy: { fileName: "asc" } },
     },
   });
 }
@@ -79,8 +128,46 @@ export function getPyqResourceById(id: string) {
   return prisma.resource.findFirst({
     where: { id, type: "PYQ", ocrText: { not: null } },
     include: {
-      subject: { include: { term: { include: { program: true } } } },
+      subject: {
+        include: {
+          term: { include: { program: true } },
+          analysis: true,
+          resources: { where: { type: "PYQ" }, select: { id: true } },
+        },
+      },
+      // Solutions/Practice tabs on the reading page — only questions an
+      // admin has explicitly linked to this specific paper via the
+      // resourceId picker in /admin/questions/[id].
+      questions: { orderBy: [{ questionNumber: "asc" }, { createdAt: "asc" }] },
     },
+  });
+}
+
+// Flat index of every Drive-linked paper across every exam session — the
+// actual bulk of "Full archive" content now that papers are synced from
+// Google Drive folders rather than uploaded+OCR'd one at a time (see
+// ExamSession/SessionProgramLink/DriveSubject/DriveFileMatch in the schema).
+// Unmatched files (driveSubjectId null — the sync couldn't derive a subject
+// name) are excluded since the browser groups by subject.
+export function getFullDriveArchiveIndex() {
+  return prisma.driveFileMatch.findMany({
+    where: { driveSubjectId: { not: null } },
+    select: {
+      id: true,
+      fileName: true,
+      year: true,
+      webViewLink: true,
+      driveSubject: {
+        select: { id: true, name: true, program: { select: { name: true, slug: true } } },
+      },
+      link: {
+        select: {
+          variantLabel: true,
+          session: { select: { id: true, label: true, order: true } },
+        },
+      },
+    },
+    orderBy: [{ link: { session: { order: "desc" } } }, { fileName: "asc" }],
   });
 }
 
@@ -162,9 +249,11 @@ export async function getResourceHighlights() {
 export const getSiteSettings = cache(async () => {
   const settings = await prisma.siteSettings.findUnique({ where: { id: "singleton" } });
   return {
+    heroEyebrow: settings?.heroEyebrow || "Built for Delhi University students",
     heroHeadline: settings?.heroHeadline || "The Best, One Stop,\nStudy Platform",
     heroSubtitle:
       settings?.heroSubtitle || "Notes, PYQs and answer keys for every DU program — free, no login needed",
+    heroSearchCaption: settings?.heroSearchCaption || "Search a subject, paper title, program, or topic.",
     heroImageUrl: settings?.heroImageUrl || null,
     currencyIconUrl: settings?.currencyIconUrl || null,
   };
