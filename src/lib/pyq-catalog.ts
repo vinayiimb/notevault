@@ -1,6 +1,7 @@
 import rawCatalog from "@/data/ramanujan-pyq-catalog.json";
 import { geographyDriveCatalog } from "@/data/geography-drive-catalog";
 import { politicalScienceDriveCatalog } from "@/data/political-science-drive-catalog";
+import { duMasterDriveCatalog } from "@/data/du-master-drive-catalog";
 import { getFullDriveArchiveIndex, getPyqArchiveIndex } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
@@ -189,6 +190,7 @@ export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
     ...sessionPapers,
     ...geographyDriveCatalog,
     ...politicalScienceDriveCatalog,
+    ...duMasterDriveCatalog,
   ];
 }
 
