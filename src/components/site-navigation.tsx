@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  BookOpenText,
   CaretRight,
   ChartBar,
   ChatCircleText,
@@ -16,7 +15,6 @@ import {
   List,
   MagnifyingGlass,
   Question,
-  ShieldCheck,
   Sparkle,
   Wrench,
   X,
@@ -28,7 +26,6 @@ const NAVIGATION_SECTIONS = [
     items: [
       { href: "/dashboard", label: "Student Dashboard", desc: "Personalized course hub & saved notes", icon: GraduationCap, badge: "New UI" },
       { href: "/pyq-notes", label: "Full Archive (8,350+ Files)", desc: "Complete paper & notes catalog", icon: FileArchive, badge: "8.3k+" },
-      { href: "/admin/master-syllabus", label: "Official Master Syllabus", desc: "21 degree programs with 0% deviation", icon: BookOpenText, badge: "Official" },
       { href: "/exam-sessions", label: "Session Question Papers", desc: "Browse by exam year & drive links", icon: Files },
     ],
   },
@@ -56,12 +53,6 @@ export function SiteNavigation() {
         }`}
       >
         Full archive
-      </Link>
-      <Link
-        href="/admin/master-syllabus"
-        className="flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-2 text-muted hover:bg-surface-muted hover:text-foreground"
-      >
-        Master Syllabus
       </Link>
     </nav>
   );
@@ -205,12 +196,12 @@ export function MobileNavMenu() {
             {/* Mobile Footer Quick Action */}
             <div className="border-t border-border bg-surface p-4 text-center">
               <Link
-                href="/admin/master-syllabus"
+                href="/pyq-notes"
                 onClick={() => setOpen(false)}
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-bold text-brand-foreground shadow-sm active:scale-98 transition"
               >
-                <ShieldCheck size={18} weight="bold" />
-                <span>Explore Master Syllabus Portal</span>
+                <FileArchive size={18} weight="bold" />
+                <span>Explore Full Archive</span>
               </Link>
             </div>
           </div>,

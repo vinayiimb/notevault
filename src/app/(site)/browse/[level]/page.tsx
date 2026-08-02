@@ -5,6 +5,7 @@ import { ArrowRight, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { getProgramsByLevel } from "@/lib/data";
 import { levelLabel } from "@/lib/utils";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 // School (Class 12) is out of scope for now — a separate site is planned for it later.
 const LEVEL_MAP: Record<string, "SCHOOL" | "COLLEGE"> = {
@@ -50,6 +51,12 @@ export default async function BrowseLevelPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: `Browse ${levelLabel(enumLevel)}`, url: `/browse/${level}` },
+        ]}
+      />
       <p className="text-sm text-muted">{levelLabel(enumLevel)}</p>
       <h1 className="mt-1 text-3xl font-semibold tracking-tight">
         Previous year questions, notes &amp; answer keys

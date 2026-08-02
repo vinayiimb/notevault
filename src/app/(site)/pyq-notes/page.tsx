@@ -6,6 +6,7 @@ import {
   catalogIntegrity,
   getUnifiedPyqArchive,
 } from "@/lib/pyq-catalog";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
   title: "Complete PYQ Archive",
@@ -26,6 +27,12 @@ export default async function PyqNotesArchivePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Full archive", url: "/pyq-notes" },
+        ]}
+      />
       <div className="max-w-3xl">
         <p className="flex items-center gap-2 text-sm font-medium text-accent">
           <BookOpenText size={18} weight="bold" /> Full archive

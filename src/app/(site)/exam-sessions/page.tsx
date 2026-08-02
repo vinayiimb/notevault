@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CaretRight, Exam, Sparkle } from "@phosphor-icons/react/dist/ssr";
 import { getExamSessions } from "@/lib/data";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
   title: "Question Papers by Exam Session",
@@ -17,6 +18,12 @@ export default async function ExamSessionsPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Question papers", url: "/exam-sessions" },
+        ]}
+      />
       <h1 className="flex items-center gap-2 text-3xl font-semibold tracking-tight">
         <Exam size={28} weight="bold" className="text-accent" />
         Question papers

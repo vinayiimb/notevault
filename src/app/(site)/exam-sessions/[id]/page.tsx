@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowSquareOut, CaretRight, Exam } from "@phosphor-icons/react/dist/ssr";
 import { getExamSessionById } from "@/lib/data";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export async function generateMetadata({
   params,
@@ -64,6 +65,13 @@ export default async function ExamSessionPage({
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Question papers", url: "/exam-sessions" },
+          { name: session.label, url: `/exam-sessions/${session.id}` },
+        ]}
+      />
       <p className="text-sm text-muted">
         <Link href="/exam-sessions" className="hover:text-foreground">
           Question papers

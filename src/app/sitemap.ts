@@ -5,7 +5,6 @@ import { absoluteUrl } from "@/lib/seo";
 // Static, always-public routes with no dynamic segment.
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
   { path: "/", priority: 1, changeFrequency: "daily" },
-  { path: "/browse/school", priority: 0.8, changeFrequency: "weekly" },
   { path: "/browse/college", priority: 0.8, changeFrequency: "weekly" },
   { path: "/pyq-notes", priority: 0.9, changeFrequency: "daily" },
   { path: "/exam-sessions", priority: 0.7, changeFrequency: "weekly" },

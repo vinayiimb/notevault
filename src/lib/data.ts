@@ -177,9 +177,12 @@ export function getPyqArchiveIndex() {
   });
 }
 
+// Deliberately does not filter on ocrText — pyq-notes/[id] needs to tell
+// "doesn't exist" (404) apart from "exists, OCR still pending" (noindexed
+// placeholder with a working download) rather than 404-ing both.
 export function getPyqResourceById(id: string) {
   return prisma.resource.findFirst({
-    where: { id, type: "PYQ", ocrText: { not: null } },
+    where: { id, type: "PYQ" },
     include: {
       subject: {
         include: {

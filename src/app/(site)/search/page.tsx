@@ -1,7 +1,19 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Notebook } from "@phosphor-icons/react/dist/ssr";
 import { searchSubjects } from "@/lib/data";
 import { levelLabel } from "@/lib/utils";
+
+// Internal search-results pages shouldn't be indexed per query (unbounded,
+// low-value duplicate content), but the canonical stays fixed to the clean
+// /search URL — not the raw query — so the one static entry point can still
+// be crawled and followed into the real subject/program pages it links to.
+export const metadata: Metadata = {
+  title: "Search",
+  description: "Search DU PYQ Online for a course, subject, or semester to find its previous year question papers and notes.",
+  alternates: { canonical: "/search" },
+  robots: { index: false, follow: true },
+};
 
 export default async function SearchPage({
   searchParams,
@@ -22,10 +34,6 @@ export default async function SearchPage({
           No subjects matched. Try a different keyword, or browse{" "}
           <Link href="/browse/college" className="text-accent">
             College
-          </Link>{" "}
-          and{" "}
-          <Link href="/browse/school" className="text-accent">
-            Class 12
           </Link>{" "}
           directly.
         </p>
