@@ -1,9 +1,9 @@
-import { connection } from "next/server";
 import { BookOpenText, CheckCircle, DownloadSimple, ShieldCheck, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import { getProgramsByLevel } from "@/lib/data";
 
+export const dynamic = "force-dynamic";
+
 export default async function MasterSyllabusPage() {
-  await connection();
   const programs = await getProgramsByLevel("COLLEGE");
 
   const MASTER_COURSES = [
