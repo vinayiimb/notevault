@@ -55,7 +55,8 @@ async function extractTextFromPdf(pdfPath: string): Promise<string[]> {
 
   try {
     // Use pdf-parse to extract text from first 5 pages
-    const pdf = await (pdfParse as any).default(dataBuffer, { max: 5 });
+    const pdfParser = pdfParse as unknown as (buf: Buffer, opts?: { max?: number }) => Promise<{ text: string; numpages: number }>;
+    const pdf = await pdfParser(dataBuffer, { max: 5 });
 
     // pdf-parse gives us full text; split into pages manually
     const fullText = pdf.text;
@@ -144,7 +145,8 @@ ${headerText}
     messages: [{ role: "user", content: prompt }],
   });
 
-  const text = (response.content[0] as any).text.trim();
+  const firstContentBlock = response.content[0];
+  const text = (firstContentBlock && "text" in firstContentBlock ? (firstContentBlock as { text: string }).text : "").trim();
   try {
     return JSON.parse(text);
   } catch (err) {
@@ -192,7 +194,8 @@ Respond JSON only:
     messages: [{ role: "user", content: prompt }],
   });
 
-  const text = (response.content[0] as any).text.trim();
+  const secondContentBlock = response.content[0];
+  const text = (secondContentBlock && "text" in secondContentBlock ? (secondContentBlock as { text: string }).text : "").trim();
   try {
     const result = JSON.parse(text);
     return result.year;

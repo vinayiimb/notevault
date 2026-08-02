@@ -7,7 +7,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 
 const ECONOMICS_VAULT_URL =
-  "https://drive.google.com/drive/folders/1Qrv3zY-LBmRNDfmE90uJ9uHbiNkGnBmF";
+  "https://drive.google.com/drive/folders/1GJ67aNwwfq3Mf_xBXm3POXkxduW5CDPi?usp=sharing";
 
 export function FeaturedEconomicsVault({ className = "" }: { className?: string }) {
   return (

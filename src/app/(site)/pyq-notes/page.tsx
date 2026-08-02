@@ -6,7 +6,6 @@ import {
   catalogIntegrity,
   getUnifiedPyqArchive,
 } from "@/lib/pyq-catalog";
-import { FeaturedEconomicsVault } from "@/components/featured-economics-vault";
 
 export const metadata: Metadata = {
   title: "Complete PYQ Archive",
@@ -40,9 +39,7 @@ export default async function PyqNotesArchivePage() {
         </p>
       </div>
 
-      <FeaturedEconomicsVault className="mt-10" />
-
-      <div className="mt-10 flex flex-wrap gap-3 text-sm text-muted">
+      <div className="mt-8 flex flex-wrap gap-3 text-sm text-muted">
         <span className="rounded-full bg-accent-soft px-3 py-1.5 font-medium text-accent">
           {papers.length} files total
         </span>
