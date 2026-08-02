@@ -1,6 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { CaretRight, Exam, Sparkle } from "@phosphor-icons/react/dist/ssr";
 import { getExamSessions } from "@/lib/data";
+
+export const metadata: Metadata = {
+  title: "Question Papers by Exam Session",
+  description:
+    "Browse Delhi University question papers by exam session, with a Google Drive folder for every course in that session.",
+  alternates: { canonical: "/exam-sessions" },
+};
 
 export default async function ExamSessionsPage() {
   const sessions = await getExamSessions();

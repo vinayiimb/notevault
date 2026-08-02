@@ -8,13 +8,13 @@ export default function EntryGatePage() {
         <span className="flex size-8 items-center justify-center rounded-lg bg-accent text-accent-foreground">
           <Stack size={18} weight="bold" />
         </span>
-        NoteVault
+        DU PYQ Online
       </Link>
 
       <div className="w-full max-w-2xl">
         <h1 className="text-center text-2xl font-semibold tracking-tight">Continue as</h1>
         <p className="mt-2 text-center text-sm text-muted">
-          Choose how you&apos;d like to enter NoteVault.
+          Choose how you&apos;d like to enter DU PYQ Online.
         </p>
 
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">

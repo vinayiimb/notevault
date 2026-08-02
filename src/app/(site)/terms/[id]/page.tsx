@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTermById } from "@/lib/data";
@@ -5,6 +6,27 @@ import { levelLabel } from "@/lib/utils";
 import { categorizeSubject } from "@/lib/subject-category";
 import { TermSubjectTabs } from "@/components/subjects/term-subject-tabs";
 import { TermPapersDisplay } from "@/components/subjects/term-papers-display";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const term = await getTermById(id);
+  if (!term) return {};
+
+  const title = `${term.program.name} ${term.name} – PYQs & Notes`;
+  const description = `Question papers and notes for ${term.program.name} ${term.name}, organized by subject on DU PYQ Online.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/terms/${term.id}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function TermPage({
   params,
@@ -26,6 +48,13 @@ export default async function TermPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: term.program.name, url: `/programs/${term.program.slug}` },
+          { name: term.name, url: `/terms/${term.id}` },
+        ]}
+      />
       <p className="text-sm text-muted">
         {levelLabel(term.program.level)} ·{" "}
         <Link href={`/programs/${term.program.slug}`} className="hover:text-foreground">

@@ -1,8 +1,30 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CalendarBlank } from "@phosphor-icons/react/dist/ssr";
 import { getProgramBySlug } from "@/lib/data";
 import { levelLabel } from "@/lib/utils";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}): Promise<Metadata> {
+  const { slug } = await params;
+  const program = await getProgramBySlug(slug);
+  if (!program) return {};
+
+  const title = `${program.name} PYQs & Notes`;
+  const description = `Browse ${program.name} previous year question papers and notes by semester and subject on DU PYQ Online.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/programs/${program.slug}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function ProgramPage({
   params,
@@ -15,6 +37,12 @@ export default async function ProgramPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: program.name, url: `/programs/${program.slug}` },
+        ]}
+      />
       <p className="text-sm text-muted">{levelLabel(program.level)}</p>
       <h1 className="mt-1 text-3xl font-semibold tracking-tight">{program.name}</h1>
       {program.summary && <p className="mt-2 max-w-2xl text-muted">{program.summary}</p>}

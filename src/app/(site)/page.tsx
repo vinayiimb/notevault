@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import {
@@ -12,6 +13,10 @@ import { SearchBar } from "@/components/search-bar";
 import { getProgramsByLevel, getSiteSettings } from "@/lib/data";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 import { StudyAccessShowcase } from "@/components/study-access-showcase";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 // updateSiteSettingsAction already calls revalidatePath("/") on save, which
 // should purge this immediately — this is a safety net in case that signal

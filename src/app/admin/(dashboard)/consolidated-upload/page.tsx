@@ -51,7 +51,7 @@ export default async function AdminConsolidatedUploadPage() {
       </div>
       <p className="mt-1 max-w-2xl text-sm text-muted">
         Add loose PDFs or ZIPs organized as <code className="rounded bg-surface-muted px-1 py-0.5 text-xs">Semester_I/Subject Name/2017-18.pdf</code>.
-        NoteVault reads folder names, filenames, and available PDF text; AI can then match each
+        DU PYQ Online reads folder names, filenames, and available PDF text; AI can then match each
         paper to an existing official course, semester, subject, and academic year before upload.
         It never creates a subject from an uploaded filename.
       </p>

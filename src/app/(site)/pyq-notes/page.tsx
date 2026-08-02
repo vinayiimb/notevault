@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { BookOpenText } from "@phosphor-icons/react/dist/ssr";
 import { connection } from "next/server";
 import { CatalogArchiveBrowser } from "@/components/archive/catalog-archive-browser";
@@ -7,6 +8,13 @@ import {
 } from "@/lib/pyq-catalog";
 import { FeaturedEconomicsVault } from "@/components/featured-economics-vault";
 
+export const metadata: Metadata = {
+  title: "Complete PYQ Archive",
+  description:
+    "Browse the complete Delhi University previous year question paper archive — every course, semester, and subject in one searchable library.",
+  alternates: { canonical: "/pyq-notes" },
+};
+
 export default async function PyqNotesArchivePage() {
   await connection();
   const papers = await getUnifiedPyqArchive();
@@ -14,6 +22,8 @@ export default async function PyqNotesArchivePage() {
   const uploadCount = papers.filter((paper) => paper.source === "upload").length;
   const driveCount = papers.filter((paper) => paper.source === "drive").length;
   const existingNoteVaultCount = papers.filter((paper) => paper.source === "notevault").length;
+  const officialMatchCount = papers.filter((paper) => Boolean(paper.originalSubject)).length;
+  const reviewCount = papers.length - officialMatchCount;
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
@@ -25,7 +35,7 @@ export default async function PyqNotesArchivePage() {
           Every paper and study file on the site.
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
-          Browse the complete Ramanujan College library catalog, NoteVault&apos;s read-online
+          Browse the complete Ramanujan College library catalog, DU PYQ Online&apos;s read-online
           papers, and course-organized Google Drive study collections.
         </p>
       </div>
@@ -38,6 +48,12 @@ export default async function PyqNotesArchivePage() {
         </span>
         <span className="rounded-full bg-surface-muted px-3 py-1.5">
           {courseCount} course categories
+        </span>
+        <span className="rounded-full bg-success-soft px-3 py-1.5 text-success">
+          {officialMatchCount} official subject matches
+        </span>
+        <span className="rounded-full bg-yellow-soft px-3 py-1.5 text-warning">
+          {reviewCount} original labels pending review
         </span>
         <span className="rounded-full bg-surface-muted px-3 py-1.5">
           {catalogIntegrity.sourceRows} official-library links

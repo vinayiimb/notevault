@@ -1,4 +1,11 @@
+import type { Metadata } from "next";
 import { ExamKitClient } from "@/components/exam-kit/exam-kit-client";
+
+export const metadata: Metadata = {
+  title: "Exam Kit",
+  description: "Build recall drills, concept practice, and written-answer exercises from your DU study material.",
+  alternates: { canonical: "/tools/exam-kit" },
+};
 
 export default function ExamKitPage() {
   return (

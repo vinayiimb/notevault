@@ -32,6 +32,9 @@ type SubjectGroup = {
   paperCount: number;
   combinableCount: number;
   highlighted: boolean;
+  paperTypes: string[];
+  upcs: string[];
+  needsReview: boolean;
 };
 
 const ALL = "all";
@@ -40,7 +43,7 @@ const PAGE_SIZE = 80;
 function sourceLabel(paper: CatalogPaper) {
   if (paper.source === "notevault") return "Read online";
   if (paper.source === "drive") return "Google Drive PDF";
-  if (paper.source === "upload") return "NoteVault upload";
+  if (paper.source === "upload") return "DU PYQ Online upload";
   return null;
 }
 
@@ -87,6 +90,9 @@ function buildGroups(papers: CatalogPaper[]) {
       paperCount: number;
       combinableCount: number;
       highlighted: boolean;
+      paperTypes: Set<string>;
+      upcs: Set<string>;
+      needsReview: boolean;
     }
   >();
 
@@ -103,6 +109,9 @@ function buildGroups(papers: CatalogPaper[]) {
         paperCount: 0,
         combinableCount: 0,
         highlighted: false,
+        paperTypes: new Set(),
+        upcs: new Set(),
+        needsReview: false,
       };
       subjects.set(subjectKey, subject);
     } else {
@@ -112,6 +121,9 @@ function buildGroups(papers: CatalogPaper[]) {
       ]);
     }
     if (paper.highlighted) subject.highlighted = true;
+    if (paper.paperType) subject.paperTypes.add(paper.paperType);
+    if (paper.upc) subject.upcs.add(paper.upc);
+    if (paper.matchStatus === "Review" || paper.matchStatus === "Unmatched") subject.needsReview = true;
 
     const sessionKey = `${paper.yearRange}\u0000${paper.semesterGroup}`;
     const session = subject.sessions.get(sessionKey);
@@ -141,6 +153,9 @@ function buildGroups(papers: CatalogPaper[]) {
         paperCount: subject.paperCount,
         combinableCount: subject.combinableCount,
         highlighted: subject.highlighted,
+        paperTypes: [...subject.paperTypes].sort(),
+        upcs: [...subject.upcs].sort(),
+        needsReview: subject.needsReview,
         sessions: [...subject.sessions.values()]
           .map((session) => ({ ...session, papers: session.papers.toSorted(sortPapers) }))
           .sort(
@@ -191,6 +206,7 @@ function sortGroupsSemesterFirst(a: SubjectGroup, b: SubjectGroup) {
 export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   const [course, setCourse] = useState(ALL);
   const [semester, setSemester] = useState(ALL);
+  const [paperType, setPaperType] = useState(ALL);
   const [session, setSession] = useState(ALL);
   const [search, setSearch] = useState("");
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
@@ -227,19 +243,28 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
       ),
     [papers],
   );
+  const paperTypes = useMemo(
+    () => [...new Set(papers.map((paper) => paper.paperType).filter((value): value is string => Boolean(value)))].sort(),
+    [papers],
+  );
   const filtered = useMemo(() => {
     const query = search.trim().toLocaleLowerCase();
     return papers.filter(
       (paper) =>
         (course === ALL || paper.course === course) &&
         (semester === ALL || semesterLabel(paper) === semester) &&
+        (paperType === ALL || paper.paperType === paperType) &&
         (session === ALL || paper.yearRange === session) &&
         (!query ||
           paper.subject.toLocaleLowerCase().includes(query) ||
           paper.course.toLocaleLowerCase().includes(query) ||
+          (paper.officialProgramme ?? "").toLocaleLowerCase().includes(query) ||
+          (paper.paperType ?? "").toLocaleLowerCase().includes(query) ||
+          (paper.upc ?? "").includes(query) ||
+          (paper.courseNumber ?? "").toLocaleLowerCase().includes(query) ||
           (paper.note ?? "").toLocaleLowerCase().includes(query)),
     );
-  }, [course, papers, search, semester, session]);
+  }, [course, paperType, papers, search, semester, session]);
   const groups = useMemo(() => buildGroups(filtered), [filtered]);
   const orderedGroups = useMemo(
     () => (course === ALL ? groups.toSorted(sortGroupsSemesterFirst) : groups),
@@ -255,6 +280,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   function clearFilters() {
     setCourse(ALL);
     setSemester(ALL);
+    setPaperType(ALL);
     setSession(ALL);
     setSearch("");
     setVisibleCount(PAGE_SIZE);
@@ -262,7 +288,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   }
 
   const hasFilters =
-    course !== ALL || semester !== ALL || session !== ALL || search.trim().length > 0;
+    course !== ALL || semester !== ALL || paperType !== ALL || session !== ALL || search.trim().length > 0;
 
   return (
     <>
@@ -284,7 +310,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
           </div>
         </div>
 
-        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-[minmax(220px,1fr)_minmax(180px,0.7fr)_minmax(260px,1.25fr)_minmax(210px,0.85fr)]">
+        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
           <div>
             <label htmlFor="catalog-course" className="block text-sm font-semibold">
               Course
@@ -330,6 +356,26 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
           </div>
 
           <div>
+            <label htmlFor="catalog-paper-type" className="block text-sm font-semibold">
+              Paper type
+            </label>
+            <select
+              id="catalog-paper-type"
+              value={paperType}
+              onChange={(event) => {
+                setPaperType(event.target.value);
+                resetResultView();
+              }}
+              className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+            >
+              <option value={ALL}>All paper types</option>
+              {paperTypes.map((value) => (
+                <option key={value} value={value}>{value}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
             <label htmlFor="catalog-search" className="block text-sm font-semibold">
               Search subject
             </label>
@@ -342,7 +388,7 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
                   setSearch(event.target.value);
                   resetResultView();
                 }}
-                placeholder="e.g. Corporate Accounting"
+                placeholder="Subject, UPC or course number"
                 className="h-11 min-w-0 flex-1 bg-transparent text-sm text-foreground outline-none"
               />
             </span>
@@ -493,10 +539,10 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
             <h2 className="font-semibold">About the source labels</h2>
             <p className="mt-1 max-w-3xl text-muted">
               The college library labels one source folder “2023-2025”; it appears to contain more than
-              one academic-year sitting, so NoteVault preserves that label instead of presenting it as a
-              single clean session. Subject spelling variants and source typos were consolidated during
-              catalog cleaning; source notes such as “Old Course” and set numbers remain attached to the
-              relevant files.
+              one academic-year sitting, so DU PYQ Online preserves that label instead of presenting it as a
+              single clean session. Exact and strong workbook matches use the official DU paper name,
+              semester, paper type and UPC. Review and unmatched rows keep their original archive label
+              until an administrator confirms them, so uncertain data is never presented as official.
             </p>
           </div>
         </div>
@@ -579,6 +625,11 @@ function SubjectList({
                     <Star aria-label="Highlighted" size={14} weight="fill" className="shrink-0 text-warning" />
                   )}
                   {group.subject}
+                  {group.paperTypes.map((type) => (
+                    <span key={type} className="rounded-md bg-accent-soft px-1.5 py-0.5 text-[10px] font-semibold text-accent">
+                      {type}
+                    </span>
+                  ))}
                 </span>
                 <span className="mt-0.5 block text-xs text-muted">
                   {group.paperCount} file{group.paperCount === 1 ? "" : "s"} · {group.sessions.length} session
@@ -586,6 +637,8 @@ function SubjectList({
                   {group.combinableCount > 1 && (
                     <span title="Every year can be downloaded as one combined PDF"> · ⭐ combinable</span>
                   )}
+                  {group.upcs.length > 0 ? ` · UPC ${group.upcs.join(", ")}` : ""}
+                  {group.needsReview ? " · original archive label" : " · official DU match"}
                 </span>
               </span>
               <CaretDown

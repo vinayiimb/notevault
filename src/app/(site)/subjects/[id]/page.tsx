@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
@@ -18,6 +19,32 @@ import { PaperAnalysisPanel } from "@/components/subjects/paper-analysis-panel";
 import { NotesSection } from "@/components/subjects/notes-section";
 import { ExamWeightage } from "@/components/subjects/exam-weightage";
 import { DownloadAllButton } from "@/components/subjects/download-all-button";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const subject = await getSubjectById(id);
+  if (!subject) return {};
+
+  const title = `${subject.name} Notes & PYQs – ${subject.term.program.name}, ${subject.term.name}`;
+  const descriptionParts = [
+    `${subject.name} previous year question papers and notes for ${subject.term.program.name}, ${subject.term.name}`,
+    subject.paperType ? `paper type ${subject.paperType}` : null,
+    subject.upc ? `UPC ${subject.upc}` : null,
+  ].filter(Boolean);
+  const description = `${descriptionParts.join(", ")} on DU PYQ Online.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/subjects/${subject.id}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function SubjectPage({
   params,
@@ -58,6 +85,14 @@ export default async function SubjectPage({
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: subject.term.program.name, url: `/programs/${subject.term.program.slug}` },
+          { name: subject.term.name, url: `/terms/${subject.term.id}` },
+          { name: subject.name, url: `/subjects/${subject.id}` },
+        ]}
+      />
       <p className="text-sm text-muted">
         {levelLabel(subject.term.program.level)} ·{" "}
         <Link href={`/programs/${subject.term.program.slug}`} className="hover:text-foreground">

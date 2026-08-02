@@ -526,7 +526,7 @@ export function AdminRestoreClient({ programs }: { programs: Program[] }) {
             disabled={!subjectId || saving || !docTitle.trim()}
             className="ml-auto rounded-lg bg-accent px-5 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90 disabled:opacity-50"
           >
-            {saving ? "Saving..." : "Save to NoteVault"}
+            {saving ? "Saving..." : "Save to DU PYQ Online"}
           </button>
         </div>
 

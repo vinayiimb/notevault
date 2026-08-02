@@ -1,7 +1,33 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowSquareOut, FileText } from "@phosphor-icons/react/dist/ssr";
 import { getSessionLinkWithSubjects } from "@/lib/data";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string; linkId: string; subjectId: string }>;
+}): Promise<Metadata> {
+  const { id, linkId, subjectId } = await params;
+  const link = await getSessionLinkWithSubjects(linkId);
+  if (!link || link.sessionId !== id) return {};
+
+  const files = link.driveFiles.filter((f) => f.driveSubjectId === subjectId);
+  if (files.length === 0) return {};
+  const subjectName = files[0].driveSubject?.name ?? "Subject";
+  const programLabel = `${link.program.name}${link.variantLabel ? ` (${link.variantLabel})` : ""}`;
+
+  const title = `${subjectName} – ${programLabel}, ${link.session.label}`;
+  const description = `${subjectName} question papers for ${programLabel} in the ${link.session.label} exam session.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/exam-sessions/${link.sessionId}/${link.id}/${subjectId}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function ExamSessionSubjectPage({
   params,

@@ -12,7 +12,7 @@ export default async function LeaderboardPage() {
           <h1 className="font-display text-3xl font-bold tracking-tight">Leaderboard</h1>
         </div>
         <p className="mt-1 text-sm text-muted">
-          Top orange collectors across the NoteVault community.
+          Top orange collectors across the DU PYQ Online community.
         </p>
 
         {rows.length === 0 ? (

@@ -12,6 +12,14 @@ export type CatalogPaper = {
   source: CatalogPaperSource;
   fileName?: string;
   highlighted?: boolean;
+  originalSubject?: string;
+  officialProgramme?: string | null;
+  paperType?: string | null;
+  courseNumber?: string | null;
+  upc?: string | null;
+  matchStatus?: "Exact" | "Strong" | "Review" | "Unmatched";
+  matchConfidence?: number;
+  semesterCheck?: string;
 };
 
 export const NO_SEMESTER = "Semester not specified";

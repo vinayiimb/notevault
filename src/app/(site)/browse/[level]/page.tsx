@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowRight, GraduationCap } from "@phosphor-icons/react/dist/ssr";
@@ -9,6 +10,26 @@ import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 const LEVEL_MAP: Record<string, "SCHOOL" | "COLLEGE"> = {
   college: "COLLEGE",
 };
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ level: string }>;
+}): Promise<Metadata> {
+  const { level } = await params;
+  const enumLevel = LEVEL_MAP[level];
+  if (!enumLevel) return {};
+
+  const title = `Browse ${levelLabel(enumLevel)} Courses`;
+  const description = `Browse every ${levelLabel(enumLevel)} course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/browse/${level}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function BrowseLevelPage({
   params,

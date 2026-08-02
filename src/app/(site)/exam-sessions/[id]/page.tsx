@@ -1,7 +1,28 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowSquareOut, CaretRight, Exam } from "@phosphor-icons/react/dist/ssr";
 import { getExamSessionById } from "@/lib/data";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await params;
+  const session = await getExamSessionById(id);
+  if (!session) return {};
+
+  const title = `${session.label} Question Papers`;
+  const description = `Delhi University question paper folders for every course in the ${session.label} exam session.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/exam-sessions/${session.id}` },
+    openGraph: { title, description },
+  };
+}
 
 type SessionLink = Awaited<ReturnType<typeof getExamSessionById>> extends { links: infer L } | null
   ? L extends (infer T)[]

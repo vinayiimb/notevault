@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 import "./notes-content.css";
+import { SITE_NAME, SITE_URL, organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -56,9 +57,21 @@ const winkle = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "NoteVault — Notes, PYQs & Answer Keys",
+  metadataBase: new URL(SITE_URL),
+  title: {
+    default: "DU PYQ Online – Delhi University Previous Year Question Papers",
+    template: `%s | ${SITE_NAME}`,
+  },
   description:
-    "Browse notes, previous year question papers, and answer keys by class, program, semester, and subject.",
+    "Find Delhi University previous year question papers by course, semester, subject, paper type and year. Read or download DU PYQs free.",
+  openGraph: {
+    siteName: SITE_NAME,
+    type: "website",
+    url: SITE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+  },
 };
 
 const themeInitScript = `
@@ -88,6 +101,14 @@ export default function RootLayout({
       className={`${inter.variable} ${fraunces.variable} ${mono.variable} ${winkle.variable} ${manrope.variable} ${comicNeue.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
+        />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
+        />
         {children}
         <Script id="notevault-theme" strategy="beforeInteractive">
           {themeInitScript}
