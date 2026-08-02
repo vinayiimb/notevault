@@ -8,11 +8,16 @@ import {
   NotePencil,
   BookOpenText,
   ArrowSquareOut,
+  FolderOpen,
 } from "@phosphor-icons/react/dist/ssr";
 import { getSubjectById } from "@/lib/data";
+import { getResolvedThemeForNote } from "@/lib/note-theme-data";
+import { deriveSessionYear } from "@/lib/coverage-data";
 import { formatBytes, levelLabel } from "@/lib/utils";
 import { PaperAnalysisPanel } from "@/components/subjects/paper-analysis-panel";
 import { NotesSection } from "@/components/subjects/notes-section";
+import { ExamWeightage } from "@/components/subjects/exam-weightage";
+import { DownloadAllButton } from "@/components/subjects/download-all-button";
 
 export default async function SubjectPage({
   params,
@@ -35,6 +40,22 @@ export default async function SubjectPage({
       }
     : null;
 
+  const driveFilesByYear = new Map<number, { id: string; fileName: string; webViewLink: string }[]>();
+  for (const driveSubject of subject.driveSubjects) {
+    for (const file of driveSubject.files) {
+      const year = deriveSessionYear(file.link.session.label);
+      if (year == null) continue;
+      const list = driveFilesByYear.get(year) ?? [];
+      list.push({ id: file.id, fileName: file.fileName, webViewLink: file.webViewLink });
+      driveFilesByYear.set(year, list);
+    }
+  }
+  const driveYears = [...driveFilesByYear.keys()].sort((a, b) => b - a);
+
+  const resolvedNoteTheme = subject.notes
+    ? await getResolvedThemeForNote(subject.id, subject.notes.id)
+    : null;
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <p className="text-sm text-muted">
@@ -47,7 +68,12 @@ export default async function SubjectPage({
           {subject.term.name}
         </Link>
       </p>
-      <h1 className="mt-1 text-3xl font-semibold tracking-tight">{subject.name}</h1>
+      <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
+        <h1 className="text-3xl font-semibold tracking-tight">{subject.name}</h1>
+        {(notes.length > 0 || pyqs.length > 0 || subject.notes) && (
+          <DownloadAllButton subjectId={subject.id} />
+        )}
+      </div>
       {subject.description && <p className="mt-2 text-muted">{subject.description}</p>}
 
       {subject.notes && (
@@ -60,6 +86,9 @@ export default async function SubjectPage({
             content={subject.notes.content}
             theme={subject.notes.theme}
             subjectName={subject.name}
+            format={subject.notes.format}
+            structuredJson={subject.notes.structuredJson}
+            resolvedTheme={resolvedNoteTheme}
           />
         </section>
       )}
@@ -91,6 +120,43 @@ export default async function SubjectPage({
         </div>
         <PyqsByYear resources={pyqs} />
       </section>
+
+      {driveYears.length > 0 && (
+        <section className="mt-10">
+          <h2 className="flex items-center gap-2 text-lg font-medium">
+            <FolderOpen size={20} weight="bold" className="text-accent" />
+            Question papers by year
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            Straight from our Google Drive archive — opens in Drive, nothing to download.
+          </p>
+          <div className="mt-4 flex flex-col gap-3">
+            {driveYears.map((year) => (
+              <div key={year} className="rounded-xl border border-border bg-surface p-4">
+                <p className="text-sm font-semibold text-foreground">{year}</p>
+                <ul className="mt-2 flex flex-col divide-y divide-border">
+                  {driveFilesByYear.get(year)!.map((file) => (
+                    <li key={file.id} className="flex items-center justify-between gap-4 py-2 first:pt-0 last:pb-0">
+                      <span className="min-w-0 truncate text-sm">{file.fileName}</span>
+                      <a
+                        href={file.webViewLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold text-foreground hover:border-accent hover:text-accent"
+                      >
+                        Open
+                        <ArrowSquareOut size={13} aria-hidden="true" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <ExamWeightage questions={subject.questions} />
 
       {repeated.length > 0 && (
         <section className="mt-10">

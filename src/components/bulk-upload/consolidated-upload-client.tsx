@@ -4,9 +4,10 @@ import { useMemo, useRef, useState } from "react";
 import { FileArchive, FilePdf, Sparkle, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import {
   finalizeDirectResourceUploadAction,
-  findOrCreateSubjectAction,
+  findOfficialSubjectAction,
   prepareDirectResourceUploadAction,
   rememberCourseMatchAction,
+  saveFailedUploadAction,
   uploadResourceAction,
 } from "@/lib/actions";
 import {
@@ -520,7 +521,7 @@ export function ConsolidatedUploadClient({
     setUploading(true);
     // One subject per (term, subject name) combo, reused across every file
     // that maps to it, instead of re-resolving the subject id per file.
-    const subjectCache = new Map<string, string>();
+    const subjectCache = new Map<string, string | null>();
     const seenThisRun = new Set<string>();
 
     for (const file of files) {
@@ -551,19 +552,32 @@ export function ConsolidatedUploadClient({
           continue;
         }
 
+        const originalName = file.path.split("/").pop() || `${file.year || "paper"}.pdf`;
+        const yearStart = file.year.match(/(?:19|20)\d{2}/)?.[0] ?? "";
         const cacheKey = `${termId}::${file.subjectName.trim().toLowerCase()}`;
         let subjectId = subjectCache.get(cacheKey);
-        if (!subjectId) {
+        if (subjectId === undefined) {
           const subjectForm = new FormData();
           subjectForm.set("termId", termId);
-          subjectForm.set("name", file.subjectName.trim());
-          const subject = await findOrCreateSubjectAction(subjectForm);
-          subjectId = subject.id;
+          subjectForm.set("subjectName", file.subjectName.trim());
+          subjectForm.set("sourceText", `${file.path}\n${file.previewText.slice(0, 2000)}`);
+          const match = await findOfficialSubjectAction(subjectForm);
+          subjectId = match.subject?.id ?? null;
           subjectCache.set(cacheKey, subjectId);
         }
 
-        const originalName = file.path.split("/").pop() || `${file.year || "paper"}.pdf`;
-        const yearStart = file.year.match(/(?:19|20)\d{2}/)?.[0] ?? "";
+        if (!subjectId) {
+          const reviewForm = new FormData();
+          reviewForm.set("title", file.subjectName.trim() || originalName);
+          reviewForm.set("type", "PYQ");
+          if (yearStart) reviewForm.set("year", yearStart);
+          reviewForm.set("reason", `Manual review: no official subject matched ${program.name} / semester ${file.order ?? "unknown"} / ${file.subjectName}`);
+          reviewForm.set("file", new File([file.bytes], originalName, { type: "application/pdf" }));
+          await saveFailedUploadAction(reviewForm);
+          updateFile(file.key, { status: "error", message: "No official subject matched — saved for review" });
+          continue;
+        }
+
         const uploadForm = new FormData();
         uploadForm.set("subjectId", subjectId);
         uploadForm.set("type", "PYQ");
@@ -592,10 +606,21 @@ export function ConsolidatedUploadClient({
             uploadForm.set("key", prepared.key);
             uploadForm.set("fileUrl", prepared.fileUrl);
             result = await finalizeDirectResourceUploadAction(uploadForm);
-          } catch (directError) {
-            // Small PDFs still have a reliable compatibility path for R2
-            // buckets whose browser CORS policy has not yet been updated.
-            if (file.bytes.byteLength > 24 * 1024 * 1024) throw directError;
+          } catch {
+            // Small PDFs still have a compatibility path for R2 buckets whose
+            // browser CORS policy hasn't been set up: route the file through
+            // the server action instead. But Vercel enforces a hard ~4.5MB
+            // request-body cap on serverless functions that the app's own
+            // 25mb serverActions config cannot raise — anything past that
+            // fails with an opaque "unexpected response" error, so only
+            // attempt this path well under that ceiling, and fail clearly
+            // (not with the fallback's own error) once it's out of reach.
+            if (file.bytes.byteLength > 4 * 1024 * 1024) {
+              throw new Error(
+                "This PDF is too large for the direct-to-storage upload, which failed (likely the R2 bucket's CORS policy) — " +
+                  "large files can't use the backup path either, since Vercel caps request size well below this file's size. Fix the R2 CORS policy and retry.",
+              );
+            }
             uploadForm.set("file", new File([file.bytes], originalName, { type: "application/pdf" }));
             result = await uploadResourceAction(uploadForm);
           }

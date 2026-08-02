@@ -7,6 +7,7 @@ import { updateSubjectNotesAction, uploadResourceAction } from "@/lib/actions";
 import { generateSubjectAnalysisAction } from "@/lib/subject-analysis-actions";
 import { GamifiedLoader } from "@/components/ui/gamified-loader";
 import { NotesRenderer, resolveNotesTheme } from "@/components/subjects/notes-renderer";
+import type { ThemeValues } from "@/lib/note-theme";
 
 const THEMES = [
   { value: "sky", label: "Sky", dot: "bg-sky-dark" },
@@ -20,11 +21,13 @@ export function NotesEditor({
   initialContent,
   initialTheme,
   pyqCount,
+  resolvedTheme,
 }: {
   subjectId: string;
   initialContent: string;
   initialTheme: string;
   pyqCount: number;
+  resolvedTheme?: ThemeValues | null;
 }) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -270,7 +273,7 @@ export function NotesEditor({
         ) : (
           <div className="max-h-[760px] min-h-72 overflow-y-auto bg-background p-4 sm:p-6">
             {content.trim() ? (
-              <NotesRenderer content={content} theme={resolveNotesTheme(theme)} />
+              <NotesRenderer content={content} theme={resolveNotesTheme(theme)} resolvedTheme={resolvedTheme} />
             ) : (
               <div className="flex min-h-64 items-center justify-center text-sm text-muted">
                 Add some notes to see the published preview.
@@ -287,6 +290,12 @@ export function NotesEditor({
 
       <div className="flex flex-col gap-1.5">
         <label className="text-xs font-medium text-muted">Color theme</label>
+        {resolvedTheme && (
+          <p className="text-xs text-muted">
+            This subject has a Note Designer theme set, which overrides these on the actual note page —
+            the picker below only applies as a fallback.
+          </p>
+        )}
         <div className="flex gap-3">
           {THEMES.map((opt) => (
             <label key={opt.value} className="flex items-center gap-1.5 text-sm">

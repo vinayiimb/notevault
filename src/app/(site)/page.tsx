@@ -6,22 +6,25 @@ import {
   CompassRose,
   Exam,
   GraduationCap,
-  Notebook,
   Sparkle,
 } from "@phosphor-icons/react/dist/ssr";
 import { SearchBar } from "@/components/search-bar";
-import { getProgramsByLevel, getResourceHighlights, getSiteSettings, getStats } from "@/lib/data";
+import { getProgramsByLevel, getSiteSettings } from "@/lib/data";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
+import { StudyAccessShowcase } from "@/components/study-access-showcase";
+
+// updateSiteSettingsAction already calls revalidatePath("/") on save, which
+// should purge this immediately — this is a safety net in case that signal
+// is ever missed or delayed, so an edited headline/subtitle self-corrects
+// within a minute instead of looking permanently stuck on old cached text.
+export const revalidate = 60;
 
 export default async function HomePage() {
-  const [stats, programs, siteSettings, highlights] = await Promise.all([
-    getStats(),
+  const [programs, siteSettings] = await Promise.all([
     getProgramsByLevel("COLLEGE"),
     getSiteSettings(),
-    getResourceHighlights(),
   ]);
   const heroImage = siteSettings.heroImageUrl;
-  const latestResource = highlights.latestPyq ?? highlights.latestNote;
   const jumpData = programs.map((program) => ({
     id: program.id,
     name: program.name,
@@ -31,34 +34,52 @@ export default async function HomePage() {
 
   return (
     <div>
-      <section className="relative -mt-[92px] min-h-[720px] overflow-hidden bg-brand">
-        {!heroImage && (
-          <div
-            aria-hidden="true"
-            className="absolute inset-0 bg-[radial-gradient(circle_at_18%_22%,rgba(255,255,255,.24),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(255,255,255,.15),transparent_30%)]"
-          />
-        )}
-        {heroImage && (
-          // The image is uploaded by an admin at an arbitrary aspect ratio,
-          // so a full-bleed native image is more appropriate than next/image.
+      <section className={`relative -mt-[92px] ${heroImage ? "" : "bg-brand"}`}>
+        {heroImage ? (
+          // The image is uploaded by an admin at an arbitrary aspect ratio and
+          // is designed to be shown in full — never cropped, never squeezed
+          // into a fixed box. It renders at its natural width-derived height
+          // (like a normal inline image); hero-image-fade masks its bottom
+          // edge to transparent and hero-image-overlay blends that fade into
+          // the page background, so the banner dissolves into the copy below
+          // instead of ending on a hard edge or needing a text scrim.
           // eslint-disable-next-line @next/next/no-img-element
-          <img
-            src={heroImage}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover object-[center_58%] sm:object-center"
-          />
+          <div className="relative">
+            <img src={heroImage} alt="" className="hero-image-fade block h-auto w-full" />
+            <div aria-hidden="true" className="hero-image-overlay absolute inset-0" />
+          </div>
+        ) : (
+          <div className="relative min-h-[460px] sm:min-h-[520px]">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 min-h-[720px] bg-[radial-gradient(circle_at_18%_22%,rgba(255,255,255,.24),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(255,255,255,.15),transparent_30%)]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/30 to-black/10" />
+          </div>
         )}
-        <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/70" />
-        <div className="absolute inset-x-0 bottom-0 h-36 bg-gradient-to-b from-transparent via-black/15 to-black/60" />
 
-        <div className="relative z-10 mx-auto flex min-h-[720px] max-w-5xl flex-col items-center justify-center px-4 pt-40 pb-36 text-center sm:px-6">
-          <p className="mb-5 text-xs font-semibold tracking-[0.2em] text-white/80 uppercase">
-            Built for Delhi University students
+        {heroImage && <StudyAccessShowcase />}
+
+        <div
+          className={
+            heroImage
+              ? "relative mx-auto flex max-w-5xl flex-col items-center px-4 pt-8 pb-16 text-center sm:px-6 sm:pt-10"
+              : "absolute inset-x-0 top-0 z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-32 pb-16 text-center sm:px-6 sm:pt-36 lg:pt-40"
+          }
+        >
+          <p
+            className={`mb-5 text-xs font-semibold tracking-[0.2em] uppercase ${heroImage ? "text-muted" : "text-white/80"}`}
+          >
+            {siteSettings.heroEyebrow}
           </p>
-          <h1 className="max-w-4xl text-balance font-display text-5xl leading-[0.93] font-extrabold tracking-[-0.04em] whitespace-pre-line text-white sm:text-7xl lg:text-[5.25rem]">
+          <h1
+            className={`max-w-4xl text-balance font-display text-5xl leading-[0.93] font-extrabold tracking-[-0.04em] whitespace-pre-line sm:text-7xl lg:text-[5.25rem] ${heroImage ? "text-foreground" : "text-white"}`}
+          >
             {siteSettings.heroHeadline}
           </h1>
-          <p className="mt-6 max-w-2xl text-pretty text-base font-medium leading-relaxed text-white/90 sm:text-lg">
+          <p
+            className={`mt-6 max-w-2xl text-pretty text-base font-medium leading-relaxed sm:text-lg ${heroImage ? "text-muted" : "text-white/90"}`}
+          >
             {siteSettings.heroSubtitle}
           </p>
           <div className="mt-8 w-full max-w-2xl">
@@ -66,11 +87,13 @@ export default async function HomePage() {
               <SearchBar />
             </Suspense>
           </div>
-          <p className="mt-4 text-sm text-white/70">Search a subject, paper title, program, or topic.</p>
+          <p className={`mt-4 text-sm ${heroImage ? "text-muted" : "text-white/70"}`}>
+            {siteSettings.heroSearchCaption}
+          </p>
         </div>
       </section>
 
-      <div className="relative z-10 mx-auto -mt-8 max-w-6xl px-4 sm:-mt-14 sm:px-6 lg:-mt-20">
+      <div className="relative z-10 mx-auto mt-6 max-w-6xl px-4 sm:mt-8 sm:px-6 lg:mt-10">
         <section className="overflow-hidden rounded-2xl bg-surface shadow-[0_8px_24px_rgba(31,35,90,.12)] lg:grid lg:grid-cols-[1.35fr_.65fr]">
           <div className="flex flex-col justify-center p-6 sm:p-8 lg:p-10">
             <div className="flex items-start gap-4">
@@ -112,49 +135,16 @@ export default async function HomePage() {
               detail="Build a quiz, flashcards, or a map"
               href="/tools/exam-kit"
             />
+            <Shortcut
+              icon={<Exam size={20} weight="bold" />}
+              title="I need this session's paper"
+              detail="Every year, every course, straight from Drive"
+              href="/exam-sessions"
+            />
           </nav>
         </section>
       </div>
 
-      <div className="mx-auto max-w-6xl px-4 pt-20 pb-24 sm:px-6 sm:pt-24">
-        <section aria-labelledby="vault-pulse" className="overflow-hidden rounded-2xl bg-brand text-brand-foreground">
-          <div className="grid gap-8 p-7 sm:p-9 lg:grid-cols-[1fr_auto] lg:items-end lg:p-12">
-            <div>
-              <p className="text-sm font-semibold text-brand-foreground/70">Just added to the vault</p>
-              <h2 id="vault-pulse" className="mt-3 max-w-3xl text-balance font-display text-3xl font-bold tracking-[-0.03em] sm:text-4xl">
-                {latestResource ? formatResourceHeading(latestResource) : "Your next paper is already waiting in the library."}
-              </h2>
-              <p className="mt-3 max-w-2xl text-pretty text-sm leading-relaxed text-brand-foreground/75 sm:text-base">
-                Open the newest upload now, or search the full archive by subject and semester.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              {latestResource && (
-                <Link
-                  href={`/subjects/${latestResource.subject.id}`}
-                  className="group inline-flex min-h-11 items-center gap-2 rounded-xl bg-surface px-5 py-3 text-sm font-semibold text-foreground hover:-translate-y-0.5"
-                >
-                  Open newest paper
-                  <ArrowRight size={16} weight="bold" className="transition-transform group-hover:translate-x-0.5" />
-                </Link>
-              )}
-              <Link
-                href="/browse/college"
-                className="inline-flex min-h-11 items-center rounded-xl border border-brand-foreground/25 px-5 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-foreground/10"
-              >
-                Browse everything
-              </Link>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 border-t border-brand-foreground/15 sm:grid-cols-4">
-            <Stat icon={<GraduationCap size={17} weight="bold" />} label="Programs" value={stats.programs} />
-            <Stat icon={<Notebook size={17} weight="bold" />} label="Subjects" value={stats.subjects} />
-            <Stat icon={<BookOpen size={17} weight="bold" />} label="Notes & PYQs" value={stats.resources} />
-            <Stat icon={<Exam size={17} weight="bold" />} label="Bank questions" value={stats.questions} />
-          </div>
-        </section>
-      </div>
     </div>
   );
 }
@@ -189,22 +179,4 @@ function Shortcut({
       />
     </Link>
   );
-}
-
-function Stat({ icon, label, value }: { icon: React.ReactNode; label: string; value: number }) {
-  return (
-    <div className="border-r border-b border-brand-foreground/15 px-5 py-6 last:border-r-0 sm:border-b-0 sm:px-7">
-      <span className="flex items-center gap-2 text-brand-foreground/65">
-        {icon}
-        <span className="text-xs font-medium">{label}</span>
-      </span>
-      <span className="mt-2 block font-mono text-2xl font-semibold tabular-nums">{value.toLocaleString()}</span>
-    </div>
-  );
-}
-
-function formatResourceHeading(resource: { title: string; subject: { name: string } }) {
-  const title = resource.title.trim();
-  const subject = resource.subject.name.trim();
-  return title.toLocaleLowerCase().startsWith(subject.toLocaleLowerCase()) ? title : `${subject}: ${title}`;
 }

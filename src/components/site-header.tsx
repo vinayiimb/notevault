@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { SignIn, Stack } from "@phosphor-icons/react/dist/ssr";
 import { SearchBar } from "@/components/search-bar";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { MobileDashboardLink, SiteNavigation } from "@/components/site-navigation";
+import { MobileNavMenu, SiteNavigation } from "@/components/site-navigation";
 
 export function SiteHeader() {
   return (
@@ -25,7 +25,7 @@ export function SiteHeader() {
             </Suspense>
           </div>
           <ThemeToggle />
-          <MobileDashboardLink />
+          <MobileNavMenu />
           <Link
             href="/login"
             aria-label="Log in"

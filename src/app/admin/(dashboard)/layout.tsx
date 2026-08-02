@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import {
+  CalendarBlank,
+  ChatCircleText,
   ClockCounterClockwise,
+  CubeFocus,
   FileArchive,
   FileArrowUp,
   FileText,
@@ -12,11 +15,16 @@ import {
   GridFour,
   House,
   MagnifyingGlass,
+  PaintBrush,
+  Question,
   Shuffle,
+  Sparkle,
   SignOut,
   Stack,
+  Table,
   WarningCircle,
 } from "@phosphor-icons/react/dist/ssr";
+import { prisma } from "@/lib/prisma";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 
@@ -27,6 +35,7 @@ export default async function AdminDashboardLayout({
 }) {
   const session = await getSession();
   if (!session) redirect("/admin/login");
+  const unreadFeedbackCount = await prisma.feedback.count({ where: { read: false } });
 
   return (
     <div className="flex min-h-[100dvh]">
@@ -52,6 +61,13 @@ export default async function AdminDashboardLayout({
           >
             <GraduationCap size={16} />
             Programs
+          </Link>
+          <Link
+            href="/admin/exam-sessions"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <CalendarBlank size={16} />
+            Exam sessions
           </Link>
           <Link
             href="/admin/restore"
@@ -103,11 +119,32 @@ export default async function AdminDashboardLayout({
             PYQ coverage
           </Link>
           <Link
+            href="/admin/course-coverage"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Table size={16} />
+            Catalog coverage
+          </Link>
+          <Link
+            href="/admin/archive-customize"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Sparkle size={16} />
+            Customize Full Archive
+          </Link>
+          <Link
             href="/admin/import-pyq-metadata"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
           >
             <FileText size={16} />
             OCR metadata
+          </Link>
+          <Link
+            href="/admin/questions"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Question size={16} />
+            Question bank
           </Link>
           <Link
             href="/admin/ocr-reformat"
@@ -136,6 +173,32 @@ export default async function AdminDashboardLayout({
           >
             <WarningCircle size={16} />
             Failed uploads
+          </Link>
+          <Link
+            href="/admin/note-themes"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <PaintBrush size={16} />
+            Note Designer
+          </Link>
+          <Link
+            href="/admin/content-blocks"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <CubeFocus size={16} />
+            Content blocks
+          </Link>
+          <Link
+            href="/admin/feedback"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <ChatCircleText size={16} />
+            Feedback
+            {unreadFeedbackCount > 0 && (
+              <span className="ml-auto rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-foreground">
+                {unreadFeedbackCount}
+              </span>
+            )}
           </Link>
           <Link
             href="/admin/settings"
