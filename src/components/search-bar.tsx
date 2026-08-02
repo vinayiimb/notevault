@@ -61,13 +61,13 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
   }
 
   return (
-    <div ref={containerRef} className={`relative ${compact ? "w-full max-w-xs" : "w-full max-w-xl"}`}>
+    <div ref={containerRef} className={`relative ${compact ? "w-full max-w-xs" : "w-full max-w-2xl mx-auto"}`}>
       <form onSubmit={onSubmit} className="relative">
         <label className="relative block">
           <span className="sr-only">Search subjects, notes, PYQs</span>
           <MagnifyingGlass
-            size={18}
-            className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted"
+            size={compact ? 17 : 20}
+            className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-muted"
           />
           <input
             type="search"
@@ -83,7 +83,9 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
             onFocus={() => suggestions.length > 0 && setOpen(true)}
             placeholder="Search a subject, program, or topic..."
             autoComplete="off"
-            className={`w-full rounded-xl border border-border bg-surface py-3 pl-10 text-sm text-foreground shadow-sm placeholder:text-muted focus:border-accent focus:outline-none focus:ring-2 focus:ring-accent/20 ${compact ? "pr-3" : "pr-14"}`}
+            className={`w-full rounded-2xl border border-border/80 bg-surface text-foreground shadow-sm transition-all duration-200 placeholder:text-muted focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15 hover:border-brand/40 ${
+              compact ? "h-11 pl-10 pr-3 py-2 text-sm rounded-xl" : "h-14 pl-12 pr-16 py-3.5 text-base shadow-md shadow-black/5"
+            }`}
           />
         </label>
         {!compact && (
@@ -91,9 +93,9 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
             type="submit"
             aria-label="Search"
             disabled={!value.trim()}
-            className="absolute top-1/2 right-2 flex size-9 -translate-y-1/2 items-center justify-center rounded-lg bg-brand text-brand-foreground hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-40"
+            className="absolute top-1/2 right-2 flex size-10 -translate-y-1/2 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-md transition-all hover:bg-brand-hover hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 disabled:shadow-none"
           >
-            <ArrowRight size={16} weight="bold" />
+            <ArrowRight size={18} weight="bold" />
           </button>
         )}
       </form>

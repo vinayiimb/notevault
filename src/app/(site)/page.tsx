@@ -38,48 +38,67 @@ export default async function HomePage() {
   }));
 
   return (
-    <div className="relative overflow-hidden pb-16">
-      {/* Decorative background glow & atmosphere */}
-      <div aria-hidden="true" className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[600px] bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(83,88,227,0.12),transparent)]" />
-      <div aria-hidden="true" className="pointer-events-none absolute left-1/2 top-10 -z-10 h-[350px] w-[600px] -translate-x-1/2 rounded-full bg-brand-soft/50 blur-3xl" />
-
-      <section className="relative pt-6 sm:pt-10 lg:pt-14">
-        {heroImage && (
+    <div className="pb-16">
+      <section className={`relative -mt-[92px] ${heroImage ? "" : "bg-brand"}`}>
+        {heroImage ? (
           // The image is uploaded by an admin at an arbitrary aspect ratio and
           // is designed to be shown in full — never cropped, never squeezed
           // into a fixed box. It renders at its natural width-derived height;
           // hero-image-fade masks its bottom edge to transparent and
-          // hero-image-overlay blends that fade into the page background.
-          <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
-            <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-surface/50 shadow-md backdrop-blur-xs">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={heroImage}
-                alt=""
-                className="hero-image-fade block h-auto w-full max-h-[360px] object-cover sm:object-contain"
-              />
-              <div aria-hidden="true" className="hero-image-overlay absolute inset-0" />
-            </div>
+          // hero-image-overlay blends that fade into the page background, so the
+          // banner dissolves into the copy below instead of ending on a hard edge.
+          // eslint-disable-next-line @next/next/no-img-element
+          <div className="relative">
+            <img
+              src={heroImage}
+              alt=""
+              className="hero-image-fade block h-auto w-full max-h-[180px] object-cover sm:max-h-none sm:object-contain"
+            />
+            <div aria-hidden="true" className="hero-image-overlay absolute inset-0" />
+          </div>
+        ) : (
+          <div className="relative min-h-[460px] sm:min-h-[520px]">
+            <div
+              aria-hidden="true"
+              className="absolute inset-0 min-h-[720px] bg-[radial-gradient(circle_at_18%_22%,rgba(255,255,255,.24),transparent_34%),radial-gradient(circle_at_82%_12%,rgba(255,255,255,.15),transparent_30%)]"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/30 to-black/10" />
           </div>
         )}
 
-        {heroImage && (
-          <div className="mt-4">
-            <StudyAccessShowcase />
-          </div>
-        )}
+        {heroImage && <StudyAccessShowcase />}
 
-        <div className="relative mx-auto flex max-w-5xl flex-col items-center px-4 pt-8 pb-12 text-center sm:px-6 sm:pt-12 sm:pb-16">
+        <div
+          className={
+            heroImage
+              ? "relative mx-auto flex max-w-5xl flex-col items-center px-4 pt-10 pb-16 text-center sm:px-6 sm:pt-14"
+              : "absolute inset-x-0 top-0 z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-32 pb-16 text-center sm:px-6 sm:pt-36 lg:pt-40"
+          }
+        >
           {siteSettings.heroEyebrow && (
-            <div className="mb-5 inline-flex items-center gap-2 rounded-full border border-brand/25 bg-brand-soft px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-brand shadow-2xs backdrop-blur-md transition hover:border-brand/40">
-              <Sparkle size={14} weight="fill" className="animate-pulse text-brand" />
+            <div
+              className={`mb-5 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-xs font-bold uppercase tracking-wider shadow-2xs backdrop-blur-md transition ${
+                heroImage
+                  ? "border border-brand/20 bg-brand-soft/80 text-brand hover:border-brand/40"
+                  : "border border-white/20 bg-white/10 text-white hover:bg-white/15"
+              }`}
+            >
+              <Sparkle size={14} weight="fill" className={heroImage ? "animate-pulse text-brand" : "animate-pulse text-white"} />
               <span>{siteSettings.heroEyebrow}</span>
             </div>
           )}
-          <h1 className="max-w-4xl text-balance font-display text-4xl leading-[1.08] font-extrabold tracking-tight text-foreground sm:text-6xl sm:leading-[1.04] lg:text-[4.25rem]">
+          <h1
+            className={`max-w-4xl text-balance font-display text-4xl leading-[1.08] font-extrabold tracking-tight whitespace-pre-line sm:text-6xl sm:leading-[1.04] lg:text-[4.5rem] ${
+              heroImage ? "text-foreground" : "text-white"
+            }`}
+          >
             {siteSettings.heroHeadline}
           </h1>
-          <p className="mt-5 max-w-2xl text-pretty text-base font-normal leading-relaxed text-muted sm:text-lg lg:text-xl">
+          <p
+            className={`mt-5 max-w-2xl text-pretty text-base font-normal leading-relaxed sm:text-lg lg:text-xl ${
+              heroImage ? "text-muted" : "text-white/90"
+            }`}
+          >
             {siteSettings.heroSubtitle}
           </p>
           <div className="mt-8 w-full max-w-2xl">
@@ -88,14 +107,20 @@ export default async function HomePage() {
             </Suspense>
           </div>
           {siteSettings.heroSearchCaption && (
-            <div className="mt-4 inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-surface-muted px-4 py-1.5 text-xs font-medium text-muted shadow-2xs">
+            <div
+              className={`mt-4 inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-xs font-medium shadow-2xs ${
+                heroImage
+                  ? "border border-border/60 bg-surface-muted text-muted"
+                  : "border border-white/15 bg-white/10 text-white/80"
+              }`}
+            >
               <span>💡 {siteSettings.heroSearchCaption}</span>
             </div>
           )}
         </div>
       </section>
 
-      <div className="relative z-10 mx-auto mt-2 max-w-6xl px-4 sm:mt-4 sm:px-6">
+      <div className="relative z-10 mx-auto mt-4 max-w-6xl px-4 sm:mt-6 sm:px-6">
         {/* Tier 1: Express Course & Semester Jump */}
         <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-surface p-6 shadow-[0_12px_40px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-brand/30 hover:shadow-[0_16px_50px_rgba(83,88,227,0.08)] sm:p-8 lg:p-10">
           {/* Subtle decoration orbs inside card */}

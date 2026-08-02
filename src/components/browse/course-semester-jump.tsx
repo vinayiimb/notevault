@@ -22,70 +22,91 @@ export function CourseSemesterJump({
   const program = programs.find((p) => p.id === programId);
 
   return (
-    <div
-      className={embedded ? "" : "rounded-2xl bg-surface p-5"}
-    >
-      {!embedded && <p className="text-sm font-semibold">Jump straight to your papers</p>}
-      <div className={embedded ? "flex flex-wrap items-end gap-3" : "mt-3 flex flex-wrap items-end gap-3"}>
-        <div className="flex w-full flex-1 flex-col gap-1.5 sm:min-w-64">
-          <label className="text-xs text-muted">Course</label>
-          <select
-            value={programId}
-            onChange={(e) => {
-              setProgramId(e.target.value);
-              setTermId("");
-            }}
-            className="min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
-          >
-            <option value="">Select course</option>
-            {programs.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
+    <div className={embedded ? "" : "rounded-3xl border border-border/70 bg-surface p-6 shadow-md sm:p-8"}>
+      {!embedded && (
+        <div className="mb-6 border-b border-border/60 pb-4">
+          <h3 className="font-display text-xl font-bold tracking-tight text-foreground sm:text-2xl">
+            Jump straight to your papers
+          </h3>
+          <p className="mt-1 text-sm text-muted">Select your course once and view your exam resources instantly.</p>
         </div>
-        <div className="flex w-full flex-1 flex-col gap-1.5 sm:min-w-48">
-          <label className="text-xs text-muted">Semester</label>
-          <select
-            value={termId}
-            onChange={(e) => setTermId(e.target.value)}
-            disabled={!program}
-            className="min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none disabled:opacity-50"
-          >
-            <option value="">Select semester</option>
-            {program?.terms.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
-              </option>
-            ))}
-          </select>
+      )}
+
+      <div className={embedded ? "grid grid-cols-1 gap-4 md:grid-cols-[1.4fr_1.1fr_auto] md:items-end" : "grid grid-cols-1 gap-4 md:grid-cols-[1.4fr_1.1fr_auto] md:items-end"}>
+        <div className="flex w-full flex-col gap-2">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-muted">
+            <span>1. Course / Degree Program</span>
+          </label>
+          <div className="relative">
+            <select
+              value={programId}
+              onChange={(e) => {
+                setProgramId(e.target.value);
+                setTermId("");
+              }}
+              className="h-13 w-full appearance-none rounded-2xl border border-border bg-background px-4 py-3 pr-10 text-sm font-semibold text-foreground shadow-2xs transition-all hover:border-brand/50 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15 cursor-pointer"
+            >
+              <option value="">Select your DU course...</option>
+              {programs.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted">
+              <span className="text-xs">▼</span>
+            </div>
+          </div>
         </div>
+
+        <div className="flex w-full flex-col gap-2">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-muted">
+            <span>2. Semester / Term</span>
+          </label>
+          <div className="relative">
+            <select
+              value={termId}
+              onChange={(e) => setTermId(e.target.value)}
+              disabled={!program}
+              className="h-13 w-full appearance-none rounded-2xl border border-border bg-background px-4 py-3 pr-10 text-sm font-semibold text-foreground shadow-2xs transition-all hover:border-brand/50 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15 cursor-pointer disabled:cursor-not-allowed disabled:opacity-45 disabled:hover:border-border"
+            >
+              <option value="">Select semester...</option>
+              {program?.terms.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted">
+              <span className="text-xs">▼</span>
+            </div>
+          </div>
+        </div>
+
         <button
           type="button"
           disabled={!programId}
           onClick={() => {
-            // Two ways forward, both requiring an explicit click — picking
-            // a course or semester never navigates by itself:
-            // 1. Course + semester picked -> straight to that semester's papers.
-            // 2. Only a course picked -> "Go ahead" to that course's own page,
-            //    where semesters/subjects can be picked from there.
             if (termId) router.push(`/terms/${termId}`);
             else if (program) router.push(`/programs/${program.slug}`);
           }}
-          className="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-brand px-5 py-2 text-sm font-semibold text-brand-foreground hover:bg-brand-hover disabled:cursor-not-allowed disabled:opacity-40 sm:w-auto"
+          className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-brand px-8 text-sm font-bold text-brand-foreground shadow-md transition-all hover:bg-brand-hover hover:shadow-lg hover:shadow-brand/20 active:scale-98 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-none md:w-auto shrink-0"
         >
-          {termId ? "View papers" : "Go ahead"}
-          <ArrowRight size={15} weight="bold" />
+          <span>{termId ? "View papers" : "Go ahead"}</span>
+          <ArrowRight size={17} weight="bold" />
         </button>
       </div>
-      <p className="mt-3 text-xs text-muted">
-        Don&apos;t know your course yet? Try{" "}
-        <Link href="/browse/college" className="text-brand hover:underline">
-          browsing everything
-        </Link>{" "}
-        instead.
-      </p>
+
+      <div className="mt-5 flex flex-col justify-between gap-2 border-t border-border/50 pt-4 text-xs text-muted sm:flex-row sm:items-center">
+        <span>Can&apos;t find your exact semester? Just select your course first.</span>
+        <span>
+          Don&apos;t know your course yet?{" "}
+          <Link href="/browse/college" className="font-bold text-brand hover:underline inline-flex items-center gap-1">
+            <span>Browse complete archive</span>
+            <ArrowRight size={12} weight="bold" />
+          </Link>
+        </span>
+      </div>
     </div>
   );
 }
