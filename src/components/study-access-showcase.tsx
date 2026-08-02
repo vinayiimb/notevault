@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 const ECONOMICS_NOTES_URL =
-  "https://drive.google.com/drive/folders/1Qrv3zY-LBmRNDfmE90uJ9uHbiNkGnBmF";
+  "https://drive.google.com/drive/folders/1GJ67aNwwfq3Mf_xBXm3POXkxduW5CDPi?usp=sharing";
 
 export function StudyAccessShowcase() {
   return (

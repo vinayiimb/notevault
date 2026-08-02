@@ -53,6 +53,11 @@ const SOURCES: NestedSource[] = [
     label: "PYQ + Answers (Previous 10 Years)",
     mode: "mixed",
   },
+  {
+    folderId: "1GJ67aNwwfq3Mf_xBXm3POXkxduW5CDPi",
+    label: "DU Master Exam & Study Vault (8,300+ Papers)",
+    mode: "mixed",
+  },
 ];
 
 const prisma = new PrismaClient();

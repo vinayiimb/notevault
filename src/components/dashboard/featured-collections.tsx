@@ -4,33 +4,39 @@ import Link from "next/link";
 import { ArrowRight, Brain, FolderSimple, ListChecks } from "@phosphor-icons/react";
 
 export function FeaturedCollections() {
+  const MASTER_DRIVE_URL =
+    "https://drive.google.com/drive/folders/1GJ67aNwwfq3Mf_xBXm3POXkxduW5CDPi?usp=sharing";
+
   const COLLECTIONS = [
+    {
+      title: "DU Master Vault (8,300+ Papers)",
+      description: "Complete Google Drive repository covering Economics, History, Zoology, Commerce, and Science.",
+      count: "8,300+ PDFs",
+      href: MASTER_DRIVE_URL,
+      isExternal: true,
+      icon: FolderSimple,
+      badge: "8,300+ Files",
+      color: "border-emerald-500/20 bg-emerald-500/5",
+    },
     {
       title: "DU B.Com (Hons) PYQ Collection",
       description: "Previous-year question papers covering all official LOCF core and elective units.",
       count: "40+ Papers",
       href: "/pyq-notes",
+      isExternal: false,
       icon: ListChecks,
       badge: "Curated Pack",
       color: "border-blue-500/20 bg-blue-500/5",
-    },
-    {
-      title: "Official Delhi University Syllabus Folders",
-      description: "Complete course structures, recommended readings, and unit weightages.",
-      count: "All Semesters",
-      href: "/programs",
-      icon: FolderSimple,
-      badge: "Official",
-      color: "border-purple-500/20 bg-purple-500/5",
     },
     {
       title: "Exam Revision AI Practice Suite",
       description: "Generate instant flashcards and retention quizzes directly from your syllabus text.",
       count: "6 Modes",
       href: "/tools/exam-kit",
+      isExternal: false,
       icon: Brain,
       badge: "AI Powered",
-      color: "border-emerald-500/20 bg-emerald-500/5",
+      color: "border-purple-500/20 bg-purple-500/5",
     },
   ];
 
@@ -71,13 +77,25 @@ export function FeaturedCollections() {
 
               <div className="flex items-center justify-between pt-2 border-t border-border/40">
                 <span className="text-xs font-semibold text-muted">{col.count}</span>
-                <Link
-                  href={col.href}
-                  className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-hover transition-colors"
-                >
-                  <span>Open</span>
-                  <ArrowRight size={12} weight="bold" />
-                </Link>
+                {col.isExternal ? (
+                  <a
+                    href={col.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-hover transition-colors"
+                  >
+                    <span>Open Drive</span>
+                    <ArrowRight size={12} weight="bold" />
+                  </a>
+                ) : (
+                  <Link
+                    href={col.href}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-brand px-3 py-1.5 text-xs font-semibold text-brand-foreground hover:bg-brand-hover transition-colors"
+                  >
+                    <span>Open</span>
+                    <ArrowRight size={12} weight="bold" />
+                  </Link>
+                )}
               </div>
             </div>
           );
