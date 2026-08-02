@@ -64,19 +64,12 @@ export default async function HomePage() {
         {/* Afterboards-style typography floating in the bright blue sky above the campuses */}
         <div className="absolute inset-x-0 top-0 z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-22 pb-8 text-center sm:px-6 sm:pt-36 sm:pb-12 lg:pt-40 pointer-events-none">
           <div className="pointer-events-auto flex flex-col items-center w-full max-w-3xl">
-            {siteSettings.heroEyebrow && (
-              <div className="mb-3 sm:mb-4 hidden sm:inline-flex items-center gap-2 rounded-full border border-white/25 bg-black/20 px-4 py-1 text-xs font-bold uppercase tracking-wider text-white shadow-2xs backdrop-blur-md">
-                <Sparkle size={14} weight="fill" className="animate-pulse text-[#38bdf8]" />
-                <span>{siteSettings.heroEyebrow}</span>
-              </div>
-            )}
-
-            <h1 className="w-full text-balance font-display text-[2.35rem] leading-[1.06] font-black tracking-tight text-white whitespace-pre-line drop-shadow-[0_3px_14px_rgba(0,0,0,0.3)] sm:text-6xl sm:leading-[1.04] lg:text-[4.5rem]">
+            <h1 className="w-full text-balance font-display text-[2.35rem] leading-[1.06] font-black tracking-tight text-white whitespace-pre-line drop-shadow-[0_4px_16px_rgba(0,0,0,0.25)] sm:text-6xl sm:leading-[1.04] lg:text-[4.5rem]">
               {siteSettings.heroHeadline}
             </h1>
 
             {siteSettings.heroSubtitle && (
-              <div className="mt-4 sm:mt-6 hidden sm:inline-flex items-center justify-center rounded-full bg-[#2196c9]/75 hover:bg-[#2196c9]/85 backdrop-blur-md px-6 py-2.5 text-sm sm:text-base lg:text-lg font-bold text-white shadow-lg border border-white/20 transition-all">
+              <div className="mt-4 sm:mt-6 hidden sm:inline-flex items-center justify-center rounded-full bg-[#0284c7]/35 hover:bg-[#0284c7]/45 backdrop-blur-md px-6 py-2.5 text-sm sm:text-base lg:text-lg font-bold text-white shadow-[0_8px_30px_rgba(2,132,199,0.25)] border border-white/35 transition-all duration-200">
                 <span>{siteSettings.heroSubtitle}</span>
               </div>
             )}
@@ -88,7 +81,7 @@ export default async function HomePage() {
             </div>
 
             {siteSettings.heroSearchCaption && (
-              <div className="mt-3.5 hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-black/20 px-4 py-1.5 text-xs font-semibold text-white/95 backdrop-blur-md shadow-2xs">
+              <div className="mt-3.5 hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/20 hover:bg-white/25 px-4 py-1.5 text-xs font-bold text-white backdrop-blur-md shadow-sm transition-all duration-200">
                 <span>💡 {siteSettings.heroSearchCaption}</span>
               </div>
             )}
