@@ -45,7 +45,7 @@ export default async function HomePage() {
           // instead of ending on a hard edge or needing a text scrim.
           // eslint-disable-next-line @next/next/no-img-element
           <div className="relative">
-            <img src={heroImage} alt="" className="hero-image-fade block h-auto w-full" />
+            <img src={heroImage} alt="" className="hero-image-fade block h-auto w-full max-h-[180px] object-cover sm:max-h-none sm:object-contain" />
             <div aria-hidden="true" className="hero-image-overlay absolute inset-0" />
           </div>
         ) : (
