@@ -45,7 +45,7 @@ export default async function AdminDashboardLayout({
           <span className="flex size-7 items-center justify-center rounded-lg bg-accent text-accent-foreground">
             <GraduationCap size={16} weight="bold" />
           </span>
-          NoteVault
+          DU PYQ Online
         </Link>
 
         <nav className="mt-8 flex flex-1 flex-col gap-1 text-sm">

@@ -1,4 +1,5 @@
 import rawCatalog from "@/data/ramanujan-pyq-catalog.json";
+import rawOfficialArchiveMap from "@/data/archive-official-map.json";
 import { geographyDriveCatalog } from "@/data/geography-drive-catalog";
 import { politicalScienceDriveCatalog } from "@/data/political-science-drive-catalog";
 import { duMasterDriveCatalog } from "@/data/du-master-drive-catalog";
@@ -20,6 +21,74 @@ const EXPECTED_DUPLICATE_SESSION_GROUPS = 315;
 const LIBRARY_HOST = "library.ramanujancollege.ac.in";
 
 const sourceCatalog = rawCatalog as CatalogPaper[];
+
+type ArchiveOfficialMapRow = {
+  id: string;
+  websiteSemester: string | null;
+  officialProgramme: string | null;
+  officialSemester: string | null;
+  paperType: string | null;
+  officialPaperName: string | null;
+  courseNumber: string | null;
+  upc: string | null;
+  matchStatus: "Exact" | "Strong" | "Review" | "Unmatched";
+  confidence: number;
+  semesterCheck: string;
+  matchNote: string | null;
+};
+
+const officialArchiveMap = new Map(
+  (rawOfficialArchiveMap as ArchiveOfficialMapRow[]).map((row) => [row.id, row]),
+);
+
+const ROMAN_SEMESTERS: Record<string, number> = {
+  I: 1,
+  II: 2,
+  III: 3,
+  IV: 4,
+  V: 5,
+  VI: 6,
+  VII: 7,
+  VIII: 8,
+};
+
+function singleOfficialSemester(value: string | null) {
+  if (!value) return null;
+  const cleaned = value.trim().toUpperCase().replace(/^SEM(?:ESTER)?\s*/, "");
+  if (/^[1-8]$/.test(cleaned)) return cleaned;
+  return ROMAN_SEMESTERS[cleaned] ? String(ROMAN_SEMESTERS[cleaned]) : null;
+}
+
+function applyOfficialFileMap(paper: CatalogPaper): CatalogPaper {
+  const match = officialArchiveMap.get(paper.id);
+  if (!match) return { ...paper, matchStatus: "Unmatched", matchConfidence: 0 };
+
+  const safeAutomaticMatch =
+    (match.matchStatus === "Exact" || match.matchStatus === "Strong") &&
+    match.semesterCheck !== "Conflict" &&
+    Boolean(match.officialPaperName);
+
+  return {
+    ...paper,
+    originalSubject: safeAutomaticMatch ? paper.subject : undefined,
+    subject: safeAutomaticMatch ? match.officialPaperName! : paper.subject,
+    semester:
+      paper.semester ??
+      match.websiteSemester ??
+      (safeAutomaticMatch ? singleOfficialSemester(match.officialSemester) : null),
+    officialProgramme: match.officialProgramme,
+    paperType: match.paperType,
+    courseNumber: match.courseNumber,
+    upc: match.upc,
+    matchStatus: match.matchStatus,
+    matchConfidence: match.confidence,
+    semesterCheck: match.semesterCheck,
+    note:
+      safeAutomaticMatch && match.matchNote
+        ? [paper.note, match.matchNote].filter(Boolean).join(" · ")
+        : paper.note,
+  };
+}
 
 function sessionStart(value: string) {
   return Number(value.match(/\d{4}/)?.[0] ?? 0);
@@ -229,7 +298,7 @@ export async function getUnifiedPyqArchive(): Promise<CatalogPaper[]> {
     getRawUnifiedPyqArchive(),
     getOverridesByKey(),
   ]);
-  return papers.map((paper) => applyOverride(paper, overrides));
+  return papers.map(applyOfficialFileMap).map((paper) => applyOverride(paper, overrides));
 }
 
 export function isCatalogCourseSubject(course: string, subject: string) {

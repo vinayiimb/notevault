@@ -1,7 +1,29 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaretRight, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { getSessionLinkWithSubjects } from "@/lib/data";
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ id: string; linkId: string }>;
+}): Promise<Metadata> {
+  const { id, linkId } = await params;
+  const link = await getSessionLinkWithSubjects(linkId);
+  if (!link || link.sessionId !== id) return {};
+
+  const programLabel = `${link.program.name}${link.variantLabel ? ` (${link.variantLabel})` : ""}`;
+  const title = `${programLabel} – ${link.session.label} Question Papers`;
+  const description = `Question papers by subject for ${programLabel} in the ${link.session.label} exam session.`;
+
+  return {
+    title,
+    description,
+    alternates: { canonical: `/exam-sessions/${link.sessionId}/${link.id}` },
+    openGraph: { title, description },
+  };
+}
 
 export default async function ExamSessionCoursePage({
   params,

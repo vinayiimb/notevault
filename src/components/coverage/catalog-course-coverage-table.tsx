@@ -307,7 +307,7 @@ export function CatalogCourseCoverageTable({
                   {active.papers.length ? "Add another PDF option" : "Upload the missing PDF"}
                 </h3>
                 <p className="mt-1 text-xs leading-5 text-muted">
-                  The file is stored in NoteVault&apos;s managed PDF storage and appears in the public
+                  The file is stored in DU PYQ Online&apos;s managed PDF storage and appears in the public
                   Full Archive immediately. Maximum size: 25 MB.
                 </p>
 

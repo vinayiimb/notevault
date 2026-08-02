@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Brain } from "@phosphor-icons/react/dist/ssr";
+
+export const metadata: Metadata = {
+  title: "Study Tools",
+  description: "Turn your DU notes and PYQs into quizzes, flashcards, and exam practice on DU PYQ Online.",
+  alternates: { canonical: "/tools" },
+};
 
 export default function ToolsPage() {
   return (

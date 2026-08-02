@@ -13,7 +13,7 @@ export function SiteHeader() {
           <span className="flex size-8 items-center justify-center rounded-xl bg-brand text-brand-foreground">
             <Stack size={18} weight="bold" />
           </span>
-          <span>NoteVault</span>
+          <span>DU PYQ Online</span>
         </Link>
 
         <SiteNavigation />

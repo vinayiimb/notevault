@@ -15,7 +15,7 @@ export default async function CourseCoveragePickerPage() {
       <div className="rounded-2xl border border-border bg-surface p-6 sm:p-8">
         <h1 className="text-3xl font-semibold tracking-tight">Catalog coverage</h1>
         <p className="mt-2 max-w-3xl text-sm leading-6 text-muted">
-          Choose a course from the merged library, Drive, and NoteVault catalog. Each course opens a subject × source-year
+          Choose a course from the merged library, Drive, and DU PYQ Online catalog. Each course opens a subject × source-year
           matrix: completed cells are checked, missing cells have a real PDF upload action, and multi-file
           cells retain every option.
         </p>
