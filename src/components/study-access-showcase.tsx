@@ -38,7 +38,7 @@ export function StudyAccessShowcase() {
   return (
     <section aria-label="Study notes and archive" className="study-access-showcase">
       {/* Mobile-Only High-Impact Course & Subject Selector Box (Replaces 3 Cards on Mobile) */}
-      <div className="block sm:hidden px-4 -mt-24 pb-4 relative z-20">
+      <div className="block sm:hidden px-4 -mt-16 pb-4 relative z-20">
         <form
           onSubmit={handleMobileSubmit}
           className="rounded-3xl border border-brand/30 bg-surface/95 p-5 shadow-[0_12px_32px_rgba(0,0,0,0.12)] backdrop-blur-md space-y-4"
