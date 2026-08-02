@@ -50,7 +50,7 @@ export default async function HomePage() {
           // instead of ending on a hard edge or needing a text scrim.
           // eslint-disable-next-line @next/next/no-img-element
           <div className="relative">
-            <img src={heroImage} alt="" className="hero-image-fade block h-auto w-full max-h-[180px] object-cover sm:max-h-none sm:object-contain" />
+            <img src={heroImage} alt="University of Delhi Colleges" className="hero-image-fade block h-auto w-full min-h-[220px] object-cover sm:min-h-0 sm:object-contain" />
             <div aria-hidden="true" className="hero-image-overlay absolute inset-0" />
           </div>
         ) : (
@@ -65,10 +65,11 @@ export default async function HomePage() {
 
         {heroImage && <StudyAccessShowcase />}
 
+        {/* Desktop-only secondary hero headline to prevent clutter on phone screens */}
         <div
           className={
             heroImage
-              ? "relative mx-auto flex max-w-5xl flex-col items-center px-4 pt-8 pb-16 text-center sm:px-6 sm:pt-10"
+              ? "relative hidden sm:flex mx-auto max-w-5xl flex-col items-center px-4 pt-8 pb-16 text-center sm:px-6 sm:pt-10"
               : "absolute inset-x-0 top-0 z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-32 pb-16 text-center sm:px-6 sm:pt-36 lg:pt-40"
           }
         >
