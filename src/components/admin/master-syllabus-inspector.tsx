@@ -391,25 +391,58 @@ export function MasterSyllabusInspector() {
         </div>
       ) : (
         <>
-          {/* Course Selector Tabs */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-bold text-foreground">Select Degree / Course Program</h3>
-            <div className="flex flex-wrap gap-2.5">
+          {/* Clickable Verified Master Program Cards */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <h3 className="text-base font-bold text-foreground">
+                Verified Master Programs ({MASTER_SYLLABUS_DATA.length}) — Click any card to expand full in-depth syllabus
+              </h3>
+              <span className="text-xs font-bold text-accent">
+                Currently Viewing: {selectedCourse.name.split("—")[0].trim()}
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
               {MASTER_SYLLABUS_DATA.map((course) => {
                 const isSelected = course.id === selectedCourseId;
+                const totalSubjects = course.semesters.reduce((sum, sem) => sum + sem.subjects.length, 0);
                 return (
                   <button
                     key={course.id}
                     type="button"
-                    onClick={() => setSelectedCourseId(course.id)}
-                    className={`flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-bold transition ${
+                    onClick={() => {
+                      setSelectedCourseId(course.id);
+                      document.getElementById("syllabus-inspector-detail")?.scrollIntoView({ behavior: "smooth" });
+                    }}
+                    className={`flex flex-col justify-between rounded-2xl border text-left p-5 transition-all cursor-pointer space-y-4 ${
                       isSelected
-                        ? "border-accent bg-accent text-accent-foreground shadow-sm"
-                        : "border-border bg-surface text-foreground/80 hover:border-accent/40 hover:bg-surface-muted"
+                        ? "border-accent bg-accent-soft/40 ring-2 ring-accent/30 shadow-md"
+                        : "border-border bg-surface hover:border-accent/40 hover:shadow-sm"
                     }`}
                   >
-                    <GraduationCap size={16} weight={isSelected ? "bold" : "regular"} />
-                    <span>{course.name.split("—")[0].trim()}</span>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className={`rounded-full px-2.5 py-0.5 text-xs font-bold ${
+                          isSelected ? "bg-accent text-accent-foreground" : "bg-surface-muted text-muted"
+                        }`}>
+                          {course.code}
+                        </span>
+                        <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2.5 py-0.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+                          <CheckCircle size={12} weight="bold" />
+                          100% Verified
+                        </span>
+                      </div>
+
+                      <div>
+                        <h4 className="text-base font-bold text-foreground">{course.name}</h4>
+                        <p className="mt-1 text-xs text-muted leading-relaxed line-clamp-2">{course.description}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between border-t border-border/50 pt-3 text-xs text-muted">
+                      <span className="font-semibold">{course.semesters.length} Semesters</span>
+                      <span className="font-bold text-foreground">{totalSubjects} Subjects</span>
+                    </div>
                   </button>
                 );
               })}
@@ -417,7 +450,7 @@ export function MasterSyllabusInspector() {
           </div>
 
           {/* Selected Course Header Banner */}
-          <div className="rounded-2xl border border-accent/30 bg-accent-soft/40 p-6 space-y-3">
+          <div id="syllabus-inspector-detail" className="rounded-2xl border border-accent/30 bg-accent-soft/40 p-6 space-y-3">
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
                 <span className="rounded-full bg-accent px-3 py-1 text-xs font-bold text-accent-foreground">
