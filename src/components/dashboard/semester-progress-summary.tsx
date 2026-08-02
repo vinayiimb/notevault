@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Fire, Trophy } from "@phosphor-icons/react";
 import { CurrencyIcon } from "@/components/dashboard/currency-icon";
-import { DAILY_TARGET_ORANGES } from "@/lib/student";
+const DAILY_TARGET_ORANGES = 50;
 
 interface ProgressSummaryProps {
   todayOranges?: number;
