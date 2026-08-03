@@ -10,7 +10,7 @@ import {
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
-  title: "Complete PYQ Archive",
+  title: "Complete DU Papers and Notes Archive | DU PYQ Online",
   description:
     "Browse the complete Delhi University previous year question paper archive — every course, semester, and subject in one searchable library.",
   alternates: { canonical: "/pyq-notes" },

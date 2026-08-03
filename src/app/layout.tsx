@@ -63,14 +63,23 @@ export const metadata: Metadata = {
     template: `%s | ${SITE_NAME}`,
   },
   description:
-    "Find Delhi University previous year question papers by course, semester, subject, paper type and year. Read or download DU PYQs free.",
+    "Download Delhi University previous year question papers, notes, syllabus and answer keys by course and semester. Free access with no login required.",
+  applicationName: SITE_NAME,
+  alternates: {
+    canonical: "./",
+  },
   openGraph: {
     siteName: SITE_NAME,
     type: "website",
+    locale: "en_IN",
     url: SITE_URL,
   },
   twitter: {
     card: "summary_large_image",
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 };
 
@@ -103,11 +112,15 @@ export default function RootLayout({
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd()) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(organizationJsonLd()).replace(/</g, "\\u003c"),
+          }}
         />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd()) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(websiteJsonLd()).replace(/</g, "\\u003c"),
+          }}
         />
         {children}
         <Script id="notevault-theme" strategy="beforeInteractive">

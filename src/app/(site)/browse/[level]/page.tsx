@@ -21,8 +21,13 @@ export async function generateMetadata({
   const enumLevel = LEVEL_MAP[level];
   if (!enumLevel) return {};
 
-  const title = `Browse ${levelLabel(enumLevel)} Courses`;
-  const description = `Browse every ${levelLabel(enumLevel)} course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes.`;
+  const title = level === "college" 
+    ? "Browse Delhi University Courses | DU PYQ Online"
+    : `Browse ${levelLabel(enumLevel)} Courses | DU PYQ Online`;
+    
+  const description = level === "college"
+    ? "Browse every college course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes."
+    : `Browse every ${levelLabel(enumLevel)} course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes.`;
 
   return {
     title,

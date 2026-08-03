@@ -20,6 +20,8 @@ import { NotesSection } from "@/components/subjects/notes-section";
 import { ExamWeightage } from "@/components/subjects/exam-weightage";
 import { DownloadAllButton } from "@/components/subjects/download-all-button";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
+import { getUnifiedPyqArchive } from "@/lib/pyq-catalog";
 
 export async function generateMetadata({
   params,
@@ -56,7 +58,33 @@ export default async function SubjectPage({
   if (!subject) notFound();
 
   const notes = subject.resources.filter((r) => r.type === "NOTES");
-  const pyqs = subject.resources.filter((r) => r.type === "PYQ");
+  const dbPyqs = subject.resources.filter((r) => r.type === "PYQ");
+  
+  // Load and merge matching papers from the static unified catalog
+  const allCatalogPapers = await getUnifiedPyqArchive();
+  const catalogPyqs = allCatalogPapers
+    .filter((p) => (subject.upc && p.upc === subject.upc) || p.subject.toLowerCase() === subject.name.toLowerCase())
+    .map((p) => ({
+      id: p.id,
+      subjectId: subject.id,
+      type: "PYQ" as const,
+      title: (p.fileName || p.subject || p.id).replace(/\.pdf$/i, "").replace(/_+/g, " ").replace(/\s+/g, " "),
+      year: parseInt(p.yearRange.split("-")[0]) || 2024,
+      academicYear: p.yearRange,
+      fileUrl: p.pdfUrl,
+      fileName: p.fileName,
+      fileSize: 0,
+      fileHash: null,
+      ocrText: "",
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+
+  const pyqsMap = new Map<string, any>();
+  for (const p of [...dbPyqs, ...catalogPyqs]) {
+    pyqsMap.set(p.fileUrl, p);
+  }
+  const pyqs = Array.from(pyqsMap.values());
   const repeated = subject.questions.filter((q) => q.isRepeated);
   const others = subject.questions.filter((q) => !q.isRepeated);
   const initialAnalysis = subject.analysis
@@ -83,16 +111,18 @@ export default async function SubjectPage({
     ? await getResolvedThemeForNote(subject.id, subject.notes.id)
     : null;
 
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Previous Year Papers", url: "/previous-year-papers" },
+    { name: subject.term.program.name, url: `/programs/${subject.term.program.slug}` },
+    { name: subject.term.name, url: `/terms/${subject.term.id}` },
+    { name: subject.name, url: `/subjects/${subject.id}` },
+  ];
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
-      <BreadcrumbJsonLd
-        items={[
-          { name: "Home", url: "/" },
-          { name: subject.term.program.name, url: `/programs/${subject.term.program.slug}` },
-          { name: subject.term.name, url: `/terms/${subject.term.id}` },
-          { name: subject.name, url: `/subjects/${subject.id}` },
-        ]}
-      />
+      <BreadcrumbJsonLd items={breadcrumbs} />
+      <VisibleBreadcrumb items={breadcrumbs} />
       <p className="text-sm text-muted">
         {levelLabel(subject.term.program.level)} ·{" "}
         <Link href={`/programs/${subject.term.program.slug}`} className="hover:text-foreground">

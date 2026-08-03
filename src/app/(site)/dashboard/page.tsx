@@ -1,9 +1,14 @@
+import type { Metadata } from "next";
 import { ensureStudent, getCommunityOrangesTotal, getTodayOranges } from "@/lib/student";
 import { getProgramsByLevel, getRecentResources, getResourceHighlights } from "@/lib/data";
 import { EducationLevel } from "@/generated/prisma";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import type { ResourceItem } from "@/components/dashboard/recent-resources";
 import type { StudyActivityItem } from "@/components/dashboard/continue-studying";
+
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function DashboardPage() {
   const student = await ensureStudent();

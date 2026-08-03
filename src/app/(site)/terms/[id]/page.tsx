@@ -7,6 +7,7 @@ import { categorizeSubject } from "@/lib/subject-category";
 import { TermSubjectTabs } from "@/components/subjects/term-subject-tabs";
 import { TermPapersDisplay } from "@/components/subjects/term-papers-display";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 export async function generateMetadata({
   params,
@@ -46,15 +47,17 @@ export default async function TermPage({
     category: categorizeSubject(subject.name),
   }));
 
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Previous Year Papers", url: "/previous-year-papers" },
+    { name: term.program.name, url: `/programs/${term.program.slug}` },
+    { name: term.name, url: `/terms/${term.id}` },
+  ];
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <BreadcrumbJsonLd
-        items={[
-          { name: "Home", url: "/" },
-          { name: term.program.name, url: `/programs/${term.program.slug}` },
-          { name: term.name, url: `/terms/${term.id}` },
-        ]}
-      />
+      <BreadcrumbJsonLd items={breadcrumbs} />
+      <VisibleBreadcrumb items={breadcrumbs} />
       <p className="text-sm text-muted">
         {levelLabel(term.program.level)} ·{" "}
         <Link href={`/programs/${term.program.slug}`} className="hover:text-foreground">

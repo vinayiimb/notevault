@@ -9,6 +9,7 @@ import { BookmarkButton } from "@/components/pyq/bookmark-button";
 import { ShareButton } from "@/components/pyq/share-button";
 import { ReportOcrErrorButton } from "@/components/pyq/report-ocr-error-button";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 // Term names are usually "Semester N" — pulls the number back out for the
 // title pattern; falls back to the term's own display order, then its full
@@ -131,18 +132,20 @@ export default async function PyqPaperPage({ params }: { params: Promise<{ id: s
       }
     : null;
 
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Previous Year Papers", url: "/previous-year-papers" },
+    { name: subject.term.program.name, url: `/programs/${subject.term.program.slug}` },
+    { name: subject.term.name, url: `/terms/${subject.term.id}` },
+    { name: subject.name, url: `/subjects/${subject.id}` },
+    { name: paper.title, url: `/pyq-notes/${paper.id}` },
+  ];
+
   return (
     <div className="min-h-screen bg-sky-soft/35 px-4 py-10 sm:px-6 sm:py-14">
       <div className="mx-auto max-w-6xl">
-        <BreadcrumbJsonLd
-          items={[
-            { name: "Home", url: "/" },
-            { name: subject.term.program.name, url: `/programs/${subject.term.program.slug}` },
-            { name: subject.term.name, url: `/terms/${subject.term.id}` },
-            { name: subject.name, url: `/subjects/${subject.id}` },
-            { name: paper.title, url: `/pyq-notes/${paper.id}` },
-          ]}
-        />
+        <BreadcrumbJsonLd items={breadcrumbs} />
+        <VisibleBreadcrumb items={breadcrumbs} />
         <Link href="/pyq-notes" className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground">
           <ArrowLeft size={16} weight="bold" /> Back to complete archive
         </Link>
