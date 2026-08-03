@@ -134,9 +134,11 @@ const ContentThemeContext = createContext<Ctx | null>(null);
 export function ContentThemeProvider({
   subjectTheme,
   children,
+  forceMode,
 }: {
   subjectTheme?: { light: NotesLabColorTokens; dark: NotesLabColorTokens } | null;
   children: React.ReactNode;
+  forceMode?: "light" | "dark";
 }) {
   const hasSubjectTheme = Boolean(subjectTheme);
   const allThemes = useMemo<NotesLabTheme[]>(() => {
@@ -170,8 +172,11 @@ export function ContentThemeProvider({
   );
 
   const systemPrefersDark = useSystemPrefersDark();
-  const resolvedMode: "light" | "dark" =
-    prefs.mode === "system" ? (systemPrefersDark ? "dark" : "light") : prefs.mode;
+  const resolvedMode: "light" | "dark" = forceMode
+    ? forceMode
+    : prefs.mode === "system"
+    ? (systemPrefersDark ? "dark" : "light")
+    : prefs.mode;
 
   const tokens: NotesLabColorTokens = useMemo(() => {
     const theme = allThemes.find((t) => t.id === prefs.themeId) ?? allThemes[0];
