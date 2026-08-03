@@ -5,6 +5,20 @@ import { CalendarBlank } from "@phosphor-icons/react/dist/ssr";
 import { getProgramBySlug } from "@/lib/data";
 import { levelLabel } from "@/lib/utils";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
+
+export function generateStaticParams() {
+  return [
+    { slug: "bcom-hons" },
+    { slug: "bcom-prog" },
+    { slug: "ba-eco-hons" },
+    { slug: "ba-hist-hons" },
+    { slug: "ba-pol-hons" },
+    { slug: "bsc-zool-hons" },
+    { slug: "bsc-bot-hons" },
+    { slug: "bsc-chem-hons" },
+  ];
+}
 
 export async function generateMetadata({
   params,
@@ -35,14 +49,16 @@ export default async function ProgramPage({
   const program = await getProgramBySlug(slug);
   if (!program) notFound();
 
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Previous Year Papers", url: "/previous-year-papers" },
+    { name: program.name, url: `/programs/${program.slug}` },
+  ];
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <BreadcrumbJsonLd
-        items={[
-          { name: "Home", url: "/" },
-          { name: program.name, url: `/programs/${program.slug}` },
-        ]}
-      />
+      <BreadcrumbJsonLd items={breadcrumbs} />
+      <VisibleBreadcrumb items={breadcrumbs} />
       <p className="text-sm text-muted">{levelLabel(program.level)}</p>
       <h1 className="mt-1 text-3xl font-semibold tracking-tight">{program.name}</h1>
       {program.summary && <p className="mt-2 max-w-2xl text-muted">{program.summary}</p>}

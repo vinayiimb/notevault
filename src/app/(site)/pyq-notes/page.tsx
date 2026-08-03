@@ -7,9 +7,10 @@ import {
   catalogIntegrity,
   getUnifiedPyqArchive,
 } from "@/lib/pyq-catalog";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
-  title: "Complete PYQ Archive",
+  title: "Complete DU Papers and Notes Archive | DU PYQ Online",
   description:
     "Browse the complete Delhi University previous year question paper archive — every course, semester, and subject in one searchable library.",
   alternates: { canonical: "/pyq-notes" },
@@ -27,6 +28,12 @@ export default async function PyqNotesArchivePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Full archive", url: "/pyq-notes" },
+        ]}
+      />
       <div className="max-w-3xl">
         <p className="flex items-center gap-2 text-sm font-medium text-accent">
           <BookOpenText size={18} weight="bold" /> Full archive

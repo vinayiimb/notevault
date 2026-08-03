@@ -2,7 +2,7 @@ import { BookOpenText, CheckCircle, DownloadSimple, ShieldCheck, UploadSimple } 
 import { getProgramsByLevel } from "@/lib/data";
 import { MasterSyllabusInspector } from "@/components/admin/master-syllabus-inspector";
 
-export const dynamic = "force-dynamic";
+export const dynamic = "force-static";
 
 export default async function MasterSyllabusPage() {
   const programs = await getProgramsByLevel("COLLEGE");

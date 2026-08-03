@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowSquareOut, FileText } from "@phosphor-icons/react/dist/ssr";
 import { getSessionLinkWithSubjects } from "@/lib/data";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export async function generateMetadata({
   params,
@@ -42,8 +43,19 @@ export default async function ExamSessionSubjectPage({
   if (files.length === 0) notFound();
   const subjectName = files[0].driveSubject?.name ?? "Subject";
 
+  const programLabel = `${link.program.name}${link.variantLabel ? ` (${link.variantLabel})` : ""}`;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Question papers", url: "/exam-sessions" },
+          { name: link.session.label, url: `/exam-sessions/${link.sessionId}` },
+          { name: programLabel, url: `/exam-sessions/${link.sessionId}/${link.id}` },
+          { name: subjectName, url: `/exam-sessions/${link.sessionId}/${link.id}/${subjectId}` },
+        ]}
+      />
       <p className="text-sm text-muted">
         <Link href="/exam-sessions" className="hover:text-foreground">
           Question papers

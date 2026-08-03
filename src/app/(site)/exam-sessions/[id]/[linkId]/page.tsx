@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CaretRight, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { getSessionLinkWithSubjects } from "@/lib/data";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export async function generateMetadata({
   params,
@@ -43,8 +44,18 @@ export default async function ExamSessionCoursePage({
   }
   const subjects = [...bySubject.values()].sort((a, b) => a.name.localeCompare(b.name));
 
+  const programLabel = `${link.program.name}${link.variantLabel ? ` (${link.variantLabel})` : ""}`;
+
   return (
     <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: "Question papers", url: "/exam-sessions" },
+          { name: link.session.label, url: `/exam-sessions/${link.sessionId}` },
+          { name: programLabel, url: `/exam-sessions/${link.sessionId}/${link.id}` },
+        ]}
+      />
       <p className="text-sm text-muted">
         <Link href="/exam-sessions" className="hover:text-foreground">
           Question papers

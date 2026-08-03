@@ -5,11 +5,16 @@ import { ArrowRight, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { getProgramsByLevel } from "@/lib/data";
 import { levelLabel } from "@/lib/utils";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
+import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 // School (Class 12) is out of scope for now — a separate site is planned for it later.
 const LEVEL_MAP: Record<string, "SCHOOL" | "COLLEGE"> = {
   college: "COLLEGE",
 };
+
+export function generateStaticParams() {
+  return [{ level: "college" }];
+}
 
 export async function generateMetadata({
   params,
@@ -20,8 +25,13 @@ export async function generateMetadata({
   const enumLevel = LEVEL_MAP[level];
   if (!enumLevel) return {};
 
-  const title = `Browse ${levelLabel(enumLevel)} Courses`;
-  const description = `Browse every ${levelLabel(enumLevel)} course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes.`;
+  const title = level === "college" 
+    ? "Browse Delhi University Courses | DU PYQ Online"
+    : `Browse ${levelLabel(enumLevel)} Courses | DU PYQ Online`;
+    
+  const description = level === "college"
+    ? "Browse every college course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes."
+    : `Browse every ${levelLabel(enumLevel)} course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes.`;
 
   return {
     title,
@@ -50,6 +60,12 @@ export default async function BrowseLevelPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <BreadcrumbJsonLd
+        items={[
+          { name: "Home", url: "/" },
+          { name: `Browse ${levelLabel(enumLevel)}`, url: `/browse/${level}` },
+        ]}
+      />
       <p className="text-sm text-muted">{levelLabel(enumLevel)}</p>
       <h1 className="mt-1 text-3xl font-semibold tracking-tight">
         Previous year questions, notes &amp; answer keys

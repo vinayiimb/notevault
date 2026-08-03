@@ -9,6 +9,7 @@ import { BookmarkButton } from "@/components/pyq/bookmark-button";
 import { ShareButton } from "@/components/pyq/share-button";
 import { ReportOcrErrorButton } from "@/components/pyq/report-ocr-error-button";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 // Term names are usually "Semester N" — pulls the number back out for the
 // title pattern; falls back to the term's own display order, then its full
@@ -20,6 +21,11 @@ function semesterLabel(term: { name: string; order: number }): string {
   return term.name;
 }
 
+export function generateStaticParams() {
+  return [];
+}
+export const dynamicParams = true;
+
 export async function generateMetadata({
   params,
 }: {
@@ -27,12 +33,27 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const paper = await getPyqResourceById(id);
-  if (!paper || !paper.ocrText) return {};
+  if (!paper) return {};
 
   const subject = paper.subject;
   const program = subject.term.program;
   const year = paper.year ?? paper.academicYear ?? "";
   const semester = semesterLabel(subject.term);
+
+  // OCR still pending: the paper is real and downloadable, but there's no
+  // extracted text yet for the reading view — keep it out of the index
+  // until there's meaningful content to rank, without 404-ing a real page.
+  if (!paper.ocrText) {
+    const title = `${subject.name} DU PYQ ${year} – ${program.name}, Semester ${semester}`;
+    const description = `The ${year} ${subject.name} DU previous year question paper for ${program.name} Semester ${semester} is available to download. The online reading view is still being prepared.`;
+
+    return {
+      title,
+      description,
+      alternates: { canonical: `/pyq-notes/${paper.id}` },
+      robots: { index: false, follow: true },
+    };
+  }
 
   const title = `${subject.name} DU PYQ ${year} – ${program.name}, Semester ${semester}`;
   const descriptionParts = [
@@ -59,9 +80,54 @@ export async function generateMetadata({
 export default async function PyqPaperPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const paper = await getPyqResourceById(id);
-  if (!paper || !paper.ocrText) notFound();
+  if (!paper) notFound();
 
   const subject = paper.subject;
+
+  if (!paper.ocrText) {
+    return (
+      <div className="min-h-screen bg-sky-soft/35 px-4 py-10 sm:px-6 sm:py-14">
+        <div className="mx-auto max-w-3xl">
+          <BreadcrumbJsonLd
+            items={[
+              { name: "Home", url: "/" },
+              { name: subject.term.program.name, url: `/programs/${subject.term.program.slug}` },
+              { name: subject.term.name, url: `/terms/${subject.term.id}` },
+              { name: subject.name, url: `/subjects/${subject.id}` },
+              { name: paper.title, url: `/pyq-notes/${paper.id}` },
+            ]}
+          />
+          <Link href="/pyq-notes" className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground">
+            <ArrowLeft size={16} weight="bold" /> Back to complete archive
+          </Link>
+
+          <header className="mt-8 border-b border-sky/25 pb-8">
+            <p className="text-sm text-muted">
+              <Link href={`/programs/${subject.term.program.slug}`} className="hover:text-foreground">{subject.term.program.name}</Link>
+              {" · "}
+              <Link href={`/terms/${subject.term.id}`} className="hover:text-foreground">{subject.term.name}</Link>
+              {" · "}
+              <Link href={`/subjects/${subject.id}`} className="hover:text-foreground">{subject.name}</Link>
+            </p>
+            <h1 className="mt-2 max-w-3xl text-3xl font-semibold tracking-tight sm:text-4xl">{paper.title}</h1>
+            <p className="mt-4 max-w-xl text-sm text-muted">
+              The online reading view for this paper is still being prepared. You can download the
+              original PDF in the meantime.
+            </p>
+            <div className="mt-6 flex flex-wrap items-center gap-2">
+              <a
+                href={`/api/download/${paper.id}`}
+                download
+                className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition hover:bg-accent-hover focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              >
+                <DownloadSimple size={17} weight="bold" /> Download PDF
+              </a>
+            </div>
+          </header>
+        </div>
+      </div>
+    );
+  }
   const pyqCount = subject.resources.length;
   const initialAnalysis = subject.analysis
     ? {
@@ -71,18 +137,20 @@ export default async function PyqPaperPage({ params }: { params: Promise<{ id: s
       }
     : null;
 
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Previous Year Papers", url: "/previous-year-papers" },
+    { name: subject.term.program.name, url: `/programs/${subject.term.program.slug}` },
+    { name: subject.term.name, url: `/terms/${subject.term.id}` },
+    { name: subject.name, url: `/subjects/${subject.id}` },
+    { name: paper.title, url: `/pyq-notes/${paper.id}` },
+  ];
+
   return (
     <div className="min-h-screen bg-sky-soft/35 px-4 py-10 sm:px-6 sm:py-14">
       <div className="mx-auto max-w-6xl">
-        <BreadcrumbJsonLd
-          items={[
-            { name: "Home", url: "/" },
-            { name: subject.term.program.name, url: `/programs/${subject.term.program.slug}` },
-            { name: subject.term.name, url: `/terms/${subject.term.id}` },
-            { name: subject.name, url: `/subjects/${subject.id}` },
-            { name: paper.title, url: `/pyq-notes/${paper.id}` },
-          ]}
-        />
+        <BreadcrumbJsonLd items={breadcrumbs} />
+        <VisibleBreadcrumb items={breadcrumbs} />
         <Link href="/pyq-notes" className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground">
           <ArrowLeft size={16} weight="bold" /> Back to complete archive
         </Link>
