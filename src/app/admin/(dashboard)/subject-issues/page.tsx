@@ -1,4 +1,4 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { ArrowsMerge, CheckCircle, MagnifyingGlass, WarningCircle } from "@phosphor-icons/react/dist/ssr";
 import { mergeSubjectsAction } from "@/lib/actions";

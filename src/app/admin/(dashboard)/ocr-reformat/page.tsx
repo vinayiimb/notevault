@@ -1,4 +1,4 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 import { OcrReformatRunner } from "@/components/admin/ocr-reformat-runner";
 
 export default function OcrReformatPage() {

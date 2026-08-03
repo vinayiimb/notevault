@@ -1,4 +1,4 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 import Image from "next/image";
 import { ChatCircleText } from "@phosphor-icons/react/dist/ssr";
 import { prisma } from "@/lib/prisma";

@@ -1,4 +1,4 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { UnsortedSubjectsClient } from "@/components/unsorted/unsorted-subjects-client";
 import { MatchUnsortedCsv } from "@/components/unsorted/match-unsorted-csv";

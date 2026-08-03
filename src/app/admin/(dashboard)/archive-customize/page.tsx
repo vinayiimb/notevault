@@ -1,4 +1,4 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { getRawUnifiedPyqArchive } from "@/lib/pyq-catalog";
 import { slugify } from "@/lib/utils";

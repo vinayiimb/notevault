@@ -1,4 +1,4 @@
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/prisma";
 import { FolderUploadClient } from "@/components/bulk-upload/folder-upload-client";
 

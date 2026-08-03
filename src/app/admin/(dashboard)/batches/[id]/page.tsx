@@ -1,6 +1,6 @@
 export function generateStaticParams() { return []; }
 export const dynamicParams = true;
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { BatchDetailClient } from "@/components/batches/batch-detail-client";

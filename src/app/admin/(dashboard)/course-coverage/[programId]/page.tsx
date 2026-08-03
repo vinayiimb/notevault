@@ -1,6 +1,6 @@
 export function generateStaticParams() { return []; }
 export const dynamicParams = true;
-export const dynamic = "force-static";
+export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { CatalogCourseCoverageTable } from "@/components/coverage/catalog-course-coverage-table";

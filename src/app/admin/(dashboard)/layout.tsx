@@ -29,7 +29,7 @@ import { prisma } from "@/lib/prisma";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 
-export const revalidate = 3600;
+
 
 export default async function AdminDashboardLayout({
   children,
