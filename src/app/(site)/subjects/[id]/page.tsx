@@ -21,6 +21,8 @@ import { ExamWeightage } from "@/components/subjects/exam-weightage";
 import { DownloadAllButton } from "@/components/subjects/download-all-button";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
+import { getUnifiedPyqArchive } from "@/lib/pyq-catalog";
+
 export function generateStaticParams() {
   return [];
 }
