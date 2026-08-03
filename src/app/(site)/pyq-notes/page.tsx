@@ -16,8 +16,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pyq-notes" },
 };
 
+export const revalidate = 3600;
+
 export default async function PyqNotesArchivePage() {
-  await connection();
   const papers = await getUnifiedPyqArchive();
   const courseCount = new Set(papers.map((paper) => paper.course)).size;
   const uploadCount = papers.filter((paper) => paper.source === "upload").length;

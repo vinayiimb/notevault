@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   ArticleNyTimes,
@@ -116,9 +117,13 @@ export function MobileNavMenu() {
                 onClick={() => setOpen(false)}
                 className="flex items-center gap-2 font-display font-bold text-foreground text-lg tracking-tight"
               >
-                <span className="flex size-8 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-sm">
-                  <GraduationCap size={18} weight="bold" />
-                </span>
+                <Image
+                  src="/icon.png"
+                  alt="DU PYQ Online Mascot Logo"
+                  width={32}
+                  height={32}
+                  className="size-8 rounded-xl object-contain bg-white border border-border/20 shadow-xs"
+                />
                 <span>DU PYQ Online</span>
               </Link>
 

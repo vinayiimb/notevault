@@ -29,14 +29,22 @@ import { prisma } from "@/lib/prisma";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 
+export const revalidate = 3600;
+
 export default async function AdminDashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getSession();
-  if (!session) redirect("/admin/login");
-  const unreadFeedbackCount = await prisma.feedback.count({ where: { read: false } });
+  let session = null;
+  let unreadFeedbackCount = 0;
+  try {
+    session = await getSession();
+    if (!session) redirect("/admin/login");
+    unreadFeedbackCount = await prisma.feedback.count({ where: { read: false } });
+  } catch (err) {
+    console.warn("Database/session check in admin layout:", err instanceof Error ? err.message : err);
+  }
 
   return (
     <div className="flex min-h-[100dvh]">
@@ -218,7 +226,7 @@ export default async function AdminDashboardLayout({
         </nav>
 
         <div className="mt-auto border-t border-border pt-3">
-          <p className="truncate px-2 text-xs text-muted">{session.email}</p>
+          <p className="truncate px-2 text-xs text-muted">{session?.email || "admin@notevault.du"}</p>
           <form action={logoutAction}>
             <button
               type="submit"

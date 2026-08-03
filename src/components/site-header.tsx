@@ -1,6 +1,7 @@
 import Link from "next/link";
+import Image from "next/image";
 import { Suspense } from "react";
-import { SignIn, Stack } from "@phosphor-icons/react/dist/ssr";
+import { SignIn } from "@phosphor-icons/react/dist/ssr";
 import { SearchBar } from "@/components/search-bar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MobileNavMenu, SiteNavigation } from "@/components/site-navigation";
@@ -10,9 +11,14 @@ export function SiteHeader() {
     <div className="sticky top-0 z-40 mx-auto w-full sm:top-4 sm:w-[92%] sm:max-w-6xl">
       <header className="flex h-16 sm:h-[72px] items-center justify-between gap-3 sm:gap-5 border-b border-border/60 bg-surface/95 px-4 backdrop-blur-md shadow-2xs sm:border-none sm:rounded-2xl sm:shadow-[0_8px_24px_rgba(0,0,0,.08)] sm:px-6">
         <Link href="/" className="flex shrink-0 items-center gap-2 font-display font-bold tracking-tight text-foreground text-base sm:text-lg">
-          <span className="flex size-7.5 sm:size-8 items-center justify-center rounded-xl bg-brand text-brand-foreground shadow-sm">
-            <Stack size={17} weight="bold" />
-          </span>
+          <Image
+            src="/icon.png"
+            alt="DU PYQ Online Mascot Logo"
+            width={32}
+            height={32}
+            priority
+            className="size-7.5 sm:size-8 rounded-xl object-contain bg-white border border-border/20 shadow-xs"
+          />
           <span>DU PYQ Online</span>
         </Link>
 
