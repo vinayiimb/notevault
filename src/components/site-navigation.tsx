@@ -5,9 +5,11 @@ import { createPortal } from "react-dom";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ArticleNyTimes,
   CaretRight,
   ChartBar,
   ChatCircleText,
+  Compass,
   FileArchive,
   Files,
   GraduationCap,
@@ -33,6 +35,8 @@ const NAVIGATION_SECTIONS = [
     title: "Tools & Utilities",
     items: [
       { href: "/tools", label: "Study Tools & Quiz Lab", desc: "Flashcards, revision & exam kits", icon: Wrench },
+      { href: "/blog", label: "Blog", desc: "Exam prep guides & articles", icon: ArticleNyTimes },
+      { href: "/resources", label: "Resources", desc: "Every free resource in one place", icon: Compass },
       { href: "/feedback", label: "Feedback & Requests", desc: "Report issues or request papers", icon: ChatCircleText },
       { href: "https://wa.me/919376180015", label: "WhatsApp Support", desc: "Direct DU student helpdesk", icon: Question, external: true },
     ],

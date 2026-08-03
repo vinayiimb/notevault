@@ -35,6 +35,30 @@ export function websiteJsonLd() {
   };
 }
 
+export function blogPostingJsonLd(post: {
+  title: string;
+  description: string;
+  slug: string;
+  author: string;
+  publishedAt: string;
+  updatedAt?: string;
+  keywords?: string[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "BlogPosting",
+    headline: post.title,
+    description: post.description,
+    url: absoluteUrl(`/blog/${post.slug}`),
+    mainEntityOfPage: absoluteUrl(`/blog/${post.slug}`),
+    datePublished: post.publishedAt,
+    dateModified: post.updatedAt ?? post.publishedAt,
+    keywords: post.keywords?.join(", "),
+    author: { "@type": "Organization", name: post.author },
+    publisher: { "@type": "Organization", name: SITE_NAME, url: SITE_URL },
+  };
+}
+
 export function breadcrumbJsonLd(items: { name: string; url: string }[]) {
   return {
     "@context": "https://schema.org",

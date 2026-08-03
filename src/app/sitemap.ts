@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { absoluteUrl } from "@/lib/seo";
+import { getAllBlogPosts } from "@/lib/blog";
 
 // Static, always-public routes with no dynamic segment.
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
@@ -11,6 +12,9 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/tools", priority: 0.5, changeFrequency: "monthly" },
   { path: "/tools/exam-kit", priority: 0.5, changeFrequency: "monthly" },
   { path: "/paid-notes", priority: 0.3, changeFrequency: "monthly" },
+  { path: "/blog", priority: 0.6, changeFrequency: "weekly" },
+  { path: "/resources", priority: 0.6, changeFrequency: "monthly" },
+  { path: "/link-to-us", priority: 0.3, changeFrequency: "monthly" },
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -99,8 +103,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
+  const blogEntries: MetadataRoute.Sitemap = getAllBlogPosts().map((post) => ({
+    url: absoluteUrl(`/blog/${post.slug}`),
+    lastModified: new Date(post.updatedAt ?? post.publishedAt),
+    changeFrequency: "monthly",
+    priority: 0.6,
+  }));
+
   return [
     ...staticEntries,
+    ...blogEntries,
     ...programEntries,
     ...termEntries,
     ...subjectEntries,
