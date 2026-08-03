@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import type { Metadata } from "next";
 import { ExamKitClient } from "@/components/exam-kit/exam-kit-client";
 

@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import { getLeaderboard, getCurrentStudent } from "@/lib/student";
 import { CurrencyIcon } from "@/components/dashboard/currency-icon";
 

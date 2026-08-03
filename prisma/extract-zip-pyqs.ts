@@ -45,7 +45,7 @@ function findSyllabusMatch(cleanedName: string) {
   }
   
   // 1. Try exact match first
-  let match = MASTER_SYLLABUS_ROWS.find(row => {
+  const match = MASTER_SYLLABUS_ROWS.find(row => {
     const normSubject = row.subjectName.toLowerCase().replace(/[^a-z0-9]/g, "");
     return normSubject === normalizedQuery;
   });

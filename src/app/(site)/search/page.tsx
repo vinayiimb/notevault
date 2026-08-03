@@ -15,6 +15,8 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
+export const revalidate = 3600;
+
 export default async function SearchPage({
   searchParams,
 }: {

@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChatCircleText, GraduationCap, LinkSimple, WhatsappLogo } from "@phosphor-icons/react/dist/ssr";

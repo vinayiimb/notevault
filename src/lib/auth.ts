@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
+import { isDynamicServerError } from "next/dist/client/components/hooks-server-context";
 
 const SESSION_COOKIE = "notevault_session";
 const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret-change-me";
@@ -49,10 +50,17 @@ export async function destroySessionCookie() {
 }
 
 export async function getSession(): Promise<SessionPayload | null> {
-  const cookieStore = await cookies();
-  const token = cookieStore.get(SESSION_COOKIE)?.value;
-  if (!token) return null;
-  return verifySessionToken(token);
+  try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get(SESSION_COOKIE)?.value;
+    if (!token) return null;
+    return verifySessionToken(token);
+  } catch (err) {
+    if (isDynamicServerError(err)) {
+      throw err;
+    }
+    return null;
+  }
 }
 
 export const SESSION_COOKIE_NAME = SESSION_COOKIE;
