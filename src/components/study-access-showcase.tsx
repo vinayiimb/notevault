@@ -9,14 +9,19 @@ const ECONOMICS_NOTES_URL =
   "https://drive.google.com/drive/folders/1GJ67aNwwfq3Mf_xBXm3POXkxduW5CDPi?usp=sharing";
 
 const POPULAR_DU_COURSES = [
-  { name: "B.Com. (Hons)", slug: "b-com-hons" },
-  { name: "B.Com. (Programme)", slug: "b-com-prog" },
-  { name: "B.A. (H) Economics", slug: "ba-eco-hons" },
-  { name: "B.A. (H) History", slug: "ba-hist-hons" },
-  { name: "B.A. (H) Political Science", slug: "ba-pol-hons" },
-  { name: "B.Sc. (H) Zoology", slug: "bsc-zool-hons" },
-  { name: "B.Sc. (H) Botany", slug: "bsc-bot-hons" },
-  { name: "B.Sc. (H) Chemistry / Physics", slug: "bsc-chem-hons" },
+  { name: "B.Com. (Hons.)", slug: "B.Com. (H)" },
+  { name: "B.Com. (Programme)", slug: "B.Com. (Programme)" },
+  { name: "B.A. (H) Economics", slug: "B.A. (H) Economics" },
+  { name: "B.A. (H) English", slug: "B.A. (H) English" },
+  { name: "B.A. (H) Political Science", slug: "B.A. (H) Political Science" },
+  { name: "B.A. (H) History", slug: "B.A. (H) History" },
+  { name: "B.A. (H) Geography", slug: "B.A. (H) Geography" },
+  { name: "B.A. (H) Sociology / Psychology", slug: "B.A. (H) Sociology" },
+  { name: "B.A. (Programme)", slug: "B.A. (Programme)" },
+  { name: "B.Sc. (H) Mathematics", slug: "B.Sc. (H) Mathematics" },
+  { name: "B.Sc. (H) Physics / Chemistry", slug: "B.Sc. (H) Chemistry" },
+  { name: "B.Sc. (H) Zoology / Botany", slug: "B.Sc. (H) Zoology" },
+  { name: "General / Interdisciplinary", slug: "General / Interdisciplinary" },
 ];
 
 export function StudyAccessShowcase() {
@@ -26,10 +31,13 @@ export function StudyAccessShowcase() {
 
   function handleMobileSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+    const q = searchQuery.trim();
+    if (q && selectedCourse) {
+      router.push(`/pyq-notes?course=${encodeURIComponent(selectedCourse)}&q=${encodeURIComponent(q)}`);
+    } else if (q) {
+      router.push(`/pyq-notes?q=${encodeURIComponent(q)}`);
     } else if (selectedCourse) {
-      router.push(`/pyq-notes`);
+      router.push(`/pyq-notes?course=${encodeURIComponent(selectedCourse)}`);
     } else {
       router.push("/pyq-notes");
     }

@@ -57,7 +57,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
     e.preventDefault();
     if (!value.trim()) return;
     setOpen(false);
-    router.push(`/search?q=${encodeURIComponent(value.trim())}`);
+    router.push(`/pyq-notes?q=${encodeURIComponent(value.trim())}`);
   }
 
   return (

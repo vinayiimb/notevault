@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { BookOpenText } from "@phosphor-icons/react/dist/ssr";
 import { connection } from "next/server";
 import { CatalogArchiveBrowser } from "@/components/archive/catalog-archive-browser";
@@ -80,7 +81,9 @@ export default async function PyqNotesArchivePage() {
         ) : null}
       </div>
 
-      <CatalogArchiveBrowser papers={papers} />
+      <Suspense fallback={<div className="mt-10 h-[500px] w-full animate-pulse rounded-2xl bg-surface-muted border border-border/60" />}>
+        <CatalogArchiveBrowser papers={papers} />
+      </Suspense>
     </div>
   );
 }

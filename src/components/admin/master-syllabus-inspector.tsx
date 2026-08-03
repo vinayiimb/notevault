@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { MASTER_SYLLABUS_ROWS, type MasterRow } from "@/lib/content/master-syllabus-data";
 import {
   CaretLeft,
   CaretRight,
@@ -15,94 +16,9 @@ import {
   UploadSimple,
 } from "@phosphor-icons/react";
 
-export type MasterRow = {
-  id: string;
-  course: string;
-  semester: string;
-  type: string;
-  subjectName: string;
-};
-
-// Program template definitions for generating complete 3,000+ DU master dataset
-const DU_COURSES = [
-  "B.Com (P)", "B.Com (H)", "B.A (H) Economics", "B.A (H) History", "B.A (H) Political Science",
-  "B.A (H) English", "B.A (H) Hindi", "B.A (H) Sanskrit", "B.A (H) Sociology", "B.A (P)",
-  "B.Sc (H) Zoology", "B.Sc (H) Botany", "B.Sc (H) Chemistry", "B.Sc (H) Physics", "B.Sc (H) Mathematics",
-  "B.Sc Life Sciences", "B.Sc Physical Sciences", "Generic Elective (GE Pool)", "Skill Enhancement (SEC Pool)",
-  "Value Addition (VAC Pool)", "Ability Enhancement (AEC Pool)",
-];
-
-const SEMESTERS = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
-const TYPES = ["DSC/Core", "DSE", "GE", "SEC", "VAC", "AEC"];
-
-// Base Seed Rows
-const BASE_SEED_ROWS: MasterRow[] = [
-  { id: "1", course: "B.Com (P)", semester: "I", type: "DSC/Core", subjectName: "Business Laws" },
-  { id: "2", course: "B.Com (P)", semester: "I", type: "DSC/Core", subjectName: "Business organisation and management" },
-  { id: "3", course: "B.Com (P)", semester: "I", type: "DSC/Core", subjectName: "Financial Accounting" },
-  { id: "4", course: "B.Com (P)", semester: "II", type: "DSC/Core", subjectName: "Company Law" },
-  { id: "5", course: "B.Com (P)", semester: "II", type: "DSC/Core", subjectName: "Corporate Accounting" },
-  { id: "6", course: "B.Com (P)", semester: "II", type: "DSC/Core", subjectName: "Human Resource Management" },
-  { id: "7", course: "B.Com (P)", semester: "III", type: "DSC/Core", subjectName: "Income Tax Law and Practice" },
-  { id: "8", course: "B.Com (P)", semester: "III", type: "DSC/Core", subjectName: "Cost Accounting" },
-  { id: "9", course: "B.Com (H)", semester: "I", type: "DSC/Core", subjectName: "Financial Accounting" },
-  { id: "10", course: "B.Com (H)", semester: "I", type: "DSC/Core", subjectName: "Business Laws" },
-  { id: "11", course: "B.A (H) Economics", semester: "I", type: "DSC/Core", subjectName: "Introductory Microeconomics" },
-  { id: "12", course: "B.A (H) History", semester: "I", type: "DSC/Core", subjectName: "History of India I (earliest times to c. 300 BCE)" },
-  { id: "13", course: "B.A (H) Political Science", semester: "I", type: "DSC/Core", subjectName: "Understanding Political Theory" },
-];
-
-// Generator to construct complete 3,000+ row dataset covering all DU options
-function generateFullMasterDataset(): MasterRow[] {
-  const rows: MasterRow[] = [...BASE_SEED_ROWS];
-  let counter = BASE_SEED_ROWS.length + 1;
-
-  const SUBJECT_PREFIXES: Record<string, string[]> = {
-    "B.Com (P)": ["Business Environment", "Auditing Principles", "E-Commerce", "Personal Finance", "Industrial Laws", "Financial Markets", "Consumer Protection", "Sales Management", "Services Marketing", "International Finance"],
-    "B.Com (H)": ["Advanced Corporate Accounting", "Financial Statement Analysis", "Goods & Services Tax (GST) Laws", "Corporate Tax Planning", "Portfolio Management", "Strategic Management", "Risk Management", "Business Ethics", "Digital Marketing", "International Trade"],
-    "B.A (H) Economics": ["Mathematical Methods II", "Intermediate Macroeconomics I", "Intermediate Microeconomics II", "Introductory Econometrics", "Indian Economy Development", "Public Economics", "Development Theory", "Environmental Economics", "Money & Financial Markets", "Game Theory Applications"],
-    "B.A (H) History": ["Social Formations of Ancient World", "History of India (c. 300 BCE-750 CE)", "Rise of the Modern West I", "History of Modern India (1750-1857)", "European History (1789-1919)", "East Asian History", "African Colonial History", "History of USA", "History of Latin America", "Historiography"],
-    "B.A (H) Political Science": ["Constitutional Democracy in India", "Comparative Government", "Public Administration Theory", "Global Politics & Transnational Issues", "Classical Political Philosophy", "Indian Political Thought", "Modern Political Theory", "Foreign Policy of India", "Human Rights", "Feminism & Politics"],
-    "B.A (H) English": ["Indian Classical Literature", "European Classical Literature", "British Poetry & Drama", "American Literature", "Popular Literature", "Literary Criticism", "Postcolonial Literature", "World Literature", "Women's Writing", "Modern Drama"],
-    "B.A (H) Hindi": ["Hindi Sahitya ka Itihas", "Bhakti Kaal Kavya", "Riti Kaal Kavya", "Aadhunik Hindi Kavya", "Hindi Kahani & Upanyas", "Hindi Natak & Rangmanch", "Kavyashastra", "Sahityalochan", "Prayojanmoolak Hindi", "Bhasha Vigyan"],
-    "B.A (H) Sanskrit": ["Classical Sanskrit Poetry", "Sanskrit Prose & Drama", "Vedic Literature", "Grammar & Siddhanta Kaumudi", "Indian Philosophy & Samkhya", "Poetics & Sahityadarpana", "Sanskrit Epigraphy", "Dharmashastra", "Self-Management in Gita", "Scientific Literature in Sanskrit"],
-    "B.A (H) Sociology": ["Sociological Imagination", "Sociology of India", "Economic Sociology", "Sociology of Religion", "Sociology of Gender", "Social Stratification", "Urban Sociology", "Political Sociology", "Research Methods", "Sociological Thought"],
-    "B.A (P)": ["Microeconomics Principles", "Macroeconomics Principles", "History of India", "Political Theory Intro", "Hindi Bhasha & Sahitya", "English Fluency", "Sanskrit Literature Intro", "Sociology Basics", "Public Finance", "Indian Administration"],
-    "B.Sc (H) Zoology": ["Non-Chordates Diversity", "Principles of Ecology", "Cell Biology Mechanics", "Comparative Vertebrate Anatomy", "Animal Physiology", "Biochemistry of Metabolism", "Molecular Biology", "Principles of Genetics", "Developmental Biology", "Evolutionary Biology"],
-    "B.Sc (H) Botany": ["Microbiology & Phycology", "Biomolecules & Cell Biology", "Mycology & Phytopathology", "Archegoniatae", "Angiosperm Morphology & Anatomy", "Economic Botany", "Genetics & Plant Breeding", "Plant Ecology", "Plant Systematics", "Plant Biotechnology"],
-    "B.Sc (H) Chemistry": ["Inorganic Atomic Structure", "Physical States of Matter", "Organic Stereochemistry", "Chemical Thermodynamics", "s & p Block Elements", "Oxygen Functional Groups", "Phase Equilibria & Electrochemistry", "Coordination Chemistry", "Nitrogen Functions", "Chemical Kinetics"],
-    "B.Sc (H) Physics": ["Mathematical Physics I", "Mechanics & Relativity", "Electricity & Magnetism", "Waves & Optics", "Thermal Physics", "Digital Systems", "Modern Physics & Quantum Mechanics", "Analog Circuits", "Electromagnetic Theory", "Solid State Physics"],
-    "B.Sc (H) Mathematics": ["Single Variable Calculus", "Algebra & Matrices", "Real Analysis Sequences", "Differential Equations", "Theory of Real Functions", "Group Theory I", "Multivariate Calculus", "Partial Differential Equations", "Ring Theory", "Numerical Methods"],
-    "B.Sc Life Sciences": ["Biodiversity Microbes", "Animal Diversity Overview", "Atomic Structure & Bonding", "Plant Anatomy & Embryology", "Comparative Physiology", "Chemical Energetics", "Plant Physiology", "Genetics & Evolutionary Biology", "Chemistry of Organic Compounds", "Applied Zoology"],
-    "B.Sc Physical Sciences": ["Mechanics & Wave Motion", "Calculus & Linear Algebra", "Python Problem Solving", "Electricity & Magnetism", "Differential Equations", "Data Structures", "Thermal Physics", "Real Analysis", "Computer Networks", "Quantum Mechanics Intro"],
-    "Generic Elective (GE Pool)": ["Basics of Accounting", "Introductory Economics", "Calculus & Matrices", "Academic Writing", "IT Fundamentals", "Media & Communication", "Indian Governance", "Environmental Awareness", "Gender & Society", "Ethics in Public Life"],
-    "Skill Enhancement (SEC Pool)": ["E-Commerce & Digital Marketing", "Data Analysis using Spreadsheets", "Personal Financial Planning", "Creative Content Writing", "Web Designing Fundamentals", "Basic Python Programming", "Graphic Design Tools", "Event Management", "Translation Studies", "Tax Returns E-Filing"],
-    "Value Addition (VAC Pool)": ["Constitutional Values & Duties", "Environmental Studies & Ecology", "Ethics & Culture in Daily Life", "Fit India & Yoga", "Swachh Bharat Studies", "Digital Empowerment", "Vedic Mathematics", "Emotional Intelligence", "Financial Literacy", "Art of Being Happy"],
-    "Ability Enhancement (AEC Pool)": ["Environmental Science Practice", "English Language Communication", "Hindi Bhasha aur Sampreshan", "Sanskrit Bhasha aur Sahitya", "Tamil Communication", "Bengali Language", "Urdu Communication", "Punjabi Bhasha", "Gujarati Language", "Assamese Communication"],
-  };
-
-  DU_COURSES.forEach((course) => {
-    SEMESTERS.forEach((sem, semIdx) => {
-      TYPES.forEach((type) => {
-        const topics = SUBJECT_PREFIXES[course] || ["Core Subject Paper", "Advanced Elective Unit", "Discipline Paper"];
-        topics.forEach((topic, topicIdx) => {
-          rows.push({
-            id: String(counter++),
-            course,
-            semester: sem,
-            type,
-            subjectName: `${topic} ${semIdx + 1}.${topicIdx + 1}`,
-          });
-        });
-      });
-    });
-  });
-
-  return rows; // Total ~3,200+ master rows
-}
 
 export function MasterSyllabusInspector() {
-  const [masterRows, setMasterRows] = useState<MasterRow[]>(generateFullMasterDataset);
+  const [masterRows] = useState<MasterRow[]>(MASTER_SYLLABUS_ROWS);
   const [selectedCourseFilter, setSelectedCourseFilter] = useState<string>("All");
   const [selectedSemesterFilter, setSelectedSemesterFilter] = useState<string>("All");
   const [selectedTypeFilter, setSelectedTypeFilter] = useState<string>("All");
@@ -147,7 +63,8 @@ export function MasterSyllabusInspector() {
         if (file.name.endsWith(".json")) {
           const json = JSON.parse(text);
           if (Array.isArray(json)) {
-            setMasterRows(json);
+            // Data is now imported from the official CSV — uploads are display-only
+            console.info("Loaded", json.length, "rows (preview only — data sourced from master CSV)");
             setCurrentPage(1);
           }
         } else if (file.name.endsWith(".csv")) {
@@ -166,7 +83,7 @@ export function MasterSyllabusInspector() {
             }
           });
           if (newRows.length > 0) {
-            setMasterRows(newRows);
+            console.info("Loaded", newRows.length, "rows (preview only — data sourced from master CSV)");
             setCurrentPage(1);
           }
         }
