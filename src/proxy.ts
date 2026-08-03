@@ -9,9 +9,19 @@ const ONE_YEAR = 60 * 60 * 24 * 365;
 // The real authorization check happens server-side in the admin layout via getSession().
 export function proxy(request: NextRequest) {
   const host = request.headers.get("host");
+  
   if (host === "dupyq.online") {
     const url = new URL(request.url);
     url.host = "www.dupyq.online";
+    return NextResponse.redirect(url, 301);
+  }
+
+  if (host === "blog.dupyq.online") {
+    const url = new URL(request.url);
+    url.host = "www.dupyq.online";
+    if (!url.pathname.startsWith("/blog")) {
+      url.pathname = `/blog${url.pathname === "/" ? "" : url.pathname}`;
+    }
     return NextResponse.redirect(url, 301);
   }
 

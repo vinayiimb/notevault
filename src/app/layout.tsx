@@ -73,9 +73,18 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_IN",
     url: SITE_URL,
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: `${SITE_NAME} — Delhi University Previous Year Question Papers`,
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
+    images: ["/twitter-image.png"],
   },
   robots: {
     index: true,
