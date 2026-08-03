@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { CaretRight, Exam, Sparkle } from "@phosphor-icons/react/dist/ssr";

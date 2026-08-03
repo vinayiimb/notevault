@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import { FeedbackForm } from "@/components/feedback-form";
 
 export default function FeedbackPage() {

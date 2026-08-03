@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import type { Metadata } from "next";
 import { ensureStudent, getCommunityOrangesTotal, getTodayOranges } from "@/lib/student";
 import { getProgramsByLevel, getRecentResources, getResourceHighlights } from "@/lib/data";
