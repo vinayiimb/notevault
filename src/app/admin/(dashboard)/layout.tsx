@@ -36,14 +36,17 @@ export default async function AdminDashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
-  let session = null;
+  const session = await getSession();
+
+  if (!session) {
+    redirect("/login");
+  }
+
   let unreadFeedbackCount = 0;
   try {
-    session = await getSession();
-    if (!session) redirect("/admin/login");
     unreadFeedbackCount = await prisma.feedback.count({ where: { read: false } });
   } catch (err) {
-    console.warn("Database/session check in admin layout:", err instanceof Error ? err.message : err);
+    console.warn("Database check in admin layout:", err instanceof Error ? err.message : err);
   }
 
   return (

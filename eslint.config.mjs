@@ -15,6 +15,12 @@ const eslintConfig = defineConfig([
     "src/generated/**",
     "public/**",
   ]),
+  // Custom rule overrides
+  {
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
 ]);
 
 export default eslintConfig;

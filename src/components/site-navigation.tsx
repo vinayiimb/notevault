@@ -118,13 +118,13 @@ export function MobileNavMenu() {
                 className="flex items-center gap-2 font-display font-bold text-foreground text-lg tracking-tight"
               >
                 <Image
-                  src="/icon.png"
+                  src="/logo.png"
                   alt="DU PYQ Online Mascot Logo"
-                  width={32}
-                  height={32}
-                  className="size-8 rounded-xl object-contain bg-white border border-border/20 shadow-xs"
+                  width={36}
+                  height={36}
+                  className="size-8.5 rounded-xl object-contain shadow-xs bg-white/90 p-0.5 border border-border/30"
                 />
-                <span>DU PYQ Online</span>
+                <span className="font-extrabold font-display">DU PYQ Online</span>
               </Link>
 
               <button
