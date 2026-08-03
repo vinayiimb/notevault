@@ -7,6 +7,19 @@ import { levelLabel } from "@/lib/utils";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
+export function generateStaticParams() {
+  return [
+    { slug: "bcom-hons" },
+    { slug: "bcom-prog" },
+    { slug: "ba-eco-hons" },
+    { slug: "ba-hist-hons" },
+    { slug: "ba-pol-hons" },
+    { slug: "bsc-zool-hons" },
+    { slug: "bsc-bot-hons" },
+    { slug: "bsc-chem-hons" },
+  ];
+}
+
 export async function generateMetadata({
   params,
 }: {

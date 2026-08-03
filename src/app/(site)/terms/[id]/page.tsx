@@ -9,6 +9,11 @@ import { TermPapersDisplay } from "@/components/subjects/term-papers-display";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
+export function generateStaticParams() {
+  return [];
+}
+export const dynamicParams = true;
+
 export async function generateMetadata({
   params,
 }: {

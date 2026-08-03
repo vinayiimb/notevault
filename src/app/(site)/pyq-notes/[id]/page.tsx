@@ -21,6 +21,11 @@ function semesterLabel(term: { name: string; order: number }): string {
   return term.name;
 }
 
+export function generateStaticParams() {
+  return [];
+}
+export const dynamicParams = true;
+
 export async function generateMetadata({
   params,
 }: {

@@ -5,6 +5,11 @@ import { ArrowSquareOut, CaretRight, Exam } from "@phosphor-icons/react/dist/ssr
 import { getExamSessionById } from "@/lib/data";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
+export function generateStaticParams() {
+  return [];
+}
+export const dynamicParams = true;
+
 export async function generateMetadata({
   params,
 }: {

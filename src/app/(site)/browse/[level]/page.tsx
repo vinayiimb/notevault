@@ -12,6 +12,10 @@ const LEVEL_MAP: Record<string, "SCHOOL" | "COLLEGE"> = {
   college: "COLLEGE",
 };
 
+export function generateStaticParams() {
+  return [{ level: "college" }];
+}
+
 export async function generateMetadata({
   params,
 }: {
