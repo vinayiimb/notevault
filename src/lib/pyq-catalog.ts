@@ -3,6 +3,8 @@ import rawOfficialArchiveMap from "@/data/archive-official-map.json";
 import { geographyDriveCatalog } from "@/data/geography-drive-catalog";
 import { politicalScienceDriveCatalog } from "@/data/political-science-drive-catalog";
 import { duMasterDriveCatalog } from "@/data/du-master-drive-catalog";
+import { extractedZipCatalog } from "@/data/extracted-pyq-catalog";
+import { bcomDriveCatalog } from "@/data/bcom-drive-catalog";
 import { getFullDriveArchiveIndex, getPyqArchiveIndex } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
@@ -174,27 +176,32 @@ export function getCatalogCourseBySlug(courseSlug: string) {
 }
 
 export async function getFullPyqCatalog(): Promise<CatalogPaper[]> {
-  const uploads = await prisma.catalogPaperUpload.findMany({
-    orderBy: { createdAt: "asc" },
-  });
+  try {
+    const uploads = await prisma.catalogPaperUpload.findMany({
+      orderBy: { createdAt: "asc" },
+    });
 
-  return [
-    ...sourceCatalog,
-    ...uploads.map(
-      (paper): CatalogPaper => ({
-        id: `upload-${paper.id}`,
-        yearRange: paper.yearRange,
-        semesterGroup: paper.semesterGroup,
-        course: paper.course,
-        subject: paper.subject,
-        semester: paper.semester === null ? null : String(paper.semester),
-        pdfUrl: paper.fileUrl,
-        note: paper.note,
-        source: paper.fileUrl.includes("drive.google.com") ? "drive" : "upload",
-        fileName: paper.fileName,
-      }),
-    ),
-  ];
+    return [
+      ...sourceCatalog,
+      ...uploads.map(
+        (paper): CatalogPaper => ({
+          id: `upload-${paper.id}`,
+          yearRange: paper.yearRange,
+          semesterGroup: paper.semesterGroup,
+          course: paper.course,
+          subject: paper.subject,
+          semester: paper.semester === null ? null : String(paper.semester),
+          pdfUrl: paper.fileUrl,
+          note: paper.note,
+          source: paper.fileUrl.includes("drive.google.com") ? "drive" : "upload",
+          fileName: paper.fileName,
+        }),
+      ),
+    ];
+  } catch (err) {
+    console.warn("Database unavailable for getFullPyqCatalog, returning sourceCatalog:", err instanceof Error ? err.message : err);
+    return sourceCatalog;
+  }
 }
 
 export async function getCoverageCatalogCourses() {
@@ -260,6 +267,8 @@ export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
     ...geographyDriveCatalog,
     ...politicalScienceDriveCatalog,
     ...duMasterDriveCatalog,
+    ...extractedZipCatalog,
+    ...bcomDriveCatalog,
   ];
 }
 
@@ -268,7 +277,12 @@ function overrideMapKey(course: string, subjectKey: string) {
 }
 
 export async function getCatalogSubjectOverrides() {
-  return prisma.catalogSubjectOverride.findMany({ orderBy: { updatedAt: "desc" } });
+  try {
+    return await prisma.catalogSubjectOverride.findMany({ orderBy: { updatedAt: "desc" } });
+  } catch (err) {
+    console.warn("Database unavailable for getCatalogSubjectOverrides, returning empty array:", err instanceof Error ? err.message : err);
+    return [];
+  }
 }
 
 async function getOverridesByKey() {

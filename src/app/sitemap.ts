@@ -6,7 +6,11 @@ import { getAllBlogPosts } from "@/lib/blog";
 // Static, always-public routes with no dynamic segment.
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
   { path: "/", priority: 1, changeFrequency: "daily" },
+  { path: "/previous-year-papers", priority: 0.9, changeFrequency: "daily" },
+  { path: "/notes", priority: 0.9, changeFrequency: "daily" },
+  { path: "/syllabus", priority: 0.9, changeFrequency: "weekly" },
   { path: "/browse/college", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/semesters", priority: 0.8, changeFrequency: "weekly" },
   { path: "/pyq-notes", priority: 0.9, changeFrequency: "daily" },
   { path: "/exam-sessions", priority: 0.7, changeFrequency: "weekly" },
   { path: "/tools", priority: 0.5, changeFrequency: "monthly" },
@@ -18,8 +22,16 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
 ];
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const [programs, terms, subjects, pyqResources, examSessions, sessionLinks, driveFiles] =
-    await Promise.all([
+  let programs: any[] = [];
+  let terms: any[] = [];
+  let subjects: any[] = [];
+  let pyqResources: any[] = [];
+  let examSessions: any[] = [];
+  let sessionLinks: any[] = [];
+  let driveFiles: any[] = [];
+
+  try {
+    const res = await Promise.all([
       prisma.program.findMany({ select: { slug: true, createdAt: true } }),
       prisma.term.findMany({ select: { id: true, createdAt: true } }),
       prisma.subject.findMany({ select: { id: true, createdAt: true } }),
@@ -36,6 +48,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         select: { linkId: true, driveSubjectId: true, updatedAt: true, link: { select: { sessionId: true } } },
       }),
     ]);
+    programs = res[0];
+    terms = res[1];
+    subjects = res[2];
+    pyqResources = res[3];
+    examSessions = res[4];
+    sessionLinks = res[5];
+    driveFiles = res[6];
+  } catch (err) {
+    console.warn("Database unavailable for sitemap generation, returning static routes only:", err instanceof Error ? err.message : err);
+  }
 
   const staticEntries: MetadataRoute.Sitemap = STATIC_ROUTES.map((route) => ({
     url: absoluteUrl(route.path),

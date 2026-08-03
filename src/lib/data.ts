@@ -1,6 +1,8 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import type { EducationLevel } from "@/generated/prisma";
+import { MASTER_SYLLABUS_ROWS } from "./content/master-syllabus-data";
+import { slugify } from "@/lib/utils";
 
 export async function getProgramsByLevel(level: EducationLevel) {
   try {
@@ -37,58 +39,196 @@ export async function getProgramsByLevel(level: EducationLevel) {
   }
 }
 
-export function getProgramBySlug(slug: string) {
-  return prisma.program.findUnique({
-    where: { slug },
-    include: {
-      terms: {
-        orderBy: { order: "asc" },
-        include: { subjects: { orderBy: { name: "asc" } } },
+const PROGRAM_SLUG_TO_COURSES: Record<string, string[]> = {
+  "bcom-hons": ["B.Com. (Hons.)"],
+  "bcom-prog": ["B.Com (P)"],
+  "ba-eco-hons": ["B.A. (Hons.) Economics", "B.A (Prog.) Economics as Major", "B.A (Prog.) Economics as Minor"],
+  "ba-hist-hons": ["B.A. (Hons.) History", "B.A (Prog.) History as Major", "B.A (Prog.) History as Minor", "History Honours"],
+  "ba-pol-hons": ["B.A. (Hons.) Political Science", "B.A. (Prog) with Political Science as Major Discipline", "B.A. (Prog) with Political Science as Minor Discipline"],
+  "ba-eng-hons": ["B.A. (Hons) English", "B. A. (Prog) English"],
+  "ba-hin-hons": ["B.A. (Hons) Hindi"],
+  "ba-skt-hons": ["BA (Hons) Sanskrit", "B.A. (Prog.) Sanskrit (MAJOR)", "B.A. (Prog.) Sanskrit (MINOR)"],
+  "ba-soc-hons": ["B. A Program Sociology", "B.A (hons) Socialogy"],
+  "bsc-zool-hons": ["B.Sc. (Hons.) Zoology", "B. Sc. Life Science (Zoology)", "B.Sc. (Prog.) Applied Life Sciences with Agrochemicals and Pest Management pertaining to Zoology"],
+  "bsc-bot-hons": ["B.Sc. (Hons.) Botany", "B. Sc. Life Science (Botany)", "B.Sc. (Prog.) Applied Life Sciences with Agrochemicals and Pest Management pertaining to Botany"],
+  "bsc-chem-hons": ["B.Sc. (Hons.) Chemistry", "B.Sc (hons) Chemistry", "B. Sc. Life Science (Chemistry)", "Physical Science courses pertaining to Chemistry"],
+  "bsc-phys-hons": ["B.Sc. (Hons.) Physics", "B.Sc. Physical Sciences (Courses pertaining to Physics)"],
+  "bsc-math-hons": ["B.Sc. (Hons.) Mathematics", "B.A. (Prog) Mathematics as Major", "B.A. (Prog) with Mathematics as Minor"],
+  "ge-pool": ["University-wide Generic Elective Pool", "Generic Elective Pool"],
+  "sec-pool": ["University-wide Skill Enhancement Course Pool"],
+  "vac-pool": ["University-wide Value Addition Course Pool"],
+  "aec-pool": ["University-wide Ability Enhancement Course Pool"],
+};
+
+const ROMAN_TO_NUM: Record<string, number> = {
+  I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8,
+  "1": 1, "2": 2, "3": 3, "4": 4, "5": 5, "6": 6, "7": 7, "8": 8,
+};
+
+function getSemesterOrder(sem: string): number {
+  const cleaned = sem.toUpperCase().trim().replace(/^SEMESTER[- ]*/, "");
+  return ROMAN_TO_NUM[cleaned] || 999;
+}
+
+function buildFallbackProgram(slug: string) {
+  const courseNames = PROGRAM_SLUG_TO_COURSES[slug];
+  if (!courseNames) return null;
+
+  const rows = MASTER_SYLLABUS_ROWS.filter(r => courseNames.includes(r.course));
+  
+  // Group by semester
+  const termsMap = new Map<string, any[]>();
+  for (const row of rows) {
+    const sem = row.semester || "I";
+    const list = termsMap.get(sem) ?? [];
+    list.push(row);
+    termsMap.set(sem, list);
+  }
+
+  const terms = Array.from(termsMap.entries()).map(([semName, semRows]) => {
+    const order = getSemesterOrder(semName);
+    const termId = `term-${slug}-${semName.toLowerCase().replace(/\s+/g, "-")}`;
+    return {
+      id: termId,
+      programId: slug,
+      name: semName.startsWith("Semester") ? semName : `Semester ${semName}`,
+      order,
+      createdAt: new Date(),
+      subjects: semRows.map(row => {
+        const subSlug = slugify(row.subjectName);
+        return {
+          id: `sub-${subSlug}-${row.upc || row.id}`,
+          termId,
+          name: row.subjectName,
+          slug: subSlug,
+          description: row.courseNumber ? `${row.courseNumber} · Credits: ${row.credits}` : `Credits: ${row.credits}`,
+          upc: row.upc === "TO BE UPDATED" || row.upc === "TO BE ANNOUNCED" ? null : row.upc || null,
+          paperType: row.type || null,
+          aliases: [] as string[],
+          createdAt: new Date(),
+          resources: [] as any[],
+          questions: [] as any[],
+          analysis: null,
+          notes: null,
+          driveSubjects: [] as any[],
+        };
+      }).sort((a, b) => a.name.localeCompare(b.name)),
+    };
+  }).sort((a, b) => a.order - b.order);
+
+  return {
+    id: slug,
+    level: "COLLEGE" as const,
+    name: courseNames[0],
+    slug,
+    summary: `${courseNames[0]} Syllabus & Papers`,
+    createdAt: new Date(),
+    terms,
+  };
+}
+
+export async function getProgramBySlug(slug: string) {
+  try {
+    const program = await prisma.program.findUnique({
+      where: { slug },
+      include: {
+        terms: {
+          orderBy: { order: "asc" },
+          include: { subjects: { orderBy: { name: "asc" } } },
+        },
       },
-    },
-  });
+    });
+    if (program) return program;
+    return buildFallbackProgram(slug);
+  } catch (err) {
+    console.warn(`Database unavailable for getProgramBySlug(${slug}), returning fallback:`, err instanceof Error ? err.message : err);
+    return buildFallbackProgram(slug);
+  }
 }
 
-export function getTermById(id: string) {
-  return prisma.term.findUnique({
-    where: { id },
-    include: {
-      program: true,
-      subjects: { orderBy: { name: "asc" }, include: { resources: true, questions: true } },
-      termPapers: { orderBy: { createdAt: "desc" } },
-    },
-  });
+export async function getTermById(id: string) {
+  try {
+    const term = await prisma.term.findUnique({
+      where: { id },
+      include: {
+        program: true,
+        subjects: { orderBy: { name: "asc" }, include: { resources: true, questions: true } },
+        termPapers: { orderBy: { createdAt: "desc" } },
+      },
+    });
+    if (term) return term;
+  } catch (err) {
+    console.warn(`Database unavailable for getTermById(${id}), matching from fallback program...`);
+  }
+
+  // Parse id: `term-${programSlug}-${semesterName}`
+  if (id.startsWith("term-")) {
+    const parts = id.split("-");
+    const programSlug = parts.slice(1, parts.length - 1).join("-");
+    const program = buildFallbackProgram(programSlug);
+    if (program) {
+      const term = program.terms.find(t => t.id === id);
+      if (term) {
+        return {
+          ...term,
+          program,
+          termPapers: [],
+        };
+      }
+    }
+  }
+  return null;
 }
 
-export function getSubjectById(id: string) {
-  return prisma.subject.findUnique({
-    where: { id },
-    include: {
-      term: { include: { program: true } },
-      resources: { orderBy: { createdAt: "desc" } },
-      questions: { orderBy: [{ isRepeated: "desc" }, { repeatCount: "desc" }] },
-      analysis: true,
-      notes: true,
-      // Papers matched off Google Drive folders (see the Drive-sync flow in
-      // src/lib/actions.ts) — kept separate from `resources` above (which are
-      // PDFs we actually store) since these stay on Drive: no bytes copied,
-      // no storage cost, just a direct link. isCourseBooklet excludes a
-      // whole-course combined paper not yet split into per-subject files.
-      driveSubjects: {
-        select: {
-          files: {
-            where: { isCourseBooklet: false },
-            select: {
-              id: true,
-              fileName: true,
-              webViewLink: true,
-              link: { select: { session: { select: { label: true } } } },
+export async function getSubjectById(id: string) {
+  try {
+    const subject = await prisma.subject.findUnique({
+      where: { id },
+      include: {
+        term: { include: { program: true } },
+        resources: { orderBy: { createdAt: "desc" } },
+        questions: { orderBy: [{ isRepeated: "desc" }, { repeatCount: "desc" }] },
+        analysis: true,
+        notes: true,
+        driveSubjects: {
+          select: {
+            files: {
+              where: { isCourseBooklet: false },
+              select: {
+                id: true,
+                fileName: true,
+                webViewLink: true,
+                link: { select: { session: { select: { label: true } } } },
+              },
             },
           },
         },
       },
-    },
-  });
+    });
+    if (subject) return subject;
+  } catch (err) {
+    console.warn(`Database unavailable for getSubjectById(${id}), matching from fallback program...`);
+  }
+
+  // Parse id: `sub-${subSlug}-${upc_or_id}`
+  for (const programSlug of Object.keys(PROGRAM_SLUG_TO_COURSES)) {
+    const program = buildFallbackProgram(programSlug);
+    if (program) {
+      for (const term of program.terms) {
+        const subject = term.subjects.find(s => s.id === id);
+        if (subject) {
+          return {
+            ...subject,
+            term: {
+              ...term,
+              program,
+            },
+          };
+        }
+      }
+    }
+  }
+  return null;
 }
 
 export async function getExamSessions() {
@@ -149,32 +289,37 @@ export function getSessionLinkWithSubjects(linkId: string) {
 
 /** Lightweight index for the complete OCR archive. The text itself stays out
  * of this query; individual paper pages load it only when opened. */
-export function getPyqArchiveIndex() {
-  return prisma.resource.findMany({
-    where: { type: "PYQ", ocrText: { not: null } },
-    select: {
-      id: true,
-      title: true,
-      year: true,
-      academicYear: true,
-      pageCount: true,
-      subject: {
-        select: {
-          id: true,
-          name: true,
-          term: {
-            select: {
-              id: true,
-              name: true,
-              order: true,
-              program: { select: { name: true, slug: true } },
+export async function getPyqArchiveIndex() {
+  try {
+    return await prisma.resource.findMany({
+      where: { type: "PYQ", ocrText: { not: null } },
+      select: {
+        id: true,
+        title: true,
+        year: true,
+        academicYear: true,
+        pageCount: true,
+        subject: {
+          select: {
+            id: true,
+            name: true,
+            term: {
+              select: {
+                id: true,
+                name: true,
+                order: true,
+                program: { select: { name: true, slug: true } },
+              },
             },
           },
         },
       },
-    },
-    orderBy: [{ academicYear: "desc" }, { year: "desc" }, { title: "asc" }],
-  });
+      orderBy: [{ academicYear: "desc" }, { year: "desc" }, { title: "asc" }],
+    });
+  } catch (err) {
+    console.warn("Database unavailable for getPyqArchiveIndex, returning empty array:", err instanceof Error ? err.message : err);
+    return [];
+  }
 }
 
 // Deliberately does not filter on ocrText — pyq-notes/[id] needs to tell
@@ -205,26 +350,31 @@ export function getPyqResourceById(id: string) {
 // ExamSession/SessionProgramLink/DriveSubject/DriveFileMatch in the schema).
 // Unmatched files (driveSubjectId null — the sync couldn't derive a subject
 // name) are excluded since the browser groups by subject.
-export function getFullDriveArchiveIndex() {
-  return prisma.driveFileMatch.findMany({
-    where: { driveSubjectId: { not: null } },
-    select: {
-      id: true,
-      fileName: true,
-      year: true,
-      webViewLink: true,
-      driveSubject: {
-        select: { id: true, name: true, program: { select: { name: true, slug: true } } },
-      },
-      link: {
-        select: {
-          variantLabel: true,
-          session: { select: { id: true, label: true, order: true } },
+export async function getFullDriveArchiveIndex() {
+  try {
+    return await prisma.driveFileMatch.findMany({
+      where: { driveSubjectId: { not: null } },
+      select: {
+        id: true,
+        fileName: true,
+        year: true,
+        webViewLink: true,
+        driveSubject: {
+          select: { id: true, name: true, program: { select: { name: true, slug: true } } },
+        },
+        link: {
+          select: {
+            variantLabel: true,
+            session: { select: { id: true, label: true, order: true } },
+          },
         },
       },
-    },
-    orderBy: [{ link: { session: { order: "desc" } } }, { fileName: "asc" }],
-  });
+      orderBy: [{ link: { session: { order: "desc" } } }, { fileName: "asc" }],
+    });
+  } catch (err) {
+    console.warn("Database unavailable for getFullDriveArchiveIndex, returning empty array:", err instanceof Error ? err.message : err);
+    return [];
+  }
 }
 
 // SQLite's `contains` is case-sensitive, so filter in JS for a case-insensitive match.
@@ -238,14 +388,37 @@ export function getFullDriveArchiveIndex() {
 export async function searchSubjects(query: string) {
   const q = query.trim().toLowerCase();
   if (!q) return [];
-  const subjects = await prisma.subject.findMany({
-    include: { term: { include: { program: true } } },
-  });
 
-  function score(s: (typeof subjects)[number]): number | null {
+  let subjects: any[] = [];
+  try {
+    subjects = await prisma.subject.findMany({
+      include: { term: { include: { program: true } } },
+    });
+  } catch (err) {
+    console.warn("Database unavailable for searchSubjects, searching fallback programs:", err instanceof Error ? err.message : err);
+    // Build subjects from fallback programs
+    for (const programSlug of Object.keys(PROGRAM_SLUG_TO_COURSES)) {
+      const program = buildFallbackProgram(programSlug);
+      if (program) {
+        for (const term of program.terms) {
+          for (const s of term.subjects) {
+            subjects.push({
+              ...s,
+              term: {
+                ...term,
+                program,
+              },
+            });
+          }
+        }
+      }
+    }
+  }
+
+  function score(s: any): number | null {
     const name = s.name.toLowerCase();
     if (name.startsWith(q)) return 0;
-    if (name.split(/\s+/).some((word) => word.startsWith(q))) return 1;
+    if (name.split(/\s+/).some((word: string) => word.startsWith(q))) return 1;
     if (name.includes(q)) return 2;
     if (s.term.program.name.toLowerCase().includes(q) || (s.description ?? "").toLowerCase().includes(q)) {
       return 3;
@@ -255,7 +428,7 @@ export async function searchSubjects(query: string) {
 
   return subjects
     .map((s) => ({ s, rank: score(s) }))
-    .filter((x): x is { s: (typeof subjects)[number]; rank: number } => x.rank !== null)
+    .filter((x): x is { s: any; rank: number } => x.rank !== null)
     .sort((a, b) => a.rank - b.rank || a.s.name.localeCompare(b.s.name))
     .slice(0, 20)
     .map((x) => x.s);

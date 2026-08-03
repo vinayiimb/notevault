@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  poweredByHeader: false,
   // pdf.js's worker + font files are referenced via constructed path
   // strings (src/lib/pdf-server.ts), not static imports, so Next's file
   // tracer can't find them on its own — without this, the Paper Analysis

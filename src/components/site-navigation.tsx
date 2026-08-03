@@ -6,31 +6,31 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   ArticleNyTimes,
-  BookOpenText,
+  Calendar,
   CaretRight,
-  ChartBar,
   ChatCircleText,
   Compass,
   FileArchive,
   Files,
   GraduationCap,
-  House,
   List,
-  MagnifyingGlass,
+  NotePencil,
   Question,
-  Sparkle,
+  Scroll,
   Wrench,
   X,
 } from "@phosphor-icons/react";
 
 const NAVIGATION_SECTIONS = [
   {
-    title: "Core Student Portals",
+    title: "Study Portals",
     items: [
-      { href: "/dashboard", label: "Student Dashboard", desc: "Personalized course hub & saved notes", icon: GraduationCap, badge: "New UI" },
-      { href: "/pyq-notes", label: "Full Archive (8,350+ Files)", desc: "Complete paper & notes catalog", icon: FileArchive, badge: "8.3k+" },
-      { href: "/admin/master-syllabus", label: "Official Master Syllabus", desc: "118 degree programs, 6,295 official papers", icon: BookOpenText, badge: "Official" },
-      { href: "/exam-sessions", label: "Session Question Papers", desc: "Browse by exam year & drive links", icon: Files },
+      { href: "/previous-year-papers", label: "Previous Year Papers", desc: "Download past exams and solution keys", icon: Files },
+      { href: "/notes", label: "Notes", desc: "Access study notes and summaries", icon: NotePencil },
+      { href: "/syllabus", label: "Syllabus", desc: "Browse official DU UGCF syllabus", icon: Scroll },
+      { href: "/browse/college", label: "Courses", desc: "Browse Delhi University courses", icon: GraduationCap },
+      { href: "/semesters", label: "Semesters", desc: "Find study material from Sem 1 to 6", icon: Calendar },
+      { href: "/pyq-notes", label: "Full Archive", desc: "Complete 8,300+ file search catalog", icon: FileArchive, badge: "8.3k+" },
     ],
   },
   {
@@ -47,19 +47,33 @@ const NAVIGATION_SECTIONS = [
 
 export function SiteNavigation() {
   const pathname = usePathname();
-  const active = pathname === "/pyq-notes" || pathname.startsWith("/pyq-notes/");
+
+  const links = [
+    { href: "/previous-year-papers", label: "Previous Year Papers" },
+    { href: "/notes", label: "Notes" },
+    { href: "/syllabus", label: "Syllabus" },
+    { href: "/browse/college", label: "Courses" },
+    { href: "/semesters", label: "Semesters" },
+    { href: "/pyq-notes", label: "Full Archive" },
+  ];
 
   return (
-    <nav className="hidden items-center gap-1 text-sm font-medium md:flex" aria-label="Main navigation">
-      <Link
-        href="/pyq-notes"
-        aria-current={active ? "page" : undefined}
-        className={`flex min-h-10 items-center gap-1.5 rounded-xl px-3 py-2 ${
-          active ? "bg-brand-soft text-brand" : "text-muted hover:bg-surface-muted hover:text-foreground"
-        }`}
-      >
-        Full archive
-      </Link>
+    <nav className="hidden items-center gap-0.5 text-xs lg:text-sm font-medium md:flex" aria-label="Main navigation">
+      {links.map((link) => {
+        const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+        return (
+          <Link
+            key={link.href}
+            href={link.href}
+            aria-current={isActive ? "page" : undefined}
+            className={`flex min-h-9 items-center rounded-xl px-2.5 py-1.5 transition-colors ${
+              isActive ? "bg-brand-soft text-brand font-semibold" : "text-muted hover:bg-surface-muted hover:text-foreground"
+            }`}
+          >
+            {link.label}
+          </Link>
+        );
+      })}
     </nav>
   );
 }

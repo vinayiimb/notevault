@@ -1,6 +1,6 @@
 // Central SEO constants and structured-data builders, reused across
 // robots.ts, sitemap.ts, generateMetadata() exports, and JSON-LD blocks.
-export const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? "https://www.dupyq.online").replace(/\/$/, "");
+export const SITE_URL = "https://www.dupyq.online";
 export const SITE_NAME = "DU PYQ Online";
 
 export function absoluteUrl(path: string): string {
@@ -10,11 +10,16 @@ export function absoluteUrl(path: string): string {
 export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
-    "@type": "EducationalOrganization",
-    name: SITE_NAME,
-    url: SITE_URL,
-    description:
-      "DU PYQ Online is a free archive of Delhi University previous year question papers, notes, and answer keys organized by course, semester, and subject.",
+    "@type": "Organization",
+    "@id": `${SITE_URL}/#organization`,
+    "name": SITE_NAME,
+    "url": `${SITE_URL}/`,
+    "logo": {
+      "@type": "ImageObject",
+      "url": `${SITE_URL}/logo.png`,
+      "width": 512,
+      "height": 512
+    }
   };
 }
 
@@ -22,16 +27,25 @@ export function websiteJsonLd() {
   return {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: SITE_NAME,
-    url: SITE_URL,
-    potentialAction: {
-      "@type": "SearchAction",
-      target: {
-        "@type": "EntryPoint",
-        urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
-      },
-      "query-input": "required name=search_term_string",
+    "@id": `${SITE_URL}/#website`,
+    "url": `${SITE_URL}/`,
+    "name": SITE_NAME,
+    "alternateName": [
+      "DU PYQ",
+      "Delhi University PYQ"
+    ],
+    "description": "Free Delhi University previous year question papers, notes, syllabus and answer keys.",
+    "publisher": {
+      "@id": `${SITE_URL}/#organization`
     },
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": `${SITE_URL}/search?q={search_term_string}`
+      },
+      "query-input": "required name=search_term_string"
+    }
   };
 }
 
@@ -63,11 +77,11 @@ export function breadcrumbJsonLd(items: { name: string; url: string }[]) {
   return {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: items.map((item, index) => ({
+    "itemListElement": items.map((item, index) => ({
       "@type": "ListItem",
-      position: index + 1,
-      name: item.name,
-      item: absoluteUrl(item.url),
+      "position": index + 1,
+      "name": item.name,
+      "item": item.url.startsWith("http") ? item.url : absoluteUrl(item.url),
     })),
   };
 }
