@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import { PyqMetadataImport } from "@/components/admin/pyq-metadata-import";
 
 export default function ImportPyqMetadataPage() {

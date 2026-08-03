@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { createExamSessionAction, deleteExamSessionAction } from "@/lib/actions";

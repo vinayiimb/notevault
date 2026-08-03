@@ -223,12 +223,14 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   // paper for all of them at once.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  useEffect(() => {
-    const qParam = searchParams.get("q") ?? searchParams.get("search") ?? "";
-    const courseParam = searchParams.get("course") ?? ALL;
-    if (qParam !== search) setSearch(qParam);
-    if (courseParam !== course) setCourse(courseParam);
-  }, [searchParams]);
+useEffect(() => {
+  const qParam = searchParams.get("q") ?? searchParams.get("search") ?? "";
+  const courseParam = searchParams.get("course") ?? ALL;
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  if (qParam !== search) setSearch(qParam);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  if (courseParam !== course) setCourse(courseParam);
+}, [searchParams, search, course]);
 
   function toggleExpanded(key: string) {
     setExpanded((current) => {

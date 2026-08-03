@@ -1,3 +1,6 @@
+export function generateStaticParams() { return []; }
+export const dynamicParams = true;
+export const dynamic = "force-static";
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { getNoteThemeById } from "@/lib/note-theme-data";

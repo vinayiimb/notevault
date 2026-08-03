@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import Link from "next/link";
 import { Check, CopySimple, Lock, Swatches } from "@phosphor-icons/react/dist/ssr";
 import { prisma } from "@/lib/prisma";

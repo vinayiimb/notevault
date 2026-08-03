@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { BulkUploadClient } from "@/components/bulk-upload/bulk-upload-client";

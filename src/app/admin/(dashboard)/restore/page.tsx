@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import { prisma } from "@/lib/prisma";
 import { AdminRestoreClient } from "@/components/restore/admin-restore-client";
 

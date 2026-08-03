@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import Link from "next/link";
 import { ArrowSquareOut, FilePdf, MagnifyingGlass } from "@phosphor-icons/react/dist/ssr";
 import type { Prisma } from "@/generated/prisma";

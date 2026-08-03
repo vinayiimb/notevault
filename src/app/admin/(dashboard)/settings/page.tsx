@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import { getSiteSettings } from "@/lib/data";
 import {
   uploadHeroImageAction,

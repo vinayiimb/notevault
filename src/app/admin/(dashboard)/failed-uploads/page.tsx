@@ -1,3 +1,4 @@
+export const dynamic = "force-static";
 import { prisma } from "@/lib/prisma";
 import { FailedUploadsClient } from "@/components/failed-uploads/failed-uploads-client";
 import { CopyableTitleList } from "@/components/failed-uploads/copyable-title-list";
