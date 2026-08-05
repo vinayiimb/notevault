@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import type { EducationLevel } from "@/generated/prisma";
 import { MASTER_SYLLABUS_ROWS } from "./content/master-syllabus-data";
 import { slugify } from "@/lib/utils";
+import { canonicalSubjectKey } from "@/lib/subject-normalization";
 
 export async function getProgramsByLevel(level: EducationLevel) {
   try {
@@ -105,6 +106,8 @@ function buildFallbackProgram(slug: string) {
           upc: row.upc === "TO BE UPDATED" || row.upc === "TO BE ANNOUNCED" ? null : row.upc || null,
           paperType: row.type || null,
           aliases: [] as string[],
+          parentSubjectId: null,
+          mergedIntoId: null,
           createdAt: new Date(),
           resources: [] as any[],
           questions: [] as any[],
@@ -390,10 +393,32 @@ export async function searchSubjects(query: string) {
   if (!q) return [];
 
   let subjects: any[] = [];
+  const aliasMatchedIds = new Set<string>();
   try {
     subjects = await prisma.subject.findMany({
+      // Merged-away subjects should never surface directly — searching
+      // their old name still finds the right result via the alias lookup
+      // below, which resolves straight to the canonical subject.
+      where: { mergedIntoId: null },
       include: { term: { include: { program: true } } },
     });
+
+    const aliasKey = canonicalSubjectKey(q);
+    if (aliasKey) {
+      const aliasHits = await prisma.subjectAlias.findMany({
+        where: { normalizedName: { contains: aliasKey } },
+        include: { subject: { include: { term: { include: { program: true } } } } },
+      });
+      const existingIds = new Set(subjects.map((s) => s.id));
+      for (const hit of aliasHits) {
+        if (hit.subject.mergedIntoId) continue; // shouldn't happen, but stay safe
+        aliasMatchedIds.add(hit.subject.id);
+        if (!existingIds.has(hit.subject.id)) {
+          subjects.push(hit.subject);
+          existingIds.add(hit.subject.id);
+        }
+      }
+    }
   } catch (err) {
     console.warn("Database unavailable for searchSubjects, searching fallback programs:", err instanceof Error ? err.message : err);
     // Build subjects from fallback programs
@@ -420,6 +445,10 @@ export async function searchSubjects(query: string) {
     if (name.startsWith(q)) return 0;
     if (name.split(/\s+/).some((word: string) => word.startsWith(q))) return 1;
     if (name.includes(q)) return 2;
+    // Known alias (e.g. a typo or old spelling an admin confirmed during
+    // Subject Normalization) — still a confident match even though the
+    // canonical name itself doesn't contain the query text.
+    if (aliasMatchedIds.has(s.id)) return 2;
     if (s.term.program.name.toLowerCase().includes(q) || (s.description ?? "").toLowerCase().includes(q)) {
       return 3;
     }

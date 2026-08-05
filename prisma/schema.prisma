@@ -60,8 +60,9 @@ model Term {
   order     Int      @default(1)
   createdAt DateTime @default(now())
 
-  subjects   Subject[]
-  termPapers TermPaper[]
+  subjects         Subject[]
+  termPapers       TermPaper[]
+  mergeSuggestions SubjectMergeSuggestion[]
 
   @@unique([programId, order])
 }
@@ -80,16 +81,165 @@ model Subject {
   aliases     String[] @default([])
   createdAt   DateTime @default(now())
 
-  resources     Resource[]
-  questions     Question[]
-  analysis      SubjectAnalysis?
-  notes         SubjectNotes?
-  driveSubjects DriveSubject[]
-  noteThemes    NoteTheme[]
-  examDates     StudentExamDate[]
+  // Hierarchical grouping only (e.g. "Income Tax Law and Practice I" under
+  // parent "Income Tax Law and Practice") — the child stays a fully real,
+  // independently browsable Subject. Distinct from mergedIntoId below.
+  parentSubjectId String?
+  parentSubject   Subject?  @relation("SubjectParent", fields: [parentSubjectId], references: [id], onDelete: SetNull)
+  childSubjects   Subject[] @relation("SubjectParent")
+
+  // Set once this Subject has been merged into another as a duplicate
+  // (see Subject Normalization). When set, this row is deprecated: its
+  // resources/questions have been reassigned to mergedInto, its original
+  // name lives on as a SubjectAlias, and its public page permanently
+  // redirects to mergedInto's. The row itself is kept (never deleted) so
+  // the merge stays reversible and no historical reference breaks.
+  mergedIntoId String?
+  mergedInto   Subject?  @relation("SubjectMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
+  mergedFrom   Subject[] @relation("SubjectMerge")
+
+  resources      Resource[]
+  questions      Question[]
+  analysis       SubjectAnalysis?
+  notes          SubjectNotes?
+  driveSubjects  DriveSubject[]
+  noteThemes     NoteTheme[]
+  examDates      StudentExamDate[]
+  subjectAliases SubjectAlias[]
 
   @@unique([termId, slug])
   @@index([upc])
+  @@index([parentSubjectId])
+  @@index([mergedIntoId])
+}
+
+enum AliasSource {
+  IMPORT
+  ADMIN
+  AI
+}
+
+// A raw, as-imported subject-name variant that has been confirmed to refer
+// to `subject` (the canonical row). Distinct from Subject.aliases (a plain
+// string list used for quick official-name matching): this table carries
+// per-alias provenance (source, confidence, who/when approved) needed for
+// the Subject Normalization review workflow and audit trail.
+model SubjectAlias {
+  id                 String      @id @default(cuid())
+  canonicalSubjectId String
+  subject            Subject     @relation(fields: [canonicalSubjectId], references: [id], onDelete: Cascade)
+  rawName            String
+  normalizedName     String
+  source             AliasSource @default(ADMIN)
+  confidenceScore    Int? // 0-100, only set for AI-sourced aliases
+  approvedBy         String? // admin id
+  approvedAt         DateTime?
+  createdAt          DateTime    @default(now())
+
+  @@unique([canonicalSubjectId, normalizedName])
+  @@index([normalizedName])
+}
+
+enum SubjectRelationship {
+  EXACT_DUPLICATE
+  SPELLING_VARIATION
+  ABBREVIATION
+  RENAMED_SYLLABUS
+  RELATED_BUT_SEPARATE
+}
+
+enum SuggestionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  IGNORED
+  MERGED
+}
+
+// One candidate duplicate-subject group, produced by either the
+// deterministic Stage A matcher or the Stage B AI grouping call, awaiting
+// admin review. Never applied automatically (see subject-merge.ts) —
+// approving/merging turns this into a SubjectMergeLog row.
+model SubjectMergeSuggestion {
+  id              String              @id @default(cuid())
+  termId          String
+  term            Term                @relation(fields: [termId], references: [id], onDelete: Cascade)
+  suggestedName   String
+  subjectIds      String[] // Subject ids proposed to belong to this group
+  confidenceScore Int // 0-100
+  explanation     String
+  relationship    SubjectRelationship
+  safeToMerge     Boolean             @default(true)
+  warnings        String[]            @default([])
+  source          AliasSource         @default(AI) // AI or deterministic (stored as ADMIN when hand-created)
+  status          SuggestionStatus    @default(PENDING)
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  @@index([termId])
+  @@index([status])
+  @@index([confidenceScore])
+}
+
+// Permanent, reversible record of an applied merge. reassignments snapshots
+// the exact prior subjectId for every moved Resource/Question so undoMerge
+// can restore precisely, not just approximately.
+model SubjectMergeLog {
+  id                         String    @id @default(cuid())
+  previousCanonicalSubjectId String // the subject id that got merged away
+  newCanonicalSubjectId      String // the subject id it was merged into
+  affectedResourceIds        String[]
+  affectedQuestionIds        String[]
+  reassignments              Json // { resources: {id: prevSubjectId}[], questions: {id: prevSubjectId}[] }
+  administrator              String // admin id
+  confidenceScore            Int?
+  reason                     String?
+  isAiAssisted               Boolean   @default(false)
+  createdAt                  DateTime  @default(now())
+  undoneAt                   DateTime?
+  undoneBy                   String?
+
+  @@index([previousCanonicalSubjectId])
+  @@index([newCanonicalSubjectId])
+}
+
+enum ScanScope {
+  ALL
+  PROGRAM
+  TERM
+  UNMAPPED
+  SELECTED
+}
+
+enum ScanStatus {
+  PENDING
+  RUNNING
+  COMPLETED
+  FAILED
+}
+
+// One "Scan Archive with AI" run. Progress fields let the admin UI show a
+// live counter and let a run be resumed (processedSubjects marks how far a
+// scan got) instead of restarting from zero if interrupted.
+model ScanRun {
+  id                 String     @id @default(cuid())
+  scope              ScanScope
+  programId          String?
+  termId             String?
+  status             ScanStatus @default(PENDING)
+  totalSubjects      Int        @default(0)
+  processedSubjects  Int        @default(0)
+  groupsFound        Int        @default(0)
+  suggestionsCreated Int        @default(0)
+  failedCount        Int        @default(0)
+  errorMessage       String?
+  startedAt          DateTime?
+  completedAt        DateTime?
+  createdAt          DateTime   @default(now())
+
+  @@index([status])
 }
 
 // Admin-pasted, long-form compiled notes for a subject, rendered on the

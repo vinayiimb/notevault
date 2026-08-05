@@ -442,6 +442,53 @@ export async function matchSubjectsWithAI(
   );
 }
 
+// ---------- Subject Normalization Centre: Stage B AI grouping ----------
+// Stage A (src/lib/subject-grouping.ts) already resolves exact/near-exact
+// duplicates deterministically without any AI call. This is only reached
+// for the uncertain leftovers — one small candidate cluster per call, never
+// the whole catalog, for the same 8000-token-budget reason as above.
+
+const SubjectGroupSuggestionSchema = z.object({
+  suggestedCanonicalName: z.string().describe("A clean, properly-capitalised name for the group, or the best existing name among the candidates"),
+  memberSubjectIds: z.array(z.string()).describe("IDs from the candidate list that genuinely belong in this one group. Omit any that turned out to be a separate subject."),
+  confidenceScore: z.number().int().min(0).max(100),
+  explanation: z.string().describe("1-3 sentences on why these belong together (or don't)"),
+  relationship: z
+    .enum(["EXACT_DUPLICATE", "SPELLING_VARIATION", "ABBREVIATION", "RENAMED_SYLLABUS", "RELATED_BUT_SEPARATE"])
+    .describe("RELATED_BUT_SEPARATE means they should NOT be merged"),
+  safeToMerge: z.boolean().describe("False if merging risks losing a real distinction (different paper numbers, semesters, or syllabus versions)"),
+  warnings: z.array(z.string()).describe("Any semester/paper-number/UPC concerns the admin should double-check before merging. Empty array if none."),
+});
+export type SubjectGroupSuggestion = z.infer<typeof SubjectGroupSuggestionSchema>;
+
+export type SubjectGroupingCandidate = {
+  id: string;
+  name: string;
+  upc?: string | null;
+  paperType?: string | null;
+  programName: string;
+  termName: string;
+};
+
+// Scoped to one uncertain cluster (typically 2-6 subjects) from one
+// programme+term — the caller (subject-grouping.ts) never mixes programmes,
+// so cross-programme false merges can't happen here regardless of what the
+// model returns.
+export async function suggestSubjectGrouping(candidates: SubjectGroupingCandidate[]) {
+  const list = candidates
+    .map(
+      (c) =>
+        `${c.id} :: "${c.name}" :: UPC=${c.upc ?? "none"} :: type=${c.paperType ?? "unknown"} :: ${c.programName} :: ${c.termName}`
+    )
+    .join("\n");
+
+  return callStructured(
+    SubjectGroupSuggestionSchema,
+    "You are a careful Delhi University syllabus librarian. You review a small cluster of subject-name variants that a text-similarity check flagged as *possibly* the same subject, and decide whether they truly are. Treat capitalisation, spacing, hyphenation, typos, and programme/programme-style abbreviations as the same subject. Treat different paper numbers (I vs II, Paper 1 vs Paper 2), different semesters, or genuinely different topics as SEPARATE subjects even if the names look similar — when in doubt, prefer RELATED_BUT_SEPARATE and safeToMerge=false over a wrong merge. Never invent an id that isn't in the candidate list.",
+    `Candidate subjects (id :: name :: UPC :: paper type :: programme :: term):\n${list}\n\nDecide whether these belong to one canonical subject. Return the members that truly belong together (a subset is fine — drop any that are actually separate), a clean canonical name, your confidence, the relationship type, whether it's safe to merge, and any warnings.`
+  );
+}
+
 const RebuttalGradeSchema = z.object({
   verdict: z.enum(["weak", "solid"]).describe("Whether the student's rebuttal successfully answers the counter-argument"),
   flaw: z.string().nullable().describe("The academic flaw in the rebuttal, or null if the rebuttal is solid"),

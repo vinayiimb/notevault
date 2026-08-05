@@ -68,6 +68,66 @@ export function canonicalSubjectKey(value: string) {
     .trim();
 }
 
+// ---------- Subject Normalization Centre: Stage A comparison key ----------
+// Kept separate from canonicalSubjectKey (which existing callers like
+// matchOfficialSubject rely on unchanged). This key is only used to find
+// duplicate-name *candidates* for admin review — it never overwrites a raw
+// subject name. It deliberately keeps numbered/lettered papers distinct
+// (Financial Accounting I != Financial Accounting II): roman/arabic numeral
+// *style* is normalized so both compare equal to each other, but different
+// numbers still produce different keys.
+
+const ROMAN_TO_ARABIC: Record<string, string> = {
+  i: "1",
+  ii: "2",
+  iii: "3",
+  iv: "4",
+  v: "5",
+  vi: "6",
+  vii: "7",
+  viii: "8",
+};
+
+type Replacer = string | ((substring: string, ...groups: string[]) => string);
+const WORD_SYNONYMS: [RegExp, Replacer][] = [
+  [/\bprogramme\b/g, "program"],
+  [/\bhonours\b/g, "hons"],
+  [/\bhon\b/g, "hons"],
+  [/\bpaper\s+(i|ii|iii|iv|v|vi|vii|viii)\b/g, (_m, num) => `paper ${ROMAN_TO_ARABIC[num]}`],
+  [/\bpart\s+(i|ii|iii|iv|v|vi|vii|viii)\b/g, (_m, num) => `part ${ROMAN_TO_ARABIC[num]}`],
+  // A bare trailing roman numeral ("Microeconomics III") behaves the same
+  // way as "Paper III" for comparison purposes — normalize its *style* to
+  // arabic without touching the number itself, so "Microeconomics III" and
+  // "Microeconomics 3" compare equal while "Microeconomics II" stays distinct.
+  [/\b(i|ii|iii|iv|v|vi|vii|viii)$/g, (m) => ROMAN_TO_ARABIC[m]],
+];
+
+// "practical"/"practice" are deliberately NOT equated here (unlike the
+// synonyms above) — the spec calls this substitution valid "only when
+// context supports it", and a blind merge risks conflating a lab
+// Practical paper with an unrelated "... Law and Practice" subject. Stage
+// B (AI, with full course/semester context) is a safer place to make that
+// call than a blanket string rule; the fuzzy token scorer in
+// subject-grouping.ts still surfaces these as candidates for it to review.
+
+/**
+ * Stage A deterministic comparison key for the Subject Normalization
+ * Centre's duplicate-candidate detection. Builds on canonicalSubjectKey
+ * (lowercase, whitespace, punctuation, &/and) and additionally:
+ *  - standardizes programme/program, honours/hons
+ *  - standardizes "Paper I"/"Part I"/trailing "... III" to arabic numerals
+ *    so notation style never causes a false "different subject" split
+ * Two subjects sharing this key are near-certain duplicates (Stage A);
+ * everything else falls through to fuzzy scoring / Stage B AI review.
+ */
+export function stageANormalize(value: string): string {
+  let key = canonicalSubjectKey(value);
+  for (const [pattern, replacement] of WORD_SYNONYMS) {
+    key = typeof replacement === "string" ? key.replace(pattern, replacement) : key.replace(pattern, replacement);
+  }
+  return key.replace(/\s+/g, " ").trim();
+}
+
 function isAllCaps(value: string) {
   const letters = value.replace(/[^A-Za-z]+/g, "");
   return letters.length >= 3 && letters === letters.toUpperCase();

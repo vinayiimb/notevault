@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import {
   DownloadSimple,
   FileText,
@@ -61,6 +61,9 @@ export default async function SubjectPage({
   const { id } = await params;
   const subject = await getSubjectById(id);
   if (!subject) notFound();
+  // Subject was merged into another during Subject Normalization — permanent
+  // redirect so old links, bookmarks, and search results keep working.
+  if (subject.mergedIntoId) permanentRedirect(`/subjects/${subject.mergedIntoId}`);
 
   const notes = subject.resources.filter((r) => r.type === "NOTES");
   const dbPyqs = subject.resources.filter((r) => r.type === "PYQ");

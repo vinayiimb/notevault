@@ -18,6 +18,7 @@ import {
   MagnifyingGlass,
   PaintBrush,
   Question,
+  ShieldCheck,
   Shuffle,
   Sparkle,
   SignOut,
@@ -185,6 +186,13 @@ export default async function AdminDashboardLayout({
           >
             <MagnifyingGlass size={16} />
             Subject issues
+          </Link>
+          <Link
+            href="/admin/subject-normalization"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <ShieldCheck size={16} />
+            Subject normalization
           </Link>
           <Link
             href="/admin/failed-uploads"
