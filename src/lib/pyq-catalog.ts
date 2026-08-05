@@ -3,8 +3,10 @@ import rawOfficialArchiveMap from "@/data/archive-official-map.json";
 import { geographyDriveCatalog } from "@/data/geography-drive-catalog";
 import { politicalScienceDriveCatalog } from "@/data/political-science-drive-catalog";
 import { duMasterDriveCatalog } from "@/data/du-master-drive-catalog";
-import { extractedZipCatalog } from "@/data/extracted-pyq-catalog";
-import { bcomDriveCatalog } from "@/data/bcom-drive-catalog";
+// TODO SECURITY/BUILD: extracted-pyq-catalog and bcom-drive-catalog were
+// referenced by commit fdce1d4 but never committed to the repo, breaking
+// the production build. Re-add these imports (and the ...spreads below)
+// once those two data files actually exist in src/data/.
 import { getFullDriveArchiveIndex, getPyqArchiveIndex } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
@@ -267,8 +269,6 @@ export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
     ...geographyDriveCatalog,
     ...politicalScienceDriveCatalog,
     ...duMasterDriveCatalog,
-    ...extractedZipCatalog,
-    ...bcomDriveCatalog,
   ];
 }
 
