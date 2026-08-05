@@ -518,6 +518,30 @@ export async function getResourceHighlights() {
   }
 }
 
+// Deterministic "question of the day" — same question for every visitor on a
+// given calendar date, rotating through the Question table by day-of-year so
+// it changes daily without needing a schedule table of its own.
+export async function getDailyQuestion() {
+  try {
+    const total = await prisma.question.count();
+    if (total === 0) return null;
+
+    const startOfYear = Date.UTC(new Date().getUTCFullYear(), 0, 0);
+    const dayOfYear = Math.floor((Date.now() - startOfYear) / 86_400_000);
+    const skip = dayOfYear % total;
+
+    const question = await prisma.question.findFirst({
+      skip,
+      take: 1,
+      orderBy: { createdAt: "asc" },
+      include: { subject: { select: { id: true, name: true } } },
+    });
+    return question;
+  } catch {
+    return null;
+  }
+}
+
 export const getSiteSettings = cache(async () => {
   try {
     const settings = await prisma.siteSettings.findUnique({ where: { id: "singleton" } });

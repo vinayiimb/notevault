@@ -86,6 +86,7 @@ model Subject {
   notes         SubjectNotes?
   driveSubjects DriveSubject[]
   noteThemes    NoteTheme[]
+  examDates     StudentExamDate[]
 
   @@unique([termId, slug])
   @@index([upc])
@@ -531,7 +532,26 @@ model Student {
   lastActiveDate String? // "YYYY-MM-DD", used to compute streak continuation
   createdAt      DateTime @default(now())
 
-  events OrangeEvent[]
+  events    OrangeEvent[]
+  examDates StudentExamDate[]
+}
+
+// A manually-added upcoming exam date for a student's dashboard countdown.
+// subjectName is denormalized so the entry still reads fine if the linked
+// Subject is later deleted or renamed (subjectId is set null, not cascaded).
+model StudentExamDate {
+  id          String   @id @default(cuid())
+  studentId   String
+  student     Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  subjectId   String?
+  subject     Subject? @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  subjectName String
+  examDate    DateTime
+  examTime    String?
+  notes       String?
+  createdAt   DateTime @default(now())
+
+  @@index([studentId])
 }
 
 model OrangeEvent {

@@ -191,3 +191,45 @@ export async function getTodayOranges(studentId: string) {
 }
 
 export const DAILY_TARGET_ORANGES = 50;
+
+export async function getUpcomingExamDates(studentId: string) {
+  try {
+    return await prisma.studentExamDate.findMany({
+      where: { studentId, examDate: { gte: new Date(`${todayStr()}T00:00:00.000Z`) } },
+      orderBy: { examDate: "asc" },
+      take: 5,
+    });
+  } catch {
+    return [];
+  }
+}
+
+export async function addExamDate(input: {
+  subjectId?: string | null;
+  subjectName: string;
+  examDate: string;
+  examTime?: string | null;
+  notes?: string | null;
+}) {
+  const student = await ensureStudentWritable();
+  const subjectName = input.subjectName.trim().slice(0, 120);
+  if (!subjectName) throw new Error("Subject name can't be empty.");
+  const examDate = new Date(input.examDate);
+  if (Number.isNaN(examDate.getTime())) throw new Error("Invalid exam date.");
+
+  return prisma.studentExamDate.create({
+    data: {
+      studentId: student.id,
+      subjectId: input.subjectId || null,
+      subjectName,
+      examDate,
+      examTime: input.examTime?.trim().slice(0, 20) || null,
+      notes: input.notes?.trim().slice(0, 280) || null,
+    },
+  });
+}
+
+export async function deleteExamDate(id: string) {
+  const student = await ensureStudentWritable();
+  await prisma.studentExamDate.deleteMany({ where: { id, studentId: student.id } });
+}

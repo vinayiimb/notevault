@@ -5,9 +5,9 @@ import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardMobileNav } from "./dashboard-mobile-nav";
 import { DashboardHeader } from "./dashboard-header";
 import { BannerCards } from "./banner-cards";
-import { VocabBuilderGrid } from "./vocab-builder-grid";
+import { ExamCountdownCard } from "./exam-countdown-card";
 import { OverviewGrid } from "./overview-grid";
-import { WordOfTheDay } from "./word-of-the-day";
+import { DailyStudyQuestion, type DailyStudyQuestionProps } from "./daily-study-question";
 import { StudentCourseCard } from "./student-course-card";
 import { ContinueStudying, type StudyActivityItem } from "./continue-studying";
 import { SubjectGrid } from "./subject-grid";
@@ -46,6 +46,7 @@ export interface DashboardShellProps {
   }>;
   recentUploads: ResourceItem[];
   latestActivity?: StudyActivityItem[];
+  dailyQuestion?: DailyStudyQuestionProps["question"];
 }
 
 export function DashboardShell({
@@ -55,6 +56,7 @@ export function DashboardShell({
   programs,
   recentUploads,
   latestActivity = [],
+  dailyQuestion = null,
 }: DashboardShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -147,14 +149,16 @@ export function DashboardShell({
                 weeklyPyqTitle={recentUploads[1]?.title}
               />
 
-              {/* VOCAB BUILDER Section */}
-              <VocabBuilderGrid />
+              {/* EXAM COUNTDOWN Section */}
+              <ExamCountdownCard
+                subjects={activeSubjects.map((s) => ({ id: s.id, name: s.name }))}
+              />
 
               {/* OVERVIEW Section */}
               <OverviewGrid />
 
-              {/* WORD OF THE DAY Section */}
-              <WordOfTheDay />
+              {/* TODAY'S STUDY QUESTION Section */}
+              <DailyStudyQuestion question={dailyQuestion} />
             </div>
           ) : activeTab === "subjects" || activeTab === "practice" ? (
             /* Subjects & Course Selector tab view */
