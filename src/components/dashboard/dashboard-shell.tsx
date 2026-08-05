@@ -4,6 +4,7 @@ import { useState } from "react";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardMobileNav } from "./dashboard-mobile-nav";
 import { DashboardHeader } from "./dashboard-header";
+import { HeroCards } from "./hero-cards";
 import { StudentCourseCard } from "./student-course-card";
 import { ContinueStudying, type StudyActivityItem } from "./continue-studying";
 import { QuickActions } from "./quick-actions";
@@ -99,6 +100,11 @@ export function DashboardShell({
     };
   });
 
+  const pyqCount = activeSubjects.reduce((sum, s) => sum + s.pyqsCount, 0);
+  const notesCount = activeSubjects.reduce((sum, s) => sum + s.notesCount, 0);
+  const latestPyq = recentUploads.find((r) => r.type === "PYQ");
+  const latestNotes = recentUploads.find((r) => r.type === "NOTES");
+
   const handleSelectCourseTerm = (programId: string, termId: string) => {
     const prog = programs.find((p) => p.id === programId);
     const term = prog?.terms.find((t) => t.id === termId);
@@ -144,6 +150,14 @@ export function DashboardShell({
               <NicknamePrompt />
             </div>
           )}
+
+          {/* PYQ / Notes Hero Cards */}
+          <HeroCards
+            pyqCount={pyqCount}
+            notesCount={notesCount}
+            latestPyq={latestPyq}
+            latestNotes={latestNotes}
+          />
 
           {/* Dismissible Onboarding Checklist */}
           <HelpOnboardingCard
