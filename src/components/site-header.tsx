@@ -14,10 +14,10 @@ export function SiteHeader() {
           <Image
             src="/logo.png"
             alt="DU PYQ Online Mascot Logo"
-            width={38}
-            height={38}
+            width={40}
+            height={40}
             priority
-            className="size-8.5 sm:size-9.5 rounded-xl object-contain shadow-xs bg-white/90 p-0.5 border border-border/30"
+            className="size-9 sm:size-10 object-contain"
           />
           <span className="font-extrabold font-display tracking-tight text-foreground">DU PYQ Online</span>
         </Link>

@@ -26,12 +26,12 @@ const NAVIGATION_SECTIONS = [
   {
     title: "Study Portals",
     items: [
-      { href: "/previous-year-papers", label: "Previous Year Papers", desc: "Download past exams and solution keys", icon: Files },
+      { href: "/pyq-notes", label: "PYQ", desc: "Complete 8,300+ file search catalog", icon: FileArchive, badge: "8.3k+" },
       { href: "/notes", label: "Notes", desc: "Access study notes and summaries", icon: NotePencil },
+      { href: "/previous-year-papers", label: "Previous Year Papers", desc: "Download past exams and solution keys", icon: Files },
       { href: "/syllabus", label: "Syllabus", desc: "Browse official DU UGCF syllabus", icon: Scroll },
       { href: "/browse/college", label: "Courses", desc: "Browse Delhi University courses", icon: GraduationCap },
       { href: "/semesters", label: "Semesters", desc: "Find study material from Sem 1 to 6", icon: Calendar },
-      { href: "/pyq-notes", label: "Full Archive", desc: "Complete 8,300+ file search catalog", icon: FileArchive, badge: "8.3k+" },
     ],
   },
   {
@@ -50,12 +50,12 @@ export function SiteNavigation() {
   const pathname = usePathname();
 
   const links = [
-    { href: "/previous-year-papers", label: "Previous Year Papers" },
+    { href: "/pyq-notes", label: "PYQ" },
     { href: "/notes", label: "Notes" },
+    { href: "/previous-year-papers", label: "Previous Year Papers" },
     { href: "/syllabus", label: "Syllabus" },
     { href: "/browse/college", label: "Courses" },
     { href: "/semesters", label: "Semesters" },
-    { href: "/pyq-notes", label: "Full Archive" },
   ];
 
   return (
@@ -161,7 +161,7 @@ export function MobileNavMenu() {
                   <FileArchive size={24} weight="bold" className="text-accent" />
                   <div className="mt-3">
                     <p className="text-xs font-bold uppercase tracking-wider text-muted">8,350+ Files</p>
-                    <p className="text-sm font-bold text-foreground">Full Archive</p>
+                    <p className="text-sm font-bold text-foreground">PYQ</p>
                   </div>
                 </Link>
               </div>
@@ -226,7 +226,7 @@ export function MobileNavMenu() {
                 className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-bold text-brand-foreground shadow-sm active:scale-98 transition"
               >
                 <FileArchive size={18} weight="bold" />
-                <span>Explore Full Archive</span>
+                <span>Explore PYQ</span>
               </Link>
             </div>
           </div>,
