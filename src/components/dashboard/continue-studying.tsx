@@ -10,130 +10,103 @@ export interface StudyActivityItem {
   subjectId: string;
   subjectName: string;
   lastOpenedAgo: string;
-  progress?: number;
-  statusText?: string;
-  href?: string;
 }
 
 interface ContinueStudyingProps {
   items?: StudyActivityItem[];
 }
 
-const DEFAULT_RECENT_ITEMS: StudyActivityItem[] = [
-  {
-    id: "fm-2024",
-    title: "Financial Management 2024 PYQ",
-    type: "PYQ",
-    subjectId: "fm",
-    subjectName: "Financial Management",
-    lastOpenedAgo: "Last opened 2 hours ago",
-    progress: 44,
-    statusText: "Question 4 of 9 · 44% completed",
-    href: "/pyq-notes",
-  },
-  {
-    id: "pp-notes",
-    title: "Unit 2: Capital Budgeting Decisions",
-    type: "NOTES",
-    subjectId: "fm",
-    subjectName: "Financial Management",
-    lastOpenedAgo: "Last opened yesterday",
-    progress: 78,
-    statusText: "Section 6 of 8 · 78% revised",
-    href: "/browse/college",
-  },
-  {
-    id: "ba-practice",
-    title: "Predictive Modelling Formula Sheet",
-    type: "NOTES",
-    subjectId: "ba",
-    subjectName: "Business Analytics",
-    lastOpenedAgo: "Last opened 2 days ago",
-    progress: 30,
-    statusText: "Page 3 of 10 · 30% read",
-    href: "/browse/college",
-  },
-];
-
 export function ContinueStudying({ items = [] }: ContinueStudyingProps) {
-  // Use provided items or fall back to high-fidelity mock recent items, limited to max 3
-  const activeItems = items && items.length > 0
-    ? items.slice(0, 3).map((item, index) => ({
-        ...item,
-        progress: item.progress ?? (index === 0 ? 44 : index === 1 ? 78 : 30),
-        statusText: item.statusText ?? (index === 0 ? "Question 4 of 9 · 44% completed" : "In progress"),
-        href: "/pyq-notes",
-      }))
-    : DEFAULT_RECENT_ITEMS;
+  if (!items || items.length === 0) {
+    return (
+      <section className="space-y-4" aria-labelledby="continue-studying-title">
+        <div className="flex items-center justify-between">
+          <h2 id="continue-studying-title" className="text-lg font-bold font-display text-foreground">
+            Continue Studying
+          </h2>
+        </div>
+
+        <div className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-surface p-8 text-center space-y-3">
+          <div className="flex size-12 items-center justify-center rounded-full bg-brand-soft text-brand">
+            <BookOpen size={24} weight="bold" />
+          </div>
+          <div className="max-w-md">
+            <h3 className="text-base font-bold text-foreground">You have not opened any study material yet</h3>
+            <p className="mt-1 text-xs text-muted">
+              Explore your semester subjects below to start reading notes, papers and answer keys.
+            </p>
+          </div>
+          <a
+            href="#subjects"
+            className="mt-2 inline-flex items-center gap-2 rounded-xl bg-brand px-4 py-2 text-xs font-semibold text-brand-foreground hover:bg-brand-hover"
+          >
+            <span>Explore Subjects</span>
+            <ArrowRight size={14} weight="bold" />
+          </a>
+        </div>
+      </section>
+    );
+  }
 
   return (
-    <section className="space-y-4">
-      {/* Section Header */}
+    <section className="space-y-4" aria-labelledby="continue-studying-title">
       <div className="flex items-center justify-between">
-        <h3 className="text-xs font-extrabold uppercase tracking-[0.06em] text-[#8C95A6] dark:text-gray-400">
-          CONTINUE STUDYING
-        </h3>
+        <div>
+          <h2 id="continue-studying-title" className="text-lg font-bold font-display text-foreground">
+            Continue Studying
+          </h2>
+          <p className="text-xs text-muted">Pick up right where you left off</p>
+        </div>
         <Link
-          href="/pyq-notes"
-          className="text-xs font-semibold text-[#3168FF] hover:underline transition-colors"
+          href="/browse/college"
+          className="text-xs font-semibold text-brand hover:underline flex items-center gap-1"
         >
-          View Full History →
+          <span>View all library</span>
+          <ArrowRight size={12} weight="bold" />
         </Link>
       </div>
 
-      {/* 3-Card Grid */}
-      <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
-        {activeItems.map((item) => {
-          const Icon = item.type === "PYQ" ? ListChecks : item.type === "NOTES" ? FileText : BookOpen;
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {items.slice(0, 3).map((item) => {
+          const isNote = item.type === "NOTES";
           return (
             <div
               key={item.id}
-              className="group flex flex-col justify-between rounded-[18px] bg-white dark:bg-[#1A1D24] p-5 shadow-[0_2px_12px_rgba(0,0,0,0.03)] border border-[#EAEBF0] dark:border-gray-800/80 hover:shadow-md hover:border-gray-300 dark:hover:border-gray-700 transition-all duration-200"
+              className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-5 transition-all hover:border-brand/40 hover:shadow-md space-y-4"
             >
-              <div>
-                {/* Subject & Icon */}
-                <div className="flex items-center justify-between text-xs font-bold text-gray-400">
-                  <span className="truncate pr-2">{item.subjectName}</span>
-                  <span className="flex size-7 shrink-0 items-center justify-center rounded-lg bg-[#F2F4F8] dark:bg-[#232732] text-gray-600 dark:text-gray-300 group-hover:bg-[#3168FF] group-hover:text-white transition-colors">
-                    <Icon size={16} weight="bold" />
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-2">
+                  <span
+                    className={`inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                      isNote
+                        ? "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        : "bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                    }`}
+                  >
+                    {isNote ? <FileText size={12} weight="bold" /> : <ListChecks size={12} weight="bold" />}
+                    {item.type}
+                  </span>
+                  <span className="flex items-center gap-1 text-[11px] font-medium text-muted">
+                    <Clock size={12} weight="bold" />
+                    {item.lastOpenedAgo}
                   </span>
                 </div>
 
-                {/* Title */}
-                <h4 className="mt-2 text-base font-extrabold text-gray-900 dark:text-white line-clamp-1 group-hover:text-[#3168FF] transition-colors">
-                  {item.title}
-                </h4>
-
-                {/* Status text */}
-                <p className="mt-1.5 text-xs font-semibold text-[#646B78] dark:text-gray-400">
-                  {item.statusText}
-                </p>
-
-                {/* Progress Bar */}
-                <div className="mt-3.5 h-1.5 w-full overflow-hidden rounded-full bg-[#EBECEF] dark:bg-gray-800">
-                  <div
-                    className="h-full rounded-full bg-[#3168FF] transition-all duration-500"
-                    style={{ width: `${item.progress || 35}%` }}
-                  />
-                </div>
-
-                {/* Timestamp */}
-                <div className="mt-3 flex items-center gap-1 text-[11px] font-medium text-gray-400 dark:text-gray-500">
-                  <Clock size={13} />
-                  <span>{item.lastOpenedAgo}</span>
+                <div>
+                  <p className="text-xs font-bold text-brand">{item.subjectName}</p>
+                  <h3 className="line-clamp-2 text-sm font-semibold text-foreground mt-0.5">
+                    {item.title}
+                  </h3>
                 </div>
               </div>
 
-              {/* Action Button */}
-              <div className="mt-5 pt-4 border-t border-[#F0F2F6] dark:border-gray-800/80">
-                <Link
-                  href={item.href || "/pyq-notes"}
-                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#F4F5F9] dark:bg-[#232732] hover:bg-[#3168FF] dark:hover:bg-[#3168FF] text-gray-800 dark:text-gray-200 hover:text-white py-2.5 px-4 text-xs font-bold transition-all duration-200 active:scale-95"
-                >
-                  <span>Continue Attempt</span>
-                  <ArrowRight size={13} weight="bold" />
-                </Link>
-              </div>
+              <Link
+                href={`/subjects/${item.subjectId}`}
+                className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-xl bg-surface-muted px-3 text-xs font-semibold text-foreground hover:bg-brand hover:text-brand-foreground transition-colors"
+              >
+                <span>Continue Reading</span>
+                <ArrowRight size={14} weight="bold" />
+              </Link>
             </div>
           );
         })}

@@ -4,11 +4,12 @@ import { useState } from "react";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardMobileNav } from "./dashboard-mobile-nav";
 import { DashboardHeader } from "./dashboard-header";
-import { StudentContextRow } from "./student-context-row";
-import { NextExamCard } from "./next-exam-card";
-import { ContinueStudying, type StudyActivityItem } from "./continue-studying";
-import { PersonalizedResourcesGrid } from "./personalized-resources-grid";
+import { BannerCards } from "./banner-cards";
+import { VocabBuilderGrid } from "./vocab-builder-grid";
+import { OverviewGrid } from "./overview-grid";
+import { WordOfTheDay } from "./word-of-the-day";
 import { StudentCourseCard } from "./student-course-card";
+import { ContinueStudying, type StudyActivityItem } from "./continue-studying";
 import { SubjectGrid } from "./subject-grid";
 import { UpcomingExams } from "./upcoming-exams";
 import { RecentResources, type ResourceItem } from "./recent-resources";
@@ -55,8 +56,7 @@ export function DashboardShell({
   recentUploads,
   latestActivity = [],
 }: DashboardShellProps) {
-  // Collapsed by default on desktop as specified in Expert Product Plan (Section 2)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
 
   // Determine initial course selection or use state store
@@ -114,7 +114,7 @@ export function DashboardShell({
 
   return (
     <div className="flex min-h-screen bg-[#F1F3F6] dark:bg-[#0E1116] text-gray-900 dark:text-gray-100 font-sans">
-      {/* Categorized Collapsible Desktop Sidebar */}
+      {/* Desktop Collapsible Sidebar */}
       <DashboardSidebar
         collapsed={sidebarCollapsed}
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
@@ -126,8 +126,8 @@ export function DashboardShell({
       />
 
       {/* Main Content Area */}
-      <div className="flex flex-1 flex-col min-w-0 pb-28 lg:pb-16 bg-[#F1F3F6] dark:bg-[#0E1116] overflow-x-hidden">
-        {/* Sleek Minimalist Header */}
+      <div className="flex flex-1 flex-col min-w-0 pb-20 lg:pb-12 bg-[#F1F3F6] dark:bg-[#0E1116]">
+        {/* Minimal Top Header */}
         <DashboardHeader
           nickname={student.nickname}
           termName={pref?.termName}
@@ -136,32 +136,29 @@ export function DashboardShell({
           onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 
-        {/* Dashboard Content Container with Refined Spacing */}
-        <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 py-7 sm:px-6 lg:px-8">
+        {/* Dashboard Content Container */}
+        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-8">
           {activeTab === "dashboard" ? (
-            /* EXACT EXPERT PRODUCT PLAN HIERARCHY: Answering "What should this student do next?" */
-            <div className="space-y-10">
-              {/* Row 1: Student Context */}
-              <StudentContextRow
-                studentName={student.nickname || "Vinay"}
-                programmeName={pref?.programName || "B.Com (Hons.)"}
-                semesterName={pref?.termName || "Semester 5"}
-                readinessScore={68}
-                onOpenSearch={() => {}}
+            /* EXACT REFERENCE UI VIEW: clean, uncluttered, matching screenshot perfectly */
+            <div className="space-y-9">
+              {/* Top PYQ & NOTES Banner Cards */}
+              <BannerCards
+                todayNoteTitle={recentUploads[0]?.title}
+                weeklyPyqTitle={recentUploads[1]?.title}
               />
 
-              {/* Row 2: Next Examination & Timeline */}
-              <NextExamCard />
+              {/* VOCAB BUILDER Section */}
+              <VocabBuilderGrid />
 
-              {/* Row 3: Continue Studying */}
-              <ContinueStudying items={latestActivity} />
+              {/* OVERVIEW Section */}
+              <OverviewGrid />
 
-              {/* Row 4: Main Study Resources (Personalized Counts) */}
-              <PersonalizedResourcesGrid />
+              {/* WORD OF THE DAY Section */}
+              <WordOfTheDay />
             </div>
-          ) : activeTab === "subjects" ? (
-            /* Subject Workspace & Course Selector Tab */
-            <div className="space-y-8 animate-in fade-in duration-200">
+          ) : activeTab === "subjects" || activeTab === "practice" ? (
+            /* Subjects & Course Selector tab view */
+            <div className="space-y-8">
               <StudentCourseCard
                 pref={pref}
                 programs={programs.map((p) => ({
@@ -177,13 +174,13 @@ export function DashboardShell({
               <UpcomingExams subjects={activeSubjects} />
             </div>
           ) : activeTab === "saved" ? (
-            /* Saved Bookmarks & Offline Resources Tab */
-            <div className="space-y-8 animate-in fade-in duration-200">
+            /* Saved Bookmarks tab view */
+            <div className="space-y-8">
               <SavedResources />
             </div>
           ) : (
-            /* Progress, History & Supplementary Activity Tab */
-            <div className="space-y-8 animate-in fade-in duration-200">
+            /* Recent Activity & Stats tab view */
+            <div className="space-y-8">
               <SemesterProgressSummary
                 todayOranges={todayOranges}
                 streak={student.streak}
