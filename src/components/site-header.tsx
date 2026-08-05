@@ -10,16 +10,15 @@ export function SiteHeader() {
   return (
     <div className="sticky top-0 z-40 mx-auto w-full sm:top-4 sm:w-[92%] sm:max-w-6xl">
       <header className="flex h-16 sm:h-[72px] items-center justify-between gap-3 sm:gap-5 border-b border-border/60 bg-surface/95 px-4 backdrop-blur-md shadow-2xs sm:border-none sm:rounded-2xl sm:shadow-[0_8px_24px_rgba(0,0,0,.08)] sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5 font-display font-bold tracking-tight text-foreground text-base sm:text-lg hover:opacity-90 transition">
+        <Link href="/" className="flex shrink-0 items-center hover:opacity-90 transition">
           <Image
             src="/logo.png"
-            alt="DU PYQ Online Mascot Logo"
-            width={40}
-            height={40}
+            alt="DU PYQ Online"
+            width={1024}
+            height={577}
             priority
-            className="size-9 sm:size-10 object-contain"
+            className="h-9 sm:h-11 w-auto object-contain"
           />
-          <span className="font-extrabold font-display tracking-tight text-foreground">DU PYQ Online</span>
         </Link>
 
         <SiteNavigation />

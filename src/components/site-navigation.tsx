@@ -52,10 +52,6 @@ export function SiteNavigation() {
   const links = [
     { href: "/pyq-notes", label: "PYQ" },
     { href: "/notes", label: "Notes" },
-    { href: "/previous-year-papers", label: "Previous Year Papers" },
-    { href: "/syllabus", label: "Syllabus" },
-    { href: "/browse/college", label: "Courses" },
-    { href: "/semesters", label: "Semesters" },
   ];
 
   return (
