@@ -43,7 +43,7 @@ export function QuickActions() {
     {
       title: "Browse answer keys",
       description: "Check verified answers for past DU papers.",
-      href: "/browse/college",
+      href: "/courses",
       icon: CheckSquare,
       accent: "text-rose-500 bg-rose-500/10",
     },

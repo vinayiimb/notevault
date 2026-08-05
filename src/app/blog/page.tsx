@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ArticleNyTimes, Clock } from "@phosphor-icons/react/dist/ssr";
 import { getAllBlogPosts } from "@/lib/blog";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 export const metadata: Metadata = {
   title: "Blog",
@@ -18,14 +19,15 @@ function formatDate(iso: string) {
 export default function BlogIndexPage() {
   const posts = getAllBlogPosts();
 
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    { name: "Blog", url: "/blog" },
+  ];
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
-      <BreadcrumbJsonLd
-        items={[
-          { name: "Home", url: "/" },
-          { name: "Blog", url: "/blog" },
-        ]}
-      />
+      <BreadcrumbJsonLd items={breadcrumbs} />
+      <VisibleBreadcrumb items={breadcrumbs} />
 
       <div className="max-w-3xl">
         <p className="flex items-center gap-2 text-sm font-medium text-accent">

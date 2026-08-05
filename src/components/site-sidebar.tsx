@@ -18,7 +18,7 @@ import { SearchBar } from "@/components/search-bar";
 const COLLAPSED_KEY = "notevault-sidebar-collapsed";
 
 const NAV = [
-  { href: "/browse/college", label: "PYQ", match: "/browse", Icon: ClockCounterClockwise },
+  { href: "/courses", label: "PYQ", match: "/courses", Icon: ClockCounterClockwise },
   { href: "/pyq-notes", label: "Full archive", match: "/pyq-notes", Icon: Archive },
   { href: "/dashboard", label: "Dashboard", match: "/dashboard", Icon: SquaresFour },
   { href: "/tools/exam-kit", label: "Exam Kit", match: "/tools/exam-kit", Icon: Exam },

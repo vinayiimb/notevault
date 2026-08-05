@@ -15,7 +15,7 @@ import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 import { StudyAccessShowcase } from "@/components/study-access-showcase";
 
 export const metadata: Metadata = {
-  title: "DU Previous Year Papers & Notes | DU PYQ Online",
+  title: "DU Previous Year Papers & Notes",
   description: "Find Delhi University previous year question papers by course, semester, subject, paper type and year. Read or download DU PYQs free.",
   alternates: { canonical: "/" },
 };
@@ -141,7 +141,7 @@ export default async function HomePage() {
               icon={<CompassRose size={24} weight="bold" />}
               title="I need a PYQ"
               detail="Browse by course and semester"
-              href="/browse/college"
+              href="/courses"
               badge="Popular"
             />
             <ShortcutCard
@@ -197,7 +197,7 @@ export default async function HomePage() {
             <div className="rounded-2xl border border-border bg-surface p-5 hover:border-brand/40 transition">
               <h4 className="font-bold text-foreground text-sm font-semibold">Courses</h4>
               <p className="text-xs text-muted mt-1 leading-relaxed">Explore degree programmes including B.Com, B.A., and B.Sc.</p>
-              <Link href="/browse/college" className="text-xs font-bold text-brand hover:underline mt-3 block">Browse Courses →</Link>
+              <Link href="/courses" className="text-xs font-bold text-brand hover:underline mt-3 block">Browse Courses →</Link>
             </div>
             <div className="rounded-2xl border border-border bg-surface p-5 hover:border-brand/40 transition">
               <h4 className="font-bold text-foreground text-sm font-semibold">Semesters</h4>
@@ -208,6 +208,11 @@ export default async function HomePage() {
               <h4 className="font-bold text-foreground text-sm font-semibold">Full Archive</h4>
               <p className="text-xs text-muted mt-1 leading-relaxed">Search our complete collection of 8,300+ library and Drive files.</p>
               <Link href="/pyq-notes" className="text-xs font-bold text-brand hover:underline mt-3 block">Explore Archive →</Link>
+            </div>
+            <div className="rounded-2xl border border-border bg-surface p-5 hover:border-brand/40 transition">
+              <h4 className="font-bold text-foreground text-sm font-semibold">Blog</h4>
+              <p className="text-xs text-muted mt-1 leading-relaxed">Read exam prep guides and tips for using the DU PYQ archive.</p>
+              <Link href="/blog" className="text-xs font-bold text-brand hover:underline mt-3 block">Read the Blog →</Link>
             </div>
           </div>
         </section>
@@ -224,7 +229,7 @@ export default async function HomePage() {
             On our platform, you can explore a wide variety of resources including <Link href="/previous-year-papers" className="text-brand hover:underline">Delhi University previous year question papers</Link>, detailed study <Link href="/notes" className="text-brand hover:underline">notes</Link>, and official degree <Link href="/syllabus" className="text-brand hover:underline">syllabus structures</Link>. We host papers for many popular courses like B.Com (Hons), B.A. (H) Economics, B.Sc. (H) Physics, and more. To ensure accessibility, every resource is completely open and free to read or download with no login, sign-up, or registration required.
           </p>
           <p className="mb-4">
-            We offer flexible options for finding study materials. You can easily <Link href="/browse/college" className="text-brand hover:underline">browse courses</Link> to view a structured subject roadmap or <Link href="/semesters" className="text-brand hover:underline">browse by semester</Link> to jump directly to files relevant to your current academic term (Semester 1 through Semester 6). Our advanced study files are integrated with high-accuracy OCR text extraction, allowing students to read and search question papers directly online without downloading PDFs.
+            We offer flexible options for finding study materials. You can easily <Link href="/courses" className="text-brand hover:underline">browse courses</Link> to view a structured subject roadmap or <Link href="/semesters" className="text-brand hover:underline">browse by semester</Link> to jump directly to files relevant to your current academic term (Semester 1 through Semester 6). Our advanced study files are integrated with high-accuracy OCR text extraction, allowing students to read and search question papers directly online without downloading PDFs.
           </p>
           <p>
             Whether you need to review the syllabus rules, test your knowledge using our revision kits, or download past papers from our <Link href="/pyq-notes" className="text-brand hover:underline">full archive</Link>, DU PYQ Online ensures you have stable, crawlable, and fast access to everything you need. All our study collections, solution keys, and past papers are updated regularly to match the latest UGCF regulations.

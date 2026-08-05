@@ -31,7 +31,7 @@ export default function NotFound() {
           Homepage
         </Link>
         <Link
-          href="/browse/college"
+          href="/courses"
           className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent"
         >
           <GraduationCap size={16} weight="bold" />

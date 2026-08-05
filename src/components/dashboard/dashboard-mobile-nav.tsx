@@ -44,10 +44,10 @@ export function DashboardMobileNav({
   ];
 
   const secondaryItems = [
-    { label: "Notes", href: "/browse/college", icon: FileText },
+    { label: "Notes", href: "/courses", icon: FileText },
     { label: "PYQs", href: "/pyq-notes", icon: ListChecks },
     { label: "Syllabus", href: "/programs", icon: Compass },
-    { label: "Answer Keys", href: "/browse/college", icon: CheckSquare },
+    { label: "Answer Keys", href: "/courses", icon: CheckSquare },
     { label: "Quiz & Flashcards", href: "/tools/exam-kit", icon: Brain },
     { label: "Settings", href: "#settings", icon: Gear },
   ];

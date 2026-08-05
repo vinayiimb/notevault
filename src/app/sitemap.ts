@@ -9,7 +9,7 @@ const STATIC_ROUTES: { path: string; priority: number; changeFrequency: Metadata
   { path: "/previous-year-papers", priority: 0.9, changeFrequency: "daily" },
   { path: "/notes", priority: 0.9, changeFrequency: "daily" },
   { path: "/syllabus", priority: 0.9, changeFrequency: "weekly" },
-  { path: "/browse/college", priority: 0.8, changeFrequency: "weekly" },
+  { path: "/courses", priority: 0.8, changeFrequency: "weekly" },
   { path: "/semesters", priority: 0.8, changeFrequency: "weekly" },
   { path: "/pyq-notes", priority: 0.9, changeFrequency: "daily" },
   { path: "/exam-sessions", priority: 0.7, changeFrequency: "weekly" },

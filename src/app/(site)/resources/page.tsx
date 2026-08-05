@@ -24,7 +24,7 @@ export const metadata: Metadata = {
 
 const RESOURCES = [
   {
-    href: "/browse/college",
+    href: "/courses",
     title: "Course-wise previous year papers",
     description: "Browse every Delhi University programme and jump straight to its papers by semester.",
     icon: Compass,

@@ -28,7 +28,7 @@ const NAVIGATION_SECTIONS = [
       { href: "/previous-year-papers", label: "Previous Year Papers", desc: "Download past exams and solution keys", icon: Files },
       { href: "/notes", label: "Notes", desc: "Access study notes and summaries", icon: NotePencil },
       { href: "/syllabus", label: "Syllabus", desc: "Browse official DU UGCF syllabus", icon: Scroll },
-      { href: "/browse/college", label: "Courses", desc: "Browse Delhi University courses", icon: GraduationCap },
+      { href: "/courses", label: "Courses", desc: "Browse Delhi University courses", icon: GraduationCap },
       { href: "/semesters", label: "Semesters", desc: "Find study material from Sem 1 to 6", icon: Calendar },
       { href: "/pyq-notes", label: "Full Archive", desc: "Complete 8,300+ file search catalog", icon: FileArchive, badge: "8.3k+" },
     ],
@@ -52,9 +52,10 @@ export function SiteNavigation() {
     { href: "/previous-year-papers", label: "Previous Year Papers" },
     { href: "/notes", label: "Notes" },
     { href: "/syllabus", label: "Syllabus" },
-    { href: "/browse/college", label: "Courses" },
+    { href: "/courses", label: "Courses" },
     { href: "/semesters", label: "Semesters" },
     { href: "/pyq-notes", label: "Full Archive" },
+    { href: "/blog", label: "Blog" },
   ];
 
   return (

@@ -63,10 +63,10 @@ export function DashboardSidebar({
       group: "Study",
       items: [
         { id: "subjects", label: "My Subjects", href: "#subjects", icon: BookOpen },
-        { id: "notes", label: "Notes", href: "/browse/college", icon: FileText },
+        { id: "notes", label: "Notes", href: "/courses", icon: FileText },
         { id: "pyqs", label: "PYQs", href: "/pyq-notes", icon: ListChecks },
         { id: "syllabus", label: "Syllabus", href: "/programs", icon: Compass },
-        { id: "answer-keys", label: "Answer Keys", href: "/browse/college", icon: CheckSquare },
+        { id: "answer-keys", label: "Answer Keys", href: "/courses", icon: CheckSquare },
       ],
     },
     {

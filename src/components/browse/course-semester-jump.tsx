@@ -101,7 +101,7 @@ export function CourseSemesterJump({
         <span>Can&apos;t find your exact semester? Just select your course first.</span>
         <span>
           Don&apos;t know your course yet?{" "}
-          <Link href="/browse/college" className="font-bold text-brand hover:underline inline-flex items-center gap-1">
+          <Link href="/courses" className="font-bold text-brand hover:underline inline-flex items-center gap-1">
             <span>Browse complete archive</span>
             <ArrowRight size={12} weight="bold" />
           </Link>

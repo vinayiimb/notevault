@@ -6,7 +6,7 @@ import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 export const metadata: Metadata = {
-  title: "Browse DU Study Material by Semester | DU PYQ Online",
+  title: "Browse DU Study Material by Semester",
   description: "Browse Delhi University study materials, question papers, notes, and syllabus organized from Semester 1 to Semester 6.",
   alternates: { canonical: "/semesters" },
 };

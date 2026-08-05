@@ -58,7 +58,7 @@ export function ContinueStudying({ items = [] }: ContinueStudyingProps) {
           <p className="text-xs text-muted">Pick up right where you left off</p>
         </div>
         <Link
-          href="/browse/college"
+          href="/courses"
           className="text-xs font-semibold text-brand hover:underline flex items-center gap-1"
         >
           <span>View all library</span>

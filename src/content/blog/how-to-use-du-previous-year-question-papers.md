@@ -60,7 +60,7 @@ For subjects that need active recall rather than long-answer writing, the [exam 
 
 Combine everything above into a short plan for the semester:
 
-1. List every subject for the semester using the [program and semester browser](https://www.dupyq.online/browse/college) to confirm which papers apply to the current course structure.
+1. List every subject for the semester using the [program and semester browser](https://www.dupyq.online/courses) to confirm which papers apply to the current course structure.
 2. For each subject, pull four to six years of papers and build the topic-frequency table from Step 3.
 3. Rank topics by frequency, and schedule revision time proportionally — the highest-frequency topics get revised first and most often.
 4. In the final week before exams, switch entirely to timed practice using real previous year papers rather than reading new material.

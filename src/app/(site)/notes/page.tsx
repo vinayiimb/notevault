@@ -6,7 +6,7 @@ import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 export const metadata: Metadata = {
-  title: "DU Notes by Course and Semester | DU PYQ Online",
+  title: "DU Notes by Course and Semester",
   description: "Access subject-wise study notes, revision materials, and study guides for Delhi University courses. Free download and online reading.",
   alternates: { canonical: "/notes" },
 };
@@ -47,7 +47,7 @@ export default async function NotesPage() {
             </p>
           </div>
           <Link
-            href="/browse/college"
+            href="/courses"
             className="mt-6 text-sm font-bold text-sky-dark hover:underline"
           >
             Find compiled notes →

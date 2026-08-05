@@ -1,52 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { ArrowRight, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { getProgramsByLevel } from "@/lib/data";
-import { levelLabel } from "@/lib/utils";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
-// School (Class 12) is out of scope for now — a separate site is planned for it later.
-const LEVEL_MAP: Record<string, "SCHOOL" | "COLLEGE"> = {
-  college: "COLLEGE",
+export const metadata: Metadata = {
+  title: "Browse DU Courses",
+  description:
+    "Browse every Delhi University degree course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes.",
+  alternates: { canonical: "/courses" },
 };
 
-export async function generateMetadata({
-  params,
-}: {
-  params: Promise<{ level: string }>;
-}): Promise<Metadata> {
-  const { level } = await params;
-  const enumLevel = LEVEL_MAP[level];
-  if (!enumLevel) return {};
+const breadcrumbs = [
+  { name: "Home", url: "/" },
+  { name: "Courses", url: "/courses" },
+];
 
-  const title = level === "college" 
-    ? "Browse Delhi University Courses | DU PYQ Online"
-    : `Browse ${levelLabel(enumLevel)} Courses | DU PYQ Online`;
-    
-  const description = level === "college"
-    ? "Browse every college course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes."
-    : `Browse every ${levelLabel(enumLevel)} course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes.`;
-
-  return {
-    title,
-    description,
-    alternates: { canonical: `/browse/${level}` },
-    openGraph: { title, description },
-  };
-}
-
-export default async function BrowseLevelPage({
-  params,
-}: {
-  params: Promise<{ level: string }>;
-}) {
-  const { level } = await params;
-  const enumLevel = LEVEL_MAP[level];
-  if (!enumLevel) notFound();
-
-  const programs = await getProgramsByLevel(enumLevel);
+export default async function CoursesPage() {
+  const programs = await getProgramsByLevel("COLLEGE");
   const jumpData = programs.map((p) => ({
     id: p.id,
     name: p.name,
@@ -56,15 +29,11 @@ export default async function BrowseLevelPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
-      <BreadcrumbJsonLd
-        items={[
-          { name: "Home", url: "/" },
-          { name: `Browse ${levelLabel(enumLevel)}`, url: `/browse/${level}` },
-        ]}
-      />
-      <p className="text-sm text-muted">{levelLabel(enumLevel)}</p>
+      <BreadcrumbJsonLd items={breadcrumbs} />
+      <VisibleBreadcrumb items={breadcrumbs} />
+      <p className="text-sm text-muted">Courses</p>
       <h1 className="mt-1 text-3xl font-semibold tracking-tight">
-        Previous year questions, notes &amp; answer keys
+        Browse Delhi University Courses
       </h1>
       <p className="mt-2 text-sm text-muted">
         Pick your course and semester for a quick jump, or browse every course below.

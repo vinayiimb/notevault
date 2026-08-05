@@ -6,7 +6,7 @@ import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 export const metadata: Metadata = {
-  title: "DU Previous Year Question Papers | DU PYQ Online",
+  title: "DU Previous Year Question Papers",
   description: "Download Delhi University previous year question papers by course, subject, semester and year. Access DU PYQs online for free with no login required.",
   alternates: { canonical: "/previous-year-papers" },
 };

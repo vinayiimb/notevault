@@ -6,7 +6,7 @@ import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 export const metadata: Metadata = {
-  title: "Delhi University Syllabus | DU PYQ Online",
+  title: "Delhi University Syllabus",
   description: "Browse the latest Delhi University syllabus, course structures, and paper types for DU undergraduate programs.",
   alternates: { canonical: "/syllabus" },
 };

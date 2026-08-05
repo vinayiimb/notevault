@@ -370,7 +370,7 @@ export async function createProgramAction(formData: FormData) {
 
   await prisma.program.create({ data: { name, level, summary, slug } });
   revalidatePath("/admin/programs");
-  revalidatePath("/browse/[level]", "page");
+  revalidatePath("/courses");
 }
 
 export async function deleteProgramAction(formData: FormData) {

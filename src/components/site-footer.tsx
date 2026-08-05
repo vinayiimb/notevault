@@ -35,7 +35,7 @@ export function SiteFooter() {
             <h4 className="text-xs font-bold uppercase tracking-wider text-muted">Browse</h4>
             <ul className="mt-3 space-y-2 text-xs">
               <li>
-                <Link href="/browse/college" className="text-muted hover:text-accent transition">
+                <Link href="/courses" className="text-muted hover:text-accent transition">
                   Courses
                 </Link>
               </li>

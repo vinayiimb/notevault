@@ -32,7 +32,7 @@ export default async function SearchPage({
       {q && results.length === 0 && (
         <p className="mt-6 text-sm text-muted">
           No subjects matched. Try a different keyword, or browse{" "}
-          <Link href="/browse/college" className="text-accent">
+          <Link href="/courses" className="text-accent">
             College
           </Link>{" "}
           directly.
