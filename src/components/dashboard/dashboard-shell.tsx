@@ -4,19 +4,17 @@ import { useState } from "react";
 import { DashboardSidebar } from "./dashboard-sidebar";
 import { DashboardMobileNav } from "./dashboard-mobile-nav";
 import { DashboardHeader } from "./dashboard-header";
-import { HeroCards } from "./hero-cards";
+import { BannerCards } from "./banner-cards";
+import { VocabBuilderGrid } from "./vocab-builder-grid";
+import { OverviewGrid } from "./overview-grid";
+import { WordOfTheDay } from "./word-of-the-day";
 import { StudentCourseCard } from "./student-course-card";
 import { ContinueStudying, type StudyActivityItem } from "./continue-studying";
-import { QuickActions } from "./quick-actions";
 import { SubjectGrid } from "./subject-grid";
 import { UpcomingExams } from "./upcoming-exams";
 import { RecentResources, type ResourceItem } from "./recent-resources";
 import { SavedResources } from "./saved-resources";
-import { StudyToolsCard } from "./study-tools-card";
 import { SemesterProgressSummary } from "./semester-progress-summary";
-import { FeaturedCollections } from "./featured-collections";
-import { HelpOnboardingCard } from "./help-onboarding-card";
-import { NicknamePrompt } from "@/components/dashboard/nickname-prompt";
 import { useCoursePref, type StudentCoursePref } from "@/lib/dashboard-store";
 import type { SubjectData } from "./subject-card";
 
@@ -94,16 +92,11 @@ export function DashboardShell({
       description: s.description,
       notesCount: notes.length,
       pyqsCount: pyqs.length,
-      answersCount: Math.floor(pyqs.length * 0.4), // Derived estimation from DB papers
+      answersCount: Math.floor(pyqs.length * 0.4),
       latestResourceTitle: latestRes?.title || null,
       latestResourceType: latestRes?.type || null,
     };
   });
-
-  const pyqCount = activeSubjects.reduce((sum, s) => sum + s.pyqsCount, 0);
-  const notesCount = activeSubjects.reduce((sum, s) => sum + s.notesCount, 0);
-  const latestPyq = recentUploads.find((r) => r.type === "PYQ");
-  const latestNotes = recentUploads.find((r) => r.type === "NOTES");
 
   const handleSelectCourseTerm = (programId: string, termId: string) => {
     const prog = programs.find((p) => p.id === programId);
@@ -120,7 +113,7 @@ export function DashboardShell({
   };
 
   return (
-    <div className="flex min-h-screen bg-dashboard-bg text-foreground">
+    <div className="flex min-h-screen bg-[#F1F3F6] dark:bg-[#0E1116] text-gray-900 dark:text-gray-100 font-sans">
       {/* Desktop Collapsible Sidebar */}
       <DashboardSidebar
         collapsed={sidebarCollapsed}
@@ -133,86 +126,72 @@ export function DashboardShell({
       />
 
       {/* Main Content Area */}
-      <div className="flex flex-1 flex-col min-w-0 pb-20 lg:pb-12">
-        {/* Dashboard Header */}
+      <div className="flex flex-1 flex-col min-w-0 pb-20 lg:pb-12 bg-[#F1F3F6] dark:bg-[#0E1116]">
+        {/* Minimal Top Header */}
         <DashboardHeader
           nickname={student.nickname}
           termName={pref?.termName}
           streak={student.streak}
           oranges={student.oranges}
+          onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
         />
 
-        {/* Dashboard Body Container */}
+        {/* Dashboard Content Container */}
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 sm:px-6 lg:px-8 space-y-8">
-          {/* Nickname Prompt if unset */}
-          {!student.nickname && (
-            <div>
-              <NicknamePrompt />
+          {activeTab === "dashboard" ? (
+            /* EXACT REFERENCE UI VIEW: clean, uncluttered, matching screenshot perfectly */
+            <div className="space-y-9">
+              {/* Top PYQ & NOTES Banner Cards */}
+              <BannerCards
+                todayNoteTitle={recentUploads[0]?.title}
+                weeklyPyqTitle={recentUploads[1]?.title}
+              />
+
+              {/* VOCAB BUILDER Section */}
+              <VocabBuilderGrid />
+
+              {/* OVERVIEW Section */}
+              <OverviewGrid />
+
+              {/* WORD OF THE DAY Section */}
+              <WordOfTheDay />
+            </div>
+          ) : activeTab === "subjects" || activeTab === "practice" ? (
+            /* Subjects & Course Selector tab view */
+            <div className="space-y-8">
+              <StudentCourseCard
+                pref={pref}
+                programs={programs.map((p) => ({
+                  id: p.id,
+                  name: p.name,
+                  slug: p.slug,
+                  terms: p.terms.map((t) => ({ id: t.id, name: t.name, subjectsCount: t.subjects.length })),
+                }))}
+                subjectCount={activeSubjects.length}
+                onSelectCourseTerm={handleSelectCourseTerm}
+              />
+              <SubjectGrid subjects={activeSubjects} termName={pref?.termName} />
+              <UpcomingExams subjects={activeSubjects} />
+            </div>
+          ) : activeTab === "saved" ? (
+            /* Saved Bookmarks tab view */
+            <div className="space-y-8">
+              <SavedResources />
+            </div>
+          ) : (
+            /* Recent Activity & Stats tab view */
+            <div className="space-y-8">
+              <SemesterProgressSummary
+                todayOranges={todayOranges}
+                streak={student.streak}
+                totalOranges={student.oranges}
+                communityTotal={communityTotal}
+                subjectCount={activeSubjects.length}
+              />
+              <ContinueStudying items={latestActivity} />
+              <RecentResources resources={recentUploads} />
             </div>
           )}
-
-          {/* PYQ / Notes Hero Cards */}
-          <HeroCards
-            pyqCount={pyqCount}
-            notesCount={notesCount}
-            latestPyq={latestPyq}
-            latestNotes={latestNotes}
-          />
-
-          {/* Dismissible Onboarding Checklist */}
-          <HelpOnboardingCard
-            hasCourseSelected={!!pref?.programId}
-            hasSemesterSelected={!!pref?.termId}
-          />
-
-          {/* Student Course & Semester Summary Card */}
-          <StudentCourseCard
-            pref={pref}
-            programs={programs.map((p) => ({
-              id: p.id,
-              name: p.name,
-              slug: p.slug,
-              terms: p.terms.map((t) => ({ id: t.id, name: t.name, subjectsCount: t.subjects.length })),
-            }))}
-            subjectCount={activeSubjects.length}
-            onSelectCourseTerm={handleSelectCourseTerm}
-          />
-
-          {/* Semester Progress Ring & Stats */}
-          <SemesterProgressSummary
-            todayOranges={todayOranges}
-            streak={student.streak}
-            totalOranges={student.oranges}
-            communityTotal={communityTotal}
-            subjectCount={activeSubjects.length}
-          />
-
-          {/* Quick Action Shortcuts */}
-          <QuickActions />
-
-          {/* Continue Studying Activity */}
-          <ContinueStudying items={latestActivity} />
-
-          {/* Main Focal Point: My Subjects Section */}
-          <SubjectGrid
-            subjects={activeSubjects}
-            termName={pref?.termName}
-          />
-
-          {/* Upcoming Exams & Priorities */}
-          <UpcomingExams subjects={activeSubjects} />
-
-          {/* Saved Resources & Bookmarks */}
-          <SavedResources />
-
-          {/* Recently Added Resources Stream */}
-          <RecentResources resources={recentUploads} />
-
-          {/* Study Tools Banner */}
-          <StudyToolsCard />
-
-          {/* Featured Revision Collections */}
-          <FeaturedCollections />
         </main>
       </div>
 
