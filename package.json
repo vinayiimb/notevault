@@ -18,7 +18,11 @@
     "sync:drive-links": "tsx prisma/sync-all-drive-links.ts",
     "import:core-pyqs": "tsx prisma/import-core-pyqs.ts",
     "migrate:export": "tsx prisma/migrate-to-postgres-blob.ts export",
-    "migrate:import": "tsx prisma/migrate-to-postgres-blob.ts import"
+    "migrate:import": "tsx prisma/migrate-to-postgres-blob.ts import",
+    "import:preview": "tsx scripts/import/run.ts --mode=preview",
+    "import:validate": "tsx scripts/import/run.ts --mode=validate",
+    "import:apply": "tsx scripts/import/run.ts --mode=apply",
+    "import:verify": "tsx scripts/import/run.ts --mode=verify"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
