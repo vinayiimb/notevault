@@ -1,6 +1,7 @@
 // Central config for the portable R2 storage layer. Every value comes from
 // process.env — never hard-coded, never logged in full (see client.ts's
 // describeConfig(), which only ever exposes bucket names, not credentials).
+import "server-only";
 import type { AssetCategory, PrivateAssetCategory, PublicAssetCategory, StorageBucketKind } from "./types";
 
 const PUBLIC_CATEGORIES: PublicAssetCategory[] = ["papers", "thumbnails", "blog-images", "syllabus-files"];

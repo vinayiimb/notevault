@@ -1,3 +1,4 @@
+import "server-only";
 import { DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getR2Client } from "./client";
 import type { StorageBucketKind } from "./types";

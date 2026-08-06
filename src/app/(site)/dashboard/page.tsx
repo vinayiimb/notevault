@@ -1,7 +1,7 @@
 export const dynamic = "force-static";
 import type { Metadata } from "next";
 import { ensureStudent, getCommunityOrangesTotal, getTodayOranges } from "@/lib/student";
-import { getDailyQuestion, getProgramsByLevel, getRecentResources, getResourceHighlights } from "@/lib/data";
+import { getDailyQuestion, getProgramsByLevel, getRecentResources, getResourceHighlights, getSiteSettings } from "@/lib/data";
 import { EducationLevel } from "@/generated/prisma";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import type { ResourceItem } from "@/components/dashboard/recent-resources";
@@ -13,13 +13,14 @@ export const metadata: Metadata = {
 
 export default async function DashboardPage() {
   const student = await ensureStudent();
-  const [todayOranges, communityTotal, programs, recentResources, highlights, dailyQuestion] = await Promise.all([
+  const [todayOranges, communityTotal, programs, recentResources, highlights, dailyQuestion, siteSettings] = await Promise.all([
     getTodayOranges(student.id),
     getCommunityOrangesTotal(),
     getProgramsByLevel(EducationLevel.COLLEGE),
     getRecentResources(10),
     getResourceHighlights(),
     getDailyQuestion(),
+    getSiteSettings(),
   ]);
 
   // Format recent uploads for component
@@ -70,6 +71,7 @@ export default async function DashboardPage() {
       recentUploads={formattedRecentUploads}
       latestActivity={latestActivity}
       dailyQuestion={dailyQuestion}
+      currencyIconUrl={siteSettings.currencyIconUrl}
     />
   );
 }

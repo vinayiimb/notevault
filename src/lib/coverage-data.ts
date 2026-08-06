@@ -1,3 +1,4 @@
+import "server-only";
 import { prisma } from "@/lib/prisma";
 import { categorizeSubject, type SubjectCategory } from "@/lib/subject-category";
 

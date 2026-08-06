@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test src/lib/__tests__/*.test.ts src/lib/storage/__tests__/*.test.ts scripts/storage-migration/__tests__/*.test.ts",
+    "test": "node --conditions=react-server --import tsx --test src/lib/__tests__/*.test.ts src/lib/storage/__tests__/*.test.ts scripts/storage-migration/__tests__/*.test.ts",
     "seed:du-syllabus": "tsx prisma/seed-du-syllabus.ts",
     "seed:biochemistry": "tsx prisma/seed-biochemistry.ts",
     "seed:course-match-memory": "tsx prisma/seed-course-match-memory.ts",

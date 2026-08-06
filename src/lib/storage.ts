@@ -1,3 +1,4 @@
+import "server-only";
 import { mkdir, writeFile, rm, readFile } from "fs/promises";
 import { createHash } from "crypto";
 import path from "path";

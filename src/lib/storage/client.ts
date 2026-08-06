@@ -3,6 +3,7 @@
 // src/lib/storage/) works unmodified against any other S3-compatible
 // provider (AWS S3, MinIO, Backblaze B2's S3 endpoint, ...) if hosting ever
 // moves off Cloudflare, per the portability goal of this migration wave.
+import "server-only";
 import { S3Client } from "@aws-sdk/client-s3";
 import { resolveR2Config, type R2Config } from "./config";
 

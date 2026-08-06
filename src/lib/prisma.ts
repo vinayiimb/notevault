@@ -1,3 +1,4 @@
+import "server-only";
 import { PrismaClient } from "@/generated/prisma";
 
 // Prevent PrismaClientInitializationError when DATABASE_URL is missing, unconfigured,

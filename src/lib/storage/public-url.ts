@@ -4,6 +4,7 @@
 // route (that would put every PDF download through a serverless function's
 // execution time/memory limits and egress cost for no benefit — R2's own
 // custom-domain public bucket already serves the bytes directly over CDN).
+import "server-only";
 import { resolveR2Config } from "./config";
 
 export function publicUrlForKey(key: string): string {

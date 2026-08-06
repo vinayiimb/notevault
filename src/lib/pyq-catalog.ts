@@ -1,3 +1,4 @@
+import "server-only";
 import rawCatalog from "@/data/ramanujan-pyq-catalog.json";
 import rawOfficialArchiveMap from "@/data/archive-official-map.json";
 import { geographyDriveCatalog } from "@/data/geography-drive-catalog";
