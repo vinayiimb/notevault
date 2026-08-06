@@ -110,12 +110,7 @@ export function StudentCourseCard({
                   value={selectedProgramId}
                   onChange={(e) => {
                     setSelectedProgramId(e.target.value);
-                    const prog = programs.find((p) => p.id === e.target.value);
-                    if (prog && prog.terms.length > 0) {
-                      setSelectedTermId(prog.terms[0].id);
-                    } else {
-                      setSelectedTermId("");
-                    }
+                    setSelectedTermId("");
                   }}
                   className="w-full h-11 rounded-xl border border-border bg-background px-3 text-sm font-medium focus:border-brand focus:outline-none"
                 >
