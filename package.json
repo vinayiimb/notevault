@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "node --import tsx --test src/lib/__tests__/*.test.ts",
+    "test": "node --import tsx --test src/lib/__tests__/*.test.ts src/lib/storage/__tests__/*.test.ts scripts/storage-migration/__tests__/*.test.ts",
     "seed:du-syllabus": "tsx prisma/seed-du-syllabus.ts",
     "seed:biochemistry": "tsx prisma/seed-biochemistry.ts",
     "seed:course-match-memory": "tsx prisma/seed-course-match-memory.ts",
@@ -22,7 +22,10 @@
     "import:preview": "tsx scripts/import/run.ts --mode=preview",
     "import:validate": "tsx scripts/import/run.ts --mode=validate",
     "import:apply": "tsx scripts/import/run.ts --mode=apply",
-    "import:verify": "tsx scripts/import/run.ts --mode=verify"
+    "import:verify": "tsx scripts/import/run.ts --mode=verify",
+    "storage:plan": "tsx scripts/storage-migration/run.ts --mode=plan",
+    "storage:upload": "tsx scripts/storage-migration/run.ts --mode=upload",
+    "storage:verify": "tsx scripts/storage-migration/run.ts --mode=verify"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
