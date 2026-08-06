@@ -2,8 +2,9 @@
 
 import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 import {
   saveUploadedFile,
   hashFile,
@@ -775,6 +776,7 @@ export async function createSubjectAction(formData: FormData) {
   await prisma.subject.create({ data: { termId, name, description, slug, upc, paperType, aliases } });
   revalidatePath(`/admin/programs/${programId}`);
   revalidatePath("/admin/subject-issues");
+  revalidateTag(CACHE_TAGS.subjects, "max");
 }
 
 export async function updateSubjectIdentityAction(formData: FormData) {
@@ -796,6 +798,7 @@ export async function updateSubjectIdentityAction(formData: FormData) {
   revalidatePath(`/admin/subjects/${subjectId}`);
   revalidatePath(`/subjects/${subjectId}`);
   revalidatePath(`/admin/programs/${subject.term.programId}`);
+  revalidateTag(CACHE_TAGS.subjects, "max");
 }
 
 // Reuses an existing subject if one with this name already exists under the
@@ -818,6 +821,7 @@ export async function findOrCreateSubjectAction(formData: FormData) {
   const term = await prisma.term.findUnique({ where: { id: termId } });
   if (term) revalidatePath(`/admin/programs/${term.programId}`);
   revalidatePath("/admin/subject-issues");
+  revalidateTag(CACHE_TAGS.subjects, "max");
   return { id: created.id, name: created.name, termId };
 }
 
@@ -870,6 +874,7 @@ export async function quickCreateSubjectAction(formData: FormData) {
   const term = await prisma.term.findUnique({ where: { id: termId } });
   if (term) revalidatePath(`/admin/programs/${term.programId}`);
   revalidatePath("/admin/subject-issues");
+  revalidateTag(CACHE_TAGS.subjects, "max");
 
   return { id: subject.id, name: subject.name, termId: subject.termId };
 }
@@ -1179,7 +1184,10 @@ export async function createSubjectsFromCsvAction(
   }
 
   for (const programId of touchedProgramIds) revalidatePath(`/admin/programs/${programId}`);
-  if (touchedProgramIds.size > 0) revalidatePath("/admin/subject-issues");
+  if (touchedProgramIds.size > 0) {
+    revalidatePath("/admin/subject-issues");
+    revalidateTag(CACHE_TAGS.subjects, "max");
+  }
 
   return { results };
 }
@@ -1223,6 +1231,7 @@ export async function deleteSubjectAction(formData: FormData) {
   await prisma.subject.delete({ where: { id } });
   revalidatePath(`/admin/programs/${programId}`);
   revalidatePath("/admin/subject-issues");
+  revalidateTag(CACHE_TAGS.subjects, "max");
 }
 
 // Folds a duplicate subject (created by mistake — same subject filed twice
@@ -1315,6 +1324,7 @@ export async function mergeSubjectsAction(formData: FormData) {
   revalidatePath("/admin/subject-issues");
   revalidatePath(`/admin/subjects/${targetId}`);
   revalidatePath(`/subjects/${targetId}`);
+  revalidateTag(CACHE_TAGS.subjects, "max");
   redirect("/admin/subject-issues");
 }
 

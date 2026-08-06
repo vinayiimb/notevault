@@ -1,12 +1,13 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { computeCandidateGroups, type GroupableSubject } from "@/lib/subject-grouping";
 import { suggestSubjectGrouping } from "@/lib/ai";
 import { applyMerge, previewMerge, undoMerge } from "@/lib/subject-merge";
 import { slugify } from "@/lib/utils";
+import { CACHE_TAGS } from "@/lib/cache-tags";
 
 async function requireAdmin() {
   const session = await getSession();
@@ -296,6 +297,7 @@ export async function mergeSuggestionAction(
     suggestionId,
   });
   revalidatePath(PATH);
+  revalidateTag(CACHE_TAGS.subjects, "max");
   return log;
 }
 
@@ -303,6 +305,7 @@ export async function undoMergeAction(logId: string) {
   const admin = await requireAdmin();
   const log = await undoMerge(logId, admin.adminId);
   revalidatePath(PATH);
+  revalidateTag(CACHE_TAGS.subjects, "max");
   return log;
 }
 
@@ -337,5 +340,6 @@ export async function createParentSubjectAction(termId: string, parentName: stri
   });
 
   revalidatePath(PATH);
+  revalidateTag(CACHE_TAGS.subjects, "max");
   return parent;
 }

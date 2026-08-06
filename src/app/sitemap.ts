@@ -3,6 +3,12 @@ import { prisma } from "@/lib/prisma";
 import { absoluteUrl } from "@/lib/seo";
 import { getAllBlogPosts } from "@/lib/blog";
 
+// Previously regenerated on every single request — including every crawler
+// hit — by running 7 full-table scans (see docs/PHASE_2_QUERY_REMEDIATION.md
+// item 5). The selects were already narrow (id/slug/createdAt-only), so the
+// fix here is caching the route output, not further trimming fields.
+export const revalidate = 3600;
+
 // Static, always-public routes with no dynamic segment.
 const STATIC_ROUTES: { path: string; priority: number; changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] }[] = [
   { path: "/", priority: 1, changeFrequency: "daily" },

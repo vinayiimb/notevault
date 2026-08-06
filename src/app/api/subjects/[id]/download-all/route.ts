@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import JSZip from "jszip";
 import { prisma } from "@/lib/prisma";
 import { readBytesFromUrl } from "@/lib/storage";
+import { checkRateLimit, clientIpFromHeaders } from "@/lib/rate-limit";
 
 // Bundles everything available for a subject — compiled notes plus every
 // uploaded notes/PYQ file — into a single ZIP. Built server-side so it can
@@ -9,15 +10,34 @@ import { readBytesFromUrl } from "@/lib/storage";
 // and so a slow/partial fetch never leaves the client stuck reconstructing
 // a zip from a torn download.
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // Fetches and re-zips every file for a subject on each call — expensive
+  // enough to rate-limit on its own. See docs/PHASE_2_QUERY_REMEDIATION.md
+  // item 6.
+  const rateLimit = checkRateLimit(
+    `download-all:${clientIpFromHeaders(request.headers)}`,
+    10,
+    60,
+  );
+  if (!rateLimit.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } },
+    );
+  }
+
   const { id } = await params;
   const subject = await prisma.subject.findUnique({
     where: { id },
-    include: {
-      resources: { orderBy: { createdAt: "desc" } },
-      notes: true,
+    select: {
+      name: true,
+      notes: { select: { content: true } },
+      resources: {
+        orderBy: { createdAt: "desc" },
+        select: { fileUrl: true, fileName: true, title: true, type: true },
+      },
     },
   });
   if (!subject) return NextResponse.json({ error: "Not found" }, { status: 404 });

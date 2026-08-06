@@ -4,6 +4,7 @@ import { getUnifiedPyqArchive } from "@/lib/pyq-catalog";
 import { canonicalSubjectKey } from "@/lib/subject-normalization";
 import { semesterLabel } from "@/lib/pyq-catalog-types";
 import { slugify } from "@/lib/utils";
+import { checkRateLimit, clientIpFromHeaders } from "@/lib/rate-limit";
 
 // pdf-lib + streaming a multi-MB merged file needs the Node runtime, not Edge.
 export const runtime = "nodejs";
@@ -44,6 +45,21 @@ function resolveFetchUrl(paper: { source: string; pdfUrl: string }): URL | null 
 // browsers than a fetch-blob-createObjectURL dance, which is flaky on some
 // mobile Safari versions.
 export async function GET(request: NextRequest) {
+  // Each call fans out into up to MAX_PAPERS external PDF fetches plus a
+  // full merge — genuinely expensive, so it gets its own (tighter) limit
+  // rather than sharing one with cheap routes.
+  const rateLimit = checkRateLimit(
+    `catalog-combined-pdf:${clientIpFromHeaders(request.headers)}`,
+    10,
+    60,
+  );
+  if (!rateLimit.ok) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again shortly." },
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfterSeconds) } },
+    );
+  }
+
   const params = request.nextUrl.searchParams;
   const course = params.get("course") ?? "";
   const subject = params.get("subject") ?? "";
@@ -52,7 +68,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Missing course or subject." }, { status: 400 });
   }
 
-  const archive = await getUnifiedPyqArchive();
+  // Scoped to this course so the Postgres-backed archive sources only fetch
+  // this programme's drive files instead of every synced file on the site —
+  // see docs/PHASE_2_QUERY_REMEDIATION.md item 1. canonicalSubjectKey()
+  // normalization can't be pushed into the query, so the exact-subject
+  // match below (unchanged) still runs in memory over the scoped result.
+  const archive = await getUnifiedPyqArchive({ programName: course });
   const subjectKey = canonicalSubjectKey(subject);
   const papers = archive.filter(
     (paper) =>

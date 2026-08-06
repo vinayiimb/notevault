@@ -368,6 +368,16 @@ model Resource {
 
   @@index([fileHash])
   @@index([batchId])
+  // subject.resources is the single most-hit relation in the app (every
+  // subject page, the unified PYQ archive, download-all) and was scanning
+  // Resource with no index on subjectId at all. Composite with `type`
+  // because almost every real query also filters type: "PYQ" | "NOTES" in
+  // the same WHERE. Added in Phase 2A — see docs/PHASE_2_QUERY_REMEDIATION.md.
+  @@index([subjectId, type])
+  // Backs getRecentResources (orderBy createdAt desc, take 6) and
+  // getResourceHighlights (orderBy createdAt desc per type) — without this,
+  // both do a full sort of the table for a 1-6 row result.
+  @@index([createdAt])
 }
 
 enum OcrStatus {
@@ -510,6 +520,14 @@ model DriveSubject {
 
   @@unique([programId, slug])
   @@index([subjectId])
+  // Backs the new program+subject-name scoped archive lookups added in
+  // Phase 2A (getFullDriveArchiveIndex/getUnifiedPyqArchive scope, and
+  // /api/catalog-combined-pdf's course-scoped fetch) — see
+  // docs/PHASE_2_QUERY_REMEDIATION.md item 1. Equality-only: the
+  // case-insensitive name match those callers use falls back to a
+  // sequential scan within the (already programId-narrowed) row set, which
+  // is fine at DriveSubject's current per-programme size.
+  @@index([programId, name])
 }
 
 // One PDF found inside a SessionProgramLink's Drive folder, matched to a
@@ -595,6 +613,14 @@ model Question {
   // carry LaTeX, tables, mermaid diagrams, charts, images, embedded PDF
   // references, callouts, and quiz blocks alongside the plain answerText.
   contentBlocks  Json?
+
+  // subject.questions has no index on subjectId at all today, despite being
+  // read on every subject page and by getTermById's new filtered _count
+  // (isRepeated). Composite with isRepeated because that's the other column
+  // every real query here filters or orders by (ExamWeightage,
+  // most-repeated-questions section). Added in Phase 2A — see
+  // docs/PHASE_2_QUERY_REMEDIATION.md.
+  @@index([subjectId, isRepeated])
 }
 
 enum QuestionDifficulty {

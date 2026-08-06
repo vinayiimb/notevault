@@ -13,6 +13,12 @@ export function generateStaticParams() {
   return [];
 }
 export const dynamicParams = true;
+// Was fully dynamic (a fresh Postgres round trip on every visit). ISR-caching
+// per term id for 24 hours shares that query across every visitor in the
+// window; term/subject-mutating admin actions already call
+// revalidatePath(`/terms/${termId}`) so edits show up immediately. See
+// docs/PHASE_2_QUERY_REMEDIATION.md.
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,
@@ -47,8 +53,8 @@ export default async function TermPage({
     id: subject.id,
     name: subject.name,
     description: subject.description,
-    resourceCount: subject.resources.length,
-    repeatedCount: subject.questions.filter((q) => q.isRepeated).length,
+    resourceCount: subject.resourceCount,
+    repeatedCount: subject.repeatedCount,
     category: categorizeSubject(subject.name),
   }));
 

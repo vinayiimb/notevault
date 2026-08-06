@@ -5,8 +5,9 @@ import { politicalScienceDriveCatalog } from "@/data/political-science-drive-cat
 import { duMasterDriveCatalog } from "@/data/du-master-drive-catalog";
 import { extractedZipCatalog } from "@/data/extracted-pyq-catalog";
 import { bcomDriveCatalog } from "@/data/bcom-drive-catalog";
-import { getFullDriveArchiveIndex, getPyqArchiveIndex } from "@/lib/data";
+import { getFullDriveArchiveIndex, getPyqArchiveIndex, type PyqArchiveScope } from "@/lib/data";
 import { prisma } from "@/lib/prisma";
+import { recordQueryDiagnostic } from "@/lib/query-diagnostics";
 import { slugify } from "@/lib/utils";
 import {
   canonicalSubjectKey,
@@ -222,11 +223,21 @@ export async function getCoverageCatalogCourses() {
 // This is the RAW union, before admin overrides (rename/semester/merge/
 // highlight, see CatalogSubjectOverride) are applied — the admin editor
 // reads this directly so it can show what a subject looked like originally.
-export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
+//
+// `scope` narrows the two Postgres-backed sources (getPyqArchiveIndex,
+// getFullDriveArchiveIndex) to a single subject/programme instead of
+// scanning every PYQ resource and every synced Drive file on the site.
+// The static, bundled-at-build sources (sourceCatalog + the geography/
+// political-science/du-master/extracted-zip/bcom catalogs) are never a
+// database round trip either way, so they're left unfiltered here — callers
+// that need a subset (see /subjects/[id]) filter them in memory afterwards,
+// exactly as before scoping existed. See docs/PHASE_2_QUERY_REMEDIATION.md
+// item 1 for the full before/after.
+export async function getRawUnifiedPyqArchive(scope: PyqArchiveScope = {}): Promise<CatalogPaper[]> {
   const [catalog, readOnline, driveFiles] = await Promise.all([
     getFullPyqCatalog(),
-    getPyqArchiveIndex(),
-    getFullDriveArchiveIndex(),
+    getPyqArchiveIndex(scope),
+    getFullDriveArchiveIndex(scope),
   ]);
 
   const readOnlinePapers: CatalogPaper[] = readOnline.map((paper) => ({
@@ -307,12 +318,109 @@ function applyOverride(
 }
 
 // The public-facing archive: raw union with admin overrides layered on top.
-export async function getUnifiedPyqArchive(): Promise<CatalogPaper[]> {
-  const [papers, overrides] = await Promise.all([
-    getRawUnifiedPyqArchive(),
-    getOverridesByKey(),
-  ]);
-  return papers.map(applyOfficialFileMap).map((paper) => applyOverride(paper, overrides));
+// Pass a `scope` (subjectName and/or programName) to get back only the
+// papers that could plausibly match — see getRawUnifiedPyqArchive above for
+// what is and isn't pushed down to Postgres. Callers still need to do their
+// own final filter over the (now much smaller) result, exactly as before —
+// scoping is an optimization, not a replacement for the existing
+// subject.upc / subject.name matching logic in each caller.
+export async function getUnifiedPyqArchive(scope: PyqArchiveScope = {}): Promise<CatalogPaper[]> {
+  return recordQueryDiagnostic("getUnifiedPyqArchive", async () => {
+    const [papers, overrides] = await Promise.all([
+      getRawUnifiedPyqArchive(scope),
+      getOverridesByKey(),
+    ]);
+    return papers.map(applyOfficialFileMap).map((paper) => applyOverride(paper, overrides));
+  });
+}
+
+export type ArchiveFilters = {
+  /** Program.name — accepts "course" as an alias since that's this file's
+   * existing terminology (CatalogPaper.course). */
+  programme?: string;
+  course?: string;
+  /** CatalogPaper.semester, e.g. "3". */
+  semester?: string;
+  /** CatalogPaper.subject (exact, case-insensitive). */
+  subject?: string;
+  /** Matches anywhere in CatalogPaper.yearRange, e.g. "2023" or "2023-24". */
+  year?: string;
+  /** CatalogPaper.paperType — only populated for official-library-matched
+   * rows (see applyOfficialFileMap); DB-backed rows won't match this. */
+  paperType?: string;
+  /** Exam session label — matches CatalogPaper.yearRange for drive-sourced rows. */
+  examSession?: string;
+  /** Free-text substring match over subject/course/file name. */
+  search?: string;
+  page?: number;
+  pageSize?: number;
+};
+
+export type PaginatedArchiveResult = {
+  items: CatalogPaper[];
+  page: number;
+  pageSize: number;
+  total: number;
+  totalPages: number;
+};
+
+const DEFAULT_ARCHIVE_PAGE_SIZE = 20;
+const MAX_ARCHIVE_PAGE_SIZE = 50;
+
+// General-purpose filtered + paginated read of the unified archive, per
+// docs/PHASE_2_QUERY_REMEDIATION.md item 1. `programme`/`subject` are
+// pushed into Postgres via getUnifiedPyqArchive's scope (see above); the
+// rest (semester/year/paperType/examSession/search) run in memory over
+// that already-narrowed result, because the archive is a union of one
+// static, bundled-at-build catalog and several database tables with
+// app-level de-duplication and admin overrides layered on top — there's no
+// single SQL table to push a LIMIT/OFFSET into across all of that. The
+// existing /pyq-notes browse page keeps using the cached full-array
+// getUnifiedPyqArchive() (see that page for why — its client-side grouping
+// UI is out of scope for a rewrite here); this function is the reusable
+// primitive for any *new* filtered/paginated surface (e.g. a future
+// /api/pyq-archive route) without repeating the "fetch everything, filter
+// in the browser" pattern the audit flagged.
+export async function getPaginatedPyqArchive(
+  filters: ArchiveFilters = {},
+): Promise<PaginatedArchiveResult> {
+  const programme = filters.programme ?? filters.course;
+  const papers = await getUnifiedPyqArchive({
+    programName: programme,
+    subjectName: filters.subject,
+  });
+
+  const search = filters.search?.trim().toLowerCase();
+  const filtered = papers.filter((paper) => {
+    if (programme && paper.course !== programme) return false;
+    if (filters.subject && paper.subject.toLowerCase() !== filters.subject.toLowerCase()) return false;
+    if (filters.semester && paper.semester !== filters.semester) return false;
+    if (filters.year && !paper.yearRange.includes(filters.year)) return false;
+    if (filters.paperType && paper.paperType !== filters.paperType) return false;
+    if (filters.examSession && paper.yearRange !== filters.examSession) return false;
+    if (search) {
+      const haystack = `${paper.subject} ${paper.course} ${paper.fileName ?? ""}`.toLowerCase();
+      if (!haystack.includes(search)) return false;
+    }
+    return true;
+  });
+
+  const pageSize = Math.min(
+    Math.max(Math.trunc(filters.pageSize ?? DEFAULT_ARCHIVE_PAGE_SIZE) || DEFAULT_ARCHIVE_PAGE_SIZE, 1),
+    MAX_ARCHIVE_PAGE_SIZE,
+  );
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  const page = Math.min(Math.max(Math.trunc(filters.page ?? 1) || 1, 1), totalPages);
+  const start = (page - 1) * pageSize;
+
+  return {
+    items: filtered.slice(start, start + pageSize),
+    page,
+    pageSize,
+    total,
+    totalPages,
+  };
 }
 
 export function isCatalogCourseSubject(course: string, subject: string) {

@@ -27,6 +27,13 @@ export function generateStaticParams() {
   return [];
 }
 export const dynamicParams = true;
+// Subject pages were previously fully dynamic (a fresh Postgres round trip,
+// including the unified-archive merge, on every single visit). ISR-caching
+// per subject id for 6 hours turns that into one query per subject per
+// 6-hour window, shared across every visitor — admin edits still show up
+// immediately via the revalidatePath(`/subjects/${id}`) calls already
+// wired into src/lib/actions.ts. See docs/PHASE_2_QUERY_REMEDIATION.md.
+export const revalidate = 21600;
 
 export async function generateMetadata({
   params,
@@ -68,8 +75,13 @@ export default async function SubjectPage({
   const notes = subject.resources.filter((r) => r.type === "NOTES");
   const dbPyqs = subject.resources.filter((r) => r.type === "PYQ");
   
-  // Load and merge matching papers from the static unified catalog
-  const allCatalogPapers = await getUnifiedPyqArchive();
+  // Load and merge matching papers from the static unified catalog. Scoped
+  // to this subject's name so the two Postgres-backed archive sources
+  // (getPyqArchiveIndex/getFullDriveArchiveIndex) only fetch rows for this
+  // subject instead of every PYQ/drive file on the site — see
+  // docs/PHASE_2_QUERY_REMEDIATION.md item 1. The static catalogs stay
+  // unfiltered (no DB cost either way), so the filter below is unchanged.
+  const allCatalogPapers = await getUnifiedPyqArchive({ subjectName: subject.name });
   const catalogPyqs = allCatalogPapers
     .filter((p) => (subject.upc && p.upc === subject.upc) || p.subject.toLowerCase() === subject.name.toLowerCase())
     .map((p) => ({

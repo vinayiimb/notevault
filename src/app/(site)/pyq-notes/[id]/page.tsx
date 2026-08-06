@@ -25,6 +25,13 @@ export function generateStaticParams() {
   return [];
 }
 export const dynamicParams = true;
+// Was fully dynamic (a fresh Postgres round trip, including the full
+// ocrText field, on every visit). ISR-caching per paper id for 6 hours
+// shares that query across every visitor in the window; the OCR
+// reformat/question-edit admin actions already call
+// revalidatePath(`/pyq-notes/${resourceId}`) so edits show up immediately.
+// See docs/PHASE_2_QUERY_REMEDIATION.md.
+export const revalidate = 21600;
 
 export async function generateMetadata({
   params,

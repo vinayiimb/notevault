@@ -16,9 +16,12 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
 
   // Debounced live typeahead — fetches as the user types instead of only
   // showing anything once they submit and land on the full /search page.
+  // Skips single-character queries (the server floors at 2 chars too — see
+  // /api/search-suggestions) so a fast typist doesn't fire a request for
+  // every keystroke of a query that's about to change anyway.
   useEffect(() => {
     const query = value.trim();
-    if (!query) {
+    if (query.length < 2) {
       return;
     }
     const controller = new AbortController();
@@ -36,7 +39,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
           setSuggestions([]);
           setOpen(false);
         });
-    }, 200);
+    }, 400);
     return () => {
       clearTimeout(timer);
       controller.abort();

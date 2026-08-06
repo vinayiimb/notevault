@@ -9,6 +9,12 @@ export function generateStaticParams() {
   return [];
 }
 export const dynamicParams = true;
+// Was fully dynamic; ISR-caching per session id for 24 hours (exam sessions
+// change rarely) shares that query across every visitor in the window.
+// createExamSessionAction/updateExamSessionAction/deleteExamSessionAction
+// already call revalidatePath(`/exam-sessions/${id}`) so edits show up
+// immediately. See docs/PHASE_2_QUERY_REMEDIATION.md.
+export const revalidate = 86400;
 
 export async function generateMetadata({
   params,

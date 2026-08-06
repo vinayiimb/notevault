@@ -1,17 +1,35 @@
 import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import type { EducationLevel } from "@/generated/prisma";
 import { MASTER_SYLLABUS_ROWS } from "./content/master-syllabus-data";
 import { slugify } from "@/lib/utils";
 import { canonicalSubjectKey } from "@/lib/subject-normalization";
+import { CACHE_TAGS } from "@/lib/cache-tags";
+import { recordQueryDiagnostic } from "@/lib/query-diagnostics";
 
 export async function getProgramsByLevel(level: EducationLevel) {
   try {
-    return await prisma.program.findMany({
-      where: { level },
-      include: { terms: { include: { subjects: true } } },
-      orderBy: { name: "asc" },
-    });
+    return await recordQueryDiagnostic(
+      "getProgramsByLevel",
+      () =>
+        prisma.program.findMany({
+          where: { level },
+          select: {
+            id: true,
+            level: true,
+            name: true,
+            slug: true,
+            summary: true,
+            createdAt: true,
+            terms: {
+              orderBy: { order: "asc" },
+              select: { id: true, name: true, order: true, createdAt: true, subjects: true },
+            },
+          },
+          orderBy: { name: "asc" },
+        }),
+    );
   } catch (err) {
     console.warn("Database unavailable for getProgramsByLevel, returning DU fallback syllabus:", err instanceof Error ? err.message : err);
     return [
@@ -130,38 +148,83 @@ function buildFallbackProgram(slug: string) {
   };
 }
 
-export async function getProgramBySlug(slug: string) {
+// Wrapped in React cache() so a single request only ever hits Postgres once
+// per slug, even though generateMetadata() and the page component both call
+// this — before this, each request ran the query twice (see
+// docs/PHASE_2_QUERY_REMEDIATION.md, item 3).
+export const getProgramBySlug = cache(async (slug: string) => {
   try {
-    const program = await prisma.program.findUnique({
-      where: { slug },
-      include: {
-        terms: {
-          orderBy: { order: "asc" },
-          include: { subjects: { orderBy: { name: "asc" } } },
+    const program = await recordQueryDiagnostic("getProgramBySlug", () =>
+      prisma.program.findUnique({
+        where: { slug },
+        include: {
+          terms: {
+            orderBy: { order: "asc" },
+            include: { subjects: { orderBy: { name: "asc" } } },
+          },
         },
-      },
-    });
+      }),
+    );
     if (program) return program;
     return buildFallbackProgram(slug);
   } catch (err) {
     console.warn(`Database unavailable for getProgramBySlug(${slug}), returning fallback:`, err instanceof Error ? err.message : err);
     return buildFallbackProgram(slug);
   }
-}
+});
 
-export async function getTermById(id: string) {
+// Subjects only carry a resource/repeated-question *count* on the term page
+// (see TermSubjectTabs), so the DB path uses a filtered `_count` instead of
+// pulling every Resource/Question row (including large OCR text fields) just
+// to call `.length` on them in the component. Normalized into
+// resourceCount/repeatedCount here so both the DB path and the offline
+// fallback path (which never has resources/questions to begin with) return
+// the same shape. Also wrapped in React cache() for the same
+// generateMetadata()+page duplicate-query reason as getProgramBySlug above.
+export const getTermById = cache(async (id: string) => {
   try {
-    const term = await prisma.term.findUnique({
-      where: { id },
-      include: {
-        program: true,
-        subjects: { orderBy: { name: "asc" }, include: { resources: true, questions: true } },
-        termPapers: { orderBy: { createdAt: "desc" } },
-      },
-    });
-    if (term) return term;
+    const term = await recordQueryDiagnostic("getTermById", () =>
+      prisma.term.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          programId: true,
+          name: true,
+          order: true,
+          createdAt: true,
+          program: true,
+          subjects: {
+            orderBy: { name: "asc" },
+            select: {
+              id: true,
+              name: true,
+              description: true,
+              _count: {
+                select: {
+                  resources: true,
+                  questions: { where: { isRepeated: true } },
+                },
+              },
+            },
+          },
+          termPapers: { orderBy: { createdAt: "desc" } },
+        },
+      }),
+    );
+    if (term) {
+      return {
+        ...term,
+        subjects: term.subjects.map((subject) => ({
+          id: subject.id,
+          name: subject.name,
+          description: subject.description,
+          resourceCount: subject._count.resources,
+          repeatedCount: subject._count.questions,
+        })),
+      };
+    }
   } catch (err) {
-    console.warn(`Database unavailable for getTermById(${id}), matching from fallback program...`);
+    console.warn(`Database unavailable for getTermById(${id}), matching from fallback program...`, err instanceof Error ? err.message : err);
   }
 
   // Parse id: `term-${programSlug}-${semesterName}`
@@ -176,41 +239,88 @@ export async function getTermById(id: string) {
           ...term,
           program,
           termPapers: [],
+          subjects: term.subjects.map((subject) => ({
+            id: subject.id,
+            name: subject.name,
+            description: subject.description,
+            resourceCount: 0,
+            repeatedCount: 0,
+          })),
         };
       }
     }
   }
   return null;
-}
+});
 
-export async function getSubjectById(id: string) {
+// Wrapped in React cache() — generateMetadata() and the page component on
+// /subjects/[id] both need this record; without the wrapper that was two
+// full nested-relation queries per request instead of one.
+export const getSubjectById = cache(async (id: string) => {
   try {
-    const subject = await prisma.subject.findUnique({
-      where: { id },
-      include: {
-        term: { include: { program: true } },
-        resources: { orderBy: { createdAt: "desc" } },
-        questions: { orderBy: [{ isRepeated: "desc" }, { repeatCount: "desc" }] },
-        analysis: true,
-        notes: true,
-        driveSubjects: {
-          select: {
-            files: {
-              where: { isCourseBooklet: false },
-              select: {
-                id: true,
-                fileName: true,
-                webViewLink: true,
-                link: { select: { session: { select: { label: true } } } },
+    const subject = await recordQueryDiagnostic("getSubjectById", () =>
+      prisma.subject.findUnique({
+        where: { id },
+        include: {
+          term: { include: { program: true } },
+          // ocrTextHash is used as a cheap "has extracted text" flag
+          // (PyqRow renders "Searchable full text available" vs "Original
+          // PDF") without pulling the full ocrText @db.Text column, which
+          // can be large, for every PYQ on the page — see
+          // docs/PHASE_2_QUERY_REMEDIATION.md item 4.
+          resources: {
+            orderBy: { createdAt: "desc" },
+            select: {
+              id: true,
+              subjectId: true,
+              type: true,
+              title: true,
+              year: true,
+              academicYear: true,
+              fileUrl: true,
+              fileName: true,
+              fileSize: true,
+              fileHash: true,
+              ocrTextHash: true,
+              pageCount: true,
+              downloads: true,
+              createdAt: true,
+            },
+          },
+          questions: { orderBy: [{ isRepeated: "desc" }, { repeatCount: "desc" }] },
+          analysis: true,
+          notes: true,
+          driveSubjects: {
+            select: {
+              files: {
+                where: { isCourseBooklet: false },
+                select: {
+                  id: true,
+                  fileName: true,
+                  webViewLink: true,
+                  link: { select: { session: { select: { label: true } } } },
+                },
               },
             },
           },
         },
-      },
-    });
-    if (subject) return subject;
+      }),
+    );
+    if (subject) {
+      return {
+        ...subject,
+        resources: subject.resources.map((resource) => ({
+          ...resource,
+          // Downstream code (subject page, ResourceList/PyqRow) only ever
+          // checked resource.ocrText for truthiness, never its contents —
+          // ocrTextHash is set iff ocrText is (see prisma/schema.prisma),
+          // so this preserves the exact same boolean without the big field.
+          ocrText: resource.ocrTextHash ? resource.ocrTextHash : null,
+        })),
+      };
+    }
   } catch (err) {
-    console.warn(`Database unavailable for getSubjectById(${id}), matching from fallback program...`);
+    console.warn(`Database unavailable for getSubjectById(${id}), matching from fallback program...`, err instanceof Error ? err.message : err);
   }
 
   // Parse id: `sub-${subSlug}-${upc_or_id}`
@@ -232,7 +342,7 @@ export async function getSubjectById(id: string) {
     }
   }
   return null;
-}
+});
 
 export async function getExamSessions() {
   try {
@@ -267,35 +377,64 @@ export async function getExamSessions() {
   }
 }
 
-export function getExamSessionById(id: string) {
-  return prisma.examSession.findUnique({
-    where: { id },
-    include: {
-      links: {
-        include: { program: true },
-        orderBy: [{ program: { name: "asc" } }, { variantLabel: "asc" }],
+// Wrapped in React cache() — generateMetadata() and the page component on
+// /exam-sessions/[id] both need this record.
+export const getExamSessionById = cache((id: string) =>
+  recordQueryDiagnostic("getExamSessionById", () =>
+    prisma.examSession.findUnique({
+      where: { id },
+      include: {
+        links: {
+          include: { program: true },
+          orderBy: [{ program: { name: "asc" } }, { variantLabel: "asc" }],
+        },
       },
-    },
-  });
+    }),
+  ),
+);
+
+// Wrapped in React cache() for the same reason as getExamSessionById above —
+// both exam-session sub-routes call this in generateMetadata() and the page.
+export const getSessionLinkWithSubjects = cache((linkId: string) =>
+  recordQueryDiagnostic("getSessionLinkWithSubjects", () =>
+    prisma.sessionProgramLink.findUnique({
+      where: { id: linkId },
+      include: {
+        session: true,
+        program: true,
+        driveFiles: { include: { driveSubject: true }, orderBy: { fileName: "asc" } },
+      },
+    }),
+  ),
+);
+
+export type PyqArchiveScope = {
+  /** Exact (case-insensitive) Subject.name match — narrows to one subject. */
+  subjectName?: string;
+  /** Exact Program.name match — narrows to one programme/course. */
+  programName?: string;
+};
+
+function pyqArchiveSubjectWhere(scope: PyqArchiveScope) {
+  const where: { name?: { equals: string; mode: "insensitive" }; term?: { program: { name: string } } } = {};
+  if (scope.subjectName) where.name = { equals: scope.subjectName, mode: "insensitive" };
+  if (scope.programName) where.term = { program: { name: scope.programName } };
+  return Object.keys(where).length ? where : undefined;
 }
 
-export function getSessionLinkWithSubjects(linkId: string) {
-  return prisma.sessionProgramLink.findUnique({
-    where: { id: linkId },
-    include: {
-      session: true,
-      program: true,
-      driveFiles: { include: { driveSubject: true }, orderBy: { fileName: "asc" } },
-    },
-  });
-}
-
-/** Lightweight index for the complete OCR archive. The text itself stays out
- * of this query; individual paper pages load it only when opened. */
-export async function getPyqArchiveIndex() {
+/** Lightweight index for the OCR archive. The text itself stays out of this
+ * query; individual paper pages load it only when opened. Pass `scope` to
+ * push the filter into Postgres instead of scanning every PYQ resource on
+ * the site — see docs/PHASE_2_QUERY_REMEDIATION.md item 1. */
+export async function getPyqArchiveIndex(scope: PyqArchiveScope = {}) {
+  const subjectWhere = pyqArchiveSubjectWhere(scope);
   try {
-    return await prisma.resource.findMany({
-      where: { type: "PYQ", ocrText: { not: null } },
+    return await recordQueryDiagnostic("getPyqArchiveIndex", () => prisma.resource.findMany({
+      where: {
+        type: "PYQ",
+        ocrText: { not: null },
+        ...(subjectWhere ? { subject: subjectWhere } : {}),
+      },
       select: {
         id: true,
         title: true,
@@ -318,7 +457,7 @@ export async function getPyqArchiveIndex() {
         },
       },
       orderBy: [{ academicYear: "desc" }, { year: "desc" }, { title: "asc" }],
-    });
+    }));
   } catch (err) {
     console.warn("Database unavailable for getPyqArchiveIndex, returning empty array:", err instanceof Error ? err.message : err);
     return [];
@@ -328,23 +467,37 @@ export async function getPyqArchiveIndex() {
 // Deliberately does not filter on ocrText — pyq-notes/[id] needs to tell
 // "doesn't exist" (404) apart from "exists, OCR still pending" (noindexed
 // placeholder with a working download) rather than 404-ing both.
-export function getPyqResourceById(id: string) {
-  return prisma.resource.findFirst({
-    where: { id, type: "PYQ" },
-    include: {
-      subject: {
-        include: {
-          term: { include: { program: true } },
-          analysis: true,
-          resources: { where: { type: "PYQ" }, select: { id: true } },
+//
+// Wrapped in React cache() — generateMetadata() and the page component on
+// /pyq-notes/[id] both need this record; without the wrapper that was two
+// full nested-relation queries (including the large ocrText field) per
+// request instead of one.
+export const getPyqResourceById = cache((id: string) =>
+  recordQueryDiagnostic("getPyqResourceById", () =>
+    prisma.resource.findFirst({
+      where: { id, type: "PYQ" },
+      include: {
+        subject: {
+          include: {
+            term: { include: { program: true } },
+            analysis: true,
+            resources: { where: { type: "PYQ" }, select: { id: true } },
+          },
         },
+        // Solutions/Practice tabs on the reading page — only questions an
+        // admin has explicitly linked to this specific paper via the
+        // resourceId picker in /admin/questions/[id].
+        questions: { orderBy: [{ questionNumber: "asc" }, { createdAt: "asc" }] },
       },
-      // Solutions/Practice tabs on the reading page — only questions an
-      // admin has explicitly linked to this specific paper via the
-      // resourceId picker in /admin/questions/[id].
-      questions: { orderBy: [{ questionNumber: "asc" }, { createdAt: "asc" }] },
-    },
-  });
+    }),
+  ),
+);
+
+function driveArchiveSubjectWhere(scope: PyqArchiveScope) {
+  const where: { name?: { equals: string; mode: "insensitive" }; program?: { name: string } } = {};
+  if (scope.subjectName) where.name = { equals: scope.subjectName, mode: "insensitive" };
+  if (scope.programName) where.program = { name: scope.programName };
+  return Object.keys(where).length ? where : undefined;
 }
 
 // Flat index of every Drive-linked paper across every exam session — the
@@ -352,11 +505,17 @@ export function getPyqResourceById(id: string) {
 // Google Drive folders rather than uploaded+OCR'd one at a time (see
 // ExamSession/SessionProgramLink/DriveSubject/DriveFileMatch in the schema).
 // Unmatched files (driveSubjectId null — the sync couldn't derive a subject
-// name) are excluded since the browser groups by subject.
-export async function getFullDriveArchiveIndex() {
+// name) are excluded since the browser groups by subject. Pass `scope` to
+// push the filter into Postgres instead of scanning every drive file on the
+// site — see docs/PHASE_2_QUERY_REMEDIATION.md item 1.
+export async function getFullDriveArchiveIndex(scope: PyqArchiveScope = {}) {
+  const driveSubjectWhere = driveArchiveSubjectWhere(scope);
   try {
-    return await prisma.driveFileMatch.findMany({
-      where: { driveSubjectId: { not: null } },
+    return await recordQueryDiagnostic("getFullDriveArchiveIndex", () => prisma.driveFileMatch.findMany({
+      where: {
+        driveSubjectId: { not: null },
+        ...(driveSubjectWhere ? { driveSubject: driveSubjectWhere } : {}),
+      },
       select: {
         id: true,
         fileName: true,
@@ -373,12 +532,36 @@ export async function getFullDriveArchiveIndex() {
         },
       },
       orderBy: [{ link: { session: { order: "desc" } } }, { fileName: "asc" }],
-    });
+    }));
   } catch (err) {
     console.warn("Database unavailable for getFullDriveArchiveIndex, returning empty array:", err instanceof Error ? err.message : err);
     return [];
   }
 }
+
+// The full subject+alias list barely changes minute-to-minute, but was
+// previously re-fetched from Postgres on every keystroke of the search box
+// (via /api/search-suggestions, debounced but still per-request) and on
+// every /search page load. Cached for 5 minutes and tagged "subjects" so
+// admin actions that add/rename/merge subjects can force an immediate
+// refresh with revalidateTag — see docs/PHASE_2_QUERY_REMEDIATION.md item 6.
+const getCachedSearchIndex = unstable_cache(
+  async () => {
+    const subjects = await prisma.subject.findMany({
+      // Merged-away subjects should never surface directly — searching
+      // their old name still finds the right result via the alias lookup
+      // below, which resolves straight to the canonical subject.
+      where: { mergedIntoId: null },
+      include: { term: { include: { program: true } } },
+    });
+    const aliases = await prisma.subjectAlias.findMany({
+      select: { canonicalSubjectId: true, normalizedName: true },
+    });
+    return { subjects, aliases };
+  },
+  ["searchable-subjects-and-aliases"],
+  { tags: [CACHE_TAGS.subjects], revalidate: 300 },
+);
 
 // SQLite's `contains` is case-sensitive, so filter in JS for a case-insensitive match.
 //
@@ -395,28 +578,21 @@ export async function searchSubjects(query: string) {
   let subjects: any[] = [];
   const aliasMatchedIds = new Set<string>();
   try {
-    subjects = await prisma.subject.findMany({
-      // Merged-away subjects should never surface directly — searching
-      // their old name still finds the right result via the alias lookup
-      // below, which resolves straight to the canonical subject.
-      where: { mergedIntoId: null },
-      include: { term: { include: { program: true } } },
-    });
+    const index = await recordQueryDiagnostic("searchSubjects:index", () => getCachedSearchIndex());
+    subjects = index.subjects;
 
     const aliasKey = canonicalSubjectKey(q);
     if (aliasKey) {
-      const aliasHits = await prisma.subjectAlias.findMany({
-        where: { normalizedName: { contains: aliasKey } },
-        include: { subject: { include: { term: { include: { program: true } } } } },
-      });
-      const existingIds = new Set(subjects.map((s) => s.id));
-      for (const hit of aliasHits) {
-        if (hit.subject.mergedIntoId) continue; // shouldn't happen, but stay safe
-        aliasMatchedIds.add(hit.subject.id);
-        if (!existingIds.has(hit.subject.id)) {
-          subjects.push(hit.subject);
-          existingIds.add(hit.subject.id);
-        }
+      const subjectIds = new Set(subjects.map((s) => s.id));
+      for (const alias of index.aliases) {
+        // Same case-sensitive substring match Postgres's `contains` did —
+        // just evaluated against the cached alias list instead of a fresh
+        // per-keystroke query. Aliases whose target subject isn't in the
+        // (non-merged) subjects list are skipped, same as the old
+        // `hit.subject.mergedIntoId` guard.
+        if (!alias.normalizedName.includes(aliasKey)) continue;
+        if (!subjectIds.has(alias.canonicalSubjectId)) continue;
+        aliasMatchedIds.add(alias.canonicalSubjectId);
       }
     }
   } catch (err) {
