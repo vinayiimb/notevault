@@ -23,6 +23,13 @@ test("parseSemesterField handles 'Semester N' and 'Semester-N' prefixes", () => 
   assert.deepEqual(parseSemesterField("Semester- VI"), { kind: "single", order: 6 });
 });
 
+test("parseSemesterField treats 'Sem N' as equivalent to 'Semester N' (Phase 2E term-alias rule)", () => {
+  assert.deepEqual(parseSemesterField("Sem 1"), { kind: "single", order: 1 });
+  assert.deepEqual(parseSemesterField("Sem-1"), { kind: "single", order: 1 });
+  assert.deepEqual(parseSemesterField("Sem I"), { kind: "single", order: 1 });
+  assert.deepEqual(parseSemesterField("SEM. IV"), { kind: "single", order: 4 });
+});
+
 test("parseSemesterField expands slash/comma-separated multi-semester rows", () => {
   const result = parseSemesterField("I/III/V");
   assert.equal(result.kind, "multi");

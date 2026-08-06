@@ -1,0 +1,191 @@
+{
+  "generatedAt": "2026-08-06T14:09:12.211Z",
+  "note": "Declarative mirror of the tested parseSemesterField() logic in scripts/import/lib/normalize.ts — approvalStatus is \"approved\" here because this documents already-implemented, unit-tested, deterministic code (not an AI judgment call), unlike program-aliases.json / subject-aliases.json.",
+  "syncedWithNormalizeTs": "2026-08-06 — keep in sync manually if parseSemesterField's regex/token rules change.",
+  "verifiedAgainstProgrammeConstraint": "Every Term this produces is created scoped to its own Program (Term.programId + Term.order is the actual uniqueness key — see prisma/schema.prisma) — this file only documents *label* equivalence, resolution still requires the caller to also resolve the correct Program first (see plan.ts's Term section).",
+  "entries": [
+    {
+      "normalizedOrder": 1,
+      "canonicalRoman": "I",
+      "equivalentForms": [
+        "Semester I",
+        "Semester 1",
+        "Semester-1",
+        "Sem 1",
+        "Sem I",
+        "I",
+        "1"
+      ],
+      "mappingType": "term-normalization",
+      "source": "scripts/import/lib/normalize.ts#parseSemesterField",
+      "rationale": "Case-insensitive roman numeral / arabic digit / \"Semester\"|\"Sem\" prefix equivalence, verified against real MASTER_SYLLABUS_ROWS data during Phase 2C-2E (includes the real \"IIi\" typo, resolved case-insensitively).",
+      "confidence": 1,
+      "approvalStatus": "approved",
+      "approvedBy": "deterministic-code (scripts/import/__tests__/normalize.test.ts)",
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1
+    },
+    {
+      "normalizedOrder": 2,
+      "canonicalRoman": "II",
+      "equivalentForms": [
+        "Semester II",
+        "Semester 2",
+        "Sem 2",
+        "Sem II",
+        "II",
+        "2"
+      ],
+      "mappingType": "term-normalization",
+      "source": "scripts/import/lib/normalize.ts#parseSemesterField",
+      "rationale": "Case-insensitive roman numeral / arabic digit / \"Semester\"|\"Sem\" prefix equivalence, verified against real MASTER_SYLLABUS_ROWS data during Phase 2C-2E (includes the real \"IIi\" typo, resolved case-insensitively).",
+      "confidence": 1,
+      "approvalStatus": "approved",
+      "approvedBy": "deterministic-code (scripts/import/__tests__/normalize.test.ts)",
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1
+    },
+    {
+      "normalizedOrder": 3,
+      "canonicalRoman": "III",
+      "equivalentForms": [
+        "Semester III",
+        "Semester 3",
+        "Sem 3",
+        "Sem III",
+        "III",
+        "3",
+        "IIi"
+      ],
+      "mappingType": "term-normalization",
+      "source": "scripts/import/lib/normalize.ts#parseSemesterField",
+      "rationale": "Case-insensitive roman numeral / arabic digit / \"Semester\"|\"Sem\" prefix equivalence, verified against real MASTER_SYLLABUS_ROWS data during Phase 2C-2E (includes the real \"IIi\" typo, resolved case-insensitively).",
+      "confidence": 1,
+      "approvalStatus": "approved",
+      "approvedBy": "deterministic-code (scripts/import/__tests__/normalize.test.ts)",
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1
+    },
+    {
+      "normalizedOrder": 4,
+      "canonicalRoman": "IV",
+      "equivalentForms": [
+        "Semester IV",
+        "Semester 4",
+        "Sem 4",
+        "Sem IV",
+        "IV",
+        "4"
+      ],
+      "mappingType": "term-normalization",
+      "source": "scripts/import/lib/normalize.ts#parseSemesterField",
+      "rationale": "Case-insensitive roman numeral / arabic digit / \"Semester\"|\"Sem\" prefix equivalence, verified against real MASTER_SYLLABUS_ROWS data during Phase 2C-2E (includes the real \"IIi\" typo, resolved case-insensitively).",
+      "confidence": 1,
+      "approvalStatus": "approved",
+      "approvedBy": "deterministic-code (scripts/import/__tests__/normalize.test.ts)",
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1
+    },
+    {
+      "normalizedOrder": 5,
+      "canonicalRoman": "V",
+      "equivalentForms": [
+        "Semester V",
+        "Semester 5",
+        "Sem 5",
+        "Sem V",
+        "V",
+        "5"
+      ],
+      "mappingType": "term-normalization",
+      "source": "scripts/import/lib/normalize.ts#parseSemesterField",
+      "rationale": "Case-insensitive roman numeral / arabic digit / \"Semester\"|\"Sem\" prefix equivalence, verified against real MASTER_SYLLABUS_ROWS data during Phase 2C-2E (includes the real \"IIi\" typo, resolved case-insensitively).",
+      "confidence": 1,
+      "approvalStatus": "approved",
+      "approvedBy": "deterministic-code (scripts/import/__tests__/normalize.test.ts)",
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1
+    },
+    {
+      "normalizedOrder": 6,
+      "canonicalRoman": "VI",
+      "equivalentForms": [
+        "Semester VI",
+        "Semester 6",
+        "Sem 6",
+        "Sem VI",
+        "VI",
+        "6"
+      ],
+      "mappingType": "term-normalization",
+      "source": "scripts/import/lib/normalize.ts#parseSemesterField",
+      "rationale": "Case-insensitive roman numeral / arabic digit / \"Semester\"|\"Sem\" prefix equivalence, verified against real MASTER_SYLLABUS_ROWS data during Phase 2C-2E (includes the real \"IIi\" typo, resolved case-insensitively).",
+      "confidence": 1,
+      "approvalStatus": "approved",
+      "approvedBy": "deterministic-code (scripts/import/__tests__/normalize.test.ts)",
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1
+    },
+    {
+      "normalizedOrder": 7,
+      "canonicalRoman": "VII",
+      "equivalentForms": [
+        "Semester VII",
+        "Semester 7",
+        "Sem 7",
+        "Sem VII",
+        "VII",
+        "7"
+      ],
+      "mappingType": "term-normalization",
+      "source": "scripts/import/lib/normalize.ts#parseSemesterField",
+      "rationale": "Case-insensitive roman numeral / arabic digit / \"Semester\"|\"Sem\" prefix equivalence, verified against real MASTER_SYLLABUS_ROWS data during Phase 2C-2E (includes the real \"IIi\" typo, resolved case-insensitively).",
+      "confidence": 1,
+      "approvalStatus": "approved",
+      "approvedBy": "deterministic-code (scripts/import/__tests__/normalize.test.ts)",
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1
+    },
+    {
+      "normalizedOrder": 8,
+      "canonicalRoman": "VIII",
+      "equivalentForms": [
+        "Semester VIII",
+        "Semester 8",
+        "Sem 8",
+        "Sem VIII",
+        "VIII",
+        "8"
+      ],
+      "mappingType": "term-normalization",
+      "source": "scripts/import/lib/normalize.ts#parseSemesterField",
+      "rationale": "Case-insensitive roman numeral / arabic digit / \"Semester\"|\"Sem\" prefix equivalence, verified against real MASTER_SYLLABUS_ROWS data during Phase 2C-2E (includes the real \"IIi\" typo, resolved case-insensitively).",
+      "confidence": 1,
+      "approvalStatus": "approved",
+      "approvedBy": "deterministic-code (scripts/import/__tests__/normalize.test.ts)",
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1
+    }
+  ],
+  "excludedKinds": [
+    {
+      "kind": "pool",
+      "rawExamples": [
+        "Pool / not fixed",
+        "Pool / see prerequisites"
+      ],
+      "rowsObserved": 194,
+      "rationale": "Not a semester at all — an elective pool spanning multiple semesters. Intentionally excluded from Term creation, not an alias target."
+    },
+    {
+      "kind": "multi",
+      "rawExamples": [
+        "I/III/V",
+        "I,III,V",
+        "III-VI"
+      ],
+      "rowsObserved": 2838,
+      "rationale": "Multi-semester source rows expand into one Subject per listed/ranged semester — handled by parseSemesterField's \"multi\" result kind, not a term alias (there's no single normalizedValue to alias to)."
+    }
+  ]
+}

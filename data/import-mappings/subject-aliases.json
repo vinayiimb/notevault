@@ -1,0 +1,1388 @@
+{
+  "generatedAt": "2026-08-06T14:09:12.211Z",
+  "generatedFrom": "reports/proposed-subject-aliases.csv",
+  "note": "Every entry is a PROPOSAL (approvalStatus: pending). Academically distinct subjects are never merged just for similar names — see rationale per entry and docs/PHASE_2E_REJECTED_RECORD_RESOLUTION.md.",
+  "totalEntries": 81,
+  "entries": [
+    {
+      "originalValue": [
+        "Research Track (Dissertation/Academic Project/ Translation)",
+        "Research Track (Dissertation/Academic Project/Translation)"
+      ],
+      "normalizedValue": "Research Track (Dissertation/Academic Project/ Translation)",
+      "canonicalKey": "research track dissertation academic project translation",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Literature & Human Rights",
+        "Literature and Human Rights"
+      ],
+      "normalizedValue": "Literature & Human Rights",
+      "canonicalKey": "literature and human rights",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "16th & 17th Century English Drama",
+        "16th and 17th Century English Drama"
+      ],
+      "normalizedValue": "16th & 17th Century English Drama",
+      "canonicalKey": "16th and 17th century english drama",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "LITERARY CRITICISM",
+        "Literary Criticism"
+      ],
+      "normalizedValue": "Literary Criticism",
+      "canonicalKey": "literary criticism",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Twentieth Century Poetry & Drama",
+        "Twentieth Century Poetry and Drama"
+      ],
+      "normalizedValue": "Twentieth Century Poetry & Drama",
+      "canonicalKey": "twentieth century poetry and drama",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "RESEARCH METHODOLOGY",
+        "Research Methodology",
+        "Research methodology"
+      ],
+      "normalizedValue": "Research Methodology",
+      "canonicalKey": "research methodology",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 3
+    },
+    {
+      "originalValue": [
+        "Basic Concepts of Cell Biology",
+        "Basic Concepts of Cell biology"
+      ],
+      "normalizedValue": "Basic Concepts of Cell Biology",
+      "canonicalKey": "basic concepts of cell biology",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "BIOSTATISTICS",
+        "Biostatistics"
+      ],
+      "normalizedValue": "Biostatistics",
+      "canonicalKey": "biostatistics",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "NATURAL RESOURCE MANAGEMENT",
+        "Natural Resource Management"
+      ],
+      "normalizedValue": "Natural Resource Management",
+      "canonicalKey": "natural resource management",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Environmental Biotechnology & Management",
+        "Environmental Biotechnology and Management"
+      ],
+      "normalizedValue": "Environmental Biotechnology & Management",
+      "canonicalKey": "environmental biotechnology and management",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Business Organisation and Management",
+        "Business organisation and management"
+      ],
+      "normalizedValue": "Business Organisation and Management",
+      "canonicalKey": "business organisation and management",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Financial Markets & Institutions",
+        "Financial Markets and Institutions"
+      ],
+      "normalizedValue": "Financial Markets & Institutions",
+      "canonicalKey": "financial markets and institutions",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Security Analysis & Portfolio Management",
+        "Security Analysis and Portfolio Management"
+      ],
+      "normalizedValue": "Security Analysis & Portfolio Management",
+      "canonicalKey": "security analysis and portfolio management",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "BASIC STATISTICS",
+        "Basic Statistics"
+      ],
+      "normalizedValue": "Basic Statistics",
+      "canonicalKey": "basic statistics",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Design & Analysis of Algorithms",
+        "Design and Analysis of Algorithms"
+      ],
+      "normalizedValue": "Design & Analysis of Algorithms",
+      "canonicalKey": "design and analysis of algorithms",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Natural Language Processing",
+        "Natural language Processing"
+      ],
+      "normalizedValue": "Natural Language Processing",
+      "canonicalKey": "natural language processing",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "OPTIMIZATION TECHNIQUES",
+        "Optimization Techniques"
+      ],
+      "normalizedValue": "Optimization Techniques",
+      "canonicalKey": "optimization techniques",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Introduction To Web Programming",
+        "Introduction to Web Programming"
+      ],
+      "normalizedValue": "Introduction To Web Programming",
+      "canonicalKey": "introduction to web programming",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Information Security And Cyber Laws",
+        "Information Security and Cyber Laws"
+      ],
+      "normalizedValue": "Information Security And Cyber Laws",
+      "canonicalKey": "information security and cyber laws",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Engaging With Literary Texts (1)",
+        "Engaging with Literary Texts (1)"
+      ],
+      "normalizedValue": "Engaging With Literary Texts (1)",
+      "canonicalKey": "engaging with literary texts 1",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Engaging With Literary Texts (2)",
+        "Engaging with Literary Texts (2)"
+      ],
+      "normalizedValue": "Engaging With Literary Texts (2)",
+      "canonicalKey": "engaging with literary texts 2",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Introduction to Translation",
+        "Introduction to Translation."
+      ],
+      "normalizedValue": "Introduction to Translation",
+      "canonicalKey": "introduction to translation",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Life Writing",
+        "Life writing",
+        "Life writing."
+      ],
+      "normalizedValue": "Life Writing",
+      "canonicalKey": "life writing",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 3
+    },
+    {
+      "originalValue": [
+        "Introduction to Foreign Language Teaching",
+        "Introduction to Foreign Language Teaching."
+      ],
+      "normalizedValue": "Introduction to Foreign Language Teaching",
+      "canonicalKey": "introduction to foreign language teaching",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Study of a Genre – Shorter Narrative Forms",
+        "Study of a Genre- Shorter Narrative Forms"
+      ],
+      "normalizedValue": "Study of a Genre – Shorter Narrative Forms",
+      "canonicalKey": "study of a genre shorter narrative forms",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Intermediate Microeconomics I: Behavioural Foundations of Market Interactions",
+        "Intermediate Microeconomics I: Behavioural foundations of Market Interactions"
+      ],
+      "normalizedValue": "Intermediate Microeconomics I: Behavioural Foundations of Market Interactions",
+      "canonicalKey": "intermediate microeconomics i behavioural foundations of market interactions",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "GENDER AND DEVELOPMENT",
+        "Gender And Development",
+        "Gender and Development"
+      ],
+      "normalizedValue": "Gender And Development",
+      "canonicalKey": "gender and development",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 3
+    },
+    {
+      "originalValue": [
+        "Punjab Di Lokdhara",
+        "Punjab di Lokdhara"
+      ],
+      "normalizedValue": "Punjab Di Lokdhara",
+      "canonicalKey": "punjab di lokdhara",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Income Tax Law & Practice",
+        "Income Tax Law and Practice"
+      ],
+      "normalizedValue": "Income Tax Law & Practice",
+      "canonicalKey": "income tax law and practice",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Medical Ethics -From Principles to Practice",
+        "Medical Ethics – From Principles to Practice"
+      ],
+      "normalizedValue": "Medical Ethics -From Principles to Practice",
+      "canonicalKey": "medical ethics from principles to practice",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "PRINT MEDIA IN URDU",
+        "PRINT Media IN URDU"
+      ],
+      "normalizedValue": "PRINT Media IN URDU",
+      "canonicalKey": "print media in urdu",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "TEXTUAL CRITICISM IN URDU",
+        "Textual Criticism in Urdu"
+      ],
+      "normalizedValue": "Textual Criticism in Urdu",
+      "canonicalKey": "textual criticism in urdu",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "BIOGEOGRAPHY",
+        "Biogeography"
+      ],
+      "normalizedValue": "Biogeography",
+      "canonicalKey": "biogeography",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "GEOGRAPHY OF ARID AND SEMIARID REGION",
+        "Geography of Arid And Semiarid Region"
+      ],
+      "normalizedValue": "Geography of Arid And Semiarid Region",
+      "canonicalKey": "geography of arid and semiarid region",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "GEOGRAPHY OF HIMALAYAS",
+        "Geography of Himalayas"
+      ],
+      "normalizedValue": "Geography of Himalayas",
+      "canonicalKey": "geography of himalayas",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "RURAL DEVELOPMENT",
+        "Rural Development"
+      ],
+      "normalizedValue": "Rural Development",
+      "canonicalKey": "rural development",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Agricultural Geography And Food Security",
+        "Agricultural Geography and Food Security"
+      ],
+      "normalizedValue": "Agricultural Geography And Food Security",
+      "canonicalKey": "agricultural geography and food security",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Environment And Ecology",
+        "Environment and Ecology"
+      ],
+      "normalizedValue": "Environment And Ecology",
+      "canonicalKey": "environment and ecology",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "POLITICAL GEOGRAPHY",
+        "Political Geography"
+      ],
+      "normalizedValue": "Political Geography",
+      "canonicalKey": "political geography",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "SOCIAL GEOGRAPHY",
+        "Social Geography"
+      ],
+      "normalizedValue": "Social Geography",
+      "canonicalKey": "social geography",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "GEOGRAPHIES OF CRIME",
+        "Geographies of Crime"
+      ],
+      "normalizedValue": "Geographies of Crime",
+      "canonicalKey": "geographies of crime",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "INTRODUCTION TO RESEARCH METHODS IN GEOGRAPHY",
+        "Introduction To Research Methods In Geography"
+      ],
+      "normalizedValue": "Introduction To Research Methods In Geography",
+      "canonicalKey": "introduction to research methods in geography",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Geographical Dimensions of Land Use Planning And Policy",
+        "Geographical Dimensions of Land Use Planning and Policy"
+      ],
+      "normalizedValue": "Geographical Dimensions of Land Use Planning And Policy",
+      "canonicalKey": "geographical dimensions of land use planning and policy",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Geographies of Environmental Justice And Environmental Ethics",
+        "Geographies of Environmental Justice and Environmental Ethics"
+      ],
+      "normalizedValue": "Geographies of Environmental Justice And Environmental Ethics",
+      "canonicalKey": "geographies of environmental justice and environmental ethics",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Geography of Behaviour And Emotions",
+        "Geography of Behaviour and Emotions"
+      ],
+      "normalizedValue": "Geography of Behaviour And Emotions",
+      "canonicalKey": "geography of behaviour and emotions",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Geography of Mobility And Migration",
+        "Geography of Mobility and Migration"
+      ],
+      "normalizedValue": "Geography of Mobility And Migration",
+      "canonicalKey": "geography of mobility and migration",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "SAMPLING DISTRIBUTIONS",
+        "Sampling Distributions"
+      ],
+      "normalizedValue": "Sampling Distributions",
+      "canonicalKey": "sampling distributions",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "ACTUARIAL STATISTICS",
+        "Actuarial Statistics"
+      ],
+      "normalizedValue": "Actuarial Statistics",
+      "canonicalKey": "actuarial statistics",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "ENVIRONMENTAL STATISTICS",
+        "Environmental Statistics"
+      ],
+      "normalizedValue": "Environmental Statistics",
+      "canonicalKey": "environmental statistics",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "SIMULATION TECHNIQUES IN STATISTICS",
+        "Simulation Techniques In Statistics"
+      ],
+      "normalizedValue": "Simulation Techniques In Statistics",
+      "canonicalKey": "simulation techniques in statistics",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "ORDER STATISTICS AND ITS APPLICATIONS",
+        "Order Statistics and Its Applications"
+      ],
+      "normalizedValue": "Order Statistics and Its Applications",
+      "canonicalKey": "order statistics and its applications",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "STATISTICAL COMPUTING AND BASIC DATA MINING",
+        "Statistical Computing and Basic Data Mining"
+      ],
+      "normalizedValue": "Statistical Computing and Basic Data Mining",
+      "canonicalKey": "statistical computing and basic data mining",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "INTRODUCTION TO STATISTICAL LINEAR MODELS",
+        "Introduction to Statistical Linear Models"
+      ],
+      "normalizedValue": "Introduction to Statistical Linear Models",
+      "canonicalKey": "introduction to statistical linear models",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "URDU FICTION-NOVEL",
+        "Urdu Fiction Novel"
+      ],
+      "normalizedValue": "Urdu Fiction Novel",
+      "canonicalKey": "urdu fiction novel",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Workers, Markets, and the Future of Work",
+        "Workers, markets, and the future of work"
+      ],
+      "normalizedValue": "Workers, Markets, and the Future of Work",
+      "canonicalKey": "workers markets and the future of work",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Ethics And Corporate Governance",
+        "Ethics and Corporate Governance"
+      ],
+      "normalizedValue": "Ethics And Corporate Governance",
+      "canonicalKey": "ethics and corporate governance",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Export Import Management",
+        "Export-Import Management"
+      ],
+      "normalizedValue": "Export Import Management",
+      "canonicalKey": "export import management",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "PUBLIC POLICY AND GOVERNANCE",
+        "Public Policy and Governance"
+      ],
+      "normalizedValue": "Public Policy and Governance",
+      "canonicalKey": "public policy and governance",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Entrepreneurship and New Venture Planning",
+        "Entrepreneurship and New venture planning"
+      ],
+      "normalizedValue": "Entrepreneurship and New Venture Planning",
+      "canonicalKey": "entrepreneurship and new venture planning",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Goods & Services Tax (GST) and Customs Law",
+        "Goods and Services Tax(GST) and Customs Law"
+      ],
+      "normalizedValue": "Goods & Services Tax (GST) and Customs Law",
+      "canonicalKey": "goods and services tax gst and customs law",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "COMPUTATIONAL METHODS AND MOLECULAR MODELLING",
+        "Computational Methods and Molecular Modelling"
+      ],
+      "normalizedValue": "Computational Methods and Molecular Modelling",
+      "canonicalKey": "computational methods and molecular modelling",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Interfaces, Macromolecules and Biophysical Chemistry",
+        "Interfaces, Macromolecules, and Biophysical Chemistry"
+      ],
+      "normalizedValue": "Interfaces, Macromolecules and Biophysical Chemistry",
+      "canonicalKey": "interfaces macromolecules and biophysical chemistry",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Main Group Clusters – Basics and Applications",
+        "Main Group Clusters: Basics and Applications"
+      ],
+      "normalizedValue": "Main Group Clusters – Basics and Applications",
+      "canonicalKey": "main group clusters basics and applications",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "FUNDAMENTALS OF MEDICINAL CHEMISTRY",
+        "Fundamentals of Medicinal Chemistry"
+      ],
+      "normalizedValue": "Fundamentals of Medicinal Chemistry",
+      "canonicalKey": "fundamentals of medicinal chemistry",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Transition Metal Clusters-Introduction and Applications",
+        "Transition Metal Clusters: Introduction and Applications"
+      ],
+      "normalizedValue": "Transition Metal Clusters-Introduction and Applications",
+      "canonicalKey": "transition metal clusters introduction and applications",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "CALCULUS",
+        "Calculus"
+      ],
+      "normalizedValue": "Calculus",
+      "canonicalKey": "calculus",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Protected Agriculture Hydroponics and Organic Cultivation",
+        "Protected Agriculture: Hydroponics and Organic Cultivation"
+      ],
+      "normalizedValue": "Protected Agriculture Hydroponics and Organic Cultivation",
+      "canonicalKey": "protected agriculture hydroponics and organic cultivation",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Plant Health & Disease Diagnostics",
+        "Plant Health and Disease Diagnostics"
+      ],
+      "normalizedValue": "Plant Health & Disease Diagnostics",
+      "canonicalKey": "plant health and disease diagnostics",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Genetic Engineering Technologies & Applications",
+        "Genetic Engineering technologies and Applications"
+      ],
+      "normalizedValue": "Genetic Engineering Technologies & Applications",
+      "canonicalKey": "genetic engineering technologies and applications",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Care and Wellbeing Across the Lifespan",
+        "Care and wellbeing across the lifespan"
+      ],
+      "normalizedValue": "Care and Wellbeing Across the Lifespan",
+      "canonicalKey": "care and wellbeing across the lifespan",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "NUMERICAL ANALYSIS",
+        "Numerical Analysis"
+      ],
+      "normalizedValue": "Numerical Analysis",
+      "canonicalKey": "numerical analysis",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Object Oriented Programming Using Python",
+        "Object Oriented Programming using Python"
+      ],
+      "normalizedValue": "Object Oriented Programming Using Python",
+      "canonicalKey": "object oriented programming using python",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Programming Using C++",
+        "Programming using C++"
+      ],
+      "normalizedValue": "Programming Using C++",
+      "canonicalKey": "programming using c",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Data Mining I",
+        "Data Mining-I"
+      ],
+      "normalizedValue": "Data Mining I",
+      "canonicalKey": "data mining i",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Industrial Chemicals and Environment",
+        "Industrial chemicals and environment"
+      ],
+      "normalizedValue": "Industrial Chemicals and Environment",
+      "canonicalKey": "industrial chemicals and environment",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Coordination Chemistry and Organometallics",
+        "“Coordination Chemistry and Organometallics”"
+      ],
+      "normalizedValue": "Coordination Chemistry and Organometallics",
+      "canonicalKey": "coordination chemistry and organometallics",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "INTRODUCTORY INTERFACIAL ELECTROCHEMISTRY",
+        "Introductory Interfacial Electrochemistry"
+      ],
+      "normalizedValue": "Introductory Interfacial Electrochemistry",
+      "canonicalKey": "introductory interfacial electrochemistry",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Nanoscale Materials and Their Applications",
+        "Nanoscale Materials and their Applications"
+      ],
+      "normalizedValue": "Nanoscale Materials and Their Applications",
+      "canonicalKey": "nanoscale materials and their applications",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Media Laws & Ethics",
+        "Media Laws and Ethics"
+      ],
+      "normalizedValue": "Media Laws & Ethics",
+      "canonicalKey": "media laws and ethics",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Financial Accounting & Analysis",
+        "Financial Accounting and Analysis"
+      ],
+      "normalizedValue": "Financial Accounting & Analysis",
+      "canonicalKey": "financial accounting and analysis",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    },
+    {
+      "originalValue": [
+        "Cost & Management Accounting",
+        "Cost and Management Accounting"
+      ],
+      "normalizedValue": "Cost & Management Accounting",
+      "canonicalKey": "cost and management accounting",
+      "mappingType": "subject-alias",
+      "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
+      "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
+      "confidence": 0.8,
+      "approvalStatus": "pending",
+      "approvedBy": null,
+      "createdAt": "2026-08-06T14:09:12.211Z",
+      "mappingVersion": 1,
+      "variantCount": 2
+    }
+  ]
+}

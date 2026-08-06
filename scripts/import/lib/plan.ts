@@ -17,6 +17,7 @@ import { validateSemesterOrder, validateNonEmptyString, validateUrl, combineVali
 import { findExactDuplicates, proposeSubjectAliases } from "./dedupe";
 import { loadMasterSyllabusSource } from "../sources/master-syllabus";
 import { loadExamSessionsSource } from "../sources/exam-sessions";
+import { loadApprovedProgramAliases } from "./alias-loader";
 import type { PlannedRecord, RowOutcome, SourceAdapterResult, WarningEntry } from "./types";
 
 export type ImportPlan = {
@@ -206,10 +207,38 @@ export async function computeImportPlan(prisma: PrismaClient): Promise<ImportPla
     }),
   );
 
-  for (const record of byModel.SessionProgramLink) {
-    if (firstOccurrence.get(`SessionProgramLink::${record.naturalKey}`) !== record) continue;
-    const sessionKey = String(record.data.sessionKey);
-    const programSlug = String(record.data.programSlug);
+  // Phase 2E/Checkpoint D: before giving up on a SessionProgramLink whose
+  // programSlug doesn't match any Program, check for a human-*approved*
+  // alias (data/import-mappings/program-aliases.json — pending/needs-review/
+  // unresolved entries are never consulted, only "approved"). This is the
+  // planner fix Checkpoint D calls for, in place of hand-inserting one-off
+  // rows: once an operator approves an alias, this makes the corresponding
+  // links deterministic inserts on the very next preview/apply run, with no
+  // code change required.
+  const approvedProgramAliases = await loadApprovedProgramAliases();
+
+  for (const originalRecord of byModel.SessionProgramLink) {
+    if (firstOccurrence.get(`SessionProgramLink::${originalRecord.naturalKey}`) !== originalRecord) continue;
+    const sessionKey = String(originalRecord.data.sessionKey);
+    let programSlug = String(originalRecord.data.programSlug);
+    let record = originalRecord;
+
+    if (!availableProgramSlugs.has(programSlug)) {
+      const aliasTarget = approvedProgramAliases.get(programSlug);
+      if (aliasTarget && availableProgramSlugs.has(aliasTarget)) {
+        // Re-key the record onto the approved target slug so every
+        // downstream check (existing-link lookup, apply.ts's insert) sees a
+        // single consistent identifier — never two records disagreeing
+        // about which Program this link actually targets.
+        programSlug = aliasTarget;
+        record = {
+          ...originalRecord,
+          naturalKey: `${sessionKey}::${aliasTarget}::${String(originalRecord.data.variantLabel ?? "")}`,
+          data: { ...originalRecord.data, programSlug: aliasTarget },
+        };
+      }
+    }
+
     const missing: string[] = [];
     if (!availableSessionLabels.has(sessionKey)) missing.push(`ExamSession(label=${sessionKey})`);
     if (!availableProgramSlugs.has(programSlug)) missing.push(`Program(slug=${programSlug})`);

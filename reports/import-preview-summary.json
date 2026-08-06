@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-06T13:24:23.174Z",
+  "generatedAt": "2026-08-06T14:08:11.065Z",
   "target": {
     "hostname": "aws-0-ap-south-1.pooler.supabase.com"
   },
-  "mode": "preview",
+  "mode": "validate",
   "sources": [
     {
       "name": "master-syllabus",

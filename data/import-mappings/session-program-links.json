@@ -1,0 +1,1017 @@
+{
+  "generatedAt": "2026-08-06T14:09:12.211Z",
+  "note": "Every link here is currently rejected (unresolved_fk) purely because its Program alias isn't approved yet — once a program-aliases.json entry flips to approved, the corresponding links become deterministic inserts for Checkpoint D/E to apply (no separate link-level ambiguity in this wave).",
+  "totalBlockedLinkGroups": 41,
+  "totalBlockedLinks": 160,
+  "entries": [
+    {
+      "blockedOnProgramAliasSlug": "all-aec",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1JkGZgpGqEkcbnJFZwLHg2J6S4yk2LiAV?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1IeIe9UxJw4GClM-yl6S8dNYCpvSz1CRs?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "all-aecaecc",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1yGOoBlFjnMgGijDKKMLOrgz5-vmIou15?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1rl9Hk_FZr0zWkeHZcS49BSq-G1sXRKw8?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "all-aecc",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1fhNQSZiOHmEc9Bi-QR3nqfU5bjTL0eTS?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (July) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1KfNEFyhoSDaK8eIpJ68SV3lsjQUnEWXV?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (Feb-March) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1XfVRda7Z8P_FAtlATZ1TBpkmvceOnOPg?usp=share_link"
+        },
+        {
+          "sessionKey": "2022 (Nov-Dec) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1droU8PSXSV3qlFmWgRrH8jj0GimWOlV?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "all-common-group-programme",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1mhOnj9AIfn-8AW7PoZm6cVw8bIQbyIHb?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1duo-SuRvQvxnVOefjVgUHuZgp10Zm1gz?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "all-common-prog-group",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1q4hoW7WQA71N0jjAWps2t6h1hLtsriNU?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "all-common-prog-group-aec",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1Ra5hA-sl6ptJl16xv0KSWPuG4LHAhjDV?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "all-dse",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1lS5CPb-iDkbAC17-d1croQ7Ib6Cj3VNR?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (July) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/13FYtqTuVS3depx1pNCFTWTJck5BTnQ4?usp=sharing"
+        },
+        {
+          "sessionKey": "2022 (Nov-Dec) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1uSi0xvlPLrMoUrFPaa5gRfox7SElDzfp?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "all-ge",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/10Geq-lfxeO87wSnrU3lJyvjh0tCiGNJK?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1t12BJkOGPKctl1jgaJIybyP4Oz8RhB_u?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/14O31FqLn_n7UBBtxpV0j8nrgIxEQGKoM?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1k0EOKdIA_M325GZY0_nWr1coqkRiOy8d?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1mzIpe8rOveThEQhpGxeIatvDCs8Y4u3q?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (July) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1-_vqr0dJOfLRHUPAZ5koQQ5972agb4fi?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (Feb-March) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1yRawFeMs7PExP_Qw54gWPcdmsIkXyCeB?usp=share_link"
+        },
+        {
+          "sessionKey": "2022 (Nov-Dec) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1V3JSEd27HLe_0hs00HDdroWlqiD7R2kN?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "all-sec",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1XZSGvFkBWgEKX-JaFD0TpGq326HxquuK?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1eX2ae5kVNHNBbNnJC8ALzleAUH879DwE?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1du9e6ttdsgVoQrcDjSZuvyqEXA1cWatO?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1gJmuA5BvbyFETuZ9a9_75RkhOrH_2BQi?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1UAa23C3gI4qHmAQktWvBapW7PPCb3wfd?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (July) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1-br57y5TGaLhZHQd57i1fGE_SkeyXIl?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (Feb-March) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1FPB_waVthH5RtMLWCZ0ZUdesE3AwQTH?usp=share_link"
+        },
+        {
+          "sessionKey": "2022 (Nov-Dec) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1hT6eIJhGoDxYxxpmisecbAg34y_eL-gV?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "all-vac",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1rYUcQZkCZBRbviXUjlIkOe9SWTyQxw6K?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1xwNB9Fb6aBB-IQqstoo2RLH2lSoFfZk9?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1nWBLjDCAIK71kEcCXO6kaXraiHOpIXp8?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1RIWINb7f0oabUQoSamVGBg4HAjeK9uQs?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1n9VXueZn-HqgZbhdE7f3e98T-DH4zB6I?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "all-vac-value-added-courses",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2023 (July) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1HoAGhxF2Qo12-LRMxVZGNoi_9ThTkFJK?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (Feb-March) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1WJdJ56J89PAvWb9gXQyKhRz28WuBjkeQ?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-all-subjects",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2023 (Feb-March) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1A8EjSG8mT8s4SDGiPJmzvO_CcTMfgu1?usp=share_link"
+        },
+        {
+          "sessionKey": "2022 (Nov-Dec) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1lYc9kbEkTqaGR5L-3lfjFz9Otfl5vMbq?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-economics",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1TxebBhtmPvj3cW2wSSIQ3cT8SnWe9aVH?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1j4_6R220GFw00jxL1O9Li7_tUkoT69YT?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1PBPwwhFXyWpuAy67HhB4McBuJrTZ_fAv?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1GTESu94bzMCAUx35ChjWxv0nnCLOF6zj?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1i2PjJNHgua0eWOlttTW7VaBt8WB60_QN?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-english",
+      "blockedOnProgramAliasStatus": "needs-review",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1RhK_Fy10qqlzpdK612niksRBQT-Qtnzp?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1BBAEGGfUhIsmrg67jPeqjX89L55HVYZ8?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1hpFiMywxekxmFJrQimPbaMrVpkwA9xXC?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1kzCjVxpztSeSwtV4wsTxeTdKvQ42X2Q9?usp=drive_link"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1q9GKqglSHmThfhDx4Mw_Q0jXkw7NLllB?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-hindi",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1ZTRGCJwuf5dEmLqh7dCWAzZeaDt2pNS_?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1KZH2QQO0Sd5JlMVc7izon8Qo4Ra6f_xI?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1tKLqGB30jdMEZRKocdEngOj2Yh1o-yuJ?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1A4mFF17dj-HenYlv1vDAKJpUtoP37svS?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-hindi-note-all-in-one-file",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1wuMK3uY3AI3WSOh0c14akdfeG1xBZtl-?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-history",
+      "blockedOnProgramAliasStatus": "needs-review",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1ZSeK-OU0rO5wOvFouvYFUfqd_6mbSsf_?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1CU7_Uv8DlAph6V5LaPHrU3h-e6pJCpXu?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1hSb7NQhUvIeKw4TKACOkK8V9PwoiEs4P?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1eqMp5raNMbFJtp1asAqBvmVFwtbZps8I?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1fqiZlsylCTfyXU04wmj0uHiP_WkgmRgP?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-political-science",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1Lc3KjC_bde859PPLTrFQbvV05q7WkV6E?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1I4_LEnIjrTPf5X5IGLDzsGJB20MchFer?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1jCpWyo3KPfAbgh0t05XAjLRtscDdzSXk?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1S3Q0GlPHDnekE5y3hYGb7VZ2dEKWEK-k?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1tt55QCre6Y1l6hfgdg4yQfy9Sk8dg5aJ?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-sanskrit",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1SfdtXvUGd2mNjIH3AUU6mpc9VMz1-5Xg?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1aIyrsBdSaAaDBbvqjS5IzjCXutPw_0Wc?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1pf5qV1p67MrGix554n-Hqh_7ggJOSBSZ?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1mNKCnkqUHwbFtsNKRJz1UsPKF6omrpQm?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-sanskrit-note-all-in-one-file",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1mzorcI2SPIK0ZLrvSYoPtnPtZic0pimM?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-skt",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2023 (July) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1BeylN0JaM2kL7py6CIDJRTUcNIF61XM?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-h-sociology",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1rbAwPEkqX5DlDgy9sFFPYTNwQPqTzatJ?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1CseJe66bcFD-saOa2nOZdI8_smV4fB-E?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1ucnq3izcHAKCdsAOH9SKoaNUbcjKNS8z?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1mSPoOWN6rgO3ns8e8Xdw4lEdYOK2RdTY?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/17KdyKhEiiRgFWhH2oI6GGPGir1cEA4H7?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "ba-programme",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1c_9RbWwqeIefLriJEWs9LHjiH0iBLoaf?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1xTXjZMcwng1eKgyinlScId_28-rGHo24?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1TuJALv4AxvxP64_vRgwiJb-QMYPCeXxI?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1SD_CAIiMgtG4CrPZAOU18xSy15XAyAMF?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/14ry-ib1QZJ5CqqtWHcORED0_ktxqv1bN?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (July) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1kPJxzzb5XmaN7-8vLhZdNWQJ3BpeUBn-?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (Feb-March) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1TVRoqpD0tmid9-A3bJHqJmYami7-P6Cy?usp=share_link"
+        },
+        {
+          "sessionKey": "2022 (Nov-Dec) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1O9TZnK5SesN9Ac5O5cAZl3itJhIN1UFT?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "babsc-prog",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1jgZe0WnEQw1p_1g4Y9p042U9MALQbczt?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bcom-h",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1yPlCnkY8RGjS0v181khyN61025-FcjB0?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1C9Ow7ihRpfNOd-lOThzBRVQ0s0HOJ8kL?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1orEF6wl2u9sqqKUaFA6D8xPLYTpfQK7S?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/14JoXr87sbRuTyERnUPtpCTYtHffj47Rb?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1oUuxGxcXQIN0a7KjyGoRi0ZjiO1EXlKe?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (July) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1zqUdsjof7KVk3Z9GDiHVs8lE1IMI1aMN?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (Feb-March) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1LLQglg4Bj6ZLGADVpFqS3jC6OaH2d_V?usp=share_link"
+        },
+        {
+          "sessionKey": "2022 (Nov-Dec) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1hEIrIdWDeAlw3bLAEBdXPMNiOknkPdq?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bcom-programme",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1SxUEd1HfjwIMBbXm3Giw9S24XzU7Wsd-?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/18XF2dar08cQlsMTd-37ZzqiLkotaAm9R?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1RfYgnVG_KooLBpvR_5060o7Jy8cv8FDV?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1EG-8RQfz9sa1ac0cmC1WOyiSmfmNqEza?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/17StG8ik60Yc27S11mAoAs8KC2ax9_BDC?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (Feb-March) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1BpzgYBw2uOf19PuW6PnVEyO6hCjWbapn?usp=share_link"
+        },
+        {
+          "sessionKey": "2022 (Nov-Dec) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1wKAock18xfc-8rRs1hQzVjlBQSER-YqD?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bsc-h-all-subjects",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2023 (Feb-March) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1__Z92doKfDPUj64MvMLA8aUq7-4cujsP?usp=share_link"
+        },
+        {
+          "sessionKey": "2022 (Nov-Dec) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1Y8a0niZ6hSYwV9r2_gZEidhS48U0CHt0?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bsc-h-botany",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1Ep5GfWMYrrCguHtzRp6gE4IMXLVbTDnT?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1Sey2Onev-vrf33w1u_q0BjDC1ZuTV-VH?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1E4lOBAJkY8bvPxONPTzuTRYj8-72XQau?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1lEiRQKJ121NWFyGcFOzWz7una9peSRn3?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1f47CDUUe0jJpRzm90FpPhp4isr_W9MCC?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bsc-h-chemistry",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1cbxdd2wFA1o5WxeM41si9Qc0-cKf8azH?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1s_OHyf1Lr12ELssRYtsPGNhkSKfE2B98?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1ZZ1WSbdLth4-_iV3kSxHKOeIq1ILMqpq?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1mLsEyXDR4K_xE4gmtEt9s9GeqK-1atwK?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1s2SeMmeIE30QVeD6j59FLcgg8daWXcm6?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bsc-h-mathematics",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1AUDc-a2D2-IkxjZTQRiVSvPx6IDbvwcL?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1Ri0MxmLbO1FaKTVWsINBXbkRdwxvfxf4?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1tzeC3HnYg81pL-WR8pCkAZpRccwqC6ET?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1b0mP5XCyxAE3KXCdTXqizLzHCSRio0Tw?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/127nxt6VMrLZCaYKAUuKcrnl45-bmZcyR?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bsc-h-physics",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1RX5IRMQulCnkAk6QW-myC_H-tndTGvco?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1iyIP2JFoQHTztTmqafyabApAX6ljGHuo?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1plXIQnNSW5mfCk8wHEcWA0tAnnO4Ctrd?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1fnAuckD7UsMEVyLkt5Of0x3iDuJL4U1n?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1-EoIj20RwlUmtuhcasoRfU9kqpTnbpov?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bsc-h-zoology",
+      "blockedOnProgramAliasStatus": "pending",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "deterministic-once-alias-approved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1ApWBjdXjhW_q_qy84VC17-GMxIJcQS7J?usp=sharing"
+        },
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/15_NCZLzeS6t6BLvXd3hnb7jslU85nC8G?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1DamaWE1hoj-gfL-YhcMGBisJ3ZYaiLjb?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/19zeRQx5iHqhwB9iRcvP3k9OWiPTr2xw5?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1dNCXWqtUQWkF6RJy74NBn0tDgF8h1OqW?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bsc-hprog",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1S2gBBQH3Za5dCIAifrgVQM8IxKYfD4Iq?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bsc-life-sciencesphy-sc",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/12LdFIn-5ITJ8fNNrcFeNKofAQsSObRCP?usp=sharing"
+        },
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1XYoByV8zcXffyZpTX7DIBa7d254r93Lx?usp=sharing"
+        },
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1eraN266VDLZauKZNIcLfb2ELJyBrKABj?usp=sharing"
+        },
+        {
+          "sessionKey": "2023-24 (Dec-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/17KdyKhEiiRgFWhH2oI6GGPGir1cEA4H7?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (July) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1t_zfQ3IcrwP3eg53clFPsaMEJMyCMKCf?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (May-June) Question Papers — 2nd & 3rd Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1St_-I9xOYNJnT2Iup2BLCXlW3uRoWQJ7?usp=sharing"
+        },
+        {
+          "sessionKey": "2023 (Feb-March) Question Papers — 1st Year",
+          "driveUrl": "https://drive.google.com/drive/folders/1sNpODBUGNY90hVkAqCnAfZu4QbsQFcnI?usp=share_link"
+        },
+        {
+          "sessionKey": "2022 (Nov-Dec) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1L9fL7RJiy5Jpm-SG7ShtjJoBlh4xGnJ3?usp=share_link"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bsc-phy-sc",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2024-25 (Dec-Jan-Feb) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/14UEwEiRMm1fLxiMfRHwK2qyqfHE-HP3k?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bsc-prog-life-sciencesphy-sc",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/19-Z_V6ubf2VGFnWSopwqIbAxarSuXu9x?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bscprog-physical-science",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2024 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/14fKNvx59ZgJqtSxiXX4KosBT4GA_moCI?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bscprog-physical-scienceba",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1QzJutFe8sTCHUrJiLekq6tR2RiSOcdmP?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "bscprog-physical-sciencelife-science",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/18810CI-LYijH2cmvQmqCRJ7BiZx6i3Ii?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "question-papers-mix-research-methodology",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025-26 (Dec-Jan) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1lMSxqc6gcyXa_W2iLhtc2WM-vKxGEneb?usp=sharing"
+        }
+      ]
+    },
+    {
+      "blockedOnProgramAliasSlug": "question-papers-mixall-dates-folder",
+      "blockedOnProgramAliasStatus": "unresolved",
+      "variantLabel": "",
+      "uniqueConstraint": "SessionProgramLink_sessionId_programId_variantLabel_key (see prisma/schema.prisma @@unique([sessionId, programId, variantLabel]))",
+      "status": "unresolved",
+      "affectedLinks": [
+        {
+          "sessionKey": "2025 (May-June-July) Question Papers",
+          "driveUrl": "https://drive.google.com/drive/folders/1iXvyUDWKN0gwrt_PDWQiTt3_7pB_okhW?usp=sharing"
+        }
+      ]
+    }
+  ]
+}
