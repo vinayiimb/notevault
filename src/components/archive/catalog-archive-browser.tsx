@@ -223,14 +223,23 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
   // paper for all of them at once.
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-useEffect(() => {
-  const qParam = searchParams.get("q") ?? searchParams.get("search") ?? "";
-  const courseParam = searchParams.get("course") ?? ALL;
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  if (qParam !== search) setSearch(qParam);
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  if (courseParam !== course) setCourse(courseParam);
-}, [searchParams, search, course]);
+  // Re-syncs from the URL when it changes externally (e.g. a link with
+  // ?q=... or browser back/forward) — deliberately depends on searchParams
+  // ONLY. Nothing in this component writes the typed query back into the
+  // URL, so including `search`/`course` here (as before) meant this fired
+  // on every keystroke, always saw the URL's still-empty q param, and
+  // immediately reset whatever the user had just typed.
+  /* eslint-disable react-hooks/set-state-in-effect -- syncing FROM the URL on
+     external navigation, not local state; see comment above for why search/
+     course are deliberately excluded from the dependency array below. */
+  useEffect(() => {
+    const qParam = searchParams.get("q") ?? searchParams.get("search") ?? "";
+    const courseParam = searchParams.get("course") ?? ALL;
+    if (qParam !== search) setSearch(qParam);
+    if (courseParam !== course) setCourse(courseParam);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   function toggleExpanded(key: string) {
     setExpanded((current) => {
