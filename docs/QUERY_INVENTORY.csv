@@ -1,0 +1,59 @@
+file_path,route_or_function,query_type,model,pagination,limit,selected_fields,included_relations,cache_status,client_or_server,risk_level,notes
+src/app/sitemap.ts,sitemap (GET),findMany,program,no,none,id; slug; createdAt,none,no caching found,server,High,SEO sitemap; runs on every crawl/request; no take limit
+src/app/sitemap.ts,sitemap (GET),findMany,term,no,none,id; createdAt,none,no caching found,server,High,Unbounded; no pagination
+src/app/sitemap.ts,sitemap (GET),findMany,subject,no,none,id; createdAt,none,no caching found,server,High,Unbounded sitemap query
+src/app/sitemap.ts,sitemap (GET),findMany,resource,no,none,id; title; createdAt,none,no caching found,server,High,Unbounded resource index every sitemap gen
+src/app/sitemap.ts,sitemap (GET),findMany,examSession,no,none,id; updatedAt,none,no caching found,server,High,Unbounded exam session index
+src/app/sitemap.ts,sitemap (GET),findMany,sessionProgramLink,no,none,id; createdAt,none,no caching found,server,High,Unbounded session link index
+src/app/sitemap.ts,sitemap (GET),findMany,driveFileMatch,no,none,id; createdAt,none,no caching found,server,High,Unbounded drive file index; crawler bait
+src/app/admin/(dashboard)/layout.tsx:48,admin layout,count,feedback,no,none,N/A,N/A,no caching found,server,Medium,Runs on every admin dashboard load
+src/app/admin/(dashboard)/page.tsx:16,admin dashboard,count,failedUpload,no,none,N/A,N/A,no caching found,server,Medium,Admin-only; batched in Promise.all
+src/app/admin/(dashboard)/page.tsx:17,admin dashboard,count,uploadBatch,no,none,N/A,N/A,no caching found,server,Medium,Admin-only; batched in Promise.all
+src/app/admin/(dashboard)/subject-normalization/actions.ts:48-51,scanForDuplicateSubjects,findMany,term,no,none,all fields,program,no caching found,server,Medium,Admin-only bulk scan
+src/app/admin/(dashboard)/subject-normalization/actions.ts:77,scanForDuplicateSubjects (loop),findMany,subject,no,none,all fields,term,no caching found,server,High,Inside loop over terms; N+1 risk; admin-only
+src/app/admin/(dashboard)/subject-normalization/actions.ts:197,approveMergeSuggestion,findMany,subjectMergeSuggestion,no,none,all fields,none,no caching found,server,Medium,Admin-only
+src/api/download/[resourceId]/route.ts:10,download/[resourceId] GET,findUnique,resource,no,none,all fields,none,no caching found,server,Low,Public download redirect; single row
+src/api/download/[resourceId]/route.ts:13,download/[resourceId] GET,update,resource,N/A,N/A,N/A,none,no caching found,server,Low,Increments download counter; public
+src/api/subjects/[id]/download-all/route.ts:16,subjects/[id]/download-all GET,findUnique,subject,no,none,all fields,resources; questions,no caching found,server,Medium,Public; could be large for prolific subjects
+src/lib/data.ts:10,getProgramsByLevel,findMany,program,no,none,all fields,terms (nested with subjects),no caching found,server,High,Deep nested include; no take; public; runs uncached on every render
+src/lib/data.ts:135,getProgramBySlug,findUnique,program,no,none,all fields,terms; subjects,no caching found,server,Medium,Public page data
+src/lib/data.ts:154,getTermById,findUnique,term,no,none,all fields,program; subjects; termPapers,no caching found,server,Medium,Public; no revalidate export on caller page
+src/lib/data.ts:188,getSubjectById,findUnique,subject,no,none,all fields,"term; resources; questions; analysis; notes; driveSubjects.files",no caching found,server,High,Deep nested include; public /subjects/[id] page has no revalidate/dynamic export; fresh DB hit every visit
+src/lib/data.ts:239,getExamSessions,findMany,examSession,no,none,all fields,_count.links,no caching found,server,Medium,Public archive listing
+src/lib/data.ts:271,getExamSessionById,findUnique,examSession,no,none,all fields,links (program),no caching found,server,Medium,Could be hundreds of links per session
+src/lib/data.ts:283,getSessionLinkWithSubjects,findUnique,sessionProgramLink,no,none,all fields,session; program; driveFiles.driveSubject,no caching found,server,Medium,Could be hundreds of drive files per link
+src/lib/data.ts:297,getPyqArchiveIndex,findMany,resource,no,none,"id; title; year; academicYear; pageCount; subject.term.program",subject; term; program,no caching found,server,High,type=PYQ AND ocrText!=null; NO take limit; entire OCR archive; called by pyq-notes and every subject page
+src/lib/data.ts:332,getPyqResourceById,findFirst,resource,no,none,all fields,subject; questions,none,server,Medium,Public paper reading page
+src/lib/data.ts:358,getFullDriveArchiveIndex,findMany,driveFileMatch,no,none,"id; fileName; year; webViewLink; driveSubject; link.session",driveSubject; link.session,no caching found,server,High,driveSubjectId!=null; NO take limit; entire Drive archive; called by every subject page + pyq-notes + combined-pdf API
+src/lib/data.ts:398,searchSubjects,findMany,subject,no,none,all fields,term.program,no caching found,server,High,mergedIntoId=null; NO take limit; fetches all active subjects for in-memory search
+src/lib/data.ts:408,searchSubjects,findMany,subjectAlias,no,none,all fields,subject.term.program,no caching found,server,Medium,Included in full searchSubjects load
+src/lib/data.ts:468,getRecentResources,findMany,resource,yes,6,all fields,subject.program,no caching found,server,Low,Paginated homepage widget
+src/lib/data.ts:518,getResourceHighlights,findFirst,resource,no,none,all fields,subject (id; name),no caching found,server,Low,Public homepage
+src/lib/data.ts:523,getResourceHighlights,findFirst,resource,no,none,all fields,subject (id; name),no caching found,server,Low,Public homepage
+src/lib/data.ts:528,getResourceHighlights,count,resource,no,none,N/A,N/A,no caching found,server,Low,Public homepage
+src/lib/data.ts:529,getResourceHighlights,count,resource,no,none,N/A,N/A,no caching found,server,Low,Public homepage
+src/lib/data.ts:555,getDailyQuestion,count,question,no,none,N/A,N/A,no caching found,server,Low,Used to compute modulo offset for rotation
+src/lib/data.ts:562,getDailyQuestion,findFirst,question,yes,1,all fields,subject (id; name),no caching found,server,Medium,skip/take rotation; no index on createdAt; full scan risk at scale
+src/lib/data.ts:576,getSiteSettings,findUnique,siteSettings,no,none,all fields,none,React cache() wrapper,server,Low,Correctly cached with React cache
+src/lib/data.ts:600-603,getStats,count,"program; subject; resource; question",no,none,N/A,N/A,no caching found,server,Low,Four counts batched in Promise.all; public homepage
+src/lib/student.ts:46,upsertStudentForDevice,findUnique,student,no,none,all fields,none,no caching found,server,Low,Lookup by deviceId
+src/lib/student.ts:105,getCurrentStudent,findUnique,student,no,none,all fields,none,no caching found,server,Low,Public dashboard; called client-side per feedback memory (force-static page)
+src/lib/student.ts:159,getCommunityOrangesTotal,aggregate,student,no,none,_sum.oranges,none,no caching found,server,Low,Public leaderboard
+src/lib/student.ts:168,getLeaderboard,findMany,student,yes,20,"id; nickname; oranges; streak",none,no caching found,server,Low,Paginated leaderboard
+src/lib/student.ts:183,getTodayOranges,aggregate,orangeEvent,no,none,_sum.amount,none,no caching found,server,Low,Single student aggregate
+src/lib/student.ts:197,getUpcomingExamDates,findMany,studentExamDate,yes,5,all fields,none,no caching found,server,Low,Paginated
+src/lib/coverage-data.ts:47,getCourseCoverageData,findUniqueOrThrow,program,no,none,all fields,"terms.subjects.resources; terms.subjects.driveSubjects.files",no caching found,server,High,Deep nested; could return megabytes for large programs; admin-only
+src/lib/coverage-data.ts:131,getCourseCoverageData,findMany,driveSubject,no,none,"id; name; _count.files",none,no caching found,server,Medium,Admin-only
+src/lib/subject-normalization-data.ts:59,getSuggestions,findMany,subjectMergeSuggestion,yes,200,all fields,term.program,no caching found,server,High,take=200 still large; admin-only
+src/lib/subject-normalization-data.ts:69,getSuggestions,findMany,subject,no,none,"all fields; _count.resources; _count.questions",none,no caching found,server,High,No take; N+1 risk if called repeatedly; admin-only
+src/lib/subject-normalization-data.ts:93,getProgramsWithTerms,findMany,program,no,none,all fields,terms,no caching found,server,Medium,Admin-only
+src/lib/actions.ts:1023-1034,matchUnsortedFromCsvAction,findFirst; findMany,program; subject,no,none,all fields,terms; subjects,no caching found,server,High,CSV matching; all programs+terms; admin action
+src/lib/actions.ts:1110-1112,createSubjectsFromCsvAction,findMany,program,no,none,all fields,terms.subjects,no caching found,server,High,Deep nested fetch of entire catalog; admin action
+src/lib/actions.ts:1269-1312,mergeSubjectsAction,$transaction (updateMany/update/delete),"resource; question; driveSubject; subjectMatchMemory; noteTheme; subjectNotes; subjectAnalysis; subject",N/A,N/A,N/A,none,no caching found,server,High,8+ operation transaction moving all resources/questions; admin action
+src/lib/actions.ts:1886-1889,deployFailedUploadsFromCsvAction,findMany,program; failedUpload,no,none,all fields,terms.subjects,no caching found,server,High,Fetches entire catalog + all pending uploads; admin action
+src/lib/note-theme-data.ts:23-25,getResolvedThemeForNote,findFirst x3,noteTheme,no,none,all fields,publishedJson,no caching found,server,Low,3 parallel queries per note render; public
+src/lib/note-theme-data.ts:37,listNoteThemes,findMany,noteTheme,no,none,all fields,subject (id; name),no caching found,server,Medium,Admin-only
+src/lib/pyq-catalog.ts:180,getFullPyqCatalog,findMany,catalogPaperUpload,no,none,all fields,none,no caching found,server,Low,Public; part of unified archive merge
+src/components/search-bar.tsx,search typeahead,fetch to /api/search-suggestions,subject (via API),no,8 (server-side),n/a,n/a,debounced 200ms client-side,client,Low,Correctly debounced; not a raw Prisma call
+src/app/(site)/subjects/[id]/page.tsx:72,SubjectPage,calls getUnifiedPyqArchive(),"catalogPaperUpload; resource; driveFileMatch",no,none,see pyq-catalog.ts,see above,NO revalidate/dynamic export on page,server,Critical,Merges 3 full-table queries on every subject page view; single biggest suspected egress driver
+src/app/(site)/pyq-notes/page.tsx:22,PyqNotesPage,calls getUnifiedPyqArchive(),"catalogPaperUpload; resource; driveFileMatch",no,none,see pyq-catalog.ts,see above,NO revalidate/dynamic export on page,server,Critical,Same unbounded archive merge on every visit
