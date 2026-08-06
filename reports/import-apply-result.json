@@ -1,0 +1,39 @@
+{
+  "appliedAt": "2026-08-06T13:24:44.332Z",
+  "target": {
+    "hostname": "aws-0-ap-south-1.pooler.supabase.com"
+  },
+  "perModel": {
+    "Program": {
+      "inserted": 0,
+      "skippedExisting": 118,
+      "rejected": 0,
+      "unresolvedForeignKey": 0
+    },
+    "Term": {
+      "inserted": 0,
+      "skippedExisting": 920,
+      "rejected": 0,
+      "unresolvedForeignKey": 0
+    },
+    "Subject": {
+      "inserted": 0,
+      "skippedExisting": 7650,
+      "rejected": 0,
+      "unresolvedForeignKey": 0
+    },
+    "ExamSession": {
+      "inserted": 0,
+      "skippedExisting": 9,
+      "rejected": 0,
+      "unresolvedForeignKey": 0
+    },
+    "SessionProgramLink": {
+      "inserted": 0,
+      "skippedExisting": 0,
+      "rejected": 0,
+      "unresolvedForeignKey": 160
+    }
+  },
+  "totalInserted": 0
+}

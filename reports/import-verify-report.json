@@ -1,0 +1,41 @@
+{
+  "counts": {
+    "Program": 118,
+    "Term": 920,
+    "Subject": 7650,
+    "ExamSession": 9,
+    "SessionProgramLink": 0
+  },
+  "excludedModelCounts": {
+    "resource": 0,
+    "question": 0,
+    "contentBlock": 0,
+    "subjectAnalysis": 0,
+    "subjectAlias": 0,
+    "subjectNotes": 0,
+    "noteTheme": 0,
+    "catalogPaperUpload": 0,
+    "catalogSubjectOverride": 0,
+    "driveSubject": 0,
+    "driveFileMatch": 0,
+    "admin": 0,
+    "student": 0,
+    "studentExamDate": 0,
+    "orangeEvent": 0,
+    "feedback": 0,
+    "failedUpload": 0,
+    "scanRun": 0,
+    "subjectMergeSuggestion": 0,
+    "subjectMergeLog": 0
+  },
+  "orphanTerms": 0,
+  "orphanSubjects": 0,
+  "orphanSessionLinks": 0,
+  "duplicateProgramSlugs": 0,
+  "duplicateTermKeys": 0,
+  "duplicateSubjectKeysWithinTerm": 0,
+  "duplicateExamSessionLabels": 0,
+  "duplicateSessionLinkKeys": 0,
+  "ok": true,
+  "issues": []
+}
