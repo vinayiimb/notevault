@@ -1,0 +1,29 @@
+{
+  "generatedAt": "2026-08-08T00:00:00.000Z",
+  "generatedBy": "phase3-resource-migration",
+  "note": "Deterministic OLD (prisma/migration-export.json) Program.slug -> CURRENT (Supabase staging) Program.slug mapping, hand-verified against the live target DB (not guessed) before being written here. Used by scripts/import/lib/resource-plan.ts to scope Subject matching to the correct programme instead of searching all 7,650 Subjects globally. Two old slugs are 'pool' markers (see poolProgramSlugs) — their real subjects are scattered across the 5 current elective-pool Programs, not one single Program, so they resolve differently (see resource-plan.ts's POOL handling).",
+  "singleProgramMappings": {
+    "ba-hons-hindi": { "targetSlug": "ba-hons-hindi", "verifiedName": "B.A. (Hons) Hindi" },
+    "bcom-programme": { "targetSlug": "bcom-p", "verifiedName": "B.Com (P)" },
+    "ba-hons-english": { "targetSlug": "b-a-hons-english", "verifiedName": "B. A. (Hons) English" },
+    "ba-hons-economics": { "targetSlug": "ba-hons-economics", "verifiedName": "B.A. (Hons.) Economics" },
+    "bsc-hons-mathematics": { "targetSlug": "bsc-hons-mathematics", "verifiedName": "B.Sc. (Hons.) Mathematics" },
+    "ba-hons-history": { "targetSlug": "history-honours", "verifiedName": "History Honours" },
+    "b-com-hons-du-syllabus": { "targetSlug": "bcom-hons", "verifiedName": "B.Com. (Hons.)" },
+    "ba-hons-political-science": { "targetSlug": "ba-hons-political-science", "verifiedName": "B.A. (Hons.) Political Science" },
+    "bsc-hons-computer-science": { "targetSlug": "bsc-hons-computer-science", "verifiedName": "verified present in staging" },
+    "ba-hons-sociology": { "targetSlug": "ba-hons-socialogy", "verifiedName": "B.A (hons) Socialogy (pre-existing catalogue typo, intentional target)" },
+    "bsc-hons-zoology": { "targetSlug": "bsc-hons-zoology", "verifiedName": "B.Sc. (Hons.) Zoology" }
+  },
+  "poolProgramSlugs": {
+    "note": "These two old programmes bundled AEC/SEC/VAC/GE credit into one or two generic pools. The current catalogue splits electives into 5 separate Programs (Phase 2, docs/MANUAL_DATA_DECISION_REVIEW.md §2a). A resource under one of these old slugs is matched by subject name against ALL 5 pool programs' subjects combined, not one single target — see resource-plan.ts.",
+    "old": ["common-pool-vac-aec-sec-ge", "ge-pool-generic-electives"],
+    "currentPoolProgramSlugs": [
+      "university-wide-ability-enhancement-course-pool",
+      "university-wide-skill-enhancement-course-pool",
+      "university-wide-value-addition-course-pool",
+      "university-wide-generic-elective-course-pool",
+      "university-wide-discipline-specific-elective-course-pool"
+    ]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "appliedAt": "2026-08-08T06:49:36.409Z",
+  "target": {
+    "hostname": "aws-0-ap-south-1.pooler.supabase.com"
+  },
+  "storageCounts": {
+    "EXISTS_IN_R2": 41,
+    "MISSING_SOURCE": 1
+  },
+  "inserted": 0,
+  "skippedExisting": 39,
+  "rejected": 8,
+  "unresolvedSubject": 178,
+  "missingStorageReference": 1
+}

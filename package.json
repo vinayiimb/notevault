@@ -24,6 +24,10 @@
     "import:validate": "tsx scripts/import/run.ts --mode=validate",
     "import:apply": "tsx scripts/import/run.ts --mode=apply",
     "import:verify": "tsx scripts/import/run.ts --mode=verify",
+    "import:resources:preview": "tsx scripts/import/run-resources.ts --mode=preview",
+    "import:resources:validate": "tsx scripts/import/run-resources.ts --mode=validate",
+    "import:resources:apply": "tsx scripts/import/run-resources.ts --mode=apply",
+    "import:resources:verify": "tsx scripts/import/run-resources.ts --mode=verify",
     "storage:plan": "tsx scripts/storage-migration/run.ts --mode=plan",
     "storage:upload": "tsx scripts/storage-migration/run.ts --mode=upload",
     "storage:verify": "tsx scripts/storage-migration/run.ts --mode=verify"

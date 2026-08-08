@@ -1,0 +1,258 @@
+{
+  "generatedAt": "2026-08-08T06:53:10.546Z",
+  "mode": "preview",
+  "bucketConfigured": true,
+  "decisions": [
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmroo5q33000erpxz3qq7ekj2",
+      "key": "uploads/pyqs/cmshjjy7o09gtjyq87btjydyw/1f2ba025-0f2d-4246-b596-fb994d94664c-Analytic_Geometry_5037.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjjy7o09gtjyq87btjydyw/1f2ba025-0f2d-4246-b596-fb994d94664c-Analytic_Geometry_5037.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmroo5r3w000krpxz26onassf",
+      "key": "uploads/pyqs/cmshjfu7905t1jyq8u1asjdjj/9dea33aa-f3c1-4fa6-9304-c3d1bdd73358-India_s_Foreign_Policy_5044.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjfu7905t1jyq8u1asjdjj/9dea33aa-f3c1-4fa6-9304-c3d1bdd73358-India_s_Foreign_Policy_5044.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmroo5s48000qrpxzcs1upcc1",
+      "key": "uploads/pyqs/cmshjbfvl01qbjyq8oa01ojia/229fb288-9924-41cb-839a-cf05f1686867-Indian_Writing_in_English_4895.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbfvl01qbjyq8oa01ojia/229fb288-9924-41cb-839a-cf05f1686867-Indian_Writing_in_English_4895.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmroo5tgq000xrpxze8msnn7i",
+      "key": "uploads/pyqs/cmshjbfvi01odjyq82pd49phq/236d242c-1d11-42a0-beea-4673e042ce45-18_Century_Literature_5028.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbfvi01odjyq82pd49phq/236d242c-1d11-42a0-beea-4673e042ce45-18_Century_Literature_5028.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmroo5u890011rpxzzg3chbvk",
+      "key": "uploads/pyqs/cmshjjy7q09h9jyq8gmoe5m36/221ebcea-83ab-452e-b078-9847f6ed4b14-Differential_Equations_2240.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjjy7q09h9jyq8gmoe5m36/221ebcea-83ab-452e-b078-9847f6ed4b14-Differential_Equations_2240.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmroo5x0e001hrpxzt1n0oscv",
+      "key": "uploads/pyqs/cmshjdbpk03e9jyq8i5xnidym/a2b5acc4-a8c4-44fe-b4f9-7ffba11afe72-Economic_Sociology_5010.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjdbpk03e9jyq8i5xnidym/a2b5acc4-a8c4-44fe-b4f9-7ffba11afe72-Economic_Sociology_5010.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmroo5xt4001lrpxziuv65d1u",
+      "key": "uploads/pyqs/cmshjbfvl01qbjyq8oa01ojia/abb8e286-b9c2-4c97-9bab-6c21fb6b1f4f-Indian_Writing_in_English_Translation_4989.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbfvl01qbjyq8oa01ojia/abb8e286-b9c2-4c97-9bab-6c21fb6b1f4f-Indian_Writing_in_English_Translation_4989.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmroo5ymy001qrpxz6y9b29oo",
+      "key": "uploads/pyqs/cmshjbfvl01qbjyq8oa01ojia/6bd98926-fe77-4d71-9f6e-eaf5011d5de9-Indian_Writing_in_English_4874.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbfvl01qbjyq8oa01ojia/6bd98926-fe77-4d71-9f6e-eaf5011d5de9-Indian_Writing_in_English_4874.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmroo5yu5001srpxzdoedoic5",
+      "key": "uploads/pyqs/cmshjkjc00a0njyq8omlo7246/71ae6323-a851-49de-98cd-d685882e7fc9-Database_Management_Systems_2383.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjkjc00a0njyq8omlo7246/71ae6323-a851-49de-98cd-d685882e7fc9-Database_Management_Systems_2383.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrop0zqj002drpxz6ujz84be",
+      "key": "uploads/pyqs/cmshjirho08edjyq89znxl4y2/8a12ea8d-7118-4c43-940e-2e1b5a21fe60-Business_Analytics_3303.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjirho08edjyq89znxl4y2/8a12ea8d-7118-4c43-940e-2e1b5a21fe60-Business_Analytics_3303.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrot7dg3002mrpxzdks8sg8i",
+      "key": "uploads/pyqs/cmshjiy4r08l9jyq8ou09hmf8/5ab56cc3-e5a9-43a9-8de7-a8003e414f2f-Entrepreneurship_Development.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjiy4r08l9jyq8ou09hmf8/5ab56cc3-e5a9-43a9-8de7-a8003e414f2f-Entrepreneurship_Development.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrotlqa2002rrpxzuttl1z8x",
+      "key": "uploads/pyqs/cmshjiutp08hpjyq842mrkbji/39183d53-7cbc-41b1-9438-b062a125be8a-Human_Resource_Management.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjiutp08hpjyq842mrkbji/39183d53-7cbc-41b1-9438-b062a125be8a-Human_Resource_Management.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrovtzeq000arpsrx0tc3l5e",
+      "key": "uploads/pyqs/cmshjirho08efjyq85fuk6nd0/1e2cb3a9-ec3f-4241-a4d4-683617d9331d-Corporate_Governance.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjirho08efjyq85fuk6nd0/1e2cb3a9-ec3f-4241-a4d4-683617d9331d-Corporate_Governance.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrovtzio000crpsrjikuxqt5",
+      "key": "uploads/pyqs/cmshjiutv08injyq8p5avqajz/5b7c4ad3-7f3f-4637-9228-bd7550aecb06-Cost_Accounting.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjiutv08injyq8p5avqajz/5b7c4ad3-7f3f-4637-9228-bd7550aecb06-Cost_Accounting.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrovtzls000erpsrsqs1go21",
+      "key": "uploads/pyqs/cmshjio3n08crjyq84rv55491/13c6b496-200d-42a8-9564-4d9371007923-Company_Law.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjio3n08crjyq84rv55491/13c6b496-200d-42a8-9564-4d9371007923-Company_Law.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrovvagj000prpsrfgn5idge",
+      "key": "uploads/pyqs/cmshjiutr08i7jyq88jk8sxfh/a468b34c-a05e-4512-b748-a89a62940321-Money_Financial_Markets_5285.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjiutr08i7jyq88jk8sxfh/a468b34c-a05e-4512-b748-a89a62940321-Money_Financial_Markets_5285.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrovx8w9000yrpsr5xwdca5u",
+      "key": "uploads/pyqs/cmshjjy7q09hdjyq8ix4tgzw9/fbd89008-2ffb-4c1c-8978-b0a9dd52d786-Multivariate_Calculus_4102.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjjy7q09hdjyq8ix4tgzw9/fbd89008-2ffb-4c1c-8978-b0a9dd52d786-Multivariate_Calculus_4102.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrowicuu0016rp3fxtovsk83",
+      "key": "uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/a92937ef-30f5-4240-9409-3135cabef7f4-Finance_for_Everyone_4756.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/a92937ef-30f5-4240-9409-3135cabef7f4-Finance_for_Everyone_4756.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrowih6d001srp3fpf20qmez",
+      "key": "uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/5c55ed1a-fa2c-444c-860f-5cef1af619d4-Finance_for_Everyone_4654.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/5c55ed1a-fa2c-444c-860f-5cef1af619d4-Finance_for_Everyone_4654.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrowijjz002arp3fnbirewsm",
+      "key": "uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/71926b94-2739-4326-94a4-5e4991786604-Finance_for_Everyone_4725.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/71926b94-2739-4326-94a4-5e4991786604-Finance_for_Everyone_4725.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrowil4r002erp3fj45ldw4z",
+      "key": "uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/e4fabdbd-e198-4f53-8c2a-ec62f1ddfbdf-Finance_for_Everyone_4689.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/e4fabdbd-e198-4f53-8c2a-ec62f1ddfbdf-Finance_for_Everyone_4689.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp52z1z001arpypio4xpdby",
+      "key": "uploads/pyqs/cmshjjy7q09hdjyq8ix4tgzw9/f54ea87a-92a8-4545-ae70-167ec1d2da06-Topics_in_Multivariate_Calculus.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjjy7q09hdjyq8ix4tgzw9/f54ea87a-92a8-4545-ae70-167ec1d2da06-Topics_in_Multivariate_Calculus.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp584sl0027rpyp2s5qbk6z",
+      "key": "uploads/pyqs/cmshjjy7q09hdjyq8ix4tgzw9/00625737-1737-4c41-ba2d-0ea1384ef527-Topics_in_Multivariate_Calculus_12337.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjjy7q09hdjyq8ix4tgzw9/00625737-1737-4c41-ba2d-0ea1384ef527-Topics_in_Multivariate_Calculus_12337.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp5cmlk002srpypnecuim4l",
+      "key": "uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/1bdd96a0-5c48-44e6-97d2-10f662c9354a-Finance_for_Everyone.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/1bdd96a0-5c48-44e6-97d2-10f662c9354a-Finance_for_Everyone.pdf"
+    },
+    {
+      "classification": "MISSING_SOURCE",
+      "naturalKey": "migration-export:cmrp5h3ax003lrpypbemx96pp",
+      "reason": "No local file found for fileUrl \"/uploads/pyqs/817d1c8d-8412-41e6-bcbf-eccfe039a137-Finance_For_Everyone_11713...pdf\" (expected at \"n/a\")."
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp5h7g5003nrpypx96yddbo",
+      "key": "uploads/pyqs/cmshjfu7805spjyq8noaaq6hy/de02355d-28b7-4c63-bea0-a81b3755c92f-Modern_Indian_Political_Thought.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjfu7805spjyq8noaaq6hy/de02355d-28b7-4c63-bea0-a81b3755c92f-Modern_Indian_Political_Thought.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp5hc3p003qrpypa067arzg",
+      "key": "uploads/pyqs/cmshjkaez09ubjyq8rj4r4gik/0863f3a7-0f49-48d1-af39-b155016207e1-Principles_of_Developmental_Biology.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjkaez09ubjyq8rj4r4gik/0863f3a7-0f49-48d1-af39-b155016207e1-Principles_of_Developmental_Biology.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp5j9o9004nrpyppjmldx1w",
+      "key": "uploads/pyqs/cmshjbfvl01qbjyq8oa01ojia/b1769315-b75f-4342-b84a-87df168fd3d9-Indian_English_Literatures.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbfvl01qbjyq8oa01ojia/b1769315-b75f-4342-b84a-87df168fd3d9-Indian_English_Literatures.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp5jxsv004urpypfuabtpmt",
+      "key": "uploads/pyqs/cmshjkjby0a05jyq8vul7qu39/53572845-ffc7-497e-8b8d-c550ba0fa433-Operating_System.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjkjby0a05jyq8vul7qu39/53572845-ffc7-497e-8b8d-c550ba0fa433-Operating_System.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp5ks900058rpyp715g89r0",
+      "key": "uploads/pyqs/cmshjbfvl01qbjyq8oa01ojia/016cb7ee-da94-442e-922a-1a43fcf9fcbd-Indian_English_Literatures.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbfvl01qbjyq8oa01ojia/016cb7ee-da94-442e-922a-1a43fcf9fcbd-Indian_English_Literatures.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp5l7gl005erpypa5ua8chc",
+      "key": "uploads/pyqs/cmshjcwc5031jjyq8tiiam72q/2f3fce55-e832-41a7-a735-544ab65d9e00-Object_Oriented_Programming_using_Python.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjcwc5031jjyq8tiiam72q/2f3fce55-e832-41a7-a735-544ab65d9e00-Object_Oriented_Programming_using_Python.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp6e5f9009crpyp5cyqa2rn",
+      "key": "uploads/pyqs/cmshjbd2301mtjyq8mm51gjux/a2a0206c-6bdb-418b-87fb-7cbcbd335c0a-Indian_Popular_Literature_5099.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbd2301mtjyq8mm51gjux/a2a0206c-6bdb-418b-87fb-7cbcbd335c0a-Indian_Popular_Literature_5099.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp6hy0n00a2rpypoapl58sy",
+      "key": "uploads/pyqs/cmshjiutr08i7jyq88jk8sxfh/4375bc13-8686-4155-b827-6e39e0109347-Money_Financial_Markets_8232.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjiutr08i7jyq88jk8sxfh/4375bc13-8686-4155-b827-6e39e0109347-Money_Financial_Markets_8232.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp6igpy00a6rpyptjpfru7v",
+      "key": "uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/22991c57-e167-4841-941d-9d07b389dd63-Finance_for_Everyone_4684.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/22991c57-e167-4841-941d-9d07b389dd63-Finance_for_Everyone_4684.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp6izqu00aarpyp4vy7u0q3",
+      "key": "uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/192bb091-a059-4b0b-8d2c-b2645fc9e2fb-Finance_for_Everyone_4647.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjirhm08e3jyq87xfnnfuz/192bb091-a059-4b0b-8d2c-b2645fc9e2fb-Finance_for_Everyone_4647.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp6k15400afrpypwb3lzp9u",
+      "key": "uploads/pyqs/cmshjcwc5031jjyq8tiiam72q/241272bb-5171-4e06-bffa-e8ff88a575c9-Data_Structures_Using_Python_6110.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjcwc5031jjyq8tiiam72q/241272bb-5171-4e06-bffa-e8ff88a575c9-Data_Structures_Using_Python_6110.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp6kfyf00ahrpypsgw3arsh",
+      "key": "uploads/pyqs/cmshjcwc5031jjyq8tiiam72q/b23e8e79-d5e5-4fa4-9f93-4a32f2d6703d-Data_Structures_Using_Python_5727.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjcwc5031jjyq8tiiam72q/b23e8e79-d5e5-4fa4-9f93-4a32f2d6703d-Data_Structures_Using_Python_5727.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp6m5v100anrpypcun3yuyv",
+      "key": "uploads/pyqs/cmshjbd2301mtjyq8mm51gjux/3dd7282b-4d15-470c-aa84-ae38e9ca8fb0-Indian_Popular_Literature.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbd2301mtjyq8mm51gjux/3dd7282b-4d15-470c-aa84-ae38e9ca8fb0-Indian_Popular_Literature.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp6oy6s00aurpyp2f6dheiq",
+      "key": "uploads/pyqs/cmshjbd2301mtjyq8mm51gjux/173400ff-7e9a-45f9-a212-028b000196a8-Indian_Classical_Literature_6372.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbd2301mtjyq8mm51gjux/173400ff-7e9a-45f9-a212-028b000196a8-Indian_Classical_Literature_6372.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp6psu400axrpypi7on19xj",
+      "key": "uploads/pyqs/cmshjbd2301mtjyq8mm51gjux/7b422193-2cc1-456e-83de-bbf5467cb86a-Indian_Classical_Literature.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbd2301mtjyq8mm51gjux/7b422193-2cc1-456e-83de-bbf5467cb86a-Indian_Classical_Literature.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp6u12l00b2rpypzeq5yugm",
+      "key": "uploads/pyqs/cmshjjy7w09ifjyq8ao0jrnu8/d669d274-6d9b-44ff-8735-d66e3dd3f898-Elements_of_Complex_Analysis_5151.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjjy7w09ifjyq8ao0jrnu8/d669d274-6d9b-44ff-8735-d66e3dd3f898-Elements_of_Complex_Analysis_5151.pdf"
+    },
+    {
+      "classification": "EXISTS_IN_R2",
+      "naturalKey": "migration-export:cmrp71jwf0001rpstu1iop5hj",
+      "key": "uploads/pyqs/cmshjbd2301mtjyq8mm51gjux/9c1affd1-0771-4b76-a144-c16e436350c8-Indian_Classical_Literature_5906.pdf",
+      "fileUrl": "https://pub-a8744270e7864e99abca3b699629c764.r2.dev/uploads/pyqs/cmshjbd2301mtjyq8mm51gjux/9c1affd1-0771-4b76-a144-c16e436350c8-Indian_Classical_Literature_5906.pdf"
+    }
+  ]
+}

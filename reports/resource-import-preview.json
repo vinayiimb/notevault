@@ -1,0 +1,52 @@
+{
+  "generatedAt": "2026-08-08T06:53:10.550Z",
+  "target": {
+    "hostname": "aws-0-ap-south-1.pooler.supabase.com"
+  },
+  "mode": "preview",
+  "sourceRecordCount": 226,
+  "perStatus": {
+    "insert": 0,
+    "skip_existing": 39,
+    "rejected": 8,
+    "unresolved_subject": 178,
+    "missing_storage_reference": 1
+  },
+  "exactDuplicateGroups": 0,
+  "probableDuplicateGroups": 4,
+  "exactDuplicateDetail": [],
+  "probableDuplicateDetail": [
+    {
+      "reason": "Same normalized title + same subject (\"punjabi bhasha da mudhla padhar::punjabi bhasha da mudhla padhar\"), differing fileSize (448296, 40640 bytes) with no distinguishing year — cannot safely tell if these are the same paper re-saved or different papers. Skipped, not guessed.",
+      "classification": "UNRESOLVED_DUPLICATE",
+      "naturalKeys": [
+        "migration-export:cmrp5b97j002nrpypv5x3lnpr",
+        "migration-export:cmrp5kuou005arpyp3n3hrzq0"
+      ]
+    },
+    {
+      "reason": "Same normalized title + same subject (\"genre fiction::genre fiction\"), differing fileSize (70945, 596298 bytes) with no distinguishing year — cannot safely tell if these are the same paper re-saved or different papers. Skipped, not guessed.",
+      "classification": "UNRESOLVED_DUPLICATE",
+      "naturalKeys": [
+        "migration-export:cmrp5ia9t0044rpyp9q29ngbh",
+        "migration-export:cmrp5kl9z0055rpypuak8zizn"
+      ]
+    },
+    {
+      "reason": "Same normalized title + same subject (\"literature & human rights::literature and human rights\"), differing fileSize (65338, 69022 bytes) with no distinguishing year — cannot safely tell if these are the same paper re-saved or different papers. Skipped, not guessed.",
+      "classification": "UNRESOLVED_DUPLICATE",
+      "naturalKeys": [
+        "migration-export:cmrp5j548004jrpypki3tbmj7",
+        "migration-export:cmrp6hnr100a0rpyp9eed8nda"
+      ]
+    },
+    {
+      "reason": "Same normalized title + same subject (\"indian english literatures::indian writing in english\"), differing fileSize (108157, 625928 bytes) with no distinguishing year — cannot safely tell if these are the same paper re-saved or different papers. Skipped, not guessed.",
+      "classification": "UNRESOLVED_DUPLICATE",
+      "naturalKeys": [
+        "migration-export:cmrp5j9o9004nrpyppjmldx1w",
+        "migration-export:cmrp5ks900058rpyp715g89r0"
+      ]
+    }
+  ]
+}
