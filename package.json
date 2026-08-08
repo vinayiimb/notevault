@@ -15,6 +15,7 @@
     "seed:historical-exam-sessions": "tsx prisma/seed-historical-exam-sessions.ts",
     "seed:note-themes": "tsx prisma/seed-note-themes.ts",
     "seed:demo-content-blocks": "tsx prisma/seed-demo-content-blocks.ts",
+    "seed:admin-only": "tsx prisma/seed-admin-only.ts",
     "sync:drive-links": "tsx prisma/sync-all-drive-links.ts",
     "import:core-pyqs": "tsx prisma/import-core-pyqs.ts",
     "migrate:export": "tsx prisma/migrate-to-postgres-blob.ts export",
