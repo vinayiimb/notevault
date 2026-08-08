@@ -18,6 +18,8 @@ import {
   previewMergeAction,
   removeItemFromSuggestionAction,
 } from "@/app/admin/(dashboard)/subject-normalization/actions";
+import { recommendCanonicalSubject } from "@/lib/subject-normalization";
+import { MergePreviewDialog } from "./merge-preview-dialog";
 import type { MergePreview, SuggestionRow } from "./types";
 
 const RELATIONSHIP_LABEL: Record<SuggestionRow["relationship"], string> = {
@@ -39,7 +41,11 @@ export function SuggestionCard({ suggestion, onChanged }: { suggestion: Suggesti
   const [expanded, setExpanded] = useState(false);
   const [editingName, setEditingName] = useState(false);
   const [nameDraft, setNameDraft] = useState(suggestion.suggestedName);
-  const [canonicalId, setCanonicalId] = useState(suggestion.subjectIds[0]);
+  const [canonicalId, setCanonicalId] = useState(
+    recommendCanonicalSubject(
+      suggestion.members.map((m) => ({ id: m.id, name: m.name, upc: m.upc, resourceCount: m._count.resources, questionCount: m._count.questions })),
+    ) ?? suggestion.subjectIds[0],
+  );
   const [preview, setPreview] = useState<MergePreview | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -237,60 +243,17 @@ export function SuggestionCard({ suggestion, onChanged }: { suggestion: Suggesti
       )}
 
       {preview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true">
-          <div className="w-full max-w-lg rounded-2xl border border-border bg-surface p-6">
-            <h4 className="text-lg font-bold text-foreground">Preview merge</h4>
-            <p className="mt-1 text-sm text-muted">
-              Merging into <span className="font-semibold text-foreground">{preview.canonicalName}</span>
-            </p>
-            <dl className="mt-4 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-muted">Papers affected</dt>
-                <dd className="font-semibold">{preview.affectedResourceCount}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted">Bank questions affected</dt>
-                <dd className="font-semibold">{preview.affectedQuestionCount}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted">Alias records to create</dt>
-                <dd className="font-semibold">{preview.aliasesToCreate.length}</dd>
-              </div>
-              <div className="flex justify-between">
-                <dt className="text-muted">URLs that will redirect</dt>
-                <dd className="font-semibold">{preview.urlsAffected.length}</dd>
-              </div>
-              {preview.slugConflict && (
-                <p className="flex items-center gap-1.5 text-xs font-semibold text-amber-600">
-                  <Warning size={13} weight="bold" /> One member shares a slug with the canonical subject — check names
-                  after merging.
-                </p>
-              )}
-            </dl>
-            <div className="mt-6 flex justify-end gap-2">
-              <button
-                type="button"
-                onClick={() => setPreview(null)}
-                className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-foreground hover:bg-surface-muted"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                disabled={pending}
-                onClick={() =>
-                  run(async () => {
-                    await mergeSuggestionAction(suggestion.id, canonicalId, suggestion.subjectIds);
-                    setPreview(null);
-                  })
-                }
-                className="rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-foreground hover:bg-accent-hover disabled:opacity-60"
-              >
-                Confirm merge
-              </button>
-            </div>
-          </div>
-        </div>
+        <MergePreviewDialog
+          preview={preview}
+          pending={pending}
+          onCancel={() => setPreview(null)}
+          onConfirm={() =>
+            run(async () => {
+              await mergeSuggestionAction(suggestion.id, canonicalId, suggestion.subjectIds);
+              setPreview(null);
+            })
+          }
+        />
       )}
     </div>
   );

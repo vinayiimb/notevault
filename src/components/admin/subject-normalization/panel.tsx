@@ -6,6 +6,7 @@ import { MagicWand, Warning } from "@phosphor-icons/react";
 import { scanArchiveAction, type ScanScopeInput } from "@/app/admin/(dashboard)/subject-normalization/actions";
 import { SuggestionCard } from "./suggestion-card";
 import { MergeLogList } from "./merge-log-list";
+import { ManualMergeTab } from "./manual-merge-tab";
 import type { MergeLogRow, NormalizationStats, ProgramWithTerms, SuggestionRow } from "./types";
 
 function StatCard({ label, value, tone }: { label: string; value: number; tone?: "warn" }) {
@@ -30,6 +31,7 @@ export function SubjectNormalizationPanel({
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
+  const [activeTab, setActiveTab] = useState<"AI" | "MANUAL">("AI");
   const [scanScope, setScanScope] = useState<"ALL" | "PROGRAM" | "TERM" | "UNMAPPED">("PROGRAM");
   const [programId, setProgramId] = useState(programs[0]?.id ?? "");
   const [termId, setTermId] = useState(programs[0]?.terms[0]?.id ?? "");
@@ -92,6 +94,32 @@ export function SubjectNormalizationPanel({
         <StatCard label="Merged (30d)" value={initialStats.recentlyMerged} />
       </div>
 
+      {/* Tab switcher */}
+      <div className="flex gap-2 border-b border-border">
+        <button
+          type="button"
+          onClick={() => setActiveTab("AI")}
+          className={`border-b-2 px-1 pb-3 text-sm font-bold transition ${
+            activeTab === "AI" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
+          }`}
+        >
+          AI Similarity Review
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveTab("MANUAL")}
+          className={`border-b-2 px-1 pb-3 text-sm font-bold transition ${
+            activeTab === "MANUAL" ? "border-accent text-accent" : "border-transparent text-muted hover:text-foreground"
+          }`}
+        >
+          Manual Merge
+        </button>
+      </div>
+
+      {activeTab === "MANUAL" && <ManualMergeTab programs={programs} />}
+
+      {activeTab === "AI" && (
+        <>
       {/* Scan controls */}
       <div className="rounded-2xl border border-border bg-surface p-5">
         <h2 className="text-sm font-bold text-foreground">Scan Archive with AI</h2>
@@ -224,6 +252,8 @@ export function SubjectNormalizationPanel({
           filteredSuggestions.map((s) => <SuggestionCard key={s.id} suggestion={s} onChanged={refresh} />)
         )}
       </div>
+        </>
+      )}
 
       {/* Recent merges / undo */}
       <div className="rounded-2xl border border-border bg-surface p-5">

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { revalidatePath, revalidateTag } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { CACHE_TAGS } from "@/lib/cache-tags";
+import { MERGE_TARGET_SEP } from "@/lib/archive-customize-constants";
 import {
   saveUploadedFile,
   hashFile,
@@ -2089,7 +2090,7 @@ export async function mergeCatalogSubjectsAction(formData: FormData) {
   const courseSlug = String(formData.get("courseSlug") ?? "").trim();
 
   const mergeTarget = String(formData.get("mergeTarget") ?? "");
-  const [, targetDisplayName = "", targetSemesterRaw = ""] = mergeTarget.split("");
+  const [, targetDisplayName = "", targetSemesterRaw = ""] = mergeTarget.split(MERGE_TARGET_SEP);
 
   if (!course || !subjectKey || !targetDisplayName.trim()) {
     throw new Error("A merge target is required.");
