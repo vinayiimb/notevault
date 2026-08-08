@@ -78,8 +78,23 @@ export async function computeImportPlan(prisma: PrismaClient): Promise<ImportPla
 
   const outcomes: RowOutcome[] = [];
 
+  // Loaded once, up front, so every downstream "does this Program slug
+  // exist" check (Program/Term/Subject/SessionProgramLink existing-row
+  // lookups, not just the SessionProgramLink alias-resolution step) can see
+  // approved alias targets — not only source-declared candidateProgramSlugs.
+  // Without this, an alias target that's a catalogue-only Program with no
+  // master-syllabus rows of its own (e.g. the GE/DSE exam pools, see
+  // docs/MANUAL_DATA_DECISION_REVIEW.md §2a) would be invisible to
+  // existingProgramIdBySlug/programSlugByExistingId below, which in turn
+  // makes findExistingSessionLinkKeys' translated natural keys wrong for
+  // any already-inserted SessionProgramLink pointing at that Program —
+  // causing the planner to try to re-insert rows that already exist.
+  const approvedProgramAliases = await loadApprovedProgramAliases();
+
   // --- Program ---
-  const candidateProgramSlugs = [...new Set(byModel.Program.map((r) => r.naturalKey))];
+  const candidateProgramSlugs = [
+    ...new Set([...byModel.Program.map((r) => r.naturalKey), ...approvedProgramAliases.values()]),
+  ];
   const existingProgramSlugs = await findExistingProgramSlugs(prisma, candidateProgramSlugs);
   const plannedProgramSlugs = new Set<string>();
   for (const record of byModel.Program) {
@@ -214,8 +229,8 @@ export async function computeImportPlan(prisma: PrismaClient): Promise<ImportPla
   // planner fix Checkpoint D calls for, in place of hand-inserting one-off
   // rows: once an operator approves an alias, this makes the corresponding
   // links deterministic inserts on the very next preview/apply run, with no
-  // code change required.
-  const approvedProgramAliases = await loadApprovedProgramAliases();
+  // code change required. (approvedProgramAliases itself is loaded once,
+  // up front — see the comment above candidateProgramSlugs.)
 
   for (const originalRecord of byModel.SessionProgramLink) {
     if (firstOccurrence.get(`SessionProgramLink::${originalRecord.naturalKey}`) !== originalRecord) continue;

@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-08-06T14:09:12.211Z",
   "generatedFrom": "reports/proposed-subject-aliases.csv",
-  "note": "Every entry is a PROPOSAL (approvalStatus: pending). Academically distinct subjects are never merged just for similar names — see rationale per entry and docs/PHASE_2E_REJECTED_RECORD_RESOLUTION.md.",
+  "note": "Every entry is a PROPOSAL (approvalStatus: pending). Academically distinct subjects are never merged just for similar names — see rationale per entry and docs/PHASE_2E_REJECTED_RECORD_RESOLUTION.md. Reviewed and approved 2026-08-07 per docs/MANUAL_DATA_DECISION_REVIEW.md §3a — every entry re-checked as a cosmetic variant, not a curriculum-different subject, before approval. No Subject-table merge was executed as part of this approval; this file remains a proposal record only.",
   "totalEntries": 81,
   "entries": [
     {
@@ -15,11 +15,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -32,11 +34,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -49,11 +53,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -66,11 +72,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -83,11 +91,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -101,11 +111,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 3
+      "variantCount": 3,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -118,11 +130,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -135,11 +149,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -152,11 +168,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -169,11 +187,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -186,11 +206,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -203,11 +225,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -220,11 +244,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -237,11 +263,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -254,11 +282,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -271,11 +301,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -288,11 +320,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -305,11 +339,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -322,11 +358,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -339,11 +377,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -356,11 +396,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -373,11 +415,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -391,11 +435,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 3
+      "variantCount": 3,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -408,11 +454,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -425,11 +473,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -442,11 +492,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -460,11 +512,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 3
+      "variantCount": 3,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -477,11 +531,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -494,11 +550,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -511,11 +569,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -528,11 +588,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -545,11 +607,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -562,11 +626,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -579,11 +645,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -596,11 +664,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -613,11 +683,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -630,11 +702,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -647,11 +721,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -664,11 +740,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -681,11 +759,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -698,11 +778,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -715,11 +797,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -732,11 +816,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -749,11 +835,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -766,11 +854,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -783,11 +873,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -800,11 +892,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -817,11 +911,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -834,11 +930,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -851,11 +949,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -868,11 +968,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -885,11 +987,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -902,11 +1006,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -919,11 +1025,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -936,11 +1044,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -953,11 +1063,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -970,11 +1082,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -987,11 +1101,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1004,11 +1120,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1021,11 +1139,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1038,11 +1158,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1055,11 +1177,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1072,11 +1196,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1089,11 +1215,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1106,11 +1234,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1123,11 +1253,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1140,11 +1272,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1157,11 +1291,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1174,11 +1310,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1191,11 +1329,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1208,11 +1348,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1225,11 +1367,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1242,11 +1386,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1259,11 +1405,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1276,11 +1424,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1293,11 +1443,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1310,11 +1462,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1327,11 +1481,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1344,11 +1500,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1361,11 +1519,13 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     },
     {
       "originalValue": [
@@ -1378,11 +1538,16 @@
       "source": "reports/proposed-subject-aliases.csv (proposeSubjectAliases)",
       "rationale": "Case/punctuation/spacing/hyphen/apostrophe variant of the same subject name (canonical-key match) — academically distinct subjects (Part I/II, Theory/Practical, DSC/DSE, different UPC) are excluded by proposeSubjectAliases()'s own guards, not re-verified per-entry here.",
       "confidence": 0.8,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "variantCount": 2
+      "variantCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z",
+      "reason": "Cosmetic text variant only (case/whitespace/punctuation/&-vs-and) — manually re-verified against the classified pattern groups in docs/MANUAL_DATA_DECISION_REVIEW.md §3a before bulk approval, not blindly trusted from the original proposer output."
     }
-  ]
+  ],
+  "statusTotals": {
+    "approved": 81
+  }
 }

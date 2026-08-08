@@ -1,9 +1,9 @@
 {
-  "generatedAt": "2026-08-06T14:08:11.065Z",
+  "generatedAt": "2026-08-07T09:28:07.800Z",
   "target": {
     "hostname": "aws-0-ap-south-1.pooler.supabase.com"
   },
-  "mode": "validate",
+  "mode": "preview",
   "sources": [
     {
       "name": "master-syllabus",
@@ -14,7 +14,7 @@
     {
       "name": "exam-sessions",
       "file": "src/data/exam-sessions-source.ts",
-      "recordCount": 169,
+      "recordCount": 168,
       "warningCount": 0
     }
   ],
@@ -44,10 +44,10 @@
       "unresolvedForeignKey": 0
     },
     "SessionProgramLink": {
-      "toCreate": 0,
-      "alreadyExists": 0,
+      "toCreate": 75,
+      "alreadyExists": 50,
       "rejected": 0,
-      "unresolvedForeignKey": 160
+      "unresolvedForeignKey": 34
     }
   },
   "exactDuplicateGroups": 0,
@@ -79,5 +79,5 @@
     "CourseMatchMemory",
     "UploadBatch"
   ],
-  "estimatedDatabaseWrites": 0
+  "estimatedDatabaseWrites": 75
 }

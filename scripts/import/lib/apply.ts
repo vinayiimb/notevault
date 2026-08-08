@@ -112,6 +112,25 @@ export async function applyImportPlan(prisma: PrismaClient, plan: ImportPlan): P
 
   // --- SessionProgramLink (depends on ExamSession + Program) ---
   const linkInserts = insertsByModel("SessionProgramLink");
+
+  // Mirror of the same fix in plan.ts: an approved alias can point at a
+  // Program that isn't part of this batch's source-declared Program rows
+  // at all (e.g. the GE/DSE catalogue pools, docs/MANUAL_DATA_DECISION_REVIEW.md
+  // §2a) — programIdBySlug above only covers source-declared slugs. Plan.ts
+  // already proved these links resolvable (plan.ts's own availableProgramSlugs
+  // fix), so this is strictly filling in ids for slugs plan.ts already
+  // validated exist — one bounded, keyed lookup for exactly what's missing.
+  const linkProgramSlugsNotYetKnown = [
+    ...new Set(linkInserts.map((r) => String(r.data.programSlug)).filter((slug) => !programIdBySlug.has(slug))),
+  ];
+  if (linkProgramSlugsNotYetKnown.length > 0) {
+    const extraProgramRows = await prisma.program.findMany({
+      where: { slug: { in: linkProgramSlugsNotYetKnown } },
+      select: { id: true, slug: true },
+    });
+    for (const p of extraProgramRows) programIdBySlug.set(p.slug, p.id);
+  }
+
   for (const batch of chunk(linkInserts, CHUNK_SIZE)) {
     await prisma.$transaction(
       batch.map((r) => {

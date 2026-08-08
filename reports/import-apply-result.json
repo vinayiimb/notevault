@@ -1,5 +1,5 @@
 {
-  "appliedAt": "2026-08-06T14:08:26.924Z",
+  "appliedAt": "2026-08-07T09:28:53.618Z",
   "target": {
     "hostname": "aws-0-ap-south-1.pooler.supabase.com"
   },
@@ -30,9 +30,9 @@
     },
     "SessionProgramLink": {
       "inserted": 0,
-      "skippedExisting": 0,
+      "skippedExisting": 125,
       "rejected": 0,
-      "unresolvedForeignKey": 160
+      "unresolvedForeignKey": 34
     }
   },
   "totalInserted": 0

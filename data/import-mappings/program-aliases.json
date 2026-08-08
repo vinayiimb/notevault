@@ -1,7 +1,7 @@
 {
   "generatedAt": "2026-08-06T14:09:12.211Z",
   "generatedBy": "phase2e-rejected-record-classification",
-  "note": "AI-proposed mappings only. Every entry needs an explicit human approvalStatus change to \"approved\" before Checkpoint D/E may apply it. Programme names are never fuzzy-merged automatically (see docs/PHASE_2E_REJECTED_RECORD_RESOLUTION.md).",
+  "note": "AI-proposed mappings only. Every entry needs an explicit human approvalStatus change to \"approved\" before Checkpoint D/E may apply it. Programme names are never fuzzy-merged automatically (see docs/PHASE_2E_REJECTED_RECORD_RESOLUTION.md). Reviewed 2026-08-07 per docs/MANUAL_DATA_DECISION_REVIEW.md — approved/excluded entries carry approvedBy/decidedAt metadata; nothing was auto-approved.",
   "resolutionOrder": [
     "exact source identifier",
     "exact normalized name",
@@ -12,9 +12,11 @@
   ],
   "totalEntries": 41,
   "statusTotals": {
-    "pending": 19,
-    "unresolved": 20,
-    "needs-review": 2
+    "approved": 23,
+    "excluded": 18,
+    "pending": 0,
+    "unresolved": 0,
+    "needs-review": 0
   },
   "entries": [
     {
@@ -26,11 +28,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"ALL AEC\" is DU's Ability Enhancement Course pool.",
       "confidence": 0.85,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 2
+      "affectedRowCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "ALL AEC/AECC",
@@ -41,11 +44,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"ALL AEC/AECC\" combines both spellings for the same pool.",
       "confidence": 0.75,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 2
+      "affectedRowCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "ALL AECC",
@@ -56,11 +60,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"ALL AECC\" (older AEC-Compulsory naming) maps to the same ability-enhancement pool.",
       "confidence": 0.85,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 4
+      "affectedRowCount": 4,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "ALL COMMON GROUP PROGRAMME",
@@ -69,13 +74,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "missing programme",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"ALL COMMON GROUP PROGRAMME\" is a bundled concept (likely Programme-students' shared AEC/SEC/VAC papers) with no single existing Program row.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: no real catalogue identity backed by source data (a bundled \"Programme-students' shared AEC/SEC/VAC papers\" concept, not a GE/DSE pool or a real programme). Left unresolved/excluded rather than inventing a generic bucket Program. See docs/MANUAL_DATA_DECISION_REVIEW.md §2a.",
       "confidence": 0.15,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 2
+      "affectedRowCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "All common prog. Group",
@@ -84,13 +90,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "missing programme",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "Same bundled concept as all-common-group-programme, different source spelling.",
+      "rationale": "Excluded 2026-08-07 by explicit decision — same rationale as ALL COMMON GROUP PROGRAMME (different source spelling of the same vague bundled concept). See docs/MANUAL_DATA_DECISION_REVIEW.md §2a.",
       "confidence": 0.15,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "All common prog. Group (AEC)",
@@ -99,43 +106,46 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "missing programme",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "AEC-specific variant of the same bundled \"common programme group\" concept — no existing Program row.",
+      "rationale": "Excluded 2026-08-07 by explicit decision — AEC-specific variant of the same vague bundled concept, no real catalogue identity. See docs/MANUAL_DATA_DECISION_REVIEW.md §2a.",
       "confidence": 0.15,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "All DSE",
       "sourceProgramSlug": "all-dse",
-      "targetProgramSlug": null,
+      "targetProgramSlug": "university-wide-discipline-specific-elective-course-pool",
       "mappingType": "programme-alias",
       "sourceIssueCategory": "missing programme",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "Discipline Specific Elective (DSE) papers belong to individual departments, not a generic pool. No deterministic target exists.",
+      "rationale": "Approved 2026-08-07: mapped to the newly created University-wide Discipline Specific Elective Course Pool Program (catalogue/exam pool, not a real degree programme — created matching the pre-existing AEC/SEC/VAC pool pattern). See docs/MANUAL_DATA_DECISION_REVIEW.md §2a.",
       "confidence": 0.15,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 3
+      "affectedRowCount": 3,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "ALL GE",
       "sourceProgramSlug": "all-ge",
-      "targetProgramSlug": null,
+      "targetProgramSlug": "university-wide-generic-elective-course-pool",
       "mappingType": "programme-alias",
       "sourceIssueCategory": "missing programme",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "Generic Elective (GE) papers aren't modeled as their own Program in the catalogue — GE credit is drawn from individual honours departments. No deterministic target exists.",
+      "rationale": "Approved 2026-08-07: mapped to the newly created University-wide Generic Elective Course Pool Program (catalogue/exam pool, not a real degree programme — created matching the pre-existing AEC/SEC/VAC pool pattern). See docs/MANUAL_DATA_DECISION_REVIEW.md §2a.",
       "confidence": 0.15,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 9
+      "affectedRowCount": 9,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "All SEC",
@@ -146,11 +156,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"ALL SEC\" is DU's Skill Enhancement Course pool.",
       "confidence": 0.85,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 9
+      "affectedRowCount": 9,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "ALL VAC",
@@ -161,11 +172,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"ALL VAC\" is DU's Value Addition Course pool.",
       "confidence": 0.85,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 5
+      "affectedRowCount": 5,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "ALL VAC (Value added courses)",
@@ -176,11 +188,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "Same pool as all-vac, spelled out in full.",
       "confidence": 0.85,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 2
+      "affectedRowCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) ALL SUBJECTS",
@@ -189,13 +202,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "invalid source data",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.A. (H) ALL SUBJECTS\" is a bundle spanning every BA Honours department at once — not resolvable to one Program.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: source `course` field bundles 2+ real programmes in one Drive folder name, not splittable without per-paper metadata this importer doesn't have. Not discarded permanently — retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for a future manual archival pass. See docs/MANUAL_DATA_DECISION_REVIEW.md §2b.",
       "confidence": 0.1,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 2
+      "affectedRowCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) Economics",
@@ -206,26 +220,28 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.A. (H) Economics\" = B.A. (Hons.) Economics.",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 6
+      "affectedRowCount": 6,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) English",
       "sourceProgramSlug": "ba-h-english",
-      "targetProgramSlug": "ba-hons-english",
+      "targetProgramSlug": "b-a-hons-english",
       "mappingType": "programme-alias",
       "sourceIssueCategory": "programme-name variation",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.A. (H) English\" plausibly targets \"ba-hons-english\", but the catalogue also has a near-duplicate \"b-a-hons-english\" Program (different slug from a spacing variant of the same course name) — a genuine duplicate-Program data-quality issue upstream, not something this alias should paper over automatically.",
+      "rationale": "Corrected 2026-08-07: original targetProgramSlug \"ba-hons-english\" does not exist in the catalogue — verified against live Supabase staging. The only real English Honours Program row is \"b-a-hons-english\" (\"B. A. (Hons) English\", 8 terms, 97 subjects). No duplicate-Program issue exists; the original classifier's premise was incorrect. Approved after correction — see docs/MANUAL_DATA_DECISION_REVIEW.md §4a.",
       "confidence": 0.55,
-      "approvalStatus": "needs-review",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 6
+      "affectedRowCount": 6,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) Hindi",
@@ -236,11 +252,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.A. (H) Hindi\" = B.A. (Hons.) Hindi (distinct from the longer \"...Hindi Patrakarita Evam Jansanchar\" programme, which is a different, unambiguous target).",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 5
+      "affectedRowCount": 5,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) Hindi (Note:- all in one file)",
@@ -249,13 +266,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "malformed row",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.A. (H) Hindi (Note:- all in one file)\" — an admin annotation leaked into the course field; the underlying programme (ba-hons-hindi) is otherwise unambiguous, but the row needs source cleanup, not an alias, since deterministicSlug() over the annotated text will never match.",
+      "rationale": "Excluded 2026-08-07: source data corrected instead (prisma/seed-historical-exam-sessions.ts + src/data/exam-sessions-source.ts) — the admin-note annotation was stripped from the `course` field, so this exact source slug (\"ba-h-hindi-note-all-in-one-file\") will never be produced by the importer again. The row it used to represent now resolves automatically via the approved \"B.A. (H) Hindi\" -> ba-hons-hindi alias. See docs/MANUAL_DATA_DECISION_REVIEW.md §2c.",
       "confidence": 0.1,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) History",
@@ -264,13 +282,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "programme-name variation",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.A. (H) History\" plausibly targets \"history-honours\", but that Program's slug breaks the \"ba-hons-*\" naming convention every other Honours programme follows — worth confirming it's the same programme and not a differently-scoped catalogue entry before approving.",
+      "rationale": "Verified 2026-08-07 against live Supabase staging: \"history-honours\" is a real, singular Program row (8 terms, 80 subjects) — no duplicate exists. The naming-convention mismatch (breaks the ba-hons-* pattern) is cosmetic catalogue debt, not a data-correctness issue; slug intentionally left unchanged for this migration (no rename for cosmetic consistency). Approved — see docs/MANUAL_DATA_DECISION_REVIEW.md §4b.",
       "confidence": 0.7,
-      "approvalStatus": "needs-review",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 6
+      "affectedRowCount": 6,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) Political Science",
@@ -281,11 +300,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.A. (H) Political Science\" = B.A. (Hons.) Political Science.",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 6
+      "affectedRowCount": 6,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) Sanskrit",
@@ -296,11 +316,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.A. (H) Sanskrit\" = B.A. (Hons.) Sanskrit.",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 5
+      "affectedRowCount": 5,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) Sanskrit (Note:- all in one file)",
@@ -309,13 +330,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "malformed row",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "Same annotation-leak problem as ba-h-hindi-note-all-in-one-file, for Sanskrit.",
+      "rationale": "Excluded 2026-08-07: source data corrected instead (prisma/seed-historical-exam-sessions.ts + src/data/exam-sessions-source.ts) — the admin-note annotation was stripped from the `course` field, so this exact source slug (\"ba-h-sanskrit-note-all-in-one-file\") will never be produced by the importer again. The row it used to represent now resolves automatically via the approved \"B.A. (H) Sanskrit\" -> ba-hons-sanskrit alias. See docs/MANUAL_DATA_DECISION_REVIEW.md §2c.",
       "confidence": 0.1,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) SKT",
@@ -326,11 +348,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"SKT\" is a common DU abbreviation for Sanskrit; same target as ba-h-sanskrit.",
       "confidence": 0.85,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (H) Sociology",
@@ -341,11 +364,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.A. (H) Sociology\" = B.A. (Hons.) Sociology. Target program name carries a pre-existing catalogue typo (\"Socialogy\") — the alias intentionally points at the typo'd slug, not a corrected one, so it resolves to the real row.",
       "confidence": 0.85,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 6
+      "affectedRowCount": 6,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A. (Programme)",
@@ -354,13 +378,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "missing programme",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.A. (Programme)\" has no single catalogue counterpart — the real catalogue models BA Programme per-major (ba-prog-economics-as-major, ba-prog-history-as-major, ...), not as one generic Program. Needs a manual decision: create an umbrella Program, or split this session's rows by major (not possible from the source data as given).",
+      "rationale": "Excluded 2026-08-07 by explicit decision: the real catalogue only models BA Programme per-major (ba-prog-economics-as-major, etc.), no generic bucket exists, and this session's source data cannot be split by major. Left unresolved/excluded rather than creating an umbrella Program not backed by real catalogue structure. See docs/MANUAL_DATA_DECISION_REVIEW.md §2a.",
       "confidence": 0.2,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 9
+      "affectedRowCount": 9,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.A/B.Sc. Prog",
@@ -369,13 +394,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "invalid source data",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.A/B.Sc. Prog\" explicitly conflates two programme families with a slash in the source folder name.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: source `course` field bundles 2+ real programmes in one Drive folder name, not splittable without per-paper metadata this importer doesn't have. Not discarded permanently — retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for a future manual archival pass. See docs/MANUAL_DATA_DECISION_REVIEW.md §2b.",
       "confidence": 0.1,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Com. (H)",
@@ -386,11 +412,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.Com. (H)\" is the standard DU abbreviation for B.Com. (Hons.).",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 9
+      "affectedRowCount": 9,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Com. (Programme)",
@@ -401,11 +428,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.Com. (Programme)\" matches the catalogue's \"bcom-p\" entry (Programme abbreviated to P).",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 8
+      "affectedRowCount": 8,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc. (H) ALL SUBJECTS",
@@ -414,13 +442,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "invalid source data",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.Sc. (H) ALL SUBJECTS\" is a bundle spanning every BSc Honours department at once — not resolvable to one Program.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: source `course` field bundles 2+ real programmes in one Drive folder name, not splittable without per-paper metadata this importer doesn't have. Not discarded permanently — retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for a future manual archival pass. See docs/MANUAL_DATA_DECISION_REVIEW.md §2b.",
       "confidence": 0.1,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 2
+      "affectedRowCount": 2,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc. (H) Botany",
@@ -431,11 +460,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.Sc. (H) Botany\" = B.Sc. (Hons.) Botany.",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 6
+      "affectedRowCount": 6,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc. (H) Chemistry",
@@ -446,11 +476,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.Sc. (H) Chemistry\" = B.Sc. (Hons.) Chemistry.",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 6
+      "affectedRowCount": 6,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc. (H) Mathematics",
@@ -461,11 +492,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.Sc. (H) Mathematics\" = B.Sc. (Hons.) Mathematics.",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 6
+      "affectedRowCount": 6,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc. (H) Physics",
@@ -476,11 +508,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.Sc. (H) Physics\" = B.Sc. (Hons.) Physics.",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 6
+      "affectedRowCount": 6,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc. (H) Zoology",
@@ -491,11 +524,12 @@
       "source": "phase2e-rejected-record-classification",
       "rationale": "\"B.Sc. (H) Zoology\" = B.Sc. (Hons.) Zoology.",
       "confidence": 0.9,
-      "approvalStatus": "pending",
-      "approvedBy": null,
+      "approvalStatus": "approved",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 6
+      "affectedRowCount": 6,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc. (H)+Prog.",
@@ -504,13 +538,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "invalid source data",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.Sc. (H)+Prog.\" conflates Honours and Programme, two structurally different programme types, in one folder name.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: source `course` field bundles 2+ real programmes in one Drive folder name, not splittable without per-paper metadata this importer doesn't have. Not discarded permanently — retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for a future manual archival pass. See docs/MANUAL_DATA_DECISION_REVIEW.md §2b.",
       "confidence": 0.1,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc. Life Sciences+PHY SC.",
@@ -519,13 +554,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "invalid source data",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.Sc. Life Sciences+PHY SC.\" conflates two programme families (Life Sciences and Physical Sciences) into one source folder name — cannot be split deterministically without the original per-paper programme metadata.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: source `course` field bundles 2+ real programmes in one Drive folder name, not splittable without per-paper metadata this importer doesn't have. Not discarded permanently — retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for a future manual archival pass. See docs/MANUAL_DATA_DECISION_REVIEW.md §2b.",
       "confidence": 0.15,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 8
+      "affectedRowCount": 8,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc. PHY SC",
@@ -534,13 +570,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "invalid source data",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "Same bundle-folder problem as bscprog-physical-science, abbreviated spelling.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: source `course` field bundles 2+ real programmes in one Drive folder name, not splittable without per-paper metadata this importer doesn't have. Not discarded permanently — retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for a future manual archival pass. See docs/MANUAL_DATA_DECISION_REVIEW.md §2b.",
       "confidence": 0.15,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc. Prog Life Sciences+PHY SC.",
@@ -549,13 +586,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "invalid source data",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "Same bundling problem as bsc-life-sciencesphy-sc, Programme (not Hons) variant.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: source `course` field bundles 2+ real programmes in one Drive folder name, not splittable without per-paper metadata this importer doesn't have. Not discarded permanently — retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for a future manual archival pass. See docs/MANUAL_DATA_DECISION_REVIEW.md §2b.",
       "confidence": 0.15,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc.Prog. Physical science",
@@ -564,13 +602,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "invalid source data",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.Sc.Prog. Physical science\" is a bundle folder; the real catalogue only has narrower slices (...-computer-science, ...-electronics, ...-mathematical-sciences) with no generic bucket to fall back to.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: source `course` field bundles 2+ real programmes in one Drive folder name, not splittable without per-paper metadata this importer doesn't have. Not discarded permanently — retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for a future manual archival pass. See docs/MANUAL_DATA_DECISION_REVIEW.md §2b.",
       "confidence": 0.15,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc.Prog. Physical science/B.A.",
@@ -579,13 +618,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "invalid source data",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.Sc.Prog. Physical science/B.A.\" conflates B.Sc. Programme and B.A. — two different programme families.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: source `course` field bundles 2+ real programmes in one Drive folder name, not splittable without per-paper metadata this importer doesn't have. Not discarded permanently — retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for a future manual archival pass. See docs/MANUAL_DATA_DECISION_REVIEW.md §2b.",
       "confidence": 0.1,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "B.Sc.Prog. Physical science+Life Science",
@@ -594,13 +634,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "invalid source data",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"B.Sc.Prog. Physical science+Life Science\" conflates two programme families in one folder name.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: source `course` field bundles 2+ real programmes in one Drive folder name, not splittable without per-paper metadata this importer doesn't have. Not discarded permanently — retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for a future manual archival pass. See docs/MANUAL_DATA_DECISION_REVIEW.md §2b.",
       "confidence": 0.15,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "Question papers mix+ Research Methodology",
@@ -609,13 +650,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "malformed row",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"Question papers mix+ Research Methodology\" is a Google Drive folder label, not a programme name — leaked into the course field at the source-data layer (see prisma/seed-historical-exam-sessions.ts).",
+      "rationale": "Excluded 2026-08-07 by explicit decision: this is a literal Google Drive folder label, not a programme name — no real programme is recoverable from the source data. Retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for future manual review, not discarded. See docs/MANUAL_DATA_DECISION_REVIEW.md §2c.",
       "confidence": 0.05,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     },
     {
       "originalValue": "Question papers mix(All dates folder)",
@@ -624,13 +666,14 @@
       "mappingType": "programme-alias",
       "sourceIssueCategory": "malformed row",
       "source": "phase2e-rejected-record-classification",
-      "rationale": "\"Question papers mix(All dates folder)\" is a Google Drive folder label, not a programme name.",
+      "rationale": "Excluded 2026-08-07 by explicit decision: this is a literal Google Drive folder label, not a programme name — no real programme is recoverable from the source data. Retained in reports/import-resolution/bundled-programme-links-manual-reconstruction.md for future manual review, not discarded. See docs/MANUAL_DATA_DECISION_REVIEW.md §2c.",
       "confidence": 0.05,
-      "approvalStatus": "unresolved",
-      "approvedBy": null,
+      "approvalStatus": "excluded",
+      "approvedBy": "operator (via docs/MANUAL_DATA_DECISION_REVIEW.md review)",
       "createdAt": "2026-08-06T14:09:12.211Z",
       "mappingVersion": 1,
-      "affectedRowCount": 1
+      "affectedRowCount": 1,
+      "decidedAt": "2026-08-07T00:00:00.000Z"
     }
   ]
 }

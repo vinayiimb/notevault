@@ -1,10 +1,10 @@
 {
   "counts": {
-    "Program": 118,
+    "Program": 120,
     "Term": 920,
     "Subject": 7650,
     "ExamSession": 9,
-    "SessionProgramLink": 0
+    "SessionProgramLink": 125
   },
   "excludedModelCounts": {
     "resource": 0,
@@ -18,10 +18,10 @@
     "catalogSubjectOverride": 0,
     "driveSubject": 0,
     "driveFileMatch": 0,
-    "admin": 0,
-    "student": 0,
+    "admin": 1,
+    "student": 1,
     "studentExamDate": 0,
-    "orangeEvent": 0,
+    "orangeEvent": 1,
     "feedback": 0,
     "failedUpload": 0,
     "scanRun": 0,
@@ -36,6 +36,10 @@
   "duplicateSubjectKeysWithinTerm": 0,
   "duplicateExamSessionLabels": 0,
   "duplicateSessionLinkKeys": 0,
-  "ok": true,
-  "issues": []
+  "ok": false,
+  "issues": [
+    "Excluded model \"admin\" has 1 unexpected row(s).",
+    "Excluded model \"student\" has 1 unexpected row(s).",
+    "Excluded model \"orangeEvent\" has 1 unexpected row(s)."
+  ]
 }

@@ -76,10 +76,18 @@ export const EXAM_SESSIONS_SOURCE: ExamSessionSourceDef[] = [
       { course: "B.A. (Programme)", url: "https://drive.google.com/drive/folders/1TuJALv4AxvxP64_vRgwiJb-QMYPCeXxI?usp=sharing" },
       { course: "B.A. (H) Economics", url: "https://drive.google.com/drive/folders/1PBPwwhFXyWpuAy67HhB4McBuJrTZ_fAv?usp=sharing" },
       { course: "B.A. (H) English", url: "https://drive.google.com/drive/folders/1hpFiMywxekxmFJrQimPbaMrVpkwA9xXC?usp=sharing" },
-      { course: "B.A. (H) Hindi (Note:- all in one file)", url: "https://drive.google.com/drive/folders/1wuMK3uY3AI3WSOh0c14akdfeG1xBZtl-?usp=sharing" },
+      // Manual data-decision review (docs/MANUAL_DATA_DECISION_REVIEW.md §2c):
+      // these two rows originally had an admin annotation leaked into the
+      // `course` field — "B.A. (H) Hindi (Note:- all in one file)" and
+      // "B.A. (H) Sanskrit (Note:- all in one file)" — which made
+      // deterministicSlug() unable to match the real Hindi/Sanskrit Honours
+      // programmes. The underlying programme was unambiguous; the note was
+      // about the Drive folder's file layout, not the programme identity,
+      // so it's stripped here rather than encoded as an alias.
+      { course: "B.A. (H) Hindi", url: "https://drive.google.com/drive/folders/1wuMK3uY3AI3WSOh0c14akdfeG1xBZtl-?usp=sharing" },
       { course: "B.A. (H) History", url: "https://drive.google.com/drive/folders/1hSb7NQhUvIeKw4TKACOkK8V9PwoiEs4P?usp=sharing" },
       { course: "B.A. (H) Political Science", url: "https://drive.google.com/drive/folders/1jCpWyo3KPfAbgh0t05XAjLRtscDdzSXk?usp=sharing" },
-      { course: "B.A. (H) Sanskrit (Note:- all in one file)", url: "https://drive.google.com/drive/folders/1mzorcI2SPIK0ZLrvSYoPtnPtZic0pimM?usp=sharing" },
+      { course: "B.A. (H) Sanskrit", url: "https://drive.google.com/drive/folders/1mzorcI2SPIK0ZLrvSYoPtnPtZic0pimM?usp=sharing" },
       { course: "B.A. (H) Sociology", url: "https://drive.google.com/drive/folders/1ucnq3izcHAKCdsAOH9SKoaNUbcjKNS8z?usp=sharing" },
       { course: "B.Com. (Programme)", url: "https://drive.google.com/drive/folders/1RfYgnVG_KooLBpvR_5060o7Jy8cv8FDV?usp=sharing" },
       { course: "B.Com. (H)", url: "https://drive.google.com/drive/folders/1orEF6wl2u9sqqKUaFA6D8xPLYTpfQK7S?usp=sharing" },
@@ -148,7 +156,18 @@ export const EXAM_SESSIONS_SOURCE: ExamSessionSourceDef[] = [
       { course: "All DSE", url: "https://drive.google.com/drive/folders/1lS5CPb-iDkbAC17-d1croQ7Ib6Cj3VNR?usp=sharing" },
       { course: "All SEC", url: "https://drive.google.com/drive/folders/1UAa23C3gI4qHmAQktWvBapW7PPCb3wfd?usp=sharing" },
       { course: "ALL GE", url: "https://drive.google.com/drive/folders/1mzIpe8rOveThEQhpGxeIatvDCs8Y4u3q?usp=sharing" },
-      { course: "ALL AECC", url: "https://drive.google.com/drive/folders/1fhNQSZiOHmEc9Bi-QR3nqfU5bjTL0eTS?usp=sharing" },
+      // Manual data-decision review (docs/MANUAL_DATA_DECISION_REVIEW.md §4c):
+      // this session has BOTH "ALL AECC" and "ALL AEC" as separate Drive
+      // folders — both alias to the same University-wide AEC Pool Program,
+      // which would violate the (sessionId, programId, variantLabel)
+      // unique constraint if both were imported. Not assumed to be
+      // duplicates of the same content (unverified without opening both
+      // Drive folders) — "ALL AEC" (line below) was kept and this "ALL
+      // AECC" row excluded from this import pass; original data retained
+      // here (commented, not deleted) and in
+      // reports/import-resolution/bundled-programme-links-manual-reconstruction.md
+      // for manual reconciliation.
+      // { course: "ALL AECC", url: "https://drive.google.com/drive/folders/1fhNQSZiOHmEc9Bi-QR3nqfU5bjTL0eTS?usp=sharing" },
       { course: "ALL VAC", url: "https://drive.google.com/drive/folders/1n9VXueZn-HqgZbhdE7f3e98T-DH4zB6I?usp=sharing" },
       { course: "ALL COMMON GROUP PROGRAMME", url: "https://drive.google.com/drive/folders/1duo-SuRvQvxnVOefjVgUHuZgp10Zm1gz?usp=sharing" },
       { course: "ALL AEC", url: "https://drive.google.com/drive/folders/1IeIe9UxJw4GClM-yl6S8dNYCpvSz1CRs?usp=sharing" },
