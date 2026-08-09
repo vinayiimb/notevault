@@ -2317,6 +2317,15 @@ export async function manualMergeCatalogSubjectsAction(
   if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
 }
 
+// Backs the Subject Normalization Centre's Manual Merge tab, which
+// searches Full Archive subjects (not Program/Subject-linked ones) across
+// every course at once.
+export async function searchArchiveSubjectsForManualMergeAction(filters: { course?: string; query?: string }) {
+  await requireAdmin();
+  const { searchArchiveSubjectsForManualMerge } = await import("@/lib/archive-customize-data");
+  return searchArchiveSubjectsForManualMerge(filters);
+}
+
 // Reverts a subject back to its original scraped/imported name and semester.
 export async function resetCatalogSubjectOverrideAction(formData: FormData) {
   await requireAdmin();

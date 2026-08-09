@@ -23,11 +23,13 @@ export function SubjectNormalizationPanel({
   initialSuggestions,
   programs,
   recentMerges,
+  archiveCourses,
 }: {
   initialStats: NormalizationStats;
   initialSuggestions: SuggestionRow[];
   programs: ProgramWithTerms[];
   recentMerges: MergeLogRow[];
+  archiveCourses: string[];
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -116,7 +118,7 @@ export function SubjectNormalizationPanel({
         </button>
       </div>
 
-      {activeTab === "MANUAL" && <ManualMergeTab programs={programs} />}
+      {activeTab === "MANUAL" && <ManualMergeTab courses={archiveCourses} />}
 
       {activeTab === "AI" && (
         <>

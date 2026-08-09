@@ -5,6 +5,7 @@ import {
   getProgramsWithTerms,
   getRecentMergeLogs,
 } from "@/lib/subject-normalization-data";
+import { getAllArchiveCourseNames } from "@/lib/archive-customize-data";
 import { SubjectNormalizationPanel } from "@/components/admin/subject-normalization/panel";
 
 export const dynamic = "force-dynamic";
@@ -14,14 +15,16 @@ export default async function SubjectNormalizationPage() {
   let suggestions;
   let programs;
   let recentMerges;
+  let archiveCourses: string[] = [];
   let loadError: string | null = null;
 
   try {
-    [stats, suggestions, programs, recentMerges] = await Promise.all([
+    [stats, suggestions, programs, recentMerges, archiveCourses] = await Promise.all([
       getNormalizationStats(),
       getSuggestions(),
       getProgramsWithTerms(),
       getRecentMergeLogs(),
+      getAllArchiveCourseNames(),
     ]);
   } catch (err) {
     loadError = err instanceof Error ? err.message : "Could not load Subject Normalization data.";
@@ -60,6 +63,7 @@ export default async function SubjectNormalizationPage() {
           initialSuggestions={JSON.parse(JSON.stringify(suggestions))}
           programs={JSON.parse(JSON.stringify(programs))}
           recentMerges={JSON.parse(JSON.stringify(recentMerges))}
+          archiveCourses={archiveCourses}
         />
       )}
 

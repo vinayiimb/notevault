@@ -3,45 +3,38 @@
 import { useState, useTransition } from "react";
 import { MagnifyingGlass, Warning, ListMagnifyingGlass } from "@phosphor-icons/react";
 import {
-  searchSubjectsForManualMergeAction,
-  previewMergeAction,
-  manualMergeAction,
-} from "@/app/admin/(dashboard)/subject-normalization/actions";
-import { recommendCanonicalSubject } from "@/lib/subject-normalization";
-import { MergePreviewDialog } from "./merge-preview-dialog";
-import type { ManualMergeSubjectRow, MergePreview, ProgramWithTerms } from "./types";
+  searchArchiveSubjectsForManualMergeAction,
+  manualMergeCatalogSubjectsAction,
+} from "@/lib/actions";
+import type { ArchiveManualMergeRow } from "@/lib/archive-customize-data";
 
-/**
- * Tab 2 of the Subject Normalization Centre — search/browse subjects
- * directly and pick any 2+ to merge, instead of waiting for an AI/
- * deterministic scan to group them. Scoped by programme+semester by
- * default (spec: similarly-named subjects in different programmes/
- * semesters aren't automatically duplicates) — cross-scope selection is
- * still technically possible (the search itself can span terms if the
- * admin clears the term filter) but never silently assumed.
- */
-export function ManualMergeTab({ programs }: { programs: ProgramWithTerms[] }) {
+// Manual merge tool for the Full Archive (CatalogPaperUpload + static
+// catalog + Drive/NoteVault-derived papers) — deliberately separate from
+// the Program/Subject-FK data the AI Similarity Review tab works with.
+// Spans every course at once (search by name) or one course at a time,
+// instead of requiring a per-course admin page like archive-customize does.
+export function ManualMergeTab({ courses }: { courses: string[] }) {
   const [pending, startTransition] = useTransition();
-  const [programId, setProgramId] = useState<string>("");
-  const [termId, setTermId] = useState<string>("");
+  const [course, setCourse] = useState<string>("");
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<ManualMergeSubjectRow[]>([]);
+  const [results, setResults] = useState<ArchiveManualMergeRow[]>([]);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [searched, setSearched] = useState(false);
-  const [preview, setPreview] = useState<MergePreview | null>(null);
-  const [canonicalId, setCanonicalId] = useState<string>("");
+  const [heading, setHeading] = useState("");
+  const [semester, setSemester] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
 
-  const selectedProgram = programs.find((p) => p.id === programId);
-  const selectedRows = results.filter((r) => selected.has(r.id));
+  const selectedCourses = new Set(results.filter((r) => selected.has(r.subjectKey)).map((r) => r.course));
+  const crossCourseSelection = selectedCourses.size > 1;
 
   function runSearch() {
     setError(null);
+    setDone(false);
     startTransition(async () => {
       try {
-        const rows = await searchSubjectsForManualMergeAction({
-          programId: programId || undefined,
-          termId: termId || undefined,
+        const rows = await searchArchiveSubjectsForManualMergeAction({
+          course: course || undefined,
           query,
         });
         setResults(rows);
@@ -53,29 +46,50 @@ export function ManualMergeTab({ programs }: { programs: ProgramWithTerms[] }) {
     });
   }
 
-  function toggle(id: string) {
+  function toggle(subjectKey: string) {
+    setDone(false);
     setSelected((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+      if (next.has(subjectKey)) next.delete(subjectKey);
+      else next.add(subjectKey);
       return next;
     });
   }
 
-  function openPreview() {
-    if (selectedRows.length < 2) return;
+  function submitMerge() {
     setError(null);
-    const recommended =
-      recommendCanonicalSubject(
-        selectedRows.map((r) => ({ id: r.id, name: r.name, upc: r.upc, resourceCount: r.pyqCount + r.notesCount, questionCount: r._count.questions })),
-      ) ?? selectedRows[0].id;
-    setCanonicalId(recommended);
+    const rows = results.filter((r) => selected.has(r.subjectKey));
+    if (rows.length < 2) {
+      setError("Pick at least two subjects to merge.");
+      return;
+    }
+    const distinctCourses = new Set(rows.map((r) => r.course));
+    if (distinctCourses.size > 1) {
+      setError("Selected subjects must all be from the same course — the Full Archive can't merge across courses.");
+      return;
+    }
+    if (!heading.trim()) {
+      setError("Type a heading for the merged group.");
+      return;
+    }
+    const targetCourse = rows[0].course;
+    const targetCourseSlug = rows[0].courseSlug;
     startTransition(async () => {
       try {
-        const result = await previewMergeAction(recommended, [...selected]);
-        setPreview(result);
+        await manualMergeCatalogSubjectsAction(
+          targetCourse,
+          targetCourseSlug,
+          rows.map((r) => r.subjectKey),
+          heading.trim(),
+          semester.trim() ? Number(semester.trim()) : null,
+        );
+        setSelected(new Set());
+        setHeading("");
+        setSemester("");
+        setDone(true);
+        runSearch();
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not build a preview.");
+        setError(err instanceof Error ? err.message : "Merge failed.");
       }
     });
   }
@@ -84,37 +98,21 @@ export function ManualMergeTab({ programs }: { programs: ProgramWithTerms[] }) {
     <div className="space-y-6">
       {/* Scope + search */}
       <div className="rounded-2xl border border-border bg-surface p-5">
-        <h2 className="text-sm font-bold text-foreground">Search subjects</h2>
+        <h2 className="text-sm font-bold text-foreground">Search Full Archive subjects</h2>
         <p className="mt-1 text-xs text-muted">
-          Scoped by programme + semester by default — similarly-named subjects in different programmes or semesters
-          are not automatically the same subject.
+          Searches the Full Archive (uploaded papers, the static catalog, and Drive/NoteVault-linked papers) — not the
+          Program/Subject catalogue used by AI Similarity Review.
         </p>
         <div className="mt-4 flex flex-wrap items-center gap-3">
           <select
-            value={programId}
-            onChange={(e) => {
-              setProgramId(e.target.value);
-              setTermId("");
-            }}
+            value={course}
+            onChange={(e) => setCourse(e.target.value)}
             className="rounded-lg border border-border bg-background px-3 py-2 text-sm"
           >
-            <option value="">Any programme</option>
-            {programs.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
-              </option>
-            ))}
-          </select>
-          <select
-            value={termId}
-            onChange={(e) => setTermId(e.target.value)}
-            disabled={!selectedProgram}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm disabled:opacity-50"
-          >
-            <option value="">Any semester</option>
-            {selectedProgram?.terms.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
+            <option value="">Any course</option>
+            {courses.map((c) => (
+              <option key={c} value={c}>
+                {c}
               </option>
             ))}
           </select>
@@ -130,21 +128,22 @@ export function ManualMergeTab({ programs }: { programs: ProgramWithTerms[] }) {
           </div>
           <button
             type="button"
-            disabled={pending || (!programId && !termId && query.trim().length < 2)}
+            disabled={pending || (!course && query.trim().length < 2)}
             onClick={runSearch}
             className="rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-foreground hover:bg-accent-hover disabled:opacity-60"
           >
             {pending ? "Searching…" : "Search"}
           </button>
         </div>
-        {!programId && !termId && query.trim().length < 2 && (
-          <p className="mt-2 text-[11px] text-muted">Pick a programme/semester, or type at least 2 characters to search by name.</p>
+        {!course && query.trim().length < 2 && (
+          <p className="mt-2 text-[11px] text-muted">Pick a course, or type at least 2 characters to search by name.</p>
         )}
         {error && (
           <p className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-red-500">
             <Warning size={13} weight="bold" /> {error}
           </p>
         )}
+        {done && !error && <p className="mt-3 text-xs font-semibold text-emerald-600">Merged — now showing under one heading on /pyq-notes.</p>}
       </div>
 
       {/* Results table */}
@@ -153,8 +152,8 @@ export function ManualMergeTab({ programs }: { programs: ProgramWithTerms[] }) {
           <ListMagnifyingGlass size={28} weight="duotone" className="text-muted" />
           <p className="text-sm font-semibold text-foreground">No search run yet</p>
           <p className="max-w-sm text-xs text-muted">
-            Pick a programme and semester above (or type at least 2 characters of a subject name), then press{" "}
-            <span className="font-semibold text-foreground">Search</span> to list subjects you can merge.
+            Pick a course above (or type at least 2 characters of a subject name), then press{" "}
+            <span className="font-semibold text-foreground">Search</span> to list Full Archive subjects you can merge.
           </p>
         </div>
       )}
@@ -168,31 +167,29 @@ export function ManualMergeTab({ programs }: { programs: ProgramWithTerms[] }) {
                 <tr>
                   <th className="w-10 px-3 py-2"></th>
                   <th className="px-3 py-2">Subject</th>
-                  <th className="px-3 py-2">Code</th>
-                  <th className="px-3 py-2">Programme</th>
-                  <th className="px-3 py-2">Semester</th>
-                  <th className="px-3 py-2 text-right">PYQs</th>
-                  <th className="px-3 py-2 text-right">Notes</th>
-                  <th className="px-3 py-2 text-right">Other</th>
+                  <th className="px-3 py-2">Course</th>
+                  <th className="px-3 py-2 text-right">Papers</th>
                   <th className="px-3 py-2">Mapping status</th>
                 </tr>
               </thead>
               <tbody>
                 {results.map((r) => (
-                  <tr key={r.id} className={`border-b border-border/60 last:border-0 ${selected.has(r.id) ? "bg-accent-soft/30" : ""}`}>
+                  <tr
+                    key={`${r.course}\u0000${r.subjectKey}`}
+                    className={`border-b border-border/60 last:border-0 ${selected.has(r.subjectKey) ? "bg-accent-soft/30" : ""}`}
+                  >
                     <td className="px-3 py-2">
-                      <input type="checkbox" checked={selected.has(r.id)} onChange={() => toggle(r.id)} />
+                      <input type="checkbox" checked={selected.has(r.subjectKey)} onChange={() => toggle(r.subjectKey)} />
                     </td>
-                    <td className="px-3 py-2 font-semibold text-foreground">{r.name}</td>
-                    <td className="px-3 py-2 text-xs text-muted">{r.upc ?? "—"}</td>
-                    <td className="px-3 py-2 text-xs text-muted">{r.term.program.name}</td>
-                    <td className="px-3 py-2 text-xs text-muted">{r.term.name}</td>
-                    <td className="px-3 py-2 text-right">{r.pyqCount}</td>
-                    <td className="px-3 py-2 text-right">{r.notesCount}</td>
-                    <td className="px-3 py-2 text-right">{r._count.questions}</td>
-                    <td className="px-3 py-2 text-xs text-muted">
-                      {r._count.subjectAliases > 0 ? `${r._count.subjectAliases} alias(es)` : "No aliases"}
+                    <td className="px-3 py-2 font-semibold text-foreground">
+                      {r.displayName}
+                      {r.rawVariants.length > 1 && (
+                        <p className="text-[11px] font-normal text-muted">Also seen as: {r.rawVariants.filter((v) => v !== r.displayName).join(", ")}</p>
+                      )}
                     </td>
+                    <td className="px-3 py-2 text-xs text-muted">{r.course}</td>
+                    <td className="px-3 py-2 text-right">{r.paperCount}</td>
+                    <td className="px-3 py-2 text-xs text-muted">{r.hasOverride ? "Merged/renamed" : "Original"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -201,41 +198,41 @@ export function ManualMergeTab({ programs }: { programs: ProgramWithTerms[] }) {
         </div>
       )}
 
-      {selectedRows.length > 0 && (
-        <div className="sticky bottom-4 flex items-center justify-between rounded-2xl border border-accent/40 bg-surface p-4 shadow-lg">
+      {selected.size > 0 && (
+        <div className="sticky bottom-4 flex flex-wrap items-center gap-3 rounded-2xl border border-accent/40 bg-surface p-4 shadow-lg">
           <p className="text-sm font-semibold text-foreground">
-            {selectedRows.length} subject{selectedRows.length === 1 ? "" : "s"} selected
-            {selectedRows.length === 1 && " — select at least one more to merge"}
+            {selected.size} subject{selected.size === 1 ? "" : "s"} selected
+            {selected.size === 1 && " — select at least one more to merge"}
           </p>
+          {crossCourseSelection && (
+            <p className="flex items-center gap-1.5 text-xs font-semibold text-red-500">
+              <Warning size={13} weight="bold" /> All selected subjects must be from the same course.
+            </p>
+          )}
+          <input
+            value={heading}
+            onChange={(e) => setHeading(e.target.value)}
+            placeholder="Heading these should show under…"
+            className="min-w-56 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          />
+          <input
+            value={semester}
+            onChange={(e) => setSemester(e.target.value)}
+            type="number"
+            min={1}
+            max={8}
+            placeholder="Sem"
+            className="w-16 rounded-lg border border-border bg-background px-2 py-2 text-sm"
+          />
           <button
             type="button"
-            disabled={pending || selectedRows.length < 2}
-            onClick={openPreview}
+            disabled={pending || selected.size < 2 || crossCourseSelection}
+            onClick={submitMerge}
             className="rounded-xl bg-accent px-4 py-2 text-sm font-bold text-accent-foreground hover:bg-accent-hover disabled:opacity-60"
           >
-            Merge Selected
+            {pending ? "Merging…" : "Merge Selected"}
           </button>
         </div>
-      )}
-
-      {preview && (
-        <MergePreviewDialog
-          preview={preview}
-          pending={pending}
-          onCancel={() => setPreview(null)}
-          onConfirm={() =>
-            startTransition(async () => {
-              try {
-                await manualMergeAction(canonicalId, [...selected]);
-                setPreview(null);
-                setSelected(new Set());
-                runSearch();
-              } catch (err) {
-                setError(err instanceof Error ? err.message : "Merge failed.");
-              }
-            })
-          }
-        />
       )}
     </div>
   );
