@@ -6,11 +6,7 @@ import {
   ChatCircleText,
   ClockCounterClockwise,
   CubeFocus,
-  FileArchive,
-  FileArrowUp,
-  FileText,
   Files,
-  FolderOpen,
   Gear,
   GraduationCap,
   GridFour,
@@ -90,34 +86,6 @@ export default async function AdminDashboardLayout({
             Exam sessions
           </Link>
           <Link
-            href="/admin/restore"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <FileArrowUp size={16} />
-            Restore
-          </Link>
-          <Link
-            href="/admin/bulk-upload"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <FileArchive size={16} />
-            Bulk upload
-          </Link>
-          <Link
-            href="/admin/consolidated-upload"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <Stack size={16} />
-            Consolidated upload
-          </Link>
-          <Link
-            href="/admin/folder-upload"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <FolderOpen size={16} />
-            Folder upload
-          </Link>
-          <Link
             href="/admin/batches"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
           >
@@ -153,25 +121,11 @@ export default async function AdminDashboardLayout({
             Customize Full Archive
           </Link>
           <Link
-            href="/admin/import-pyq-metadata"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <FileText size={16} />
-            OCR metadata
-          </Link>
-          <Link
             href="/admin/questions"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
           >
             <Question size={16} />
             Question bank
-          </Link>
-          <Link
-            href="/admin/ocr-reformat"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <FileText size={16} />
-            AI OCR reformat
           </Link>
           <Link
             href="/admin/unsorted"

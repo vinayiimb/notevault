@@ -18,8 +18,8 @@ import type {
   CatalogCoverageRow,
 } from "@/lib/pyq-catalog-types";
 
-const EXPECTED_SOURCE_ROWS = 2431;
-const EXPECTED_DUPLICATE_SESSION_GROUPS = 315;
+const EXPECTED_SOURCE_ROWS = 2701;
+const EXPECTED_DUPLICATE_SESSION_GROUPS = 335;
 const LIBRARY_HOST = "library.ramanujancollege.ac.in";
 
 const sourceCatalog = rawCatalog as CatalogPaper[];

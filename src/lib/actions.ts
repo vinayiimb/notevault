@@ -18,6 +18,7 @@ import { heroImageExtensionsFor } from "@/lib/hero-image";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
 import { normalizeMemoryKey } from "@/lib/subject-match";
 import { extractUpcCandidate, matchOfficialSubject } from "@/lib/subject-normalization";
+import { findProgramMatch, findTermMatch, normalizeLoose } from "@/lib/course-match";
 import {
   getCatalogYearRanges,
   getSemesterGroupsForYear,
@@ -29,7 +30,7 @@ import {
   getSession,
   verifyPassword,
 } from "@/lib/auth";
-import type { Prisma } from "@/generated/prisma";
+import type { Prisma, BulkUploadRowStatus } from "@/generated/prisma";
 import { DEFAULT_THEME, ThemeValuesSchema } from "@/lib/note-theme";
 import { StructuredNoteSchema } from "@/lib/note-schema";
 import { generateStructuredNote } from "@/lib/ai";
@@ -1806,47 +1807,6 @@ export async function deleteFailedUploadAction(formData: FormData) {
   revalidatePath("/admin/failed-uploads");
 }
 
-function normalizeLoose(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9]/g, "");
-}
-
-function findProgramMatch<T extends { name: string }>(programs: T[], value: string): T | null {
-  const v = normalizeLoose(value);
-  if (!v) return null;
-
-  // DU elective-pool shorthand: GSEC/SEC/VAC/VEC/AEC all live under the
-  // "Common Pool" programme; a bare "GE" means the separate GE Pool.
-  if (/^(gsec|sec|vac|vec|aec)$/.test(v) || v.includes("sec") || v.includes("vac") || v.includes("vec") || v.includes("aec")) {
-    const pool = programs.find((p) => normalizeLoose(p.name).includes("commonpool"));
-    if (pool) return pool;
-  }
-  if (v === "ge" || v.includes("genericelective")) {
-    const pool = programs.find((p) => normalizeLoose(p.name).includes("gepool"));
-    if (pool) return pool;
-  }
-
-  const exact = programs.find((p) => normalizeLoose(p.name) === v);
-  if (exact) return exact;
-  return programs.find((p) => normalizeLoose(p.name).includes(v) || v.includes(normalizeLoose(p.name))) ?? null;
-}
-
-function findTermMatch<T extends { name: string }>(terms: T[], value: string): T | null {
-  const v = normalizeLoose(value);
-  if (!v) return null;
-
-  if (v === "all" || v.includes("allsemester")) {
-    return terms.find((t) => normalizeLoose(t.name).includes("allsemester")) ?? null;
-  }
-  const num = v.match(/\d+/)?.[0];
-  if (num) {
-    const found = terms.find((t) => normalizeLoose(t.name) === `semester${num}`);
-    if (found) return found;
-  }
-  const exact = terms.find((t) => normalizeLoose(t.name) === v);
-  if (exact) return exact;
-  return terms.find((t) => normalizeLoose(t.name).includes(v) || v.includes(normalizeLoose(t.name))) ?? null;
-}
-
 export type CsvDeployRowResult = {
   title: string;
   status:
@@ -2002,188 +1962,194 @@ export async function deployFailedUploadsFromCsvAction(formData: FormData): Prom
   return { results };
 }
 
-export type SpreadsheetImportRowResult = {
-  course: string;
-  semester: string;
-  subject: string;
-  status:
-    | "imported"
-    | "no-new-files"
-    | "empty-folder"
-    | "no-program-match"
-    | "no-term-match"
-    | "no-subject"
-    | "no-drive-link"
-    | "invalid-drive-link"
-    | "error";
-  filesImported?: number;
-  filesSkipped?: number;
-  message?: string;
+export type BulkUploadRowSummary = {
+  id: string;
+  rowNumber: number;
+  status: BulkUploadRowStatus;
+  message: string | null;
+  courseRaw: string;
+  semesterRaw: string;
+  subjectRaw: string;
+  resourceTypeRaw: string | null;
+  yearRaw: string | null;
+  fileUrlRaw: string | null;
+  fileNameRaw: string | null;
 };
 
-function driveFileResourceHash(fileId: string) {
-  return createHash("sha256").update(`google-drive:${fileId}`).digest("hex");
-}
+export type BulkUploadValidateResult = {
+  batchId: string;
+  sourceFileName: string;
+  rows: BulkUploadRowSummary[];
+  summary: Partial<Record<BulkUploadRowStatus, number>>;
+};
 
-// Bulk-imports papers from a spreadsheet (CSV or .xlsx) the admin fills in
-// offline: one row per subject, giving course/semester/subject plus a Drive
-// **folder** link holding that subject's papers across years. Expected
-// columns (case-insensitive, any order): course (or program), semester (or
-// term/sem), subject, drivelink (or link/url/drive/folder), and optionally
-// year — used only as a fallback when a file's name doesn't carry an
-// obvious year of its own (see guessYear). Each subject's folder is crawled
-// recursively; every PDF found becomes (or is skipped as a duplicate of) a
-// Resource, exactly like the single-file failed-upload deploy flow above,
-// so newly imported papers are immediately live on the public subject page.
-export async function importPapersFromSpreadsheetAction(
-  formData: FormData
-): Promise<{ results: SpreadsheetImportRowResult[] }> {
+// Fresh Upload step 1: parses the sheet, classifies every row (course/term/
+// subject match, dedupe, required-field checks — see src/lib/bulk-upload.ts)
+// and persists one BulkUploadRow per row, all before creating a single
+// Resource. Nothing is imported yet; the admin reviews this batch and calls
+// commitBulkUploadBatchAction to actually import the approved rows.
+export async function validateBulkUploadAction(formData: FormData): Promise<BulkUploadValidateResult> {
   await requireAdmin();
   const file = formData.get("file") as File | null;
   if (!file || file.size === 0) throw new Error("A CSV or Excel file is required.");
 
   const { parseSpreadsheetRows } = await import("@/lib/spreadsheet");
-  const { extractDriveFolderId, listDriveFolderTreePdfs } = await import("@/lib/google-drive");
-  const { guessYear } = await import("@/lib/subject-match");
+  const { classifyBulkUploadRow, loadProgramsForMatching, loadSubjectMatchMemory } = await import(
+    "@/lib/bulk-upload"
+  );
 
-  const rows = await parseSpreadsheetRows(file);
-  if (rows.length === 0) {
+  const rawRows = await parseSpreadsheetRows(file);
+  if (rawRows.length === 0) {
     throw new Error(
-      "Could not read any rows from that file — check it has a header row with course, semester, subject, and a Drive folder link column."
+      "Could not read any rows from that file — check it has a header row with course, semester, subject, and a file URL column."
     );
   }
 
-  const programs = await prisma.program.findMany({
-    include: { terms: { include: { subjects: { select: { id: true, name: true } } } } },
-  });
+  const [programs, subjectMemory] = await Promise.all([loadProgramsForMatching(), loadSubjectMatchMemory()]);
+  const batch = await prisma.uploadBatch.create({ data: { sourceFileName: file.name } });
 
-  const batch = await prisma.uploadBatch.create({ data: {} });
-  const results: SpreadsheetImportRowResult[] = [];
+  const classified = [];
+  for (let i = 0; i < rawRows.length; i++) {
+    classified.push(await classifyBulkUploadRow(i + 1, rawRows[i], programs, subjectMemory));
+  }
+
+  const created = await prisma.$transaction(
+    classified.map((row) =>
+      prisma.bulkUploadRow.create({
+        data: {
+          batchId: batch.id,
+          rowNumber: row.rowNumber,
+          status: row.status,
+          message: row.message,
+          courseRaw: row.courseRaw,
+          semesterRaw: row.semesterRaw,
+          subjectRaw: row.subjectRaw,
+          resourceTypeRaw: row.resourceTypeRaw,
+          yearRaw: row.yearRaw,
+          fileUrlRaw: row.fileUrlRaw,
+          fileNameRaw: row.fileNameRaw,
+          programId: row.programId,
+          termId: row.termId,
+          subjectId: row.subjectId,
+        },
+      })
+    )
+  );
+
+  const summary: Partial<Record<BulkUploadRowStatus, number>> = {};
+  for (const row of created) {
+    summary[row.status] = (summary[row.status] ?? 0) + 1;
+  }
+
+  revalidatePath("/admin/bulk-upload");
+
+  return {
+    batchId: batch.id,
+    sourceFileName: file.name,
+    rows: created.map((r) => ({
+      id: r.id,
+      rowNumber: r.rowNumber,
+      status: r.status,
+      message: r.message,
+      courseRaw: r.courseRaw,
+      semesterRaw: r.semesterRaw,
+      subjectRaw: r.subjectRaw,
+      resourceTypeRaw: r.resourceTypeRaw,
+      yearRaw: r.yearRaw,
+      fileUrlRaw: r.fileUrlRaw,
+      fileNameRaw: r.fileNameRaw,
+    })),
+    summary,
+  };
+}
+
+// Fresh Upload step 2: imports exactly the rows the admin approved out of
+// a batch's VALID rows. Any VALID row not approved becomes SKIPPED rather
+// than IMPORTED — it stays visible in Uploaded Data, just never became a
+// Resource. Re-checks for a fileHash collision (another batch could have
+// imported the same file in between validate and commit) before creating.
+export async function commitBulkUploadBatchAction(formData: FormData): Promise<{ imported: number; skipped: number }> {
+  await requireAdmin();
+  const batchId = String(formData.get("batchId") ?? "").trim();
+  if (!batchId) throw new Error("A batch id is required.");
+  const approvedRowIds = new Set(formData.getAll("approvedRowIds").map(String));
+
+  const { resolveRowForImport } = await import("@/lib/bulk-upload");
+
+  const validRows = await prisma.bulkUploadRow.findMany({ where: { batchId, status: "VALID" } });
+
+  let imported = 0;
+  let skipped = 0;
   const touchedSubjectIds = new Set<string>();
 
-  for (const row of rows) {
-    const courseVal = (row.course || row.program || "").trim();
-    const semesterVal = (row.semester || row.term || row.sem || "").trim();
-    const subjectVal = (row.subject || "").trim();
-    const driveVal = (
-      row.drivelink ||
-      row.drivefolderlink ||
-      row.link ||
-      row.url ||
-      row.drive ||
-      row.folder ||
-      ""
-    ).trim();
-    const yearHint = (row.year || "").trim();
-    const yearHintNum = yearHint && /^\d{4}$/.test(yearHint) ? Number(yearHint) : null;
-
-    if (!courseVal) {
-      results.push({ course: "(blank)", semester: semesterVal, subject: subjectVal, status: "no-program-match", message: "No course/program column found" });
-      continue;
-    }
-    const program = findProgramMatch(programs, courseVal);
-    if (!program) {
-      results.push({ course: courseVal, semester: semesterVal, subject: subjectVal, status: "no-program-match", message: `No course matched "${courseVal}"` });
+  for (const row of validRows) {
+    if (!approvedRowIds.has(row.id)) {
+      await prisma.bulkUploadRow.update({ where: { id: row.id }, data: { status: "SKIPPED" } });
+      skipped += 1;
       continue;
     }
 
-    const term = findTermMatch(program.terms, semesterVal);
-    if (!term) {
-      results.push({ course: courseVal, semester: semesterVal, subject: subjectVal, status: "no-term-match", message: `No semester matched "${semesterVal}" in ${program.name}` });
-      continue;
-    }
-
-    if (!subjectVal) {
-      results.push({ course: courseVal, semester: semesterVal, subject: "(blank)", status: "no-subject", message: "No subject name given" });
-      continue;
-    }
-
-    if (!driveVal) {
-      results.push({ course: courseVal, semester: semesterVal, subject: subjectVal, status: "no-drive-link", message: "No Drive folder link given" });
-      continue;
-    }
-    const folderId = extractDriveFolderId(driveVal);
-    if (!folderId) {
-      results.push({ course: courseVal, semester: semesterVal, subject: subjectVal, status: "invalid-drive-link", message: `Could not read a Drive folder id from "${driveVal}"` });
-      continue;
-    }
-
-    let subject = term.subjects.find((s) => s.name.trim().toLowerCase() === subjectVal.toLowerCase());
-    if (!subject) {
-      const slug = await uniqueSlug(subjectVal, async (s) => {
-        const found = await prisma.subject.findUnique({ where: { termId_slug: { termId: term.id, slug: s } } });
-        return !!found;
-      });
-      const created = await prisma.subject.create({ data: { termId: term.id, name: subjectVal, slug } });
-      subject = { id: created.id, name: created.name };
-      term.subjects.push(subject);
-    }
-
-    let files;
-    try {
-      files = await listDriveFolderTreePdfs(folderId);
-    } catch (err) {
-      results.push({
-        course: courseVal,
-        semester: semesterVal,
-        subject: subjectVal,
-        status: "error",
-        message: err instanceof Error ? err.message : "Could not read that Drive folder.",
+    if (!row.subjectId || !row.fileUrlRaw) {
+      await prisma.bulkUploadRow.update({
+        where: { id: row.id },
+        data: { status: "INVALID", message: "Missing matched subject or file URL at import time" },
       });
       continue;
     }
 
-    if (files.length === 0) {
-      results.push({ course: courseVal, semester: semesterVal, subject: subjectVal, status: "empty-folder", message: "No PDFs found in that Drive folder" });
-      continue;
-    }
-
-    let imported = 0;
-    let skipped = 0;
-    for (const driveFile of files) {
-      const fileHash = driveFileResourceHash(driveFile.id);
-      const existing = await prisma.resource.findFirst({ where: { fileHash } });
-      if (existing) {
-        skipped += 1;
-        continue;
-      }
-      const year = guessYear(driveFile.name) ?? yearHintNum;
-      await prisma.resource.create({
-        data: {
-          subjectId: subject.id,
-          type: "PYQ",
-          title: driveFile.name.replace(/\.pdf$/i, ""),
-          year,
-          fileUrl: driveFile.webViewLink,
-          fileName: driveFile.name,
-          fileSize: 0,
-          fileHash,
-          batchId: batch.id,
-        },
-      });
-      imported += 1;
-    }
-
-    touchedSubjectIds.add(subject.id);
-    results.push({
-      course: courseVal,
-      semester: semesterVal,
-      subject: subjectVal,
-      status: imported > 0 ? "imported" : "no-new-files",
-      filesImported: imported,
-      filesSkipped: skipped,
-      message: skipped > 0 ? `${skipped} file${skipped === 1 ? "" : "s"} already in the archive, skipped` : undefined,
+    const resolved = resolveRowForImport({
+      fileUrlRaw: row.fileUrlRaw,
+      fileNameRaw: row.fileNameRaw,
+      yearRaw: row.yearRaw,
+      resourceTypeRaw: row.resourceTypeRaw,
     });
+    if (!resolved) {
+      await prisma.bulkUploadRow.update({
+        where: { id: row.id },
+        data: { status: "INVALID", message: `Unrecognized resource type "${row.resourceTypeRaw}"` },
+      });
+      continue;
+    }
+
+    const existing = await prisma.resource.findFirst({ where: { fileHash: resolved.fileHash } });
+    if (existing) {
+      await prisma.bulkUploadRow.update({
+        where: { id: row.id },
+        data: { status: "DUPLICATE", message: `Already imported as "${existing.title}"` },
+      });
+      continue;
+    }
+
+    const resource = await prisma.resource.create({
+      data: {
+        subjectId: row.subjectId,
+        type: resolved.type,
+        title: resolved.title,
+        year: resolved.year,
+        fileUrl: resolved.fileUrl,
+        fileName: resolved.fileName,
+        fileSize: 0,
+        fileHash: resolved.fileHash,
+        batchId,
+      },
+    });
+    await prisma.bulkUploadRow.update({
+      where: { id: row.id },
+      data: { status: "IMPORTED", resourceId: resource.id },
+    });
+    touchedSubjectIds.add(row.subjectId);
+    imported += 1;
   }
 
   revalidatePath("/admin/resources");
-  revalidatePath("/admin/batches");
+  revalidatePath("/admin/bulk-upload");
   revalidatePath("/admin/coverage");
   for (const subjectId of touchedSubjectIds) {
+    revalidatePath(`/admin/subjects/${subjectId}`);
     revalidatePath(`/subjects/${subjectId}`);
   }
 
-  return { results };
+  return { imported, skipped };
 }
 
 export async function deleteResourceAction(formData: FormData) {

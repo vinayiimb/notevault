@@ -37,6 +37,16 @@ enum NoteThemeScope {
   NOTE
 }
 
+enum BulkUploadRowStatus {
+  VALID // matched course/term/subject, no dup — ready to import
+  IMPORTED // admin approved, Resource created
+  SKIPPED // was VALID but admin didn't approve it at commit time
+  DUPLICATE // fileHash already exists on a Resource
+  UNMATCHED_SUBJECT // course/term matched, subject name didn't
+  UNMATCHED_COURSE // course or semester didn't match any Program/Term
+  INVALID // missing/bad required fields (no file URL, bad type, etc.)
+}
+
 // e.g. "CBSE Class 12", "B.Com (Hons)", "BBA"
 model Program {
   id        String         @id @default(cuid())
@@ -106,6 +116,7 @@ model Subject {
   noteThemes     NoteTheme[]
   examDates      StudentExamDate[]
   subjectAliases SubjectAlias[]
+  bulkUploadRows BulkUploadRow[]
 
   @@unique([termId, slug])
   @@index([upc])
@@ -364,7 +375,8 @@ model Resource {
   // editor (Phase H) show a real status instead of guessing from null-ness.
   ocrStatus    OcrStatus @default(NOT_STARTED)
 
-  questions Question[]
+  questions     Question[]
+  bulkUploadRow BulkUploadRow?
 
   @@index([fileHash])
   @@index([batchId])
@@ -542,10 +554,50 @@ model DriveFileMatch {
 // browse back through what was uploaded together and fix a mistake (wrong
 // year/subject/type) without having to hunt for the resource elsewhere.
 model UploadBatch {
-  id         String      @id @default(cuid())
-  createdAt  DateTime    @default(now())
-  resources  Resource[]
-  termPapers TermPaper[]
+  id             String          @id @default(cuid())
+  createdAt      DateTime        @default(now())
+  // Original CSV/XLSX file name, set for batches created via the Bulk
+  // Upload "Fresh Upload" flow (src/lib/bulk-upload.ts); null for other
+  // batch-creating flows (e.g. single-file "Failed Upload" deploys).
+  sourceFileName String?
+  resources      Resource[]
+  termPapers     TermPaper[]
+  rows           BulkUploadRow[]
+}
+
+// One row per spreadsheet row from a Bulk Upload "Fresh Upload", persisted
+// at validate time (before import) so the same records serve as both the
+// admin's review screen and the permanent "Uploaded Data" audit trail.
+model BulkUploadRow {
+  id        String              @id @default(cuid())
+  batchId   String
+  batch     UploadBatch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
+  rowNumber Int
+  status    BulkUploadRowStatus
+  message   String? // why unmatched/invalid, or which resource it duplicates
+
+  // raw spreadsheet values, kept verbatim for display/debugging
+  courseRaw       String
+  semesterRaw     String
+  subjectRaw      String
+  resourceTypeRaw String?
+  yearRaw         String?
+  fileUrlRaw      String?
+  fileNameRaw     String?
+
+  // resolved matches (null until/unless matched)
+  programId  String?
+  termId     String?
+  subjectId  String?
+  subject    Subject?  @relation(fields: [subjectId], references: [id], onDelete: SetNull)
+  resourceId String?   @unique
+  resource   Resource? @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([batchId])
+  @@index([status])
+  @@index([subjectId])
 }
 
 // A row an admin either couldn't assign a subject to, or that failed to
