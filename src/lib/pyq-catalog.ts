@@ -296,7 +296,12 @@ function applyOverride(
   paper: CatalogPaper,
   overrides: Map<string, { displayName: string | null; semesterOverride: number | null; highlight: boolean }>,
 ): CatalogPaper {
-  const override = overrides.get(overrideMapKey(paper.course, canonicalSubjectKey(paper.subject)));
+  // Overrides are keyed by canonicalSubjectKey(originalSubject ?? subject) —
+  // the same basis the admin editor uses (getArchiveSubjectGroupsForCourse)
+  // — because applyOfficialFileMap runs before this and can already have
+  // rewritten `subject` to an official name, which would otherwise compute
+  // a different key than the one the admin actually merged.
+  const override = overrides.get(overrideMapKey(paper.course, canonicalSubjectKey(paper.originalSubject ?? paper.subject)));
   if (!override) return paper;
   return {
     ...paper,
