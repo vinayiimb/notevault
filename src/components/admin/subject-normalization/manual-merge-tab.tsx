@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { MagnifyingGlass, Warning } from "@phosphor-icons/react";
+import { MagnifyingGlass, Warning, ListMagnifyingGlass } from "@phosphor-icons/react";
 import {
   searchSubjectsForManualMergeAction,
   previewMergeAction,
@@ -148,6 +148,16 @@ export function ManualMergeTab({ programs }: { programs: ProgramWithTerms[] }) {
       </div>
 
       {/* Results table */}
+      {!searched && (
+        <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border bg-surface p-10 text-center">
+          <ListMagnifyingGlass size={28} weight="duotone" className="text-muted" />
+          <p className="text-sm font-semibold text-foreground">No search run yet</p>
+          <p className="max-w-sm text-xs text-muted">
+            Pick a programme and semester above (or type at least 2 characters of a subject name), then press{" "}
+            <span className="font-semibold text-foreground">Search</span> to list subjects you can merge.
+          </p>
+        </div>
+      )}
       {searched && (
         <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
           {results.length === 0 ? (
