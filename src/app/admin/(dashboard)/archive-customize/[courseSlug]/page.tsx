@@ -9,6 +9,7 @@ import {
   upsertCatalogSubjectOverrideAction,
 } from "@/lib/actions";
 import { MERGE_TARGET_SEP } from "@/lib/archive-customize-constants";
+import { ManualSubjectMerge } from "@/components/admin/archive-customize/manual-subject-merge";
 
 export const dynamic = "force-dynamic";
 
@@ -74,6 +75,8 @@ export default async function ArchiveCustomizeCoursePage({
           ))
         )}
       </section>
+
+      <ManualSubjectMerge course={detail.course} courseSlug={detail.courseSlug} allSubjects={detail.allSubjects} />
 
       {/* Full subject list with manual rename/reset */}
       <section className="space-y-3">
