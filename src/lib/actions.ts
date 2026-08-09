@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { MERGE_TARGET_SEP } from "@/lib/archive-customize-constants";
 import {
   saveUploadedFile,
   hashFile,
@@ -2079,7 +2080,7 @@ export async function mergeCatalogSubjectsAction(formData: FormData) {
   const courseSlug = String(formData.get("courseSlug") ?? "").trim();
 
   const mergeTarget = String(formData.get("mergeTarget") ?? "");
-  const [, targetDisplayName = "", targetSemesterRaw = ""] = mergeTarget.split("");
+  const [, targetDisplayName = "", targetSemesterRaw = ""] = mergeTarget.split(MERGE_TARGET_SEP);
 
   if (!course || !subjectKey || !targetDisplayName.trim()) {
     throw new Error("A merge target is required.");

@@ -151,6 +151,40 @@ export function preferredSubjectLabel(values: string[]) {
   );
 }
 
+export type CanonicalCandidate = {
+  id: string;
+  name: string;
+  upc?: string | null;
+  resourceCount: number;
+  questionCount: number;
+};
+
+/**
+ * Recommends which subject in a duplicate group should become the
+ * canonical/master subject — the merge target every other member's
+ * resources move into. Priority order (highest first):
+ *  1. Has an official UPC (syllabus paper code) — a real catalogue anchor
+ *     beats a plain scraped name every time.
+ *  2. Most linked records (resources + questions) — the row with the most
+ *     real content is the safest default target; keeping content on the
+ *     canonical side needs no reassignment at all.
+ *  3. Name-quality score (capitalization, no stray whitespace) — a tie-
+ *     breaker only, same heuristic preferredSubjectLabel already uses.
+ * The admin can always override this in the UI — this only picks the
+ * default radio selection, never applies anything by itself.
+ */
+export function recommendCanonicalSubject(candidates: CanonicalCandidate[]): string | null {
+  if (candidates.length === 0) return null;
+  const ranked = [...candidates].sort((a, b) => {
+    const upcScore = (Boolean(b.upc) ? 1 : 0) - (Boolean(a.upc) ? 1 : 0);
+    if (upcScore !== 0) return upcScore;
+    const contentScore = (b.resourceCount + b.questionCount) - (a.resourceCount + a.questionCount);
+    if (contentScore !== 0) return contentScore;
+    return labelScore(b.name) - labelScore(a.name) || a.name.localeCompare(b.name);
+  });
+  return ranked[0].id;
+}
+
 export function normalizedSubjectLabel(value: string) {
   return tidySubjectName(value);
 }

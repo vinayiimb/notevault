@@ -47,6 +47,7 @@ export interface DashboardShellProps {
   recentUploads: ResourceItem[];
   latestActivity?: StudyActivityItem[];
   dailyQuestion?: DailyStudyQuestionProps["question"];
+  currencyIconUrl?: string | null;
 }
 
 export function DashboardShell({
@@ -57,6 +58,7 @@ export function DashboardShell({
   recentUploads,
   latestActivity = [],
   dailyQuestion = null,
+  currencyIconUrl = null,
 }: DashboardShellProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -191,6 +193,7 @@ export function DashboardShell({
                 totalOranges={student.oranges}
                 communityTotal={communityTotal}
                 subjectCount={activeSubjects.length}
+                currencyIconUrl={currencyIconUrl}
               />
               <ContinueStudying items={latestActivity} />
               <RecentResources resources={recentUploads} />

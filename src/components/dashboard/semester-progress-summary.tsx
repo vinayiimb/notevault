@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { ArrowRight, Fire, Trophy } from "@phosphor-icons/react";
-import { CurrencyIcon } from "@/components/dashboard/currency-icon";
+import { CurrencyIconDisplay } from "@/components/dashboard/currency-icon-display";
 const DAILY_TARGET_ORANGES = 50;
 
 interface ProgressSummaryProps {
@@ -11,6 +11,7 @@ interface ProgressSummaryProps {
   totalOranges?: number;
   communityTotal?: number;
   subjectCount?: number;
+  currencyIconUrl?: string | null;
 }
 
 export function SemesterProgressSummary({
@@ -19,6 +20,7 @@ export function SemesterProgressSummary({
   totalOranges = 0,
   communityTotal = 0,
   subjectCount = 6,
+  currencyIconUrl = null,
 }: ProgressSummaryProps) {
   const progressPct = Math.min(100, Math.round((todayOranges / DAILY_TARGET_ORANGES) * 100));
 
@@ -66,7 +68,7 @@ export function SemesterProgressSummary({
 
           <div className="flex flex-col justify-between rounded-xl bg-surface-muted p-4 border border-border/40">
             <span className="text-brand font-bold">
-              <CurrencyIcon className="size-5" />
+              <CurrencyIconDisplay url={currencyIconUrl} className="size-5" />
             </span>
             <div className="mt-2">
               <span className="block font-mono text-xl font-bold text-foreground">{totalOranges}</span>

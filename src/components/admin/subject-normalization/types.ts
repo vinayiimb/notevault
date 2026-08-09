@@ -53,13 +53,41 @@ export type MergeLogRow = {
   undoneBy: string | null;
 };
 
+export type RelationCounts = {
+  resources: number;
+  questions: number;
+  driveSubjects: number;
+  examDates: number;
+  noteThemes: number;
+  matchMemories: number;
+  subjectNotes: number;
+  subjectAnalysis: number;
+  childSubjects: number;
+};
+
+export type ManualMergeSubjectRow = {
+  id: string;
+  name: string;
+  slug: string;
+  upc: string | null;
+  mergedIntoId: string | null;
+  term: { id: string; name: string; program: { id: string; name: string } };
+  _count: { questions: number; subjectAliases: number };
+  pyqCount: number;
+  notesCount: number;
+};
+
 export type MergePreview = {
   canonicalSubjectId: string;
   canonicalName: string;
   memberSubjectIds: string[];
-  affectedResourceCount: number;
-  affectedQuestionCount: number;
+  before: RelationCounts;
+  totalLinkedRecordsBefore: number;
+  totalLinkedRecordsAfterExpected: number;
+  expectedDataLoss: number;
   urlsAffected: string[];
   aliasesToCreate: { rawName: string; normalizedName: string }[];
   slugConflict: boolean;
+  conflicts: string[];
+  blocked: boolean;
 };

@@ -6,6 +6,7 @@ import { getSession } from "@/lib/auth";
 import { computeCandidateGroups, type GroupableSubject } from "@/lib/subject-grouping";
 import { suggestSubjectGrouping } from "@/lib/ai";
 import { applyMerge, previewMerge, undoMerge } from "@/lib/subject-merge";
+import { searchSubjectsForManualMerge, type ManualMergeSubjectFilters } from "@/lib/subject-normalization-data";
 import { slugify } from "@/lib/utils";
 
 async function requireAdmin() {
@@ -302,6 +303,31 @@ export async function mergeSuggestionAction(
 export async function undoMergeAction(logId: string) {
   const admin = await requireAdmin();
   const log = await undoMerge(logId, admin.adminId);
+  revalidatePath(PATH);
+  return log;
+}
+
+// ---------- Manual Merge tab ----------
+
+export async function searchSubjectsForManualMergeAction(filters: ManualMergeSubjectFilters) {
+  await requireAdmin();
+  return searchSubjectsForManualMerge(filters);
+}
+
+/**
+ * Applies a merge picked manually (search + checkbox select), not from an
+ * AI/deterministic suggestion — same underlying applyMerge, just no
+ * suggestionId/confidence/AI-source metadata to carry over.
+ */
+export async function manualMergeAction(canonicalSubjectId: string, memberSubjectIds: string[]) {
+  const admin = await requireAdmin();
+  const log = await applyMerge({
+    canonicalSubjectId,
+    memberSubjectIds,
+    administrator: admin.adminId,
+    reason: "Manual merge (admin-selected, not AI/deterministic-suggested).",
+    isAiAssisted: false,
+  });
   revalidatePath(PATH);
   return log;
 }
