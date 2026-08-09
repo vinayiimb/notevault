@@ -2002,6 +2002,190 @@ export async function deployFailedUploadsFromCsvAction(formData: FormData): Prom
   return { results };
 }
 
+export type SpreadsheetImportRowResult = {
+  course: string;
+  semester: string;
+  subject: string;
+  status:
+    | "imported"
+    | "no-new-files"
+    | "empty-folder"
+    | "no-program-match"
+    | "no-term-match"
+    | "no-subject"
+    | "no-drive-link"
+    | "invalid-drive-link"
+    | "error";
+  filesImported?: number;
+  filesSkipped?: number;
+  message?: string;
+};
+
+function driveFileResourceHash(fileId: string) {
+  return createHash("sha256").update(`google-drive:${fileId}`).digest("hex");
+}
+
+// Bulk-imports papers from a spreadsheet (CSV or .xlsx) the admin fills in
+// offline: one row per subject, giving course/semester/subject plus a Drive
+// **folder** link holding that subject's papers across years. Expected
+// columns (case-insensitive, any order): course (or program), semester (or
+// term/sem), subject, drivelink (or link/url/drive/folder), and optionally
+// year — used only as a fallback when a file's name doesn't carry an
+// obvious year of its own (see guessYear). Each subject's folder is crawled
+// recursively; every PDF found becomes (or is skipped as a duplicate of) a
+// Resource, exactly like the single-file failed-upload deploy flow above,
+// so newly imported papers are immediately live on the public subject page.
+export async function importPapersFromSpreadsheetAction(
+  formData: FormData
+): Promise<{ results: SpreadsheetImportRowResult[] }> {
+  await requireAdmin();
+  const file = formData.get("file") as File | null;
+  if (!file || file.size === 0) throw new Error("A CSV or Excel file is required.");
+
+  const { parseSpreadsheetRows } = await import("@/lib/spreadsheet");
+  const { extractDriveFolderId, listDriveFolderTreePdfs } = await import("@/lib/google-drive");
+  const { guessYear } = await import("@/lib/subject-match");
+
+  const rows = await parseSpreadsheetRows(file);
+  if (rows.length === 0) {
+    throw new Error(
+      "Could not read any rows from that file — check it has a header row with course, semester, subject, and a Drive folder link column."
+    );
+  }
+
+  const programs = await prisma.program.findMany({
+    include: { terms: { include: { subjects: { select: { id: true, name: true } } } } },
+  });
+
+  const batch = await prisma.uploadBatch.create({ data: {} });
+  const results: SpreadsheetImportRowResult[] = [];
+  const touchedSubjectIds = new Set<string>();
+
+  for (const row of rows) {
+    const courseVal = (row.course || row.program || "").trim();
+    const semesterVal = (row.semester || row.term || row.sem || "").trim();
+    const subjectVal = (row.subject || "").trim();
+    const driveVal = (
+      row.drivelink ||
+      row.drivefolderlink ||
+      row.link ||
+      row.url ||
+      row.drive ||
+      row.folder ||
+      ""
+    ).trim();
+    const yearHint = (row.year || "").trim();
+    const yearHintNum = yearHint && /^\d{4}$/.test(yearHint) ? Number(yearHint) : null;
+
+    if (!courseVal) {
+      results.push({ course: "(blank)", semester: semesterVal, subject: subjectVal, status: "no-program-match", message: "No course/program column found" });
+      continue;
+    }
+    const program = findProgramMatch(programs, courseVal);
+    if (!program) {
+      results.push({ course: courseVal, semester: semesterVal, subject: subjectVal, status: "no-program-match", message: `No course matched "${courseVal}"` });
+      continue;
+    }
+
+    const term = findTermMatch(program.terms, semesterVal);
+    if (!term) {
+      results.push({ course: courseVal, semester: semesterVal, subject: subjectVal, status: "no-term-match", message: `No semester matched "${semesterVal}" in ${program.name}` });
+      continue;
+    }
+
+    if (!subjectVal) {
+      results.push({ course: courseVal, semester: semesterVal, subject: "(blank)", status: "no-subject", message: "No subject name given" });
+      continue;
+    }
+
+    if (!driveVal) {
+      results.push({ course: courseVal, semester: semesterVal, subject: subjectVal, status: "no-drive-link", message: "No Drive folder link given" });
+      continue;
+    }
+    const folderId = extractDriveFolderId(driveVal);
+    if (!folderId) {
+      results.push({ course: courseVal, semester: semesterVal, subject: subjectVal, status: "invalid-drive-link", message: `Could not read a Drive folder id from "${driveVal}"` });
+      continue;
+    }
+
+    let subject = term.subjects.find((s) => s.name.trim().toLowerCase() === subjectVal.toLowerCase());
+    if (!subject) {
+      const slug = await uniqueSlug(subjectVal, async (s) => {
+        const found = await prisma.subject.findUnique({ where: { termId_slug: { termId: term.id, slug: s } } });
+        return !!found;
+      });
+      const created = await prisma.subject.create({ data: { termId: term.id, name: subjectVal, slug } });
+      subject = { id: created.id, name: created.name };
+      term.subjects.push(subject);
+    }
+
+    let files;
+    try {
+      files = await listDriveFolderTreePdfs(folderId);
+    } catch (err) {
+      results.push({
+        course: courseVal,
+        semester: semesterVal,
+        subject: subjectVal,
+        status: "error",
+        message: err instanceof Error ? err.message : "Could not read that Drive folder.",
+      });
+      continue;
+    }
+
+    if (files.length === 0) {
+      results.push({ course: courseVal, semester: semesterVal, subject: subjectVal, status: "empty-folder", message: "No PDFs found in that Drive folder" });
+      continue;
+    }
+
+    let imported = 0;
+    let skipped = 0;
+    for (const driveFile of files) {
+      const fileHash = driveFileResourceHash(driveFile.id);
+      const existing = await prisma.resource.findFirst({ where: { fileHash } });
+      if (existing) {
+        skipped += 1;
+        continue;
+      }
+      const year = guessYear(driveFile.name) ?? yearHintNum;
+      await prisma.resource.create({
+        data: {
+          subjectId: subject.id,
+          type: "PYQ",
+          title: driveFile.name.replace(/\.pdf$/i, ""),
+          year,
+          fileUrl: driveFile.webViewLink,
+          fileName: driveFile.name,
+          fileSize: 0,
+          fileHash,
+          batchId: batch.id,
+        },
+      });
+      imported += 1;
+    }
+
+    touchedSubjectIds.add(subject.id);
+    results.push({
+      course: courseVal,
+      semester: semesterVal,
+      subject: subjectVal,
+      status: imported > 0 ? "imported" : "no-new-files",
+      filesImported: imported,
+      filesSkipped: skipped,
+      message: skipped > 0 ? `${skipped} file${skipped === 1 ? "" : "s"} already in the archive, skipped` : undefined,
+    });
+  }
+
+  revalidatePath("/admin/resources");
+  revalidatePath("/admin/batches");
+  revalidatePath("/admin/coverage");
+  for (const subjectId of touchedSubjectIds) {
+    revalidatePath(`/subjects/${subjectId}`);
+  }
+
+  return { results };
+}
+
 export async function deleteResourceAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id"));
@@ -2076,29 +2260,58 @@ export async function upsertCatalogSubjectOverrideAction(formData: FormData) {
 export async function mergeCatalogSubjectsAction(formData: FormData) {
   await requireAdmin();
   const course = String(formData.get("course") ?? "").trim();
-  const subjectKey = String(formData.get("subjectKey") ?? "").trim();
+  const subjectKeys = formData.getAll("subjectKey").map((v) => String(v).trim()).filter(Boolean);
   const courseSlug = String(formData.get("courseSlug") ?? "").trim();
 
   const mergeTarget = String(formData.get("mergeTarget") ?? "");
   const [, targetDisplayName = "", targetSemesterRaw = ""] = mergeTarget.split(MERGE_TARGET_SEP);
 
-  if (!course || !subjectKey || !targetDisplayName.trim()) {
+  if (!course || subjectKeys.length === 0 || !targetDisplayName.trim()) {
     throw new Error("A merge target is required.");
   }
 
-  await prisma.catalogSubjectOverride.upsert({
-    where: { course_subjectKey: { course, subjectKey } },
-    create: {
-      course,
-      subjectKey,
-      displayName: targetDisplayName,
-      semesterOverride: targetSemesterRaw ? Number(targetSemesterRaw) : null,
-    },
-    update: {
-      displayName: targetDisplayName,
-      semesterOverride: targetSemesterRaw ? Number(targetSemesterRaw) : null,
-    },
-  });
+  const semesterOverride = targetSemesterRaw ? Number(targetSemesterRaw) : null;
+  await Promise.all(
+    subjectKeys.map((subjectKey) =>
+      prisma.catalogSubjectOverride.upsert({
+        where: { course_subjectKey: { course, subjectKey } },
+        create: { course, subjectKey, displayName: targetDisplayName, semesterOverride },
+        update: { displayName: targetDisplayName, semesterOverride },
+      }),
+    ),
+  );
+
+  revalidatePath("/pyq-notes");
+  if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
+}
+
+// Manual variant of mergeCatalogSubjectsAction — takes an admin-typed
+// heading and an arbitrary set of subjectKeys (not limited to AI-suggested
+// candidate groups), so any subjects/files can be grouped under one shared
+// display name regardless of how different their raw text is.
+export async function manualMergeCatalogSubjectsAction(
+  course: string,
+  courseSlug: string,
+  subjectKeys: string[],
+  targetDisplayName: string,
+  targetSemester: number | null,
+) {
+  await requireAdmin();
+  const keys = subjectKeys.map((k) => k.trim()).filter(Boolean);
+  const name = targetDisplayName.trim();
+  if (!course || keys.length < 2 || !name) {
+    throw new Error("Pick at least two subjects and a heading to merge them under.");
+  }
+
+  await Promise.all(
+    keys.map((subjectKey) =>
+      prisma.catalogSubjectOverride.upsert({
+        where: { course_subjectKey: { course, subjectKey } },
+        create: { course, subjectKey, displayName: name, semesterOverride: targetSemester },
+        update: { displayName: name, semesterOverride: targetSemester },
+      }),
+    ),
+  );
 
   revalidatePath("/pyq-notes");
   if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
