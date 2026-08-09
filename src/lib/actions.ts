@@ -1968,12 +1968,13 @@ export type BulkUploadRowSummary = {
   status: BulkUploadRowStatus;
   message: string | null;
   courseRaw: string;
-  semesterRaw: string;
   subjectRaw: string;
-  resourceTypeRaw: string | null;
-  yearRaw: string | null;
+  yearRangeRaw: string | null;
+  semesterGroupRaw: string | null;
+  semesterRaw: string | null;
   fileUrlRaw: string | null;
   fileNameRaw: string | null;
+  noteRaw: string | null;
 };
 
 export type BulkUploadValidateResult = {
@@ -1983,34 +1984,32 @@ export type BulkUploadValidateResult = {
   summary: Partial<Record<BulkUploadRowStatus, number>>;
 };
 
-// Fresh Upload step 1: parses the sheet, classifies every row (course/term/
-// subject match, dedupe, required-field checks — see src/lib/bulk-upload.ts)
-// and persists one BulkUploadRow per row, all before creating a single
-// Resource. Nothing is imported yet; the admin reviews this batch and calls
-// commitBulkUploadBatchAction to actually import the approved rows.
+// Fresh Upload step 1: parses the sheet, classifies every row (required-field
+// checks + fileHash dedupe against CatalogPaperUpload — see
+// src/lib/bulk-upload.ts) and persists one BulkUploadRow per row, all before
+// creating a single CatalogPaperUpload. Nothing is imported yet; the admin
+// reviews this batch and calls commitBulkUploadBatchAction to actually
+// import the approved rows into the Full Archive catalog.
 export async function validateBulkUploadAction(formData: FormData): Promise<BulkUploadValidateResult> {
   await requireAdmin();
   const file = formData.get("file") as File | null;
   if (!file || file.size === 0) throw new Error("A CSV or Excel file is required.");
 
   const { parseSpreadsheetRows } = await import("@/lib/spreadsheet");
-  const { classifyBulkUploadRow, loadProgramsForMatching, loadSubjectMatchMemory } = await import(
-    "@/lib/bulk-upload"
-  );
+  const { classifyBulkUploadRow } = await import("@/lib/bulk-upload");
 
   const rawRows = await parseSpreadsheetRows(file);
   if (rawRows.length === 0) {
     throw new Error(
-      "Could not read any rows from that file — check it has a header row with course, semester, subject, and a file URL column."
+      "Could not read any rows from that file — check it has a header row with course, subject, year range, semester group, and a file URL column."
     );
   }
 
-  const [programs, subjectMemory] = await Promise.all([loadProgramsForMatching(), loadSubjectMatchMemory()]);
   const batch = await prisma.uploadBatch.create({ data: { sourceFileName: file.name } });
 
   const classified = [];
   for (let i = 0; i < rawRows.length; i++) {
-    classified.push(await classifyBulkUploadRow(i + 1, rawRows[i], programs, subjectMemory));
+    classified.push(await classifyBulkUploadRow(i + 1, rawRows[i]));
   }
 
   const created = await prisma.$transaction(
@@ -2022,15 +2021,13 @@ export async function validateBulkUploadAction(formData: FormData): Promise<Bulk
           status: row.status,
           message: row.message,
           courseRaw: row.courseRaw,
-          semesterRaw: row.semesterRaw,
           subjectRaw: row.subjectRaw,
-          resourceTypeRaw: row.resourceTypeRaw,
-          yearRaw: row.yearRaw,
+          yearRangeRaw: row.yearRangeRaw,
+          semesterGroupRaw: row.semesterGroupRaw,
+          semesterRaw: row.semesterRaw,
           fileUrlRaw: row.fileUrlRaw,
           fileNameRaw: row.fileNameRaw,
-          programId: row.programId,
-          termId: row.termId,
-          subjectId: row.subjectId,
+          noteRaw: row.noteRaw,
         },
       })
     )
@@ -2052,12 +2049,13 @@ export async function validateBulkUploadAction(formData: FormData): Promise<Bulk
       status: r.status,
       message: r.message,
       courseRaw: r.courseRaw,
-      semesterRaw: r.semesterRaw,
       subjectRaw: r.subjectRaw,
-      resourceTypeRaw: r.resourceTypeRaw,
-      yearRaw: r.yearRaw,
+      yearRangeRaw: r.yearRangeRaw,
+      semesterGroupRaw: r.semesterGroupRaw,
+      semesterRaw: r.semesterRaw,
       fileUrlRaw: r.fileUrlRaw,
       fileNameRaw: r.fileNameRaw,
+      noteRaw: r.noteRaw,
     })),
     summary,
   };
@@ -2066,8 +2064,8 @@ export async function validateBulkUploadAction(formData: FormData): Promise<Bulk
 // Fresh Upload step 2: imports exactly the rows the admin approved out of
 // a batch's VALID rows. Any VALID row not approved becomes SKIPPED rather
 // than IMPORTED — it stays visible in Uploaded Data, just never became a
-// Resource. Re-checks for a fileHash collision (another batch could have
-// imported the same file in between validate and commit) before creating.
+// CatalogPaperUpload. Re-checks for a fileHash collision (another batch
+// could have imported the same file in between validate and commit).
 export async function commitBulkUploadBatchAction(formData: FormData): Promise<{ imported: number; skipped: number }> {
   await requireAdmin();
   const batchId = String(formData.get("batchId") ?? "").trim();
@@ -2080,7 +2078,6 @@ export async function commitBulkUploadBatchAction(formData: FormData): Promise<{
 
   let imported = 0;
   let skipped = 0;
-  const touchedSubjectIds = new Set<string>();
 
   for (const row of validRows) {
     if (!approvedRowIds.has(row.id)) {
@@ -2089,10 +2086,10 @@ export async function commitBulkUploadBatchAction(formData: FormData): Promise<{
       continue;
     }
 
-    if (!row.subjectId || !row.fileUrlRaw) {
+    if (!row.fileUrlRaw || !row.yearRangeRaw || !row.semesterGroupRaw) {
       await prisma.bulkUploadRow.update({
         where: { id: row.id },
-        data: { status: "INVALID", message: "Missing matched subject or file URL at import time" },
+        data: { status: "INVALID", message: "Missing required field at import time" },
       });
       continue;
     }
@@ -2100,54 +2097,42 @@ export async function commitBulkUploadBatchAction(formData: FormData): Promise<{
     const resolved = resolveRowForImport({
       fileUrlRaw: row.fileUrlRaw,
       fileNameRaw: row.fileNameRaw,
-      yearRaw: row.yearRaw,
-      resourceTypeRaw: row.resourceTypeRaw,
+      semesterRaw: row.semesterRaw,
     });
-    if (!resolved) {
-      await prisma.bulkUploadRow.update({
-        where: { id: row.id },
-        data: { status: "INVALID", message: `Unrecognized resource type "${row.resourceTypeRaw}"` },
-      });
-      continue;
-    }
 
-    const existing = await prisma.resource.findFirst({ where: { fileHash: resolved.fileHash } });
+    const existing = await prisma.catalogPaperUpload.findUnique({ where: { fileHash: resolved.fileHash } });
     if (existing) {
       await prisma.bulkUploadRow.update({
         where: { id: row.id },
-        data: { status: "DUPLICATE", message: `Already imported as "${existing.title}"` },
+        data: { status: "DUPLICATE", message: `Already in the catalog as "${existing.fileName}"` },
       });
       continue;
     }
 
-    const resource = await prisma.resource.create({
+    const catalogPaperUpload = await prisma.catalogPaperUpload.create({
       data: {
-        subjectId: row.subjectId,
-        type: resolved.type,
-        title: resolved.title,
-        year: resolved.year,
-        fileUrl: resolved.fileUrl,
+        course: row.courseRaw,
+        subject: row.subjectRaw,
+        yearRange: row.yearRangeRaw,
+        semesterGroup: row.semesterGroupRaw,
+        semester: resolved.semester,
+        fileUrl: row.fileUrlRaw,
         fileName: resolved.fileName,
         fileSize: 0,
         fileHash: resolved.fileHash,
-        batchId,
+        note: row.noteRaw,
       },
     });
     await prisma.bulkUploadRow.update({
       where: { id: row.id },
-      data: { status: "IMPORTED", resourceId: resource.id },
+      data: { status: "IMPORTED", catalogPaperUploadId: catalogPaperUpload.id },
     });
-    touchedSubjectIds.add(row.subjectId);
     imported += 1;
   }
 
-  revalidatePath("/admin/resources");
+  revalidatePath("/pyq-notes");
+  revalidatePath("/admin/course-coverage");
   revalidatePath("/admin/bulk-upload");
-  revalidatePath("/admin/coverage");
-  for (const subjectId of touchedSubjectIds) {
-    revalidatePath(`/admin/subjects/${subjectId}`);
-    revalidatePath(`/subjects/${subjectId}`);
-  }
 
   return { imported, skipped };
 }

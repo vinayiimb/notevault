@@ -11,8 +11,6 @@ const STATUS_LABEL: Record<BulkUploadRowStatus, string> = {
   IMPORTED: "Imported",
   SKIPPED: "Skipped",
   DUPLICATE: "Duplicate",
-  UNMATCHED_SUBJECT: "Unmatched subject",
-  UNMATCHED_COURSE: "Unmatched course",
   INVALID: "Invalid",
 };
 
@@ -21,8 +19,6 @@ const STATUS_TONE: Record<BulkUploadRowStatus, string> = {
   IMPORTED: "text-emerald-600",
   SKIPPED: "text-muted",
   DUPLICATE: "text-amber-600",
-  UNMATCHED_SUBJECT: "text-red-500",
-  UNMATCHED_COURSE: "text-red-500",
   INVALID: "text-red-500",
 };
 
@@ -48,7 +44,6 @@ export default async function BulkUploadBatchPage({ params }: { params: Promise<
     prisma.bulkUploadRow.findMany({
       where: { batchId },
       orderBy: { rowNumber: "asc" },
-      include: { subject: { select: { name: true } } },
     }),
     prisma.bulkUploadRow.groupBy({ by: ["status"], where: { batchId }, _count: { _all: true } }),
   ]);
@@ -72,7 +67,7 @@ export default async function BulkUploadBatchPage({ params }: { params: Promise<
         <p className="mt-1 text-sm text-muted">Uploaded {batch.createdAt.toLocaleString()} — {rows.length} rows</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-7">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {(Object.keys(STATUS_LABEL) as BulkUploadRowStatus[]).map((s) => (
           <StatCard key={s} label={STATUS_LABEL[s]} value={summary[s] ?? 0} tone={s === "VALID" || s === "IMPORTED" || s === "SKIPPED" ? undefined : "warn"} />
         ))}
@@ -84,8 +79,9 @@ export default async function BulkUploadBatchPage({ params }: { params: Promise<
             <tr>
               <th className="px-3 py-2">Row</th>
               <th className="px-3 py-2">Course</th>
-              <th className="px-3 py-2">Semester</th>
               <th className="px-3 py-2">Subject</th>
+              <th className="px-3 py-2">Year range</th>
+              <th className="px-3 py-2">Semester</th>
               <th className="px-3 py-2">File</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Message</th>
@@ -96,8 +92,9 @@ export default async function BulkUploadBatchPage({ params }: { params: Promise<
               <tr key={row.id}>
                 <td className="px-3 py-2 text-muted">{row.rowNumber}</td>
                 <td className="px-3 py-2 text-foreground">{row.courseRaw || "—"}</td>
-                <td className="px-3 py-2 text-foreground">{row.semesterRaw || "—"}</td>
-                <td className="px-3 py-2 text-foreground">{row.subject?.name ?? row.subjectRaw ?? "—"}</td>
+                <td className="px-3 py-2 text-foreground">{row.subjectRaw || "—"}</td>
+                <td className="px-3 py-2 text-muted">{row.yearRangeRaw || "—"}</td>
+                <td className="px-3 py-2 text-muted">{row.semesterRaw || "—"}</td>
                 <td className="max-w-[240px] truncate px-3 py-2 text-muted" title={row.fileNameRaw ?? undefined}>
                   {row.fileNameRaw || row.fileUrlRaw || "—"}
                 </td>
@@ -107,7 +104,7 @@ export default async function BulkUploadBatchPage({ params }: { params: Promise<
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-3 py-6 text-center text-muted">
+                <td colSpan={8} className="px-3 py-6 text-center text-muted">
                   This batch has no rows.
                 </td>
               </tr>

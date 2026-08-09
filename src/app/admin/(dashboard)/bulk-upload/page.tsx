@@ -2,7 +2,7 @@ import Link from "next/link";
 import { FileArchive } from "@phosphor-icons/react/dist/ssr";
 import { FreshUploadPanel } from "@/components/admin/bulk-upload/fresh-upload-panel";
 import { UploadedDataPanel, type UploadedDataFilters } from "@/components/admin/bulk-upload/uploaded-data-panel";
-import type { BulkUploadRowStatus, ResourceType } from "@/generated/prisma";
+import type { BulkUploadRowStatus } from "@/generated/prisma";
 
 export const dynamic = "force-dynamic";
 
@@ -18,12 +18,10 @@ export default async function BulkUploadPage({ searchParams }: { searchParams: P
   const tab = str(params, "tab") === "data" ? "data" : "fresh";
 
   const filters: UploadedDataFilters = {
-    programId: str(params, "programId"),
-    termId: str(params, "termId"),
-    resourceType: str(params, "resourceType") as ResourceType | undefined,
+    course: str(params, "course"),
+    yearRange: str(params, "yearRange"),
     status: str(params, "status") as BulkUploadRowStatus | undefined,
     batchId: str(params, "batchId"),
-    year: str(params, "year"),
     q: str(params, "q"),
     page: str(params, "page"),
   };
@@ -37,8 +35,8 @@ export default async function BulkUploadPage({ searchParams }: { searchParams: P
         </div>
         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-foreground">Bulk Upload</h1>
         <p className="mt-1 max-w-2xl text-sm text-muted">
-          Import resources from a spreadsheet — one row per resource — and audit everything that&apos;s ever
-          been imported this way.
+          Import Full Archive catalog entries from a spreadsheet — one row per paper — and audit everything
+          that&apos;s ever been imported this way.
         </p>
       </div>
 

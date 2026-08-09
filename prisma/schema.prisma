@@ -38,13 +38,11 @@ enum NoteThemeScope {
 }
 
 enum BulkUploadRowStatus {
-  VALID // matched course/term/subject, no dup — ready to import
-  IMPORTED // admin approved, Resource created
+  VALID // required fields present, no dup — ready to import
+  IMPORTED // admin approved, CatalogPaperUpload created
   SKIPPED // was VALID but admin didn't approve it at commit time
-  DUPLICATE // fileHash already exists on a Resource
-  UNMATCHED_SUBJECT // course/term matched, subject name didn't
-  UNMATCHED_COURSE // course or semester didn't match any Program/Term
-  INVALID // missing/bad required fields (no file URL, bad type, etc.)
+  DUPLICATE // fileHash already exists on a CatalogPaperUpload
+  INVALID // missing required fields (course, subject, year range, or file URL)
 }
 
 // e.g. "CBSE Class 12", "B.Com (Hons)", "BBA"
@@ -116,7 +114,6 @@ model Subject {
   noteThemes     NoteTheme[]
   examDates      StudentExamDate[]
   subjectAliases SubjectAlias[]
-  bulkUploadRows BulkUploadRow[]
 
   @@unique([termId, slug])
   @@index([upc])
@@ -375,8 +372,7 @@ model Resource {
   // editor (Phase H) show a real status instead of guessing from null-ness.
   ocrStatus    OcrStatus @default(NOT_STARTED)
 
-  questions     Question[]
-  bulkUploadRow BulkUploadRow?
+  questions Question[]
 
   @@index([fileHash])
   @@index([batchId])
@@ -405,6 +401,8 @@ model CatalogPaperUpload {
   fileHash      String   @unique
   note          String?
   createdAt     DateTime @default(now())
+
+  bulkUploadRow BulkUploadRow?
 
   @@index([course, subject, yearRange])
 }
@@ -568,36 +566,36 @@ model UploadBatch {
 // One row per spreadsheet row from a Bulk Upload "Fresh Upload", persisted
 // at validate time (before import) so the same records serve as both the
 // admin's review screen and the permanent "Uploaded Data" audit trail.
+// Imports into CatalogPaperUpload (the Full Archive catalog) — course and
+// subject are free text here, same as CatalogPaperUpload itself, not
+// matched against the curated Program/Term/Subject taxonomy.
 model BulkUploadRow {
   id        String              @id @default(cuid())
   batchId   String
   batch     UploadBatch         @relation(fields: [batchId], references: [id], onDelete: Cascade)
   rowNumber Int
   status    BulkUploadRowStatus
-  message   String? // why unmatched/invalid, or which resource it duplicates
+  message   String? // why invalid, or which catalog upload it duplicates
 
-  // raw spreadsheet values, kept verbatim for display/debugging
-  courseRaw       String
-  semesterRaw     String
-  subjectRaw      String
-  resourceTypeRaw String?
-  yearRaw         String?
-  fileUrlRaw      String?
-  fileNameRaw     String?
+  // raw spreadsheet values, kept verbatim for display/debugging — mirrors
+  // CatalogPaperUpload's own fields (course/subject/yearRange/semesterGroup/
+  // semester/note), plus the file link/name.
+  courseRaw        String
+  subjectRaw       String
+  yearRangeRaw     String?
+  semesterGroupRaw String?
+  semesterRaw      String?
+  fileUrlRaw       String?
+  fileNameRaw      String?
+  noteRaw          String?
 
-  // resolved matches (null until/unless matched)
-  programId  String?
-  termId     String?
-  subjectId  String?
-  subject    Subject?  @relation(fields: [subjectId], references: [id], onDelete: SetNull)
-  resourceId String?   @unique
-  resource   Resource? @relation(fields: [resourceId], references: [id], onDelete: SetNull)
+  catalogPaperUploadId String?             @unique
+  catalogPaperUpload   CatalogPaperUpload? @relation(fields: [catalogPaperUploadId], references: [id], onDelete: SetNull)
 
   createdAt DateTime @default(now())
 
   @@index([batchId])
   @@index([status])
-  @@index([subjectId])
 }
 
 // A row an admin either couldn't assign a subject to, or that failed to

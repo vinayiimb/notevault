@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import type { BulkUploadRowStatus, Prisma, ResourceType } from "@/generated/prisma";
+import type { BulkUploadRowStatus, Prisma } from "@/generated/prisma";
 
 const PAGE_SIZE = 50;
 
@@ -9,8 +9,6 @@ const STATUS_LABEL: Record<BulkUploadRowStatus, string> = {
   IMPORTED: "Imported",
   SKIPPED: "Skipped",
   DUPLICATE: "Duplicate",
-  UNMATCHED_SUBJECT: "Unmatched subject",
-  UNMATCHED_COURSE: "Unmatched course",
   INVALID: "Invalid",
 };
 
@@ -19,8 +17,6 @@ const STATUS_TONE: Record<BulkUploadRowStatus, string> = {
   IMPORTED: "text-emerald-600",
   SKIPPED: "text-muted",
   DUPLICATE: "text-amber-600",
-  UNMATCHED_SUBJECT: "text-red-500",
-  UNMATCHED_COURSE: "text-red-500",
   INVALID: "text-red-500",
 };
 
@@ -34,31 +30,19 @@ function StatCard({ label, value, tone }: { label: string; value: number; tone?:
 }
 
 export type UploadedDataFilters = {
-  programId?: string;
-  termId?: string;
-  resourceType?: ResourceType;
+  course?: string;
+  yearRange?: string;
   status?: BulkUploadRowStatus;
   batchId?: string;
-  year?: string;
   q?: string;
   page?: string;
 };
 
 function buildWhere(filters: UploadedDataFilters, includeStatus: boolean): Prisma.BulkUploadRowWhereInput {
   const where: Prisma.BulkUploadRowWhereInput = {};
-  if (filters.programId) where.programId = filters.programId;
-  if (filters.termId) where.termId = filters.termId;
+  if (filters.course) where.courseRaw = filters.course;
+  if (filters.yearRange) where.yearRangeRaw = filters.yearRange;
   if (filters.batchId) where.batchId = filters.batchId;
-  if (filters.year) where.yearRaw = { contains: filters.year };
-  if (filters.resourceType) {
-    // resourceTypeRaw is only stored when the sheet gave one explicitly —
-    // a blank cell defaults to PYQ at import time (see resolveRowForImport
-    // in src/lib/bulk-upload.ts), so an unset raw value still counts as PYQ.
-    where.OR = [
-      { resourceTypeRaw: { equals: filters.resourceType, mode: "insensitive" } },
-      ...(filters.resourceType === "PYQ" ? [{ resourceTypeRaw: null }] : []),
-    ];
-  }
   if (filters.q) where.subjectRaw = { contains: filters.q, mode: "insensitive" };
   if (includeStatus && filters.status) where.status = filters.status;
   return where;
@@ -76,8 +60,13 @@ function qs(filters: UploadedDataFilters, overrides: Partial<UploadedDataFilters
 export async function UploadedDataPanel({ filters }: { filters: UploadedDataFilters }) {
   const page = Math.max(1, Number(filters.page) || 1);
 
-  const [programs, batches, summaryGroups, rows, totalCount] = await Promise.all([
-    prisma.program.findMany({ select: { id: true, name: true }, orderBy: { name: "asc" } }),
+  const [courses, yearRanges, batches, summaryGroups, rows, totalCount] = await Promise.all([
+    prisma.bulkUploadRow
+      .findMany({ distinct: ["courseRaw"], select: { courseRaw: true }, orderBy: { courseRaw: "asc" } })
+      .then((rs) => rs.map((r) => r.courseRaw).filter(Boolean)),
+    prisma.bulkUploadRow
+      .findMany({ distinct: ["yearRangeRaw"], select: { yearRangeRaw: true }, orderBy: { yearRangeRaw: "desc" } })
+      .then((rs) => rs.map((r) => r.yearRangeRaw).filter((v): v is string => !!v)),
     prisma.uploadBatch.findMany({
       where: { sourceFileName: { not: null } },
       orderBy: { createdAt: "desc" },
@@ -95,16 +84,12 @@ export async function UploadedDataPanel({ filters }: { filters: UploadedDataFilt
       skip: (page - 1) * PAGE_SIZE,
       take: PAGE_SIZE,
       include: {
-        subject: { select: { name: true } },
+        catalogPaperUpload: { select: { id: true } },
         batch: { select: { sourceFileName: true, createdAt: true } },
       },
     }),
     prisma.bulkUploadRow.count({ where: buildWhere(filters, true) }),
   ]);
-
-  const terms = filters.programId
-    ? await prisma.term.findMany({ where: { programId: filters.programId }, select: { id: true, name: true }, orderBy: { order: "asc" } })
-    : [];
 
   const summary = Object.fromEntries(summaryGroups.map((g) => [g.status, g._count._all])) as Partial<
     Record<BulkUploadRowStatus, number>
@@ -114,43 +99,31 @@ export async function UploadedDataPanel({ filters }: { filters: UploadedDataFilt
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard label="Total rows" value={totalRows} />
         <StatCard label="Imported" value={summary.IMPORTED ?? 0} />
-        <StatCard label="Unmatched" value={(summary.UNMATCHED_SUBJECT ?? 0) + (summary.UNMATCHED_COURSE ?? 0)} tone="warn" />
         <StatCard label="Duplicates" value={summary.DUPLICATE ?? 0} tone="warn" />
         <StatCard label="Invalid" value={summary.INVALID ?? 0} tone="warn" />
       </div>
 
       <form method="get" className="flex flex-wrap items-center gap-3">
         <input type="hidden" name="tab" value="data" />
-        <select name="programId" defaultValue={filters.programId ?? ""} className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold">
+        <select name="course" defaultValue={filters.course ?? ""} className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold">
           <option value="">All courses</option>
-          {programs.map((p) => (
-            <option key={p.id} value={p.id}>
-              {p.name}
+          {courses.map((c) => (
+            <option key={c} value={c}>
+              {c}
             </option>
           ))}
         </select>
-        <select name="termId" defaultValue={filters.termId ?? ""} className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold">
-          <option value="">All semesters</option>
-          {terms.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
+        <select name="yearRange" defaultValue={filters.yearRange ?? ""} className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold">
+          <option value="">All year ranges</option>
+          {yearRanges.map((y) => (
+            <option key={y} value={y}>
+              {y}
             </option>
           ))}
         </select>
-        <select name="resourceType" defaultValue={filters.resourceType ?? ""} className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold">
-          <option value="">All types</option>
-          <option value="PYQ">PYQ</option>
-          <option value="NOTES">Notes</option>
-        </select>
-        <input
-          name="year"
-          defaultValue={filters.year ?? ""}
-          placeholder="Year"
-          className="w-20 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold"
-        />
         <select name="batchId" defaultValue={filters.batchId ?? ""} className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold">
           <option value="">All batches</option>
           {batches.map((b) => (
@@ -188,10 +161,10 @@ export async function UploadedDataPanel({ filters }: { filters: UploadedDataFilt
           <thead className="bg-surface-muted text-muted">
             <tr>
               <th className="px-3 py-2">Course</th>
-              <th className="px-3 py-2">Semester</th>
               <th className="px-3 py-2">Subject</th>
-              <th className="px-3 py-2">Resource</th>
-              <th className="px-3 py-2">Year</th>
+              <th className="px-3 py-2">Year range</th>
+              <th className="px-3 py-2">Semester</th>
+              <th className="px-3 py-2">File</th>
               <th className="px-3 py-2">Status</th>
               <th className="px-3 py-2">Uploaded</th>
               <th className="px-3 py-2">Batch</th>
@@ -201,12 +174,12 @@ export async function UploadedDataPanel({ filters }: { filters: UploadedDataFilt
             {rows.map((row) => (
               <tr key={row.id}>
                 <td className="px-3 py-2 text-foreground">{row.courseRaw || "—"}</td>
-                <td className="px-3 py-2 text-foreground">{row.semesterRaw || "—"}</td>
-                <td className="px-3 py-2 text-foreground">{row.subject?.name ?? row.subjectRaw ?? "—"}</td>
+                <td className="px-3 py-2 text-foreground">{row.subjectRaw || "—"}</td>
+                <td className="px-3 py-2 text-muted">{row.yearRangeRaw || "—"}</td>
+                <td className="px-3 py-2 text-muted">{row.semesterRaw || "—"}</td>
                 <td className="max-w-[220px] truncate px-3 py-2 text-muted" title={row.fileNameRaw ?? undefined}>
                   {row.fileNameRaw || row.fileUrlRaw || "—"}
                 </td>
-                <td className="px-3 py-2 text-muted">{row.yearRaw || "—"}</td>
                 <td className={`px-3 py-2 font-semibold ${STATUS_TONE[row.status]}`}>{STATUS_LABEL[row.status]}</td>
                 <td className="px-3 py-2 text-muted">{row.createdAt.toLocaleDateString()}</td>
                 <td className="px-3 py-2">

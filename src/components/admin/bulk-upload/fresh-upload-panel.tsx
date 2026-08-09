@@ -16,8 +16,6 @@ const STATUS_LABEL: Record<BulkUploadRowStatus, string> = {
   IMPORTED: "Imported",
   SKIPPED: "Skipped",
   DUPLICATE: "Duplicate",
-  UNMATCHED_SUBJECT: "Unmatched subject",
-  UNMATCHED_COURSE: "Unmatched course",
   INVALID: "Invalid",
 };
 
@@ -26,14 +24,12 @@ const STATUS_TONE: Record<BulkUploadRowStatus, string> = {
   IMPORTED: "text-emerald-600",
   SKIPPED: "text-muted",
   DUPLICATE: "text-amber-600",
-  UNMATCHED_SUBJECT: "text-red-500",
-  UNMATCHED_COURSE: "text-red-500",
   INVALID: "text-red-500",
 };
 
 const TEMPLATE_CSV =
-  "course,semester,subject,type,year,fileurl,filename\n" +
-  "B.Com (Hons),3,Cost Accounting,PYQ,2023,https://drive.google.com/file/d/REPLACE_WITH_FILE_ID/view,Cost Accounting 2023.pdf\n";
+  "course,subject,yearrange,semestergroup,semester,fileurl,filename,note\n" +
+  '"Applied Psychology","Applied Social Psychology",2020-2021,"I,III,V",3,https://example.edu/papers/Applied_Social_Psychology_Sem3.pdf,,\n';
 
 function StatCard({ label, value, tone }: { label: string; value: number; tone?: "warn" }) {
   return (
@@ -120,11 +116,12 @@ export function FreshUploadPanel() {
           </button>
         </div>
         <p className="mt-1 text-xs text-muted">
-          One row per resource. Columns: <code>course</code>, <code>semester</code>, <code>subject</code>,{" "}
-          <code>type</code> (Notes or PYQ, defaults to PYQ), <code>year</code>, and a <code>fileurl</code>{" "}
-          (or <code>link</code>/<code>url</code>) pointing at that resource&apos;s file — optionally{" "}
-          <code>filename</code>. Accepts .csv or .xlsx. Nothing is imported until you review and approve
-          the rows below.
+          One row per catalog entry, added straight to the Full Archive. Columns: <code>course</code>,{" "}
+          <code>subject</code>, <code>yearrange</code> (e.g. 2020-2021), <code>semestergroup</code> (e.g.
+          &quot;I,III,V&quot;), <code>semester</code> (optional single semester number), a{" "}
+          <code>fileurl</code> (or <code>pdfurl</code>/<code>link</code>/<code>url</code>) pointing at the
+          paper, and optionally <code>filename</code>/<code>note</code>. Accepts .csv or .xlsx. Nothing is
+          imported until you review and approve the rows below.
         </p>
 
         <div
@@ -155,18 +152,16 @@ export function FreshUploadPanel() {
 
       {result && (
         <div className="space-y-4">
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
             <StatCard label="Valid" value={result.summary.VALID ?? 0} />
             <StatCard label="Duplicate" value={result.summary.DUPLICATE ?? 0} tone="warn" />
-            <StatCard label="Unmatched subject" value={result.summary.UNMATCHED_SUBJECT ?? 0} tone="warn" />
-            <StatCard label="Unmatched course" value={result.summary.UNMATCHED_COURSE ?? 0} tone="warn" />
             <StatCard label="Invalid" value={result.summary.INVALID ?? 0} tone="warn" />
           </div>
 
           {commitResult ? (
             <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4 text-sm">
               <p className="font-semibold text-foreground">
-                Imported {commitResult.imported} resource{commitResult.imported === 1 ? "" : "s"}
+                Imported {commitResult.imported} catalog entr{commitResult.imported === 1 ? "y" : "ies"}
                 {commitResult.skipped > 0 ? `, skipped ${commitResult.skipped} unapproved row${commitResult.skipped === 1 ? "" : "s"}` : ""}.
               </p>
               <Link href={`/admin/bulk-upload/${result.batchId}`} className="mt-1 inline-block text-xs font-medium text-accent underline-offset-2 hover:underline">
@@ -207,8 +202,9 @@ export function FreshUploadPanel() {
                   {!alreadyCommitted && <th className="w-8 px-3 py-2" />}
                   <th className="px-3 py-2">Row</th>
                   <th className="px-3 py-2">Course</th>
-                  <th className="px-3 py-2">Semester</th>
                   <th className="px-3 py-2">Subject</th>
+                  <th className="px-3 py-2">Year range</th>
+                  <th className="px-3 py-2">Sem group</th>
                   <th className="px-3 py-2">File</th>
                   <th className="px-3 py-2">Status</th>
                   <th className="px-3 py-2">Message</th>
@@ -234,7 +230,7 @@ export function FreshUploadPanel() {
                 ))}
                 {filteredRows.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-3 py-6 text-center text-muted">
+                    <td colSpan={8} className="px-3 py-6 text-center text-muted">
                       No rows match this filter.
                     </td>
                   </tr>
@@ -275,9 +271,10 @@ function RowLine({
       )}
       <td className="px-3 py-2 text-muted">{row.rowNumber}</td>
       <td className="px-3 py-2 text-foreground">{row.courseRaw || "—"}</td>
-      <td className="px-3 py-2 text-foreground">{row.semesterRaw || "—"}</td>
       <td className="px-3 py-2 text-foreground">{row.subjectRaw || "—"}</td>
-      <td className="max-w-[240px] truncate px-3 py-2 text-muted" title={row.fileNameRaw || row.fileUrlRaw || ""}>
+      <td className="px-3 py-2 text-muted">{row.yearRangeRaw || "—"}</td>
+      <td className="px-3 py-2 text-muted">{row.semesterGroupRaw || "—"}</td>
+      <td className="max-w-[200px] truncate px-3 py-2 text-muted" title={row.fileNameRaw || row.fileUrlRaw || ""}>
         {row.fileNameRaw || row.fileUrlRaw || "—"}
       </td>
       <td className={`px-3 py-2 font-semibold ${STATUS_TONE[row.status]}`}>{STATUS_LABEL[row.status]}</td>

@@ -1,23 +1,12 @@
 // Row-classification logic for the admin Bulk Upload "Fresh Upload" flow —
-// one spreadsheet row = one Resource, with its own file URL/name, reviewed
-// by the admin before anything is created. Shared by the validate action
-// (classifies + persists BulkUploadRow, nothing imported yet) and the
-// commit action (re-derives the same Resource fields for approved rows).
+// one spreadsheet row = one CatalogPaperUpload (Full Archive catalog entry),
+// reviewed by the admin before anything is created. Course/subject here are
+// free text, same as CatalogPaperUpload itself — not matched against the
+// curated Program/Term/Subject taxonomy (see src/lib/course-match.ts for
+// that other, unrelated matching flow used elsewhere in admin).
 import { createHash } from "node:crypto";
 import { prisma } from "@/lib/prisma";
-import { findProgramMatch, findTermMatch } from "@/lib/course-match";
-import { guessSubject, guessYear, type MatchableSubject } from "@/lib/subject-match";
 import type { BulkUploadRowStatus } from "@/generated/prisma";
-
-export type ProgramWithTerms = {
-  id: string;
-  name: string;
-  terms: {
-    id: string;
-    name: string;
-    subjects: MatchableSubject[];
-  }[];
-};
 
 export type ClassifiedRow = {
   rowNumber: number;
@@ -25,24 +14,18 @@ export type ClassifiedRow = {
   message: string | null;
 
   courseRaw: string;
-  semesterRaw: string;
   subjectRaw: string;
-  resourceTypeRaw: string | null;
-  yearRaw: string | null;
+  yearRangeRaw: string | null;
+  semesterGroupRaw: string | null;
+  semesterRaw: string | null;
   fileUrlRaw: string | null;
   fileNameRaw: string | null;
-
-  programId: string | null;
-  termId: string | null;
-  subjectId: string | null;
+  noteRaw: string | null;
 
   // Only meaningful when status === "VALID" — what commit will write onto
-  // the eventual Resource.
+  // the eventual CatalogPaperUpload.
   resolved: {
-    type: "NOTES" | "PYQ";
-    title: string;
-    year: number | null;
-    fileUrl: string;
+    semester: number | null;
     fileName: string;
     fileHash: string;
   } | null;
@@ -54,14 +37,6 @@ function pick(row: Record<string, string>, ...keys: string[]): string {
     if (value && value.trim()) return value.trim();
   }
   return "";
-}
-
-function mapResourceType(raw: string): "NOTES" | "PYQ" | null {
-  if (!raw) return "PYQ";
-  const v = raw.trim().toLowerCase();
-  if (v === "notes" || v === "note") return "NOTES";
-  if (v === "pyq" || v === "paper" || v === "question paper" || v === "previous year paper") return "PYQ";
-  return null;
 }
 
 // Drive file (not folder) links carry the same file id whether the admin
@@ -92,112 +67,68 @@ function fileNameFromUrl(url: string): string {
   }
 }
 
-// Turns a row's raw fileUrl/fileName/year/type strings into the fields a
-// Resource needs. Used both while classifying (to fill ClassifiedRow.resolved)
-// and again at commit time (re-derived from the persisted raw columns, since
-// they aren't duplicated onto BulkUploadRow itself). Returns null only when
-// the resource type is unrecognized — every other input has a fallback.
+function parseSemester(raw: string | null): number | null {
+  if (!raw) return null;
+  const n = Number(raw.match(/\d+/)?.[0]);
+  return Number.isInteger(n) && n >= 1 && n <= 8 ? n : null;
+}
+
+// Turns a row's raw fileUrl/fileName/semester strings into the fields a
+// CatalogPaperUpload needs. Used both while classifying (to fill
+// ClassifiedRow.resolved) and again at commit time (re-derived from the
+// persisted raw columns, since they aren't duplicated onto BulkUploadRow).
 export function resolveRowForImport(fields: {
   fileUrlRaw: string;
   fileNameRaw: string | null;
-  yearRaw: string | null;
-  resourceTypeRaw: string | null;
-}): { type: "NOTES" | "PYQ"; title: string; year: number | null; fileUrl: string; fileName: string; fileHash: string } | null {
-  const type = mapResourceType(fields.resourceTypeRaw ?? "");
-  if (!type) return null;
-
+  semesterRaw: string | null;
+}): { semester: number | null; fileName: string; fileHash: string } {
   const fileName = fields.fileNameRaw || fileNameFromUrl(fields.fileUrlRaw);
-  const title = fileName.replace(/\.pdf$/i, "");
-  const yearHint = fields.yearRaw && /^\d{4}$/.test(fields.yearRaw) ? Number(fields.yearRaw) : null;
-  const year = guessYear(fileName) ?? yearHint;
   const fileHash = bulkRowFileHash(fields.fileUrlRaw);
-
-  return { type, title, year, fileUrl: fields.fileUrlRaw, fileName, fileHash };
+  return { semester: parseSemester(fields.semesterRaw), fileName, fileHash };
 }
 
-// Pure classification — no DB writes. Does one dedupe lookup (fileHash is
-// indexed) when a row otherwise looks valid.
+// Pure classification — no DB writes except one dedupe lookup (fileHash is
+// unique+indexed) when a row otherwise looks complete.
 export async function classifyBulkUploadRow(
   rowNumber: number,
-  row: Record<string, string>,
-  programs: ProgramWithTerms[],
-  subjectMemory: Record<string, string>
+  row: Record<string, string>
 ): Promise<ClassifiedRow> {
-  const courseRaw = pick(row, "course", "program");
-  const semesterRaw = pick(row, "semester", "term", "sem");
+  const courseRaw = pick(row, "course");
   const subjectRaw = pick(row, "subject");
-  const resourceTypeRaw = pick(row, "type", "resourcetype", "resource type") || null;
-  const yearRaw = pick(row, "year", "examsession", "session") || null;
-  const fileUrlRaw = pick(row, "fileurl", "file url", "link", "url") || null;
+  const yearRangeRaw = pick(row, "yearrange", "year range", "year") || null;
+  const semesterGroupRaw = pick(row, "semestergroup", "semester group") || null;
+  const semesterRaw = pick(row, "semester", "term", "sem") || null;
+  const fileUrlRaw = pick(row, "fileurl", "file url", "pdfurl", "pdf url", "link", "url") || null;
   const fileNameRaw = pick(row, "filename", "file name") || null;
+  const noteRaw = pick(row, "note", "notes") || null;
 
-  const base: Omit<ClassifiedRow, "status" | "message" | "programId" | "termId" | "subjectId" | "resolved"> = {
+  const base: Omit<ClassifiedRow, "status" | "message" | "resolved"> = {
     rowNumber,
     courseRaw,
-    semesterRaw,
     subjectRaw,
-    resourceTypeRaw,
-    yearRaw,
+    yearRangeRaw,
+    semesterGroupRaw,
+    semesterRaw,
     fileUrlRaw,
     fileNameRaw,
+    noteRaw,
   };
 
-  if (!courseRaw) {
-    return { ...base, status: "UNMATCHED_COURSE", message: "No course/program given", programId: null, termId: null, subjectId: null, resolved: null };
-  }
-  const program = findProgramMatch(programs, courseRaw);
-  if (!program) {
-    return { ...base, status: "UNMATCHED_COURSE", message: `No course matched "${courseRaw}"`, programId: null, termId: null, subjectId: null, resolved: null };
-  }
+  if (!courseRaw) return { ...base, status: "INVALID", message: "No course given", resolved: null };
+  if (!subjectRaw) return { ...base, status: "INVALID", message: "No subject given", resolved: null };
+  if (!yearRangeRaw) return { ...base, status: "INVALID", message: "No year/session range given", resolved: null };
+  if (!semesterGroupRaw) return { ...base, status: "INVALID", message: "No semester group given", resolved: null };
+  if (!fileUrlRaw) return { ...base, status: "INVALID", message: "No file URL given", resolved: null };
 
-  if (!semesterRaw) {
-    return { ...base, status: "UNMATCHED_COURSE", message: "No semester given", programId: program.id, termId: null, subjectId: null, resolved: null };
-  }
-  const term = findTermMatch(program.terms, semesterRaw);
-  if (!term) {
-    return { ...base, status: "UNMATCHED_COURSE", message: `No semester matched "${semesterRaw}" in ${program.name}`, programId: program.id, termId: null, subjectId: null, resolved: null };
-  }
+  const resolved = resolveRowForImport({ fileUrlRaw, fileNameRaw, semesterRaw });
 
-  if (!subjectRaw) {
-    return { ...base, status: "INVALID", message: "No subject name given", programId: program.id, termId: term.id, subjectId: null, resolved: null };
-  }
-  const subjectId = guessSubject(subjectRaw, term.subjects, subjectMemory);
-  if (!subjectId) {
-    return { ...base, status: "UNMATCHED_SUBJECT", message: `No subject matched "${subjectRaw}" in ${program.name} · ${term.name}`, programId: program.id, termId: term.id, subjectId: null, resolved: null };
-  }
-
-  if (!fileUrlRaw) {
-    return { ...base, status: "INVALID", message: "No file URL given", programId: program.id, termId: term.id, subjectId, resolved: null };
-  }
-
-  const resolved = resolveRowForImport({ fileUrlRaw, fileNameRaw, yearRaw, resourceTypeRaw });
-  if (!resolved) {
-    return { ...base, status: "INVALID", message: `Unrecognized resource type "${resourceTypeRaw}" — use Notes or PYQ`, programId: program.id, termId: term.id, subjectId, resolved: null };
-  }
-
-  const existing = await prisma.resource.findFirst({ where: { fileHash: resolved.fileHash }, select: { id: true, title: true } });
-  if (existing) {
-    return { ...base, status: "DUPLICATE", message: `Already imported as "${existing.title}"`, programId: program.id, termId: term.id, subjectId, resolved: null };
-  }
-
-  return {
-    ...base,
-    status: "VALID",
-    message: null,
-    programId: program.id,
-    termId: term.id,
-    subjectId,
-    resolved,
-  };
-}
-
-export async function loadProgramsForMatching(): Promise<ProgramWithTerms[]> {
-  return prisma.program.findMany({
-    include: { terms: { include: { subjects: { select: { id: true, name: true } } } } },
+  const existing = await prisma.catalogPaperUpload.findUnique({
+    where: { fileHash: resolved.fileHash },
+    select: { id: true, fileName: true },
   });
-}
+  if (existing) {
+    return { ...base, status: "DUPLICATE", message: `Already in the catalog as "${existing.fileName}"`, resolved: null };
+  }
 
-export async function loadSubjectMatchMemory(): Promise<Record<string, string>> {
-  const rows = await prisma.subjectMatchMemory.findMany();
-  return Object.fromEntries(rows.map((r) => [r.key, r.subjectId]));
+  return { ...base, status: "VALID", message: null, resolved };
 }
