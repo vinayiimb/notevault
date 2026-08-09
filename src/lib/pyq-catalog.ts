@@ -188,7 +188,7 @@ export async function getFullPyqCatalog(): Promise<CatalogPaper[]> {
           id: `upload-${paper.id}`,
           yearRange: paper.yearRange,
           semesterGroup: paper.semesterGroup,
-          course: paper.course,
+          course: normalizeArchiveCourseName(paper.course),
           subject: paper.subject,
           semester: paper.semester === null ? null : String(paper.semester),
           pdfUrl: paper.fileUrl,
@@ -222,6 +222,32 @@ export async function getCoverageCatalogCourses() {
 // This is the RAW union, before admin overrides (rename/semester/merge/
 // highlight, see CatalogSubjectOverride) are applied — the admin editor
 // reads this directly so it can show what a subject looked like originally.
+// Some sources build `course` from the live Program table's name
+// (readOnlinePapers/sessionPapers below), while the static library catalog
+// uses its own fixed spelling — so the same programme can arrive under two
+// different strings (e.g. Program "B.Com. (Hons.)" vs catalog "B. Com.
+// (H)"), splitting it into two unrelated course buckets in the archive
+// browser and making merged subjects in one bucket invisible from the
+// other. This canonicalizes known aliases onto the static catalog's
+// spelling so every source lands in the same bucket.
+const ARCHIVE_COURSE_ALIASES: Record<string, string> = {
+  "b.com. (hons.)": "B. Com. (H)",
+  "b.com (hons.)": "B. Com. (H)",
+  "b.com. (h)": "B. Com. (H)",
+  "b.com (h)": "B. Com. (H)",
+  "b.com. programme": "B. Com. (P)",
+  "b.com programme": "B. Com. (P)",
+  "b.com. (prog.)": "B. Com. (P)",
+  "b.com (prog.)": "B. Com. (P)",
+  "b.com. (p)": "B. Com. (P)",
+  "b.com (p)": "B. Com. (P)",
+};
+
+function normalizeArchiveCourseName(course: string): string {
+  const key = course.trim().toLowerCase().replace(/\s+/g, " ");
+  return ARCHIVE_COURSE_ALIASES[key] ?? course;
+}
+
 export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
   const [catalog, readOnline, driveFiles] = await Promise.all([
     getFullPyqCatalog(),
@@ -269,7 +295,7 @@ export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
     ...duMasterDriveCatalog,
     ...extractedZipCatalog,
     ...bcomDriveCatalog,
-  ];
+  ].map((paper) => ({ ...paper, course: normalizeArchiveCourseName(paper.course) }));
 }
 
 function overrideMapKey(course: string, subjectKey: string) {
