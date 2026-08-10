@@ -5,10 +5,17 @@ import { useMemo, useRef, useState, useTransition } from "react";
 import { FileXls, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import {
   validateBulkUploadAction,
-  commitBulkUploadBatchAction,
+  commitBulkUploadRowsAction,
+  skipBulkUploadRowsAction,
   type BulkUploadRowSummary,
   type BulkUploadValidateResult,
 } from "@/lib/actions";
+
+// Rows per commit call — each chunk is one progress-bar tick. Small enough
+// that the bar visibly moves on a batch of a few hundred rows, big enough
+// that a batch of a few thousand doesn't turn into a chunk per animation
+// frame.
+const COMMIT_CHUNK_SIZE = 15;
 import type { BulkUploadRowStatus } from "@/generated/prisma";
 
 const STATUS_LABEL: Record<BulkUploadRowStatus, string> = {
@@ -48,7 +55,8 @@ export function FreshUploadPanel() {
   const [result, setResult] = useState<BulkUploadValidateResult | null>(null);
   const [approved, setApproved] = useState<Set<string>>(new Set());
   const [statusFilter, setStatusFilter] = useState<BulkUploadRowStatus | "ALL">("ALL");
-  const [commitResult, setCommitResult] = useState<{ imported: number; skipped: number } | null>(null);
+  const [commitResult, setCommitResult] = useState<{ imported: number; duplicate: number; skipped: number } | null>(null);
+  const [commitProgress, setCommitProgress] = useState<{ done: number; total: number } | null>(null);
 
   function run(file: File) {
     setError(null);
@@ -79,15 +87,55 @@ export function FreshUploadPanel() {
 
   function commit() {
     if (!result) return;
+    const approvedIds = [...approved];
+    const total = approvedIds.length;
+    setCommitProgress({ done: 0, total });
     startTransition(async () => {
       try {
-        const formData = new FormData();
-        formData.set("batchId", result.batchId);
-        for (const id of approved) formData.append("approvedRowIds", id);
-        const res = await commitBulkUploadBatchAction(formData);
-        setCommitResult(res);
+        let imported = 0;
+        let duplicate = 0;
+        const statusById = new Map<string, { status: BulkUploadRowStatus; message: string | null }>();
+
+        for (let i = 0; i < approvedIds.length; i += COMMIT_CHUNK_SIZE) {
+          const chunk = approvedIds.slice(i, i + COMMIT_CHUNK_SIZE);
+          const formData = new FormData();
+          formData.set("batchId", result.batchId);
+          for (const id of chunk) formData.append("rowIds", id);
+          const { results: chunkResults } = await commitBulkUploadRowsAction(formData);
+
+          for (const r of chunkResults) {
+            statusById.set(r.id, { status: r.status, message: r.message });
+            if (r.status === "IMPORTED") imported += 1;
+            if (r.status === "DUPLICATE") duplicate += 1;
+          }
+          setResult((prev) =>
+            prev
+              ? { ...prev, rows: prev.rows.map((row) => (statusById.has(row.id) ? { ...row, ...statusById.get(row.id)! } : row)) }
+              : prev
+          );
+          setCommitProgress({ done: Math.min(i + COMMIT_CHUNK_SIZE, total), total });
+        }
+
+        const unapprovedIds = result.rows.filter((r) => r.status === "VALID" && !approved.has(r.id)).map((r) => r.id);
+        let skipped = 0;
+        if (unapprovedIds.length > 0) {
+          const skipFormData = new FormData();
+          skipFormData.set("batchId", result.batchId);
+          for (const id of unapprovedIds) skipFormData.append("rowIds", id);
+          const skipRes = await skipBulkUploadRowsAction(skipFormData);
+          skipped = skipRes.skipped;
+          setResult((prev) =>
+            prev
+              ? { ...prev, rows: prev.rows.map((row) => (unapprovedIds.includes(row.id) ? { ...row, status: "SKIPPED" as BulkUploadRowStatus } : row)) }
+              : prev
+          );
+        }
+
+        setCommitResult({ imported, duplicate, skipped });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not import the approved rows.");
+      } finally {
+        setCommitProgress(null);
       }
     });
   }
@@ -158,10 +206,28 @@ export function FreshUploadPanel() {
             <StatCard label="Invalid" value={result.summary.INVALID ?? 0} tone="warn" />
           </div>
 
-          {commitResult ? (
+          {commitProgress ? (
+            <div className="rounded-xl border border-border bg-surface p-4">
+              <div className="flex items-baseline justify-between text-sm">
+                <p className="font-semibold text-foreground">Importing…</p>
+                <p className="font-mono text-xs text-muted">
+                  {commitProgress.done} / {commitProgress.total}
+                </p>
+              </div>
+              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-muted">
+                <div
+                  className="h-full rounded-full bg-accent transition-[width] duration-300 ease-out"
+                  style={{
+                    width: `${commitProgress.total === 0 ? 0 : Math.round((commitProgress.done / commitProgress.total) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+          ) : commitResult ? (
             <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4 text-sm">
               <p className="font-semibold text-foreground">
                 Imported {commitResult.imported} catalog entr{commitResult.imported === 1 ? "y" : "ies"}
+                {commitResult.duplicate > 0 ? `, ${commitResult.duplicate} already in the catalog` : ""}
                 {commitResult.skipped > 0 ? `, skipped ${commitResult.skipped} unapproved row${commitResult.skipped === 1 ? "" : "s"}` : ""}.
               </p>
               <Link href={`/admin/bulk-upload/${result.batchId}`} className="mt-1 inline-block text-xs font-medium text-accent underline-offset-2 hover:underline">

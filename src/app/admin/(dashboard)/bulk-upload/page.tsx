@@ -5,6 +5,11 @@ import { UploadedDataPanel, type UploadedDataFilters } from "@/components/admin/
 import type { BulkUploadRowStatus } from "@/generated/prisma";
 
 export const dynamic = "force-dynamic";
+// Safety margin for validateBulkUploadAction/commitBulkUploadRowsAction on
+// a large sheet — should rarely matter now that validate does one batched
+// dedupe query instead of one per row, but a generous ceiling here is cheap
+// insurance against the "unexpected response" failure mode a timeout causes.
+export const maxDuration = 60;
 
 type SearchParams = Record<string, string | string[] | undefined>;
 

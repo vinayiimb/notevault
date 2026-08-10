@@ -1996,7 +1996,7 @@ export async function validateBulkUploadAction(formData: FormData): Promise<Bulk
   if (!file || file.size === 0) throw new Error("A CSV or Excel file is required.");
 
   const { parseSpreadsheetRows } = await import("@/lib/spreadsheet");
-  const { classifyBulkUploadRow } = await import("@/lib/bulk-upload");
+  const { classifyBulkUploadRow, extractFileUrlRaw, bulkRowFileHash } = await import("@/lib/bulk-upload");
 
   const rawRows = await parseSpreadsheetRows(file);
   if (rawRows.length === 0) {
@@ -2007,10 +2007,22 @@ export async function validateBulkUploadAction(formData: FormData): Promise<Bulk
 
   const batch = await prisma.uploadBatch.create({ data: { sourceFileName: file.name } });
 
-  const classified = [];
-  for (let i = 0; i < rawRows.length; i++) {
-    classified.push(await classifyBulkUploadRow(i + 1, rawRows[i]));
-  }
+  // One batched dedupe query for the whole sheet instead of one round trip
+  // per row — with a few hundred rows, sequential per-row queries against
+  // Supabase routinely blew past the serverless function's time limit and
+  // surfaced to the admin as "An unexpected response was received from the
+  // server" (a timed-out/truncated response, not a real error to report).
+  const candidateHashes = [...new Set(rawRows.map(extractFileUrlRaw).filter((u): u is string => !!u).map(bulkRowFileHash))];
+  const existingRows =
+    candidateHashes.length > 0
+      ? await prisma.catalogPaperUpload.findMany({
+          where: { fileHash: { in: candidateHashes } },
+          select: { fileHash: true, fileName: true },
+        })
+      : [];
+  const existingHashes = new Map(existingRows.map((r) => [r.fileHash, r.fileName]));
+
+  const classified = rawRows.map((row, i) => classifyBulkUploadRow(i + 1, row, existingHashes));
 
   const created = await prisma.$transaction(
     classified.map((row) =>
@@ -2061,36 +2073,39 @@ export async function validateBulkUploadAction(formData: FormData): Promise<Bulk
   };
 }
 
-// Fresh Upload step 2: imports exactly the rows the admin approved out of
-// a batch's VALID rows. Any VALID row not approved becomes SKIPPED rather
-// than IMPORTED — it stays visible in Uploaded Data, just never became a
-// CatalogPaperUpload. Re-checks for a fileHash collision (another batch
-// could have imported the same file in between validate and commit).
-export async function commitBulkUploadBatchAction(formData: FormData): Promise<{ imported: number; skipped: number }> {
+export type BulkUploadRowResult = {
+  id: string;
+  status: BulkUploadRowStatus;
+  message: string | null;
+};
+
+// Fresh Upload step 2: imports one chunk of the rows the admin approved
+// (client calls this repeatedly, one chunk at a time, to drive a progress
+// bar — see fresh-upload-panel.tsx). Only touches the specific rowIds
+// passed in, so it's safe to call in batches; skipBulkUploadRowsAction
+// handles the "left unchecked" rows separately once every chunk is done.
+// Re-checks for a fileHash collision (another batch, or an earlier row in
+// this same run, could have imported the same file already).
+export async function commitBulkUploadRowsAction(formData: FormData): Promise<{ results: BulkUploadRowResult[] }> {
   await requireAdmin();
   const batchId = String(formData.get("batchId") ?? "").trim();
   if (!batchId) throw new Error("A batch id is required.");
-  const approvedRowIds = new Set(formData.getAll("approvedRowIds").map(String));
+  const rowIds = formData.getAll("rowIds").map(String);
+  if (rowIds.length === 0) return { results: [] };
 
   const { resolveRowForImport } = await import("@/lib/bulk-upload");
 
-  const validRows = await prisma.bulkUploadRow.findMany({ where: { batchId, status: "VALID" } });
+  const rows = await prisma.bulkUploadRow.findMany({
+    where: { id: { in: rowIds }, batchId, status: "VALID" },
+  });
 
-  let imported = 0;
-  let skipped = 0;
+  const results: BulkUploadRowResult[] = [];
 
-  for (const row of validRows) {
-    if (!approvedRowIds.has(row.id)) {
-      await prisma.bulkUploadRow.update({ where: { id: row.id }, data: { status: "SKIPPED" } });
-      skipped += 1;
-      continue;
-    }
-
+  for (const row of rows) {
     if (!row.fileUrlRaw || !row.yearRangeRaw || !row.semesterGroupRaw) {
-      await prisma.bulkUploadRow.update({
-        where: { id: row.id },
-        data: { status: "INVALID", message: "Missing required field at import time" },
-      });
+      const message = "Missing required field at import time";
+      await prisma.bulkUploadRow.update({ where: { id: row.id }, data: { status: "INVALID", message } });
+      results.push({ id: row.id, status: "INVALID", message });
       continue;
     }
 
@@ -2102,10 +2117,9 @@ export async function commitBulkUploadBatchAction(formData: FormData): Promise<{
 
     const existing = await prisma.catalogPaperUpload.findUnique({ where: { fileHash: resolved.fileHash } });
     if (existing) {
-      await prisma.bulkUploadRow.update({
-        where: { id: row.id },
-        data: { status: "DUPLICATE", message: `Already in the catalog as "${existing.fileName}"` },
-      });
+      const message = `Already in the catalog as "${existing.fileName}"`;
+      await prisma.bulkUploadRow.update({ where: { id: row.id }, data: { status: "DUPLICATE", message } });
+      results.push({ id: row.id, status: "DUPLICATE", message });
       continue;
     }
 
@@ -2127,14 +2141,37 @@ export async function commitBulkUploadBatchAction(formData: FormData): Promise<{
       where: { id: row.id },
       data: { status: "IMPORTED", catalogPaperUploadId: catalogPaperUpload.id },
     });
-    imported += 1;
+    results.push({ id: row.id, status: "IMPORTED", message: null });
   }
+
+  return { results };
+}
+
+// Fresh Upload step 3: once every approved chunk has been committed, marks
+// whatever's left VALID-but-unchecked as SKIPPED — it stays visible in
+// Uploaded Data, just never became a CatalogPaperUpload. Split out from the
+// commit loop so unapproved rows don't need their own progress-bar chunk.
+export async function skipBulkUploadRowsAction(formData: FormData): Promise<{ skipped: number }> {
+  await requireAdmin();
+  const batchId = String(formData.get("batchId") ?? "").trim();
+  if (!batchId) throw new Error("A batch id is required.");
+  const rowIds = formData.getAll("rowIds").map(String);
+
+  const count =
+    rowIds.length === 0
+      ? 0
+      : (
+          await prisma.bulkUploadRow.updateMany({
+            where: { id: { in: rowIds }, batchId, status: "VALID" },
+            data: { status: "SKIPPED" },
+          })
+        ).count;
 
   revalidatePath("/pyq-notes");
   revalidatePath("/admin/course-coverage");
   revalidatePath("/admin/bulk-upload");
 
-  return { imported, skipped };
+  return { skipped: count };
 }
 
 export async function deleteResourceAction(formData: FormData) {

@@ -12,7 +12,7 @@
 import { readFileSync } from "node:fs";
 import { prisma } from "@/lib/prisma";
 import { parseCsv } from "@/lib/csv";
-import { classifyBulkUploadRow, resolveRowForImport } from "@/lib/bulk-upload";
+import { classifyBulkUploadRow, resolveRowForImport, extractFileUrlRaw, bulkRowFileHash } from "@/lib/bulk-upload";
 
 async function main() {
   const csvPath = process.argv[2];
@@ -34,13 +34,24 @@ async function main() {
   });
   console.log(`Created UploadBatch ${batch.id}`);
 
+  // One batched dedupe query for the whole sheet instead of one per row.
+  const candidateHashes = [...new Set(rawRows.map(extractFileUrlRaw).filter((u): u is string => !!u).map(bulkRowFileHash))];
+  const existingRows =
+    candidateHashes.length > 0
+      ? await prisma.catalogPaperUpload.findMany({
+          where: { fileHash: { in: candidateHashes } },
+          select: { fileHash: true, fileName: true },
+        })
+      : [];
+  const existingHashes = new Map(existingRows.map((r) => [r.fileHash, r.fileName]));
+
   let imported = 0;
   let duplicate = 0;
   let invalid = 0;
 
   for (let i = 0; i < rawRows.length; i++) {
     const rowNumber = i + 1;
-    const classified = await classifyBulkUploadRow(rowNumber, rawRows[i]);
+    const classified = classifyBulkUploadRow(rowNumber, rawRows[i], existingHashes);
 
     const bulkUploadRow = await prisma.bulkUploadRow.create({
       data: {

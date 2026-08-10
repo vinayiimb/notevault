@@ -5,7 +5,6 @@
 // curated Program/Term/Subject taxonomy (see src/lib/course-match.ts for
 // that other, unrelated matching flow used elsewhere in admin).
 import { createHash } from "node:crypto";
-import { prisma } from "@/lib/prisma";
 import type { BulkUploadRowStatus } from "@/generated/prisma";
 
 export type ClassifiedRow = {
@@ -87,18 +86,29 @@ export function resolveRowForImport(fields: {
   return { semester: parseSemester(fields.semesterRaw), fileName, fileHash };
 }
 
-// Pure classification — no DB writes except one dedupe lookup (fileHash is
-// unique+indexed) when a row otherwise looks complete.
-export async function classifyBulkUploadRow(
+// Pure classification — no DB access at all. Dedupe is checked against
+// existingHashes (fileHash -> fileName), which the caller batch-fetches
+// once for the whole sheet up front (see validateBulkUploadAction) instead
+// of this function querying per row — with a few hundred rows, one round
+// trip per row instead of one total is the difference between validating
+// in a couple seconds and timing out the whole request.
+// Pulled out so validateBulkUploadAction can compute every row's candidate
+// fileHash up front, for one batched dedupe query instead of one per row.
+export function extractFileUrlRaw(row: Record<string, string>): string | null {
+  return pick(row, "fileurl", "file url", "pdfurl", "pdf url", "link", "url") || null;
+}
+
+export function classifyBulkUploadRow(
   rowNumber: number,
-  row: Record<string, string>
-): Promise<ClassifiedRow> {
+  row: Record<string, string>,
+  existingHashes: ReadonlyMap<string, string>
+): ClassifiedRow {
   const courseRaw = pick(row, "course");
   const subjectRaw = pick(row, "subject");
   const yearRangeRaw = pick(row, "yearrange", "year range", "year") || null;
   const semesterGroupRaw = pick(row, "semestergroup", "semester group") || null;
   const semesterRaw = pick(row, "semester", "term", "sem") || null;
-  const fileUrlRaw = pick(row, "fileurl", "file url", "pdfurl", "pdf url", "link", "url") || null;
+  const fileUrlRaw = extractFileUrlRaw(row);
   const fileNameRaw = pick(row, "filename", "file name") || null;
   const noteRaw = pick(row, "note", "notes") || null;
 
@@ -122,12 +132,9 @@ export async function classifyBulkUploadRow(
 
   const resolved = resolveRowForImport({ fileUrlRaw, fileNameRaw, semesterRaw });
 
-  const existing = await prisma.catalogPaperUpload.findUnique({
-    where: { fileHash: resolved.fileHash },
-    select: { id: true, fileName: true },
-  });
-  if (existing) {
-    return { ...base, status: "DUPLICATE", message: `Already in the catalog as "${existing.fileName}"`, resolved: null };
+  const existingFileName = existingHashes.get(resolved.fileHash);
+  if (existingFileName !== undefined) {
+    return { ...base, status: "DUPLICATE", message: `Already in the catalog as "${existingFileName}"`, resolved: null };
   }
 
   return { ...base, status: "VALID", message: null, resolved };
