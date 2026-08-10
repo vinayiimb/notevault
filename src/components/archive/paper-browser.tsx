@@ -27,6 +27,24 @@ function embeddableUrl(url: string): string {
   return url;
 }
 
+// Some source sites send `X-Frame-Options: DENY` / a restrictive
+// frame-ancestors CSP, which silently blocks embedding — the browser
+// shows its own "refused to connect" page inside the iframe with no way
+// for our JS to detect it (X-Frame-Options blocks don't fire an error
+// event; the load looks "successful" from the parent's perspective).
+// Since it can't be detected after the fact, known offenders are listed
+// here up front and skip straight to the "open externally" fallback.
+// zhdce.ac.in confirmed via curl -I: `x-frame-options: DENY`.
+const FRAME_BLOCKED_HOSTS = new Set(["zhdce.ac.in"]);
+
+function isFrameBlocked(url: string): boolean {
+  try {
+    return FRAME_BLOCKED_HOSTS.has(new URL(url).hostname);
+  } catch {
+    return false;
+  }
+}
+
 function fileName(paper: CatalogPaper) {
   if (paper.fileName) return paper.fileName;
   const tail = paper.pdfUrl.split("/").pop() ?? "Question paper.pdf";
@@ -355,12 +373,29 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
                   Download
                 </a>
               </div>
-              <iframe
-                key={selectedPaper.id}
-                src={embeddableUrl(selectedPaper.pdfUrl)}
-                title={fileName(selectedPaper)}
-                className="h-[75vh] w-full bg-surface-muted/50"
-              />
+              {isFrameBlocked(selectedPaper.pdfUrl) ? (
+                <div className="flex h-[75vh] flex-col items-center justify-center gap-3 bg-surface-muted/50 px-6 text-center">
+                  <p className="text-sm text-muted">
+                    This paper&apos;s source site doesn&apos;t allow inline preview — open it directly instead.
+                  </p>
+                  <a
+                    href={selectedPaper.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                  >
+                    <ArrowSquareOut size={14} weight="bold" />
+                    Open PDF
+                  </a>
+                </div>
+              ) : (
+                <iframe
+                  key={selectedPaper.id}
+                  src={embeddableUrl(selectedPaper.pdfUrl)}
+                  title={fileName(selectedPaper)}
+                  className="h-[75vh] w-full bg-surface-muted/50"
+                />
+              )}
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
