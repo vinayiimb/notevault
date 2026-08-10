@@ -10,9 +10,18 @@
 // environment it's run in — run this with production credentials only when
 // you intend to write to production.
 import { readFileSync } from "node:fs";
-import { prisma } from "@/lib/prisma";
+// Not importing prisma from @/lib/prisma — that module now starts with
+// `import "server-only"`, which throws unconditionally outside a Next.js
+// server-component build (exactly what this plain tsx script is). It also
+// silently rewrites DATABASE_URL to a bogus localhost value if it doesn't
+// look like a real postgres URL, as a safety net for the Next.js dev
+// server — not something a CLI script importing real prod credentials
+// wants. Talking to Prisma directly here sidesteps both.
+import { PrismaClient } from "@/generated/prisma";
 import { parseCsv } from "@/lib/csv";
 import { classifyBulkUploadRow, resolveRowForImport, extractFileUrlRaw, bulkRowFileHash } from "@/lib/bulk-upload";
+
+const prisma = new PrismaClient();
 
 async function main() {
   const csvPath = process.argv[2];
