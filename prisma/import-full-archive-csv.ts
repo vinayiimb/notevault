@@ -49,77 +49,95 @@ async function main() {
   let duplicate = 0;
   let invalid = 0;
 
+  let errored = 0;
+
   for (let i = 0; i < rawRows.length; i++) {
     const rowNumber = i + 1;
-    const classified = classifyBulkUploadRow(rowNumber, rawRows[i], existingHashes);
+    // Each row gets its own try/catch — one bad row (a genuinely broken
+    // fileUrl, an unexpected DB hiccup) shouldn't kill the whole run and
+    // strand every row after it. This is what took the web UI's commit
+    // loop down to 50/2701 imported before it got the same fix.
+    try {
+      const classified = classifyBulkUploadRow(rowNumber, rawRows[i], existingHashes);
 
-    const bulkUploadRow = await prisma.bulkUploadRow.create({
-      data: {
-        batchId: batch.id,
-        rowNumber: classified.rowNumber,
-        status: classified.status,
-        message: classified.message,
-        courseRaw: classified.courseRaw,
-        subjectRaw: classified.subjectRaw,
-        yearRangeRaw: classified.yearRangeRaw,
-        semesterGroupRaw: classified.semesterGroupRaw,
-        semesterRaw: classified.semesterRaw,
-        fileUrlRaw: classified.fileUrlRaw,
+      const bulkUploadRow = await prisma.bulkUploadRow.create({
+        data: {
+          batchId: batch.id,
+          rowNumber: classified.rowNumber,
+          status: classified.status,
+          message: classified.message,
+          courseRaw: classified.courseRaw,
+          subjectRaw: classified.subjectRaw,
+          yearRangeRaw: classified.yearRangeRaw,
+          semesterGroupRaw: classified.semesterGroupRaw,
+          semesterRaw: classified.semesterRaw,
+          fileUrlRaw: classified.fileUrlRaw,
+          fileNameRaw: classified.fileNameRaw,
+          noteRaw: classified.noteRaw,
+        },
+      });
+
+      if (classified.status !== "VALID") {
+        if (classified.status === "DUPLICATE") duplicate += 1;
+        else invalid += 1;
+        console.log(`Row ${rowNumber}: ${classified.status} — ${classified.message ?? ""}`);
+        continue;
+      }
+
+      // Re-derive at commit time in case an earlier row in this same run
+      // just imported the same file (existingHashes was computed once, up
+      // front, before this loop started).
+      const resolved = resolveRowForImport({
+        fileUrlRaw: classified.fileUrlRaw!,
         fileNameRaw: classified.fileNameRaw,
-        noteRaw: classified.noteRaw,
-      },
-    });
+        semesterRaw: classified.semesterRaw,
+      });
 
-    if (classified.status !== "VALID") {
-      if (classified.status === "DUPLICATE") duplicate += 1;
-      else invalid += 1;
-      console.log(`Row ${rowNumber}: ${classified.status} — ${classified.message ?? ""}`);
-      continue;
-    }
+      const existing = await prisma.catalogPaperUpload.findUnique({ where: { fileHash: resolved.fileHash } });
+      if (existing) {
+        await prisma.bulkUploadRow.update({
+          where: { id: bulkUploadRow.id },
+          data: { status: "DUPLICATE", message: `Already in the catalog as "${existing.fileName}"` },
+        });
+        duplicate += 1;
+        console.log(`Row ${rowNumber}: DUPLICATE — already in catalog as "${existing.fileName}"`);
+        continue;
+      }
 
-    // Re-derive at commit time (mirrors commitBulkUploadBatchAction) in case
-    // an earlier row in this same run just imported the same file.
-    const resolved = resolveRowForImport({
-      fileUrlRaw: classified.fileUrlRaw!,
-      fileNameRaw: classified.fileNameRaw,
-      semesterRaw: classified.semesterRaw,
-    });
-
-    const existing = await prisma.catalogPaperUpload.findUnique({ where: { fileHash: resolved.fileHash } });
-    if (existing) {
+      const catalogPaperUpload = await prisma.catalogPaperUpload.create({
+        data: {
+          course: classified.courseRaw,
+          subject: classified.subjectRaw,
+          yearRange: classified.yearRangeRaw!,
+          semesterGroup: classified.semesterGroupRaw!,
+          semester: resolved.semester,
+          fileUrl: classified.fileUrlRaw!,
+          fileName: resolved.fileName,
+          fileSize: 0,
+          fileHash: resolved.fileHash,
+          note: classified.noteRaw,
+        },
+      });
       await prisma.bulkUploadRow.update({
         where: { id: bulkUploadRow.id },
-        data: { status: "DUPLICATE", message: `Already in the catalog as "${existing.fileName}"` },
+        data: { status: "IMPORTED", catalogPaperUploadId: catalogPaperUpload.id },
       });
-      duplicate += 1;
-      console.log(`Row ${rowNumber}: DUPLICATE — already in catalog as "${existing.fileName}"`);
-      continue;
+      imported += 1;
+      console.log(`Row ${rowNumber}: IMPORTED — ${classified.courseRaw} / ${classified.subjectRaw}`);
+    } catch (err) {
+      errored += 1;
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(`Row ${rowNumber}: ERROR — ${message} (continuing to next row)`);
     }
-
-    const catalogPaperUpload = await prisma.catalogPaperUpload.create({
-      data: {
-        course: classified.courseRaw,
-        subject: classified.subjectRaw,
-        yearRange: classified.yearRangeRaw!,
-        semesterGroup: classified.semesterGroupRaw!,
-        semester: resolved.semester,
-        fileUrl: classified.fileUrlRaw!,
-        fileName: resolved.fileName,
-        fileSize: 0,
-        fileHash: resolved.fileHash,
-        note: classified.noteRaw,
-      },
-    });
-    await prisma.bulkUploadRow.update({
-      where: { id: bulkUploadRow.id },
-      data: { status: "IMPORTED", catalogPaperUploadId: catalogPaperUpload.id },
-    });
-    imported += 1;
-    console.log(`Row ${rowNumber}: IMPORTED — ${classified.courseRaw} / ${classified.subjectRaw}`);
   }
 
-  console.log(`\nDone. Imported ${imported}, duplicate ${duplicate}, invalid ${invalid}, total ${rawRows.length}.`);
+  console.log(
+    `\nDone. Imported ${imported}, duplicate ${duplicate}, invalid ${invalid}, errored ${errored}, total ${rawRows.length}.`
+  );
   console.log(`Batch id: ${batch.id} (visible under Admin → Bulk Upload → Uploaded Data)`);
+  if (errored > 0) {
+    console.log(`${errored} row(s) hit an unexpected error and were skipped — re-run this same command to retry just those (already-imported rows are skipped automatically via dedupe).`);
+  }
 }
 
 main()
