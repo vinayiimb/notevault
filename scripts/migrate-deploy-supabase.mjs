@@ -72,7 +72,7 @@ execSync("npx prisma migrate deploy", { stdio: "inherit", env: migrateEnv });
 // credentials. Written to a temp file rather than inlined to sidestep
 // shell/JS quote-escaping across execSync -> node -e -> $queryRawUnsafe.
 const diagnosticScript = `
-const { PrismaClient } = require("./src/generated/prisma/index.js");
+const { PrismaClient } = require("../src/generated/prisma/index.js");
 const prisma = new PrismaClient();
 (async () => {
   const rows = await prisma.$queryRawUnsafe(
