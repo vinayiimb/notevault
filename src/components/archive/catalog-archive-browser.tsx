@@ -6,11 +6,13 @@ import {
   DownloadSimple,
   FunnelSimple,
   MagnifyingGlass,
+  PenNib,
   Star,
   WarningCircle,
 } from "@phosphor-icons/react/dist/ssr";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import {
   canonicalCourseName,
@@ -715,20 +717,29 @@ function SubjectList({
                         const label = multiple ? `Option ${index + 1}` : "Open final PDF";
                         const origin = sourceLabel(paper);
                         return (
-                          <a
-                            key={paper.id}
-                            href={paper.pdfUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            title={`${fileName(paper)}${paper.note ? ` - ${paper.note}` : ""}`}
-                            className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-foreground outline-none hover:border-accent hover:bg-accent-soft hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
-                          >
-                            {label}
-                            {origin || paper.note ? (
-                              <span className="max-w-32 truncate text-xs font-normal text-muted">{origin ?? paper.note}</span>
-                            ) : null}
-                            <ArrowSquareOut aria-hidden="true" size={15} weight="bold" />
-                          </a>
+                          <div key={paper.id} className="flex flex-wrap gap-2">
+                            <a
+                              href={paper.pdfUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={`${fileName(paper)}${paper.note ? ` - ${paper.note}` : ""}`}
+                              className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-foreground outline-none hover:border-accent hover:bg-accent-soft hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                            >
+                              {label}
+                              {origin || paper.note ? (
+                                <span className="max-w-32 truncate text-xs font-normal text-muted">{origin ?? paper.note}</span>
+                              ) : null}
+                              <ArrowSquareOut aria-hidden="true" size={15} weight="bold" />
+                            </a>
+                            <Link
+                              href={`/practice?paperId=${paper.id}`}
+                              className="inline-flex min-h-10 items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-muted outline-none hover:border-accent hover:bg-accent-soft hover:text-accent focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2"
+                              title="Start interactive practice session for this paper"
+                            >
+                              <PenNib aria-hidden="true" size={15} weight="bold" />
+                              Practice
+                            </Link>
+                          </div>
                         );
                       })}
                     </div>

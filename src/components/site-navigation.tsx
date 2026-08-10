@@ -18,6 +18,7 @@ import {
   NotePencil,
   Question,
   Scroll,
+  SealCheck,
   Wrench,
   X,
 } from "@phosphor-icons/react";
@@ -27,6 +28,8 @@ const NAVIGATION_SECTIONS = [
     title: "Study Portals",
     items: [
       { href: "/pyq-notes", label: "PYQ", desc: "Complete 8,300+ file search catalog", icon: FileArchive, badge: "8.3k+" },
+      { href: "/pyp", label: "PYP", desc: "DU PYQ Search & Course Archives", icon: SealCheck },
+      { href: "/practice", label: "Practice Mode", desc: "Interactive PYQ practice & mock solving", icon: NotePencil, badge: "Live" },
       { href: "/notes", label: "Notes", desc: "Access study notes and summaries", icon: NotePencil },
       { href: "/previous-year-papers", label: "Previous Year Papers", desc: "Download past exams and solution keys", icon: Files },
       { href: "/syllabus", label: "Syllabus", desc: "Browse official DU UGCF syllabus", icon: Scroll },
@@ -51,8 +54,11 @@ export function SiteNavigation() {
 
   const links = [
     { href: "/pyq-notes", label: "PYQ" },
+    { href: "/pyp", label: "PYP" },
+    { href: "/practice", label: "Practice" },
     { href: "/notes", label: "Notes" },
   ];
+
 
   return (
     <nav className="hidden items-center gap-0.5 text-xs lg:text-sm font-medium md:flex" aria-label="Main navigation">
