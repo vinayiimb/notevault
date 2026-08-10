@@ -13,29 +13,31 @@
 // `migrate deploy` reported "no pending migrations" while Supabase (the
 // real, live database) was missing BulkUploadRow entirely.
 //
-// Fix: derive Supabase's direct (non-pooled, port 5432) connection string
-// from DATABASE_URL every build, and use that — DATABASE_URL_UNPOOLED is
-// no longer trusted as a separate source of truth. If DATABASE_URL isn't a
-// Supabase pooler URL (e.g. local dev against a plain Postgres), this is a
-// no-op and DATABASE_URL_UNPOOLED (or DATABASE_URL) is used as-is.
+// Fix: derive Supabase's Session pooler URL (same pooler host as
+// DATABASE_URL, port 5432 instead of 6543) from DATABASE_URL every build,
+// and use that for migrations — DATABASE_URL_UNPOOLED is no longer trusted
+// as a separate source of truth. If DATABASE_URL isn't a Supabase pooler
+// URL (e.g. local dev against a plain Postgres), this is a no-op and
+// DATABASE_URL_UNPOOLED (or DATABASE_URL) is used as-is.
+//
+// Note: this deliberately does NOT use Supabase's literal direct connection
+// (db.<project-ref>.supabase.co:5432) — tried that first and it's
+// unreachable from Vercel's build network (P1001), because that hostname
+// is IPv6-only unless the project has purchased Supabase's IPv4 add-on.
+// The Session pooler is IPv4-reachable and, unlike the Transaction pooler
+// DATABASE_URL uses, supports the prepared-statement/multi-statement
+// behavior `prisma migrate deploy` needs.
 import { execSync } from "node:child_process";
 
-function deriveSupabaseDirectUrl(pooledUrl) {
+function deriveSupabaseSessionPoolerUrl(pooledUrl) {
   const u = new URL(pooledUrl);
   const isSupabasePooler = u.hostname.endsWith(".pooler.supabase.com");
   if (!isSupabasePooler) return null;
 
-  // Supabase's transaction-pooler username is "postgres.<project-ref>";
-  // the direct connection uses plain "postgres" on db.<project-ref>.supabase.co.
-  const [user, projectRef] = u.username.split(".");
-  if (user !== "postgres" || !projectRef) return null;
-
-  const direct = new URL(pooledUrl);
-  direct.hostname = `db.${projectRef}.supabase.co`;
-  direct.port = "5432";
-  direct.username = "postgres";
-  direct.searchParams.delete("pgbouncer");
-  return direct.toString();
+  const session = new URL(pooledUrl);
+  session.port = "5432"; // Transaction pooler (6543) -> Session pooler (5432), same host/user.
+  session.searchParams.delete("pgbouncer"); // Session mode doesn't need/want this.
+  return session.toString();
 }
 
 const dbUrl = process.env.DATABASE_URL;
@@ -46,10 +48,10 @@ if (!dbUrl) {
 
 let directUrl = process.env.DATABASE_URL_UNPOOLED;
 try {
-  const derived = deriveSupabaseDirectUrl(dbUrl);
+  const derived = deriveSupabaseSessionPoolerUrl(dbUrl);
   if (derived) {
     directUrl = derived;
-    console.log(`[migrate-deploy-supabase] DATABASE_URL is a Supabase pooler URL — derived direct URL (host: ${new URL(derived).hostname}) for migrations, overriding DATABASE_URL_UNPOOLED.`);
+    console.log(`[migrate-deploy-supabase] DATABASE_URL is a Supabase pooler URL — derived Session pooler URL (host: ${new URL(derived).hostname}, port: ${new URL(derived).port}) for migrations, overriding DATABASE_URL_UNPOOLED.`);
   } else {
     console.log("[migrate-deploy-supabase] DATABASE_URL is not a Supabase pooler URL — using DATABASE_URL_UNPOOLED as configured.");
   }
