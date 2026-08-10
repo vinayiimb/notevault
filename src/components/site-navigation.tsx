@@ -7,6 +7,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
   ArticleNyTimes,
+  BookOpenText,
   Calendar,
   CaretRight,
   ChatCircleText,
@@ -28,6 +29,7 @@ const NAVIGATION_SECTIONS = [
     title: "Study Portals",
     items: [
       { href: "/pyq-notes", label: "PYQ", desc: "Complete 8,300+ file search catalog", icon: FileArchive, badge: "8.3k+" },
+      { href: "/papers", label: "Browse Papers", desc: "Filter by course & subject, preview instantly", icon: BookOpenText, badge: "New" },
       { href: "/pyp", label: "PYP", desc: "DU PYQ Search & Course Archives", icon: SealCheck },
       { href: "/practice", label: "Practice Mode", desc: "Interactive PYQ practice & mock solving", icon: NotePencil, badge: "Live" },
       { href: "/notes", label: "Notes", desc: "Access study notes and summaries", icon: NotePencil },
