@@ -4,19 +4,34 @@ import Link from "next/link";
 import { useMemo, useRef, useState, useTransition } from "react";
 import { FileXls, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import {
-  validateBulkUploadAction,
+  startBulkUploadBatchAction,
+  classifyAndPersistRowsAction,
+  finalizeBulkUploadValidationAction,
   commitBulkUploadRowsAction,
   skipBulkUploadRowsAction,
   type BulkUploadRowSummary,
   type BulkUploadValidateResult,
 } from "@/lib/actions";
-
-// Rows per commit call — each chunk is one progress-bar tick. Small enough
-// that the bar visibly moves on a batch of a few hundred rows, big enough
-// that a batch of a few thousand doesn't turn into a chunk per animation
-// frame.
-const COMMIT_CHUNK_SIZE = 15;
 import type { BulkUploadRowStatus } from "@/generated/prisma";
+
+// Rows per commit/validate call — each chunk is one progress-bar tick.
+// Validate chunks are bigger than commit chunks because persisting a
+// BulkUploadRow is one cheap insert, versus commit's dedupe-check + create
+// + status-update per row.
+const COMMIT_CHUNK_SIZE = 30;
+const VALIDATE_CHUNK_SIZE = 100;
+
+// Mirrors extractFileUrlRaw in @/lib/bulk-upload, duplicated here rather
+// than imported — that module also exports bulkRowFileHash, which pulls in
+// node:crypto, and importing it (even just for this one pure function)
+// would drag node:crypto into the client bundle.
+function pickFileUrlRaw(row: Record<string, string>): string | null {
+  for (const key of ["fileurl", "file url", "pdfurl", "pdf url", "link", "url"]) {
+    const value = row[key];
+    if (value && value.trim()) return value.trim();
+  }
+  return null;
+}
 
 const STATUS_LABEL: Record<BulkUploadRowStatus, string> = {
   VALID: "Valid",
@@ -47,6 +62,23 @@ function StatCard({ label, value, tone }: { label: string; value: number; tone?:
   );
 }
 
+function ProgressBar({ label, done, total }: { label: string; done: number; total: number }) {
+  const pct = total === 0 ? 0 : Math.round((done / total) * 100);
+  return (
+    <div className="rounded-xl border border-border bg-surface p-4">
+      <div className="flex items-baseline justify-between text-sm">
+        <p className="font-semibold text-foreground">{label}</p>
+        <p className="font-mono text-xs text-muted">
+          {done} / {total}
+        </p>
+      </div>
+      <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-muted">
+        <div className="h-full rounded-full bg-accent transition-[width] duration-300 ease-out" style={{ width: `${pct}%` }} />
+      </div>
+    </div>
+  );
+}
+
 export function FreshUploadPanel() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [fileName, setFileName] = useState<string | null>(null);
@@ -57,6 +89,7 @@ export function FreshUploadPanel() {
   const [statusFilter, setStatusFilter] = useState<BulkUploadRowStatus | "ALL">("ALL");
   const [commitResult, setCommitResult] = useState<{ imported: number; duplicate: number; skipped: number } | null>(null);
   const [commitProgress, setCommitProgress] = useState<{ done: number; total: number } | null>(null);
+  const [validateProgress, setValidateProgress] = useState<{ done: number; total: number } | null>(null);
 
   function run(file: File) {
     setError(null);
@@ -64,13 +97,49 @@ export function FreshUploadPanel() {
     setCommitResult(null);
     startTransition(async () => {
       try {
-        const formData = new FormData();
-        formData.set("file", file);
-        const res = await validateBulkUploadAction(formData);
+        const { parseSpreadsheetRows } = await import("@/lib/spreadsheet");
+        const rawRows = await parseSpreadsheetRows(file);
+        if (rawRows.length === 0) {
+          throw new Error(
+            "Could not read any rows from that file — check it has a header row with course, subject, year range, semester group, and a file URL column."
+          );
+        }
+
+        const startFormData = new FormData();
+        startFormData.set("sourceFileName", file.name);
+        for (const url of rawRows.map(pickFileUrlRaw).filter((u): u is string => !!u)) {
+          startFormData.append("fileUrls", url);
+        }
+        const { batchId, existingHashes } = await startBulkUploadBatchAction(startFormData);
+
+        const total = rawRows.length;
+        setValidateProgress({ done: 0, total });
+
+        const allRows: BulkUploadRowSummary[] = [];
+        for (let i = 0; i < rawRows.length; i += VALIDATE_CHUNK_SIZE) {
+          const chunk = rawRows.slice(i, i + VALIDATE_CHUNK_SIZE);
+          const formData = new FormData();
+          formData.set("batchId", batchId);
+          formData.set("startRowNumber", String(i + 1));
+          formData.set("rows", JSON.stringify(chunk));
+          formData.set("existingHashes", JSON.stringify(existingHashes));
+          const { rows: chunkRows } = await classifyAndPersistRowsAction(formData);
+          allRows.push(...chunkRows);
+          setValidateProgress({ done: Math.min(i + VALIDATE_CHUNK_SIZE, total), total });
+        }
+
+        await finalizeBulkUploadValidationAction();
+
+        const summary: Partial<Record<BulkUploadRowStatus, number>> = {};
+        for (const row of allRows) summary[row.status] = (summary[row.status] ?? 0) + 1;
+
+        const res: BulkUploadValidateResult = { batchId, sourceFileName: file.name, rows: allRows, summary };
         setResult(res);
-        setApproved(new Set(res.rows.filter((r) => r.status === "VALID").map((r) => r.id)));
+        setApproved(new Set(allRows.filter((r) => r.status === "VALID").map((r) => r.id)));
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not process that file.");
+      } finally {
+        setValidateProgress(null);
       }
     });
   }
@@ -194,7 +263,12 @@ export function FreshUploadPanel() {
           />
         </div>
 
-        {pending && !result && <p className="mt-3 text-sm text-muted">Validating rows…</p>}
+        {validateProgress && (
+          <div className="mt-3">
+            <ProgressBar label="Validating…" done={validateProgress.done} total={validateProgress.total} />
+          </div>
+        )}
+        {pending && !result && !validateProgress && <p className="mt-3 text-sm text-muted">Reading file…</p>}
         {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
       </div>
 
@@ -207,22 +281,7 @@ export function FreshUploadPanel() {
           </div>
 
           {commitProgress ? (
-            <div className="rounded-xl border border-border bg-surface p-4">
-              <div className="flex items-baseline justify-between text-sm">
-                <p className="font-semibold text-foreground">Importing…</p>
-                <p className="font-mono text-xs text-muted">
-                  {commitProgress.done} / {commitProgress.total}
-                </p>
-              </div>
-              <div className="mt-2 h-2 w-full overflow-hidden rounded-full bg-surface-muted">
-                <div
-                  className="h-full rounded-full bg-accent transition-[width] duration-300 ease-out"
-                  style={{
-                    width: `${commitProgress.total === 0 ? 0 : Math.round((commitProgress.done / commitProgress.total) * 100)}%`,
-                  }}
-                />
-              </div>
-            </div>
+            <ProgressBar label="Importing…" done={commitProgress.done} total={commitProgress.total} />
           ) : commitResult ? (
             <div className="rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4 text-sm">
               <p className="font-semibold text-foreground">

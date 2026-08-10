@@ -1984,35 +1984,31 @@ export type BulkUploadValidateResult = {
   summary: Partial<Record<BulkUploadRowStatus, number>>;
 };
 
-// Fresh Upload step 1: parses the sheet, classifies every row (required-field
-// checks + fileHash dedupe against CatalogPaperUpload — see
-// src/lib/bulk-upload.ts) and persists one BulkUploadRow per row, all before
-// creating a single CatalogPaperUpload. Nothing is imported yet; the admin
-// reviews this batch and calls commitBulkUploadBatchAction to actually
-// import the approved rows into the Full Archive catalog.
-export async function validateBulkUploadAction(formData: FormData): Promise<BulkUploadValidateResult> {
+export type BulkUploadStartResult = {
+  batchId: string;
+  // [fileHash, fileName][] — plain pairs, not a Map, so this survives the
+  // client/server serialization boundary; the client turns it back into a
+  // Map before handing it to classifyBulkUploadRow client-side... no,
+  // actually classification happens server-side too (see
+  // classifyAndPersistRowsAction) — this just gets handed back on each
+  // chunk call so the dedupe check only ever costs one query for the whole
+  // sheet, not one per chunk.
+  existingHashes: [string, string][];
+};
+
+// Fresh Upload step 1a: one query for the whole sheet — creates the
+// UploadBatch and, given every row's file URL (extracted client-side via
+// extractFileUrlRaw, which is pure and safe to run in the browser), does
+// the one dedupe lookup that used to happen per row. Parsing the sheet
+// itself also now happens client-side (parseSpreadsheetRows has no
+// server-only deps) so rows can be sent up in chunks next.
+export async function startBulkUploadBatchAction(formData: FormData): Promise<BulkUploadStartResult> {
   await requireAdmin();
-  const file = formData.get("file") as File | null;
-  if (!file || file.size === 0) throw new Error("A CSV or Excel file is required.");
+  const sourceFileName = String(formData.get("sourceFileName") ?? "").trim() || null;
+  const fileUrls = formData.getAll("fileUrls").map(String);
 
-  const { parseSpreadsheetRows } = await import("@/lib/spreadsheet");
-  const { classifyBulkUploadRow, extractFileUrlRaw, bulkRowFileHash } = await import("@/lib/bulk-upload");
-
-  const rawRows = await parseSpreadsheetRows(file);
-  if (rawRows.length === 0) {
-    throw new Error(
-      "Could not read any rows from that file — check it has a header row with course, subject, year range, semester group, and a file URL column."
-    );
-  }
-
-  const batch = await prisma.uploadBatch.create({ data: { sourceFileName: file.name } });
-
-  // One batched dedupe query for the whole sheet instead of one round trip
-  // per row — with a few hundred rows, sequential per-row queries against
-  // Supabase routinely blew past the serverless function's time limit and
-  // surfaced to the admin as "An unexpected response was received from the
-  // server" (a timed-out/truncated response, not a real error to report).
-  const candidateHashes = [...new Set(rawRows.map(extractFileUrlRaw).filter((u): u is string => !!u).map(bulkRowFileHash))];
+  const { bulkRowFileHash } = await import("@/lib/bulk-upload");
+  const candidateHashes = [...new Set(fileUrls.filter(Boolean).map(bulkRowFileHash))];
   const existingRows =
     candidateHashes.length > 0
       ? await prisma.catalogPaperUpload.findMany({
@@ -2020,15 +2016,34 @@ export async function validateBulkUploadAction(formData: FormData): Promise<Bulk
           select: { fileHash: true, fileName: true },
         })
       : [];
-  const existingHashes = new Map(existingRows.map((r) => [r.fileHash, r.fileName]));
 
-  const classified = rawRows.map((row, i) => classifyBulkUploadRow(i + 1, row, existingHashes));
+  const batch = await prisma.uploadBatch.create({ data: { sourceFileName } });
+
+  return { batchId: batch.id, existingHashes: existingRows.map((r) => [r.fileHash, r.fileName]) };
+}
+
+// Fresh Upload step 1b: classifies and persists one chunk of rows (client
+// calls this repeatedly — see fresh-upload-panel.tsx — both to drive a
+// progress bar and, more importantly at real scale, so a 3,000-row sheet
+// is many small transactions instead of one giant one that risks the
+// function's time limit or the pooler's statement/transaction limits.
+export async function classifyAndPersistRowsAction(formData: FormData): Promise<{ rows: BulkUploadRowSummary[] }> {
+  await requireAdmin();
+  const batchId = String(formData.get("batchId") ?? "").trim();
+  if (!batchId) throw new Error("A batch id is required.");
+  const startRowNumber = Number(formData.get("startRowNumber") ?? 1);
+  const rowsRaw = JSON.parse(String(formData.get("rows") ?? "[]")) as Record<string, string>[];
+  const existingHashesRaw = JSON.parse(String(formData.get("existingHashes") ?? "[]")) as [string, string][];
+
+  const { classifyBulkUploadRow } = await import("@/lib/bulk-upload");
+  const existingHashes = new Map(existingHashesRaw);
+  const classified = rowsRaw.map((row, i) => classifyBulkUploadRow(startRowNumber + i, row, existingHashes));
 
   const created = await prisma.$transaction(
     classified.map((row) =>
       prisma.bulkUploadRow.create({
         data: {
-          batchId: batch.id,
+          batchId,
           rowNumber: row.rowNumber,
           status: row.status,
           message: row.message,
@@ -2045,16 +2060,7 @@ export async function validateBulkUploadAction(formData: FormData): Promise<Bulk
     )
   );
 
-  const summary: Partial<Record<BulkUploadRowStatus, number>> = {};
-  for (const row of created) {
-    summary[row.status] = (summary[row.status] ?? 0) + 1;
-  }
-
-  revalidatePath("/admin/bulk-upload");
-
   return {
-    batchId: batch.id,
-    sourceFileName: file.name,
     rows: created.map((r) => ({
       id: r.id,
       rowNumber: r.rowNumber,
@@ -2069,8 +2075,14 @@ export async function validateBulkUploadAction(formData: FormData): Promise<Bulk
       fileNameRaw: r.fileNameRaw,
       noteRaw: r.noteRaw,
     })),
-    summary,
   };
+}
+
+// Fresh Upload step 1c: called once after every chunk has persisted, purely
+// to refresh the admin UI's cached data — no rows to process here.
+export async function finalizeBulkUploadValidationAction(): Promise<void> {
+  await requireAdmin();
+  revalidatePath("/admin/bulk-upload");
 }
 
 export type BulkUploadRowResult = {
