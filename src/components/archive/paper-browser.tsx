@@ -177,7 +177,7 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
           />
         </div>
 
-        <FilterSection title="Course">
+        <FilterSection title="Course" total={courses.length}>
           {courses.map((c) => (
             <FilterItem key={c.name} active={c.name === effectiveCourse} label={c.name} count={c.count} onClick={() => selectCourse(c.name)} />
           ))}
@@ -185,7 +185,7 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
         </FilterSection>
 
         {semesters.length > 0 && (
-          <FilterSection title="Semester">
+          <FilterSection title="Semester" total={semesters.length}>
             {semesters.map((s) => (
               <FilterItem key={s.label} active={s.label === effectiveSemester} label={s.label} count={s.count} onClick={() => selectSemester(s.label)} />
             ))}
@@ -193,7 +193,7 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
         )}
 
         {subjects.length > 0 && (
-          <FilterSection title="Subject">
+          <FilterSection title="Subject" total={subjects.length}>
             {subjects.map((s) => (
               <FilterItem key={s.key} active={s.key === effectiveSubjectKey} label={s.label} count={s.count} onClick={() => selectSubject(s.key)} />
             ))}
@@ -311,11 +311,20 @@ function CopyButtonClient() {
   );
 }
 
-function FilterSection({ title, children }: { title: string; children: ReactNode }) {
+function FilterSection({ title, total, children }: { title: string; total: number; children: ReactNode }) {
   return (
     <div>
-      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{title}</h3>
-      <div className="max-h-64 space-y-0.5 overflow-y-auto pr-1">{children}</div>
+      <div className="mb-2 flex items-center justify-between">
+        <h3 className="text-xs font-semibold uppercase tracking-wide text-muted">{title}</h3>
+        <span className="text-xs text-muted">{total}</span>
+      </div>
+      {/* Tall enough to show ~13 items before scrolling, with a visible
+          scrollbar (not the near-invisible default) — course lists here
+          run to 100+ entries, so it must be obvious there's more below
+          rather than looking like a short, complete list. */}
+      <div className="max-h-[26rem] space-y-0.5 overflow-y-auto pr-1 [scrollbar-color:var(--color-border)_transparent] [scrollbar-width:thin]">
+        {children}
+      </div>
     </div>
   );
 }
