@@ -1,8 +1,7 @@
 "use client";
 
 import { useMemo, useState, type ReactNode } from "react";
-import { MagnifyingGlass } from "@phosphor-icons/react";
-import { PDFViewer } from "@/components/pyq/pdf-viewer";
+import { ArrowSquareOut, DownloadSimple, MagnifyingGlass } from "@phosphor-icons/react";
 import { CopyButton } from "@/components/pyq/copy-button";
 import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import { canonicalCourseName, canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
@@ -14,6 +13,18 @@ function yearStart(value: string) {
 function semesterSortKey(label: string) {
   if (label === NO_SEMESTER) return 99;
   return Number(label.match(/\d+/)?.[0] ?? 99);
+}
+
+// Google Drive's "view" links (what's actually stored on drive-sourced
+// papers) render a login/permission gate when framed — only the /preview
+// path embeds cleanly. Everything else (college library sites, the DU
+// exam portal) already frames fine as-is.
+function embeddableUrl(url: string): string {
+  const fileMatch = url.match(/\/file\/d\/([a-zA-Z0-9_-]{10,})/);
+  if (fileMatch) return `https://drive.google.com/file/d/${fileMatch[1]}/preview`;
+  const idParam = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
+  if (idParam) return `https://drive.google.com/file/d/${idParam[1]}/preview`;
+  return url;
 }
 
 function fileName(paper: CatalogPaper) {
@@ -240,8 +251,41 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
               </div>
             )}
 
-            <div className="mt-4">
-              <PDFViewer url={selectedPaper.pdfUrl} />
+            {/* An <iframe> rather than the pdf.js-based PDFViewer used
+                elsewhere on the site — most of this unified archive's
+                sources (college library sites, the DU exam portal, Drive
+                links) send no CORS headers, so pdf.js's in-page fetch gets
+                silently blocked and the viewer never renders. Framing
+                isn't subject to CORS the way a JS fetch is, so this works
+                across every source; the tradeoff is losing PDFViewer's
+                custom zoom/page controls in favor of the browser's own
+                built-in PDF viewer inside the frame. */}
+            <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-surface">
+              <div className="flex items-center justify-end gap-2 border-b border-border bg-surface-muted px-3 py-2">
+                <a
+                  href={selectedPaper.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-muted transition hover:text-accent"
+                >
+                  <ArrowSquareOut size={14} weight="bold" />
+                  Open in new tab
+                </a>
+                <a
+                  href={selectedPaper.pdfUrl}
+                  download
+                  className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-muted transition hover:text-accent"
+                >
+                  <DownloadSimple size={14} weight="bold" />
+                  Download
+                </a>
+              </div>
+              <iframe
+                key={selectedPaper.id}
+                src={embeddableUrl(selectedPaper.pdfUrl)}
+                title={fileName(selectedPaper)}
+                className="h-[75vh] w-full bg-surface-muted/50"
+              />
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
