@@ -76,7 +76,7 @@ const { PrismaClient } = require("../src/generated/prisma/index.js");
 const prisma = new PrismaClient();
 (async () => {
   const rows = await prisma.$queryRawUnsafe(
-    "select current_database() as db, (select count(*) from information_schema.tables where table_name = 'BulkUploadRow') as bulkuploadrow_exists, (select string_agg(migration_name, ', ' order by finished_at) from _prisma_migrations) as applied_migrations"
+    "select current_database() as db, (select count(*) from information_schema.tables where table_name = 'BulkUploadRow') as bulkuploadrow_exists, (select count(*) from information_schema.tables where table_name = 'CatalogPaperUpload') as catalogpaperupload_exists, (select count(*) from information_schema.columns where table_name = 'UploadBatch' and column_name = 'sourceFileName') as sourcefilename_exists, (select count(*) from pg_type where typname = 'BulkUploadRowStatus') as enum_exists, (select string_agg(migration_name, ', ' order by finished_at) from _prisma_migrations) as applied_migrations"
   );
   console.log("[migrate-deploy-supabase] DIAGNOSTIC (via DATABASE_URL, runtime connection):", JSON.stringify(rows, (_, v) => (typeof v === "bigint" ? v.toString() : v)));
   await prisma.$disconnect();
