@@ -28,6 +28,7 @@
 // DATABASE_URL uses, supports the prepared-statement/multi-statement
 // behavior `prisma migrate deploy` needs.
 import { execSync } from "node:child_process";
+import { writeFileSync, unlinkSync } from "node:fs";
 
 function deriveSupabaseSessionPoolerUrl(pooledUrl) {
   const u = new URL(pooledUrl);
@@ -59,7 +60,38 @@ try {
   console.error("[migrate-deploy-supabase] Could not parse DATABASE_URL, falling back to configured DATABASE_URL_UNPOOLED:", err.message);
 }
 
-execSync("npx prisma migrate deploy", {
-  stdio: "inherit",
-  env: { ...process.env, DATABASE_URL_UNPOOLED: directUrl },
+const migrateEnv = { ...process.env, DATABASE_URL_UNPOOLED: directUrl };
+
+execSync("npx prisma migrate deploy", { stdio: "inherit", env: migrateEnv });
+
+// TEMPORARY diagnostic — remove once BulkUploadRow shows up as existing.
+// "No pending migrations" from the step above doesn't prove the table is
+// actually there; this checks the live database directly through the app's
+// own Prisma Client (using DATABASE_URL, the one the app actually queries
+// at runtime) and prints only table/migration names — no data, no
+// credentials. Written to a temp file rather than inlined to sidestep
+// shell/JS quote-escaping across execSync -> node -e -> $queryRawUnsafe.
+const diagnosticScript = `
+const { PrismaClient } = require("./src/generated/prisma/index.js");
+const prisma = new PrismaClient();
+(async () => {
+  const rows = await prisma.$queryRawUnsafe(
+    "select current_database() as db, (select count(*) from information_schema.tables where table_name = 'BulkUploadRow') as bulkuploadrow_exists, (select string_agg(migration_name, ', ') from _prisma_migrations order by finished_at) as applied_migrations"
+  );
+  console.log("[migrate-deploy-supabase] DIAGNOSTIC (via DATABASE_URL, runtime connection):", JSON.stringify(rows, (_, v) => (typeof v === "bigint" ? v.toString() : v)));
+  await prisma.$disconnect();
+})().catch((e) => {
+  console.error("[migrate-deploy-supabase] Diagnostic query failed:", e.message);
 });
+`;
+const diagnosticPath = "scripts/.diagnostic-tmp.cjs";
+try {
+  writeFileSync(diagnosticPath, diagnosticScript);
+  execSync(`node ${diagnosticPath}`, { stdio: "inherit", env: process.env });
+} catch (err) {
+  console.error("[migrate-deploy-supabase] Diagnostic step errored:", err.message);
+} finally {
+  try {
+    unlinkSync(diagnosticPath);
+  } catch {}
+}
