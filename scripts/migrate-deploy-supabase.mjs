@@ -28,7 +28,6 @@
 // DATABASE_URL uses, supports the prepared-statement/multi-statement
 // behavior `prisma migrate deploy` needs.
 import { execSync } from "node:child_process";
-import { writeFileSync, unlinkSync } from "node:fs";
 
 function deriveSupabaseSessionPoolerUrl(pooledUrl) {
   const u = new URL(pooledUrl);
@@ -63,42 +62,3 @@ try {
 const migrateEnv = { ...process.env, DATABASE_URL_UNPOOLED: directUrl };
 
 execSync("npx prisma migrate deploy", { stdio: "inherit", env: migrateEnv });
-
-// TEMPORARY diagnostic — inspecting a reported import error with no
-// message attached. Prints only aggregate counts + a handful of INVALID
-// rows' field values (no full row dump, no credentials). Remove once the
-// actual failure mode is identified.
-const diagnosticScript = `
-const { PrismaClient } = require("../src/generated/prisma/index.js");
-const prisma = new PrismaClient();
-(async () => {
-  const batches = await prisma.uploadBatch.findMany({
-    orderBy: { createdAt: "desc" },
-    take: 5,
-    select: { id: true, createdAt: true, sourceFileName: true, _count: { select: { rows: true } } },
-  });
-  for (const b of batches) {
-    const statusCounts = await prisma.bulkUploadRow.groupBy({ by: ["status"], where: { batchId: b.id }, _count: true });
-    console.log("[diag] BATCH", JSON.stringify({ ...b, statusCounts }));
-  }
-  const sampleInvalid = await prisma.bulkUploadRow.findMany({
-    where: { status: "INVALID" },
-    take: 8,
-    orderBy: { createdAt: "desc" },
-    select: { batchId: true, rowNumber: true, message: true, courseRaw: true, subjectRaw: true, yearRangeRaw: true, semesterGroupRaw: true, semesterRaw: true, fileUrlRaw: true },
-  });
-  console.log("[diag] SAMPLE_INVALID", JSON.stringify(sampleInvalid));
-  await prisma.$disconnect();
-})().catch((e) => { console.error("[diag] DIAGNOSTIC_ERROR", e.message); });
-`;
-const diagnosticPath = "scripts/.diagnostic-tmp.cjs";
-try {
-  writeFileSync(diagnosticPath, diagnosticScript);
-  execSync(`node ${diagnosticPath}`, { stdio: "inherit", env: process.env });
-} catch (err) {
-  console.error("[migrate-deploy-supabase] Diagnostic step errored:", err.message);
-} finally {
-  try {
-    unlinkSync(diagnosticPath);
-  } catch {}
-}
