@@ -33,6 +33,35 @@ function pickFileUrlRaw(row: Record<string, string>): string | null {
   return null;
 }
 
+const CHUNK_RETRY_ATTEMPTS = 3;
+const CHUNK_RETRY_DELAY_MS = 1000;
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// A single chunk (of ~30-100 rows) failing outright — a network blip, a
+// pooler hiccup — used to abort every chunk still queued behind it, since
+// the loop's only try/catch wrapped the whole sequence. On a multi-thousand
+// row sheet that meant one bad chunk silently stranded everything after it
+// at VALID, never even attempted. This retries a chunk a few times before
+// giving up on it specifically, so the loop can move on to the next chunk
+// either way instead of the whole run dying.
+async function runChunkWithRetry<T>(fn: () => Promise<T>, onRetry: (attempt: number, err: unknown) => void): Promise<T | null> {
+  for (let attempt = 1; attempt <= CHUNK_RETRY_ATTEMPTS; attempt++) {
+    try {
+      return await fn();
+    } catch (err) {
+      if (attempt === CHUNK_RETRY_ATTEMPTS) {
+        onRetry(attempt, err);
+        return null;
+      }
+      await sleep(CHUNK_RETRY_DELAY_MS * attempt);
+    }
+  }
+  return null;
+}
+
 const STATUS_LABEL: Record<BulkUploadRowStatus, string> = {
   VALID: "Valid",
   IMPORTED: "Imported",
@@ -116,15 +145,24 @@ export function FreshUploadPanel() {
         setValidateProgress({ done: 0, total });
 
         const allRows: BulkUploadRowSummary[] = [];
+        let failedRowCount = 0;
         for (let i = 0; i < rawRows.length; i += VALIDATE_CHUNK_SIZE) {
           const chunk = rawRows.slice(i, i + VALIDATE_CHUNK_SIZE);
-          const formData = new FormData();
-          formData.set("batchId", batchId);
-          formData.set("startRowNumber", String(i + 1));
-          formData.set("rows", JSON.stringify(chunk));
-          formData.set("existingHashes", JSON.stringify(existingHashes));
-          const { rows: chunkRows } = await classifyAndPersistRowsAction(formData);
-          allRows.push(...chunkRows);
+          const chunkResult = await runChunkWithRetry(
+            async () => {
+              const formData = new FormData();
+              formData.set("batchId", batchId);
+              formData.set("startRowNumber", String(i + 1));
+              formData.set("rows", JSON.stringify(chunk));
+              formData.set("existingHashes", JSON.stringify(existingHashes));
+              return classifyAndPersistRowsAction(formData);
+            },
+            (attempt, err) => {
+              failedRowCount += chunk.length;
+              console.error(`[bulk-upload] Validate chunk at row ${i + 1} failed after ${attempt} attempts, skipping it:`, err);
+            }
+          );
+          if (chunkResult) allRows.push(...chunkResult.rows);
           setValidateProgress({ done: Math.min(i + VALIDATE_CHUNK_SIZE, total), total });
         }
 
@@ -136,6 +174,11 @@ export function FreshUploadPanel() {
         const res: BulkUploadValidateResult = { batchId, sourceFileName: file.name, rows: allRows, summary };
         setResult(res);
         setApproved(new Set(allRows.filter((r) => r.status === "VALID").map((r) => r.id)));
+        if (failedRowCount > 0) {
+          setError(
+            `${failedRowCount} row${failedRowCount === 1 ? "" : "s"} couldn't be validated after ${CHUNK_RETRY_ATTEMPTS} attempts and were skipped entirely — they aren't in the ${allRows.length} rows shown below. If this keeps happening, try splitting the sheet and re-uploading the missing rows as a separate file (dedupe only checks against the Full Archive catalog, not other pending batches, so re-uploading the whole sheet would create duplicate pending rows for what already validated here).`
+          );
+        }
       } catch (err) {
         setError(err instanceof Error ? err.message : "Could not process that file.");
       } finally {
@@ -160,19 +203,28 @@ export function FreshUploadPanel() {
     const total = approvedIds.length;
     setCommitProgress({ done: 0, total });
     startTransition(async () => {
-      try {
-        let imported = 0;
-        let duplicate = 0;
-        const statusById = new Map<string, { status: BulkUploadRowStatus; message: string | null }>();
+      let imported = 0;
+      let duplicate = 0;
+      let chunkFailures = 0;
+      const statusById = new Map<string, { status: BulkUploadRowStatus; message: string | null }>();
 
-        for (let i = 0; i < approvedIds.length; i += COMMIT_CHUNK_SIZE) {
-          const chunk = approvedIds.slice(i, i + COMMIT_CHUNK_SIZE);
-          const formData = new FormData();
-          formData.set("batchId", result.batchId);
-          for (const id of chunk) formData.append("rowIds", id);
-          const { results: chunkResults } = await commitBulkUploadRowsAction(formData);
+      for (let i = 0; i < approvedIds.length; i += COMMIT_CHUNK_SIZE) {
+        const chunk = approvedIds.slice(i, i + COMMIT_CHUNK_SIZE);
+        const chunkResult = await runChunkWithRetry(
+          async () => {
+            const formData = new FormData();
+            formData.set("batchId", result.batchId);
+            for (const id of chunk) formData.append("rowIds", id);
+            return commitBulkUploadRowsAction(formData);
+          },
+          (attempt, err) => {
+            chunkFailures += chunk.length;
+            console.error(`[bulk-upload] Chunk at row ${i + 1} failed after ${attempt} attempts, skipping it and continuing:`, err);
+          }
+        );
 
-          for (const r of chunkResults) {
+        if (chunkResult) {
+          for (const r of chunkResult.results) {
             statusById.set(r.id, { status: r.status, message: r.message });
             if (r.status === "IMPORTED") imported += 1;
             if (r.status === "DUPLICATE") duplicate += 1;
@@ -182,12 +234,17 @@ export function FreshUploadPanel() {
               ? { ...prev, rows: prev.rows.map((row) => (statusById.has(row.id) ? { ...row, ...statusById.get(row.id)! } : row)) }
               : prev
           );
-          setCommitProgress({ done: Math.min(i + COMMIT_CHUNK_SIZE, total), total });
         }
+        // On repeated failure, chunkResult is null and this chunk's rows are
+        // left as-is (still VALID) rather than guessed at — the important
+        // part is the loop keeps going instead of stopping here.
+        setCommitProgress({ done: Math.min(i + COMMIT_CHUNK_SIZE, total), total });
+      }
 
-        const unapprovedIds = result.rows.filter((r) => r.status === "VALID" && !approved.has(r.id)).map((r) => r.id);
-        let skipped = 0;
-        if (unapprovedIds.length > 0) {
+      const unapprovedIds = result.rows.filter((r) => r.status === "VALID" && !approved.has(r.id)).map((r) => r.id);
+      let skipped = 0;
+      if (unapprovedIds.length > 0) {
+        try {
           const skipFormData = new FormData();
           skipFormData.set("batchId", result.batchId);
           for (const id of unapprovedIds) skipFormData.append("rowIds", id);
@@ -198,14 +255,24 @@ export function FreshUploadPanel() {
               ? { ...prev, rows: prev.rows.map((row) => (unapprovedIds.includes(row.id) ? { ...row, status: "SKIPPED" as BulkUploadRowStatus } : row)) }
               : prev
           );
+        } catch (err) {
+          console.error("[bulk-upload] Marking unapproved rows SKIPPED failed:", err);
         }
-
-        setCommitResult({ imported, duplicate, skipped });
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Could not import the approved rows.");
-      } finally {
-        setCommitProgress(null);
       }
+
+      if (chunkFailures > 0) {
+        // Deliberately not calling setCommitResult here — that swaps the
+        // Import button out for a "done" banner, but this batch isn't
+        // done: these rows are still sitting at VALID. Leaving commitResult
+        // unset keeps the button (and the approved checkboxes) around so
+        // "click Import again" is actually true.
+        setError(
+          `Imported ${imported}${duplicate > 0 ? `, ${duplicate} duplicate` : ""} — but ${chunkFailures} row${chunkFailures === 1 ? "" : "s"} couldn't be reached after ${CHUNK_RETRY_ATTEMPTS} attempts each and are still pending. Click Import again to retry just those (already-imported rows are skipped automatically).`
+        );
+      } else {
+        setCommitResult({ imported, duplicate, skipped });
+      }
+      setCommitProgress(null);
     });
   }
 

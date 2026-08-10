@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "@phosphor-icons/react/dist/ssr";
 import { prisma } from "@/lib/prisma";
+import { ResumeImportPanel } from "@/components/admin/bulk-upload/resume-import-panel";
 import type { BulkUploadRowStatus } from "@/generated/prisma";
 
 export const dynamic = "force-dynamic";
@@ -72,6 +73,8 @@ export default async function BulkUploadBatchPage({ params }: { params: Promise<
           <StatCard key={s} label={STATUS_LABEL[s]} value={summary[s] ?? 0} tone={s === "VALID" || s === "IMPORTED" || s === "SKIPPED" ? undefined : "warn"} />
         ))}
       </div>
+
+      <ResumeImportPanel batchId={batch.id} validCount={summary.VALID ?? 0} />
 
       <div className="overflow-x-auto rounded-xl border border-border">
         <table className="w-full text-left text-xs">

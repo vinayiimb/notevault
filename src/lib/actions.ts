@@ -2113,47 +2113,69 @@ export async function commitBulkUploadRowsAction(formData: FormData): Promise<{ 
 
   const results: BulkUploadRowResult[] = [];
 
+  // Each row is wrapped in its own try/catch so one bad row (unexpected
+  // data, a transient DB hiccup) can't take out the rest of the chunk —
+  // previously a single throw here propagated all the way to the client
+  // and aborted every chunk still queued behind it, silently leaving
+  // thousands of otherwise-valid rows stuck at VALID. See the 2701-row
+  // "ramanujan-pyq-catalog.csv" batch that stopped dead at 50 imported.
   for (const row of rows) {
-    if (!row.fileUrlRaw || !row.yearRangeRaw || !row.semesterGroupRaw) {
-      const message = "Missing required field at import time";
-      await prisma.bulkUploadRow.update({ where: { id: row.id }, data: { status: "INVALID", message } });
+    try {
+      if (!row.fileUrlRaw || !row.yearRangeRaw || !row.semesterGroupRaw) {
+        const message = "Missing required field at import time";
+        await prisma.bulkUploadRow.update({ where: { id: row.id }, data: { status: "INVALID", message } });
+        results.push({ id: row.id, status: "INVALID", message });
+        continue;
+      }
+
+      const resolved = resolveRowForImport({
+        fileUrlRaw: row.fileUrlRaw,
+        fileNameRaw: row.fileNameRaw,
+        semesterRaw: row.semesterRaw,
+      });
+
+      const existing = await prisma.catalogPaperUpload.findUnique({ where: { fileHash: resolved.fileHash } });
+      if (existing) {
+        const message = `Already in the catalog as "${existing.fileName}"`;
+        await prisma.bulkUploadRow.update({ where: { id: row.id }, data: { status: "DUPLICATE", message } });
+        results.push({ id: row.id, status: "DUPLICATE", message });
+        continue;
+      }
+
+      const catalogPaperUpload = await prisma.catalogPaperUpload.create({
+        data: {
+          course: row.courseRaw,
+          subject: row.subjectRaw,
+          yearRange: row.yearRangeRaw,
+          semesterGroup: row.semesterGroupRaw,
+          semester: resolved.semester,
+          fileUrl: row.fileUrlRaw,
+          fileName: resolved.fileName,
+          fileSize: 0,
+          fileHash: resolved.fileHash,
+          note: row.noteRaw,
+        },
+      });
+      await prisma.bulkUploadRow.update({
+        where: { id: row.id },
+        data: { status: "IMPORTED", catalogPaperUploadId: catalogPaperUpload.id },
+      });
+      results.push({ id: row.id, status: "IMPORTED", message: null });
+    } catch (err) {
+      // Most likely cause here: two rows in this sheet resolve to the same
+      // fileHash but landed in the same chunk, so the dedupe check above
+      // ran before either had committed — a real race, not user error.
+      // Whatever the cause, record it on the row and move on rather than
+      // losing the rest of the chunk.
+      const message = err instanceof Error ? err.message : "Unexpected error importing this row";
+      try {
+        await prisma.bulkUploadRow.update({ where: { id: row.id }, data: { status: "INVALID", message } });
+      } catch {
+        // Row update itself failed (e.g. the same connection issue that
+        // caused the original error) — still report it to the caller below.
+      }
       results.push({ id: row.id, status: "INVALID", message });
-      continue;
     }
-
-    const resolved = resolveRowForImport({
-      fileUrlRaw: row.fileUrlRaw,
-      fileNameRaw: row.fileNameRaw,
-      semesterRaw: row.semesterRaw,
-    });
-
-    const existing = await prisma.catalogPaperUpload.findUnique({ where: { fileHash: resolved.fileHash } });
-    if (existing) {
-      const message = `Already in the catalog as "${existing.fileName}"`;
-      await prisma.bulkUploadRow.update({ where: { id: row.id }, data: { status: "DUPLICATE", message } });
-      results.push({ id: row.id, status: "DUPLICATE", message });
-      continue;
-    }
-
-    const catalogPaperUpload = await prisma.catalogPaperUpload.create({
-      data: {
-        course: row.courseRaw,
-        subject: row.subjectRaw,
-        yearRange: row.yearRangeRaw,
-        semesterGroup: row.semesterGroupRaw,
-        semester: resolved.semester,
-        fileUrl: row.fileUrlRaw,
-        fileName: resolved.fileName,
-        fileSize: 0,
-        fileHash: resolved.fileHash,
-        note: row.noteRaw,
-      },
-    });
-    await prisma.bulkUploadRow.update({
-      where: { id: row.id },
-      data: { status: "IMPORTED", catalogPaperUploadId: catalogPaperUpload.id },
-    });
-    results.push({ id: row.id, status: "IMPORTED", message: null });
   }
 
   return { results };
@@ -2184,6 +2206,22 @@ export async function skipBulkUploadRowsAction(formData: FormData): Promise<{ sk
   revalidatePath("/admin/bulk-upload");
 
   return { skipped: count };
+}
+
+// Powers "Resume import" on an existing batch's detail page — a batch can
+// end up with rows stuck at VALID (never approved/committed in Fresh
+// Upload, or a commit that got interrupted before the chunk-retry
+// resilience existed) with no way to finish importing them since Fresh
+// Upload's review state is client-only and doesn't survive a reload.
+export async function getBatchValidRowIdsAction(formData: FormData): Promise<{ rowIds: string[] }> {
+  await requireAdmin();
+  const batchId = String(formData.get("batchId") ?? "").trim();
+  if (!batchId) throw new Error("A batch id is required.");
+  const rows = await prisma.bulkUploadRow.findMany({
+    where: { batchId, status: "VALID" },
+    select: { id: true },
+  });
+  return { rowIds: rows.map((r) => r.id) };
 }
 
 export async function deleteResourceAction(formData: FormData) {
