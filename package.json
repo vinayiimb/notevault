@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "prisma generate",
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma migrate deploy && next build",
     "start": "next start",
     "lint": "eslint",
     "test": "node --import tsx --test src/lib/__tests__/*.test.ts",
@@ -17,6 +17,7 @@
     "seed:demo-content-blocks": "tsx prisma/seed-demo-content-blocks.ts",
     "sync:drive-links": "tsx prisma/sync-all-drive-links.ts",
     "import:core-pyqs": "tsx prisma/import-core-pyqs.ts",
+    "import:full-archive-csv": "tsx prisma/import-full-archive-csv.ts",
     "migrate:export": "tsx prisma/migrate-to-postgres-blob.ts export",
     "migrate:import": "tsx prisma/migrate-to-postgres-blob.ts import"
   },
