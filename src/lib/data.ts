@@ -580,7 +580,7 @@ export const getSiteSettings = cache(async () => {
       heroSubtitle:
         settings?.heroSubtitle || "Notes, PYQs and answer keys for every DU program — free, no login needed",
       heroSearchCaption: settings?.heroSearchCaption || "Search a subject, paper title, program, or topic.",
-      heroImageUrl: settings?.heroImageUrl || null,
+      heroImageUrl: settings?.heroImageUrl || "/images/hero-du.jpg",
       currencyIconUrl: settings?.currencyIconUrl || null,
     };
   } catch {
@@ -589,7 +589,7 @@ export const getSiteSettings = cache(async () => {
       heroHeadline: "The Best, One Stop,\nStudy Platform",
       heroSubtitle: "Notes, PYQs and answer keys for every DU program — free, no login needed",
       heroSearchCaption: "Search a subject, paper title, program, or topic.",
-      heroImageUrl: null,
+      heroImageUrl: "/images/hero-du.jpg",
       currencyIconUrl: null,
     };
   }
