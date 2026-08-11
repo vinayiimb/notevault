@@ -1,27 +1,50 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Suspense } from "react";
+import { usePathname } from "next/navigation";
 import { SignIn } from "@phosphor-icons/react/dist/ssr";
+import { BookOpenText } from "@phosphor-icons/react";
 import { SearchBar } from "@/components/search-bar";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { MobileNavMenu, SiteNavigation } from "@/components/site-navigation";
 
 export function SiteHeader() {
-  return (
-    <div className="sticky top-0 z-40 mx-auto w-full sm:top-4 sm:w-[92%] sm:max-w-6xl">
-      <header className="flex h-16 sm:h-[72px] items-center justify-between gap-3 sm:gap-5 border-b border-border/60 bg-surface/95 px-4 backdrop-blur-md shadow-2xs sm:border-none sm:rounded-2xl sm:shadow-[0_8px_24px_rgba(0,0,0,.08)] sm:px-6">
-        <Link href="/" className="flex shrink-0 items-center hover:opacity-90 transition">
-          <Image
-            src="/logo.png"
-            alt="DU PYQ Online"
-            width={1024}
-            height={577}
-            priority
-            className="h-9 sm:h-11 w-auto object-contain"
-          />
-        </Link>
+  const pathname = usePathname();
+  const isPapers = pathname === "/papers" || pathname.startsWith("/papers");
 
-        <SiteNavigation />
+  return (
+    <div
+      className={`sticky top-0 z-40 mx-auto w-full transition-all duration-200 ${
+        isPapers
+          ? "sm:top-3 sm:w-[98%] sm:max-w-[1920px]"
+          : "sm:top-4 sm:w-[92%] sm:max-w-6xl"
+      }`}
+    >
+      <header className="flex h-16 sm:h-[72px] items-center justify-between gap-3 sm:gap-5 border-b border-border/60 bg-surface/95 px-4 backdrop-blur-md shadow-2xs sm:border-none sm:rounded-2xl sm:shadow-[0_8px_24px_rgba(0,0,0,.08)] sm:px-6">
+        <div className="flex items-center gap-3">
+          <Link href="/" className="flex shrink-0 items-center hover:opacity-90 transition">
+            <Image
+              src="/logo.png"
+              alt="DU PYQ Online"
+              width={1024}
+              height={577}
+              priority
+              className="h-9 sm:h-11 w-auto object-contain"
+            />
+          </Link>
+          {isPapers && (
+            <div className="hidden sm:flex items-center gap-2 border-l border-border/70 pl-3">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-brand-soft px-3 py-1 text-xs font-semibold text-brand">
+                <BookOpenText size={14} weight="bold" />
+                Browse Question Papers
+              </span>
+            </div>
+          )}
+        </div>
+
+        {!isPapers && <SiteNavigation />}
 
         <div className="ml-auto flex items-center justify-end gap-2.5 sm:gap-3">
           <div className="hidden flex-1 justify-end lg:flex">

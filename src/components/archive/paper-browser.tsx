@@ -196,24 +196,28 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
   const totalFiltersActive = selectedCourses.size + selectedSemesters.size + selectedSubjectKeys.size;
 
   return (
-    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[300px_1fr]">
-      <aside className="flex flex-col lg:sticky lg:top-20 lg:h-[calc(100vh-6rem)]">
-        <div className="mb-3 flex items-center justify-between">
-          <h2 className="text-sm font-semibold text-foreground">Filters</h2>
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[290px_1fr] xl:grid-cols-[330px_1fr]">
+      <aside className="flex flex-col lg:sticky lg:top-24 lg:h-[calc(100vh-7.5rem)]">
+        <div className="mb-2.5 flex items-center justify-between">
+          <h2 className="text-sm font-bold tracking-tight text-foreground">Filters</h2>
           {totalFiltersActive > 0 && (
-            <button type="button" onClick={clearAllFilters} className="text-xs font-medium text-accent hover:underline">
+            <button
+              type="button"
+              onClick={clearAllFilters}
+              className="text-xs font-semibold text-accent hover:underline hover:text-accent-hover transition"
+            >
               Clear all ({totalFiltersActive})
             </button>
           )}
         </div>
 
-        <div className="flex rounded-xl border border-border bg-surface-muted p-1 text-sm">
+        <div className="flex rounded-xl border border-border/80 bg-surface-muted/80 p-1 text-sm shadow-2xs">
           <TabButton active={activeTab === "course"} onClick={() => setActiveTab("course")} label="Course" count={selectedCourses.size} />
           <TabButton active={activeTab === "semester"} onClick={() => setActiveTab("semester")} label="Semester" count={selectedSemesters.size} />
           <TabButton active={activeTab === "subject"} onClick={() => setActiveTab("subject")} label="Subject" count={selectedSubjectKeys.size} />
         </div>
 
-        <div className="mt-3 flex min-h-0 flex-1 flex-col rounded-2xl border border-border bg-surface p-3">
+        <div className="mt-2.5 flex min-h-0 flex-1 flex-col rounded-2xl border border-border bg-surface p-3 shadow-2xs">
           {activeTab === "course" && (
             <FilterList
               searchPlaceholder="Search course…"
@@ -271,110 +275,179 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
       </aside>
 
       <main className="min-w-0">
-        <p className="mb-3 text-xs text-muted">
-          {matchingPapers.length.toLocaleString()} of {papers.length.toLocaleString()} papers match your filters
-        </p>
+        <div className="mb-2.5 flex items-center justify-between">
+          <p className="text-xs font-medium text-muted">
+            <span className="font-semibold text-foreground">{matchingPapers.length.toLocaleString()}</span> of{" "}
+            {papers.length.toLocaleString()} papers match your filters
+          </p>
+          {totalFiltersActive > 0 && (
+            <span className="hidden sm:inline-flex items-center gap-1 text-xs text-muted">
+              Active filters: <strong className="text-foreground">{totalFiltersActive}</strong>
+            </span>
+          )}
+        </div>
 
         {!selectedPaper ? (
-          <div className="flex h-[420px] items-center justify-center rounded-2xl border border-dashed border-border text-sm text-muted">
-            No papers match this selection.
+          <div className="flex h-[450px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface/50 p-6 text-center">
+            <p className="text-sm font-medium text-foreground">No papers match this selection</p>
+            <p className="text-xs text-muted">Try clearing some filters or selecting another course/semester/subject.</p>
+            {totalFiltersActive > 0 && (
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="mt-2 rounded-lg bg-brand px-3.5 py-1.5 text-xs font-semibold text-brand-foreground shadow-sm transition hover:bg-brand-hover"
+              >
+                Clear all filters
+              </button>
+            )}
           </div>
         ) : (
           <>
-            <div className="flex flex-wrap items-start justify-between gap-3 rounded-2xl border border-border bg-surface p-5">
-              <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-wide text-accent">{canonicalCourseName(selectedPaper.course)}</p>
-                <h2 className="mt-1 truncate text-xl font-semibold text-foreground">{selectedPaper.subject}</h2>
-                <p className="mt-1 text-sm text-muted">
-                  {semesterLabel(selectedPaper)} · {selectedPaper.yearRange}
+            <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5 shadow-2xs">
+              <div className="min-w-0 flex-1">
+                <span className="inline-block rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent">
+                  {canonicalCourseName(selectedPaper.course)}
+                </span>
+                <h2 className="mt-1.5 text-lg sm:text-xl font-bold text-foreground leading-snug">
+                  {selectedPaper.subject}
+                </h2>
+                <p className="mt-1 text-xs sm:text-sm text-muted">
+                  {semesterLabel(selectedPaper)} · <span className="font-medium text-foreground">{selectedPaper.yearRange}</span>
                 </p>
               </div>
-              <CopyButtonClient />
-            </div>
-
-            <div className="mt-4 flex flex-wrap gap-2">
-              {years.map((y) => (
-                <button
-                  key={y.yearRange}
-                  type="button"
-                  onClick={() => selectYear(y.yearRange)}
-                  className={`rounded-full px-3.5 py-1.5 text-sm font-medium transition ${
-                    y.yearRange === effectiveYear ? "bg-accent text-white" : "bg-surface-muted text-muted hover:text-foreground"
-                  }`}
-                >
-                  {y.yearRange}
-                  <span className="ml-1.5 text-xs opacity-70">{y.count}</span>
-                </button>
-              ))}
-            </div>
-
-            {papersForYear.length > 1 &&
-              (papersForYear.length <= 10 ? (
-                <div className="mt-2 flex flex-wrap gap-2">
-                  {papersForYear.map((p, i) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setPaperIndex(i)}
-                      className={`rounded-lg border px-2.5 py-1 text-xs font-medium transition ${
-                        i === effectivePaperIndex ? "border-accent text-accent" : "border-border text-muted hover:text-foreground"
-                      }`}
-                    >
-                      {p.note ?? `Paper ${i + 1}`}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="mt-2 max-h-40 space-y-0.5 overflow-y-auto rounded-xl border border-border p-1.5">
-                  {papersForYear.map((p, i) => (
-                    <button
-                      key={p.id}
-                      type="button"
-                      onClick={() => setPaperIndex(i)}
-                      className={`flex w-full items-center justify-between gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition ${
-                        i === effectivePaperIndex ? "bg-accent-soft font-medium text-accent" : "text-foreground hover:bg-surface-muted"
-                      }`}
-                    >
-                      <span className="truncate">
-                        {canonicalCourseName(p.course)} · {p.subject}
-                      </span>
-                      <span className="shrink-0 text-muted">{p.note ?? fileName(p)}</span>
-                    </button>
-                  ))}
-                </div>
-              ))}
-
-            {/* An <iframe> rather than the pdf.js-based PDFViewer used
-                elsewhere on the site — most of this unified archive's
-                sources (college library sites, the DU exam portal, Drive
-                links) send no CORS headers, so pdf.js's in-page fetch gets
-                silently blocked and the viewer never renders. Framing
-                isn't subject to CORS the way a JS fetch is, so this works
-                across every source; the tradeoff is losing PDFViewer's
-                custom zoom/page controls in favor of the browser's own
-                built-in PDF viewer inside the frame. */}
-            <div className="mt-4 overflow-hidden rounded-2xl border border-border bg-surface">
-              <div className="flex items-center justify-end gap-2 border-b border-border bg-surface-muted px-3 py-2">
+              <div className="flex items-center gap-2 shrink-0">
+                <CopyButtonClient />
                 <a
                   href={selectedPaper.pdfUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-muted transition hover:text-accent"
+                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted transition hover:border-accent hover:text-accent shadow-2xs"
                 >
                   <ArrowSquareOut size={14} weight="bold" />
-                  Open in new tab
+                  <span className="hidden sm:inline">Open in new tab</span>
                 </a>
                 <a
                   href={selectedPaper.pdfUrl}
                   download
-                  className="flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-muted transition hover:text-accent"
+                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-bold text-brand-foreground shadow-2xs transition hover:bg-brand-hover"
                 >
                   <DownloadSimple size={14} weight="bold" />
-                  Download
+                  <span>Download</span>
                 </a>
               </div>
+            </div>
+
+            {/* Year selector pills */}
+            <div className="mt-3.5">
+              <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+                <span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-muted">Years:</span>
+                {years.map((y) => (
+                  <button
+                    key={y.yearRange}
+                    type="button"
+                    onClick={() => selectYear(y.yearRange)}
+                    className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                      y.yearRange === effectiveYear
+                        ? "bg-accent text-white shadow-2xs ring-2 ring-accent/20"
+                        : "bg-surface-muted text-muted hover:bg-border/60 hover:text-foreground"
+                    }`}
+                  >
+                    {y.yearRange}
+                    <span className="ml-1.5 text-[11px] opacity-75">{y.count}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Multiple papers in same year */}
+            {papersForYear.length > 1 && (
+              <div className="mt-2.5">
+                {papersForYear.length <= 10 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {papersForYear.map((p, i) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setPaperIndex(i)}
+                        className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-semibold transition ${
+                          i === effectivePaperIndex
+                            ? "border-accent bg-accent-soft text-accent shadow-2xs"
+                            : "border-border bg-surface text-muted hover:border-border/80 hover:text-foreground"
+                        }`}
+                      >
+                        <span>{p.note ?? `Paper ${i + 1}`}</span>
+                        {p.isShivaji && (
+                          <span
+                            className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-emerald-500 text-emerald-950 uppercase"
+                            title="Shivaji College Archive"
+                          >
+                            S
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="max-h-40 space-y-0.5 overflow-y-auto rounded-xl border border-border bg-surface p-1.5 shadow-2xs">
+                    {papersForYear.map((p, i) => (
+                      <button
+                        key={p.id}
+                        type="button"
+                        onClick={() => setPaperIndex(i)}
+                        className={`flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs transition ${
+                          i === effectivePaperIndex
+                            ? "bg-accent-soft font-bold text-accent"
+                            : "text-foreground hover:bg-surface-muted"
+                        }`}
+                      >
+                        <span className="truncate flex items-center gap-1.5">
+                          {canonicalCourseName(p.course)} · {p.subject}
+                          {p.isShivaji && (
+                            <span
+                              className="shrink-0 px-1 py-px text-[9px] font-black tracking-tight rounded bg-emerald-500 text-emerald-950 uppercase"
+                              title="Shivaji College Archive"
+                            >
+                              S
+                            </span>
+                          )}
+                        </span>
+                        <span className="shrink-0 text-muted">{p.note ?? fileName(p)}</span>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Embedded PDF iframe viewer */}
+            <div className="mt-3.5 overflow-hidden rounded-2xl border border-border bg-surface shadow-xs">
+              <div className="flex items-center justify-between border-b border-border bg-surface-muted/60 px-3.5 py-2">
+                <div className="flex items-center gap-2 truncate text-xs text-muted">
+                  <span className="truncate font-medium text-foreground">{fileName(selectedPaper)}</span>
+                  {selectedPaper.note && <span>· {selectedPaper.note}</span>}
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <a
+                    href={selectedPaper.pdfUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted transition hover:text-accent shadow-2xs"
+                  >
+                    <ArrowSquareOut size={13} weight="bold" />
+                    Open tab
+                  </a>
+                  <a
+                    href={selectedPaper.pdfUrl}
+                    download
+                    className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted transition hover:text-accent shadow-2xs"
+                  >
+                    <DownloadSimple size={13} weight="bold" />
+                    Save
+                  </a>
+                </div>
+              </div>
               {isFrameBlocked(selectedPaper.pdfUrl) ? (
-                <div className="flex h-[75vh] flex-col items-center justify-center gap-3 bg-surface-muted/50 px-6 text-center">
+                <div className="flex h-[78vh] min-h-[640px] flex-col items-center justify-center gap-3 bg-surface-muted/50 px-6 text-center">
                   <p className="text-sm text-muted">
                     This paper&apos;s source site doesn&apos;t allow inline preview — open it directly instead.
                   </p>
@@ -382,7 +455,7 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
                     href={selectedPaper.pdfUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+                    className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 shadow-sm"
                   >
                     <ArrowSquareOut size={14} weight="bold" />
                     Open PDF
@@ -393,14 +466,9 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
                   key={selectedPaper.id}
                   src={embeddableUrl(selectedPaper.pdfUrl)}
                   title={fileName(selectedPaper)}
-                  className="h-[75vh] w-full bg-surface-muted/50"
+                  className="h-[80vh] min-h-[640px] w-full bg-surface-muted/40"
                 />
               )}
-            </div>
-
-            <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted">
-              <span>{fileName(selectedPaper)}</span>
-              {selectedPaper.note && <span>· {selectedPaper.note}</span>}
             </div>
           </>
         )}
@@ -416,7 +484,7 @@ function CopyButtonClient() {
     <CopyButton
       text={typeof window === "undefined" ? "" : window.location.href}
       label="Copy link"
-      className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-muted transition hover:text-accent"
+      className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted transition hover:border-accent hover:text-accent shadow-2xs"
     />
   );
 }
@@ -426,7 +494,7 @@ function TabButton({ active, label, count, onClick }: { active: boolean; label: 
     <button
       type="button"
       onClick={onClick}
-      className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-medium transition ${
+      className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-bold transition ${
         active ? "bg-surface text-foreground shadow-xs" : "text-muted hover:text-foreground"
       }`}
     >
@@ -461,14 +529,14 @@ function FilterList({
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             placeholder={searchPlaceholder}
-            className="w-full rounded-lg border border-border bg-surface py-1.5 pl-8 pr-2 text-sm text-foreground outline-none focus:border-accent"
+            className="w-full rounded-lg border border-border bg-surface py-1.5 pl-8 pr-2 text-xs sm:text-sm text-foreground outline-none focus:border-accent"
           />
         </div>
       )}
-      <p className="mb-1.5 shrink-0 text-xs text-muted">{total} total</p>
+      <p className="mb-1.5 shrink-0 text-[11px] font-semibold uppercase tracking-wider text-muted">{total} total</p>
       <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1 [scrollbar-color:var(--color-border)_transparent] [scrollbar-width:thin]">
         {children}
-        {empty && <p className="px-2.5 py-1.5 text-sm text-muted">No matches.</p>}
+        {empty && <p className="px-2.5 py-1.5 text-xs text-muted">No matches.</p>}
       </div>
     </div>
   );
@@ -479,8 +547,9 @@ function FilterCheckbox({ checked, label, count, onClick }: { checked: boolean; 
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-sm transition ${
-        checked ? "bg-accent-soft font-medium text-accent" : "text-foreground hover:bg-surface-muted"
+      title={label}
+      className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs sm:text-sm transition ${
+        checked ? "bg-accent-soft font-semibold text-accent" : "text-foreground hover:bg-surface-muted"
       }`}
     >
       <span
@@ -496,7 +565,7 @@ function FilterCheckbox({ checked, label, count, onClick }: { checked: boolean; 
         )}
       </span>
       <span className="min-w-0 flex-1 truncate">{label}</span>
-      <span className="shrink-0 text-xs text-muted">{count}</span>
+      <span className="shrink-0 text-[11px] text-muted">{count}</span>
     </button>
   );
 }

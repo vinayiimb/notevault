@@ -16,22 +16,20 @@ export default async function PapersPage() {
   const papers = await getUnifiedPyqArchive();
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
+    <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-5">
       <BreadcrumbJsonLd
         items={[
           { name: "Home", url: "/" },
           { name: "Browse Papers", url: "/papers" },
         ]}
       />
-      <div className="max-w-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">Browse question papers</h1>
-        <p className="mt-2 text-base text-muted">
-          Pick a course, semester and subject on the left, then jump between years without leaving this page.
+      <div className="mb-4 sm:mb-5">
+        <h1 className="text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Browse Question Papers</h1>
+        <p className="mt-1 text-xs sm:text-sm text-muted">
+          Pick a course, semester and subject on the left to preview Delhi University previous year question papers instantly.
         </p>
       </div>
-      <div className="mt-8">
-        <PaperBrowser papers={papers} />
-      </div>
+      <PaperBrowser papers={papers} />
     </div>
   );
 }
