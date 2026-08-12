@@ -5,7 +5,7 @@ import { PrismaClient } from "@/generated/prisma";
 const prisma = new PrismaClient();
 
 async function main() {
-  const heroUrl = "/images/hero-du-colleges.png";
+  const heroUrl = "/images/hero-du.jpg";
   
   const settings = await prisma.siteSettings.findFirst();
   if (!settings) {
