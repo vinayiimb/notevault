@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { BookOpenText } from "@phosphor-icons/react/dist/ssr";
-import { CatalogArchiveBrowser } from "@/components/archive/catalog-archive-browser";
-import { catalogIntegrity } from "@/lib/pyq-catalog";
+import { CanonicalArchiveBrowser } from "@/components/archive/canonical-archive-browser";
+import { getFullPyqCatalog, catalogIntegrity } from "@/lib/pyq-catalog";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
@@ -13,6 +13,11 @@ export const metadata: Metadata = {
 };
 
 export const revalidate = 3600;
+
+async function PapersContent() {
+  const papers = await getFullPyqCatalog();
+  return <CanonicalArchiveBrowser papers={papers} />;
+}
 
 export default function PyqNotesArchivePage() {
   return (
@@ -31,7 +36,7 @@ export default function PyqNotesArchivePage() {
           Every paper and study file on the site.
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
-          Browse Delhi University previous year question papers across all colleges, official university archives, and course collections.
+          Browse Delhi University previous year question papers organized by canonical DU curriculum structure.
         </p>
       </div>
 
@@ -40,18 +45,18 @@ export default function PyqNotesArchivePage() {
           27,800+ files total
         </span>
         <span className="rounded-full bg-surface-muted px-3 py-1.5">
-          165+ course categories
+          118 canonical programmes
         </span>
         <span className="rounded-full bg-success-soft px-3 py-1.5 text-success">
-          DU Official, Shivaji, Kalindi & ANDC Archives
+          22,853 officially mapped papers
         </span>
         <span className="rounded-full bg-surface-muted px-3 py-1.5">
-          {catalogIntegrity.sourceRows} official-library links
+          9 subject categories
         </span>
       </div>
 
       <Suspense fallback={<div className="mt-10 h-[500px] w-full animate-pulse rounded-2xl bg-surface-muted border border-border/60" />}>
-        <CatalogArchiveBrowser />
+        <PapersContent />
       </Suspense>
     </div>
   );
