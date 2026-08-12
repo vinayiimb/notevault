@@ -12,6 +12,7 @@ import {
   GridFour,
   House,
   MagnifyingGlass,
+  NotePencil,
   PaintBrush,
   Question,
   SealCheck,
@@ -162,6 +163,13 @@ export default async function AdminDashboardLayout({
           >
             <WarningCircle size={16} />
             Failed uploads
+          </Link>
+          <Link
+            href="/admin/subject-notes"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <NotePencil size={16} />
+            Subject Notes
           </Link>
           <Link
             href="/admin/note-themes"

@@ -15,6 +15,9 @@ import BulkUploadBatchPage from "../bulk-upload/[batchId]/_page-impl";
 import CourseCoverageOverviewPage from "../course-coverage/_page-impl";
 import CourseCoverageDetailPage from "../course-coverage/[programId]/_page-impl";
 import CoverageOverviewPage from "../coverage/_page-impl";
+import SubjectNotesOverviewPage from "../subject-notes/_page-impl";
+import SubjectNotesProgramPage from "../subject-notes/program/[programId]/_page-impl";
+import SubjectNotesEditorPage from "../subject-notes/subject/[subjectId]/_page-impl";
 
 interface PageProps {
   params: Promise<{
@@ -34,6 +37,7 @@ export default async function AdminCatchAllPage(props: PageProps) {
 
   const p0 = slug[0];
   const p1 = slug[1];
+  const p2 = slug[2];
 
   if (p0 === "archive-customize") {
     if (p1) {
@@ -81,6 +85,16 @@ export default async function AdminCatchAllPage(props: PageProps) {
 
   if (p0 === "coverage") {
     return <CoverageOverviewPage searchParams={searchParams} />;
+  }
+
+  if (p0 === "subject-notes") {
+    if (p1 === "program" && p2) {
+      return <SubjectNotesProgramPage params={Promise.resolve({ programId: p2 })} />;
+    }
+    if (p1 === "subject" && p2) {
+      return <SubjectNotesEditorPage params={Promise.resolve({ subjectId: p2 })} />;
+    }
+    return <SubjectNotesOverviewPage />;
   }
 
   notFound();
