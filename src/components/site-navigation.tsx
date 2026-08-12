@@ -57,8 +57,6 @@ export function SiteNavigation() {
   const links = [
     { href: "/pyq-notes", label: "PYQ" },
     { href: "/papers", label: "Papers" },
-    { href: "/pyp", label: "PYP" },
-    { href: "/practice", label: "Practice" },
     { href: "/notes", label: "Notes" },
   ];
 
