@@ -44,7 +44,7 @@ export function SiteHeader() {
           )}
         </div>
 
-        {!isPapers && <SiteNavigation />}
+        <SiteNavigation />
 
         <div className="ml-auto flex items-center justify-end gap-2.5 sm:gap-3">
           <div className="hidden flex-1 justify-end lg:flex">

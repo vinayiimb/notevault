@@ -4,6 +4,7 @@
  * matched against the official syllabus catalogue).
  */
 import rawQuestionBank from "@/data/du-question-bank-full-mapped.json";
+import rawRamanujan from "@/data/ramanujan-pyq-catalog.json";
 
 interface RawQuestionBankRow {
   officialProgramme: string;
@@ -22,6 +23,7 @@ interface RawQuestionBankRow {
   isShivaji?: boolean;
   isKalindi?: boolean;
   isANDC?: boolean;
+  isRamanujan?: boolean;
   college?: string;
 }
 
@@ -34,6 +36,7 @@ export interface DuExamPaper {
   isShivaji?: boolean;
   isKalindi?: boolean;
   isANDC?: boolean;
+  isRamanujan?: boolean;
   college?: string;
 }
 
@@ -166,7 +169,55 @@ function buildPapers(): DuPypPaper[] {
         isShivaji: !!row.isShivaji,
         isKalindi: !!row.isKalindi,
         isANDC: !!row.isANDC,
+        isRamanujan: false,
         college: row.college || (row.isShivaji ? "Shivaji" : row.isKalindi ? "Kalindi" : row.isANDC ? "ANDC" : undefined),
+      });
+    }
+  }
+
+  // Merge Ramanujan Papers
+  const ramRows = (rawRamanujan as any[]) || [];
+  for (const ram of ramRows) {
+    const programme = (ram.course ?? "General / Interdisciplinary").trim();
+    const subjectName = (ram.subject ?? "").trim();
+    const link = ram.pdfUrl?.trim();
+    if (!programme || !subjectName || !link) continue;
+
+    const semesters = normalizeSemester(ram.semester);
+    const paperType = "DSC";
+    const key = [programme, subjectName, "", "", paperType].join("||");
+
+    let subject = bySubject.get(key);
+    if (!subject) {
+      subject = {
+        programme,
+        semesters,
+        paperType,
+        subjectName,
+        canonicalName: subjectName,
+        courseNumber: null,
+        upc: null,
+        credits: null,
+        officialLink: null,
+        examPapers: [],
+        _examLinkSeen: new Set(),
+      };
+      bySubject.set(key, subject);
+    }
+
+    if (!subject._examLinkSeen.has(link)) {
+      subject._examLinkSeen.add(link);
+      subject.examPapers.push({
+        year: ram.yearRange || "Unknown",
+        session: null,
+        set: null,
+        marks: null,
+        link,
+        isShivaji: false,
+        isKalindi: false,
+        isANDC: false,
+        isRamanujan: true,
+        college: "Ramanujan",
       });
     }
   }
@@ -184,7 +235,7 @@ function buildPapers(): DuPypPaper[] {
 const allPapers = buildPapers();
 
 export function getTotalDuPypCount(): number {
-  return (rawQuestionBank as RawQuestionBankRow[]).length;
+  return (rawQuestionBank as RawQuestionBankRow[]).length + (rawRamanujan as any[]).length;
 }
 
 // All 118 unique official programme names, sorted and grouped
