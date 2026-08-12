@@ -1,10 +1,29 @@
+import "server-only";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
-import canonicalMappingData from "@/data/du-canonical-mapping.json";
 
 type CanonicalProgrammeRaw = { name: string; subjects: string[] };
 
-const PROGRAMMES = canonicalMappingData.programmes as Record<string, CanonicalProgrammeRaw>;
+// Read at runtime via fs rather than a static JSON import — this file is
+// 9.5MB, and a static import gets duplicated (inlined as JS) into every
+// separate serverless function that imports this module. The /notes pages
+// are each their own function (unlike /admin's single catch-all route,
+// which only pays this cost once), so a static import here meant 3 extra
+// full copies of the file in the deployment output. See the matching
+// outputFileTracingIncludes entry in next.config.ts, which is what makes
+// the file actually present on disk for readFileSync to find at runtime.
+let cachedProgrammes: Record<string, CanonicalProgrammeRaw> | null = null;
+function loadProgrammes(): Record<string, CanonicalProgrammeRaw> {
+  if (cachedProgrammes) return cachedProgrammes;
+  const filePath = path.join(process.cwd(), "src/data/du-canonical-mapping.json");
+  const raw = JSON.parse(readFileSync(filePath, "utf-8"));
+  cachedProgrammes = raw.programmes as Record<string, CanonicalProgrammeRaw>;
+  return cachedProgrammes;
+}
+
+const PROGRAMMES = loadProgrammes();
 
 function programmeList() {
   return Object.values(PROGRAMMES)

@@ -11,6 +11,11 @@ const nextConfig: NextConfig = {
     "/*": [
       "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs",
       "./node_modules/pdfjs-dist/standard_fonts/**/*",
+      // canonical-subject-notes-data.ts reads this via fs.readFileSync at a
+      // constructed path (see its comment) rather than a static import, so
+      // — same reasoning as the pdf.js entries above — Next's automatic
+      // file tracer can't find it on its own without this being explicit.
+      "./src/data/du-canonical-mapping.json",
     ],
   },
   experimental: {
