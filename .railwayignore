@@ -1,0 +1,9 @@
+.git
+.next
+.claude
+.gemini
+node_modules
+*.tar.gz
+*.zip
+*.xlsx
+scratch

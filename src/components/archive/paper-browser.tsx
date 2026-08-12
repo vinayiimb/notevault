@@ -408,6 +408,7 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
                       const isShiv = p.isShivaji || p.college === "Shivaji";
                       const isKal = p.isKalindi || p.college === "Kalindi";
                       const isAnd = p.isANDC || p.college === "ANDC";
+                      const isRam = p.isRamanujan || p.college === "Ramanujan";
                       return (
                         <button
                           key={p.id}
@@ -444,6 +445,14 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
                               A
                             </span>
                           )}
+                          {isRam && (
+                            <span
+                              className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-amber-500 text-amber-950 uppercase"
+                              title="Ramanujan College Archive"
+                            >
+                              R
+                            </span>
+                          )}
                         </button>
                       );
                     })}
@@ -454,6 +463,7 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
                       const isShiv = p.isShivaji || p.college === "Shivaji";
                       const isKal = p.isKalindi || p.college === "Kalindi";
                       const isAnd = p.isANDC || p.college === "ANDC";
+                      const isRam = p.isRamanujan || p.college === "Ramanujan";
                       return (
                         <button
                           key={p.id}
@@ -489,6 +499,14 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
                                 title="Acharya Narendra Dev College (ANDC) Archive"
                               >
                                 A
+                              </span>
+                            )}
+                            {isRam && (
+                              <span
+                                className="shrink-0 px-1 py-px text-[9px] font-black tracking-tight rounded bg-amber-500 text-amber-950 uppercase"
+                                title="Ramanujan College Archive"
+                              >
+                                R
                               </span>
                             )}
                           </span>

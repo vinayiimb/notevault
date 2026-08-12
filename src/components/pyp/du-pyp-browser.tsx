@@ -315,7 +315,8 @@ export function DuPypBrowser({ programmes, groupedProgrammes, totalCount }: Prop
                                   const isShiv = exam.isShivaji || exam.college === "Shivaji";
                                   const isKal = exam.isKalindi || exam.college === "Kalindi";
                                   const isAnd = exam.isANDC || exam.college === "ANDC";
-                                  const collegeTitle = isShiv ? "Shivaji College Archive" : isKal ? "Kalindi College Archive" : isAnd ? "Acharya Narendra Dev College (ANDC) Archive" : null;
+                                  const isRam = (exam as any).isRamanujan || exam.college === "Ramanujan";
+                                  const collegeTitle = isShiv ? "Shivaji College Archive" : isKal ? "Kalindi College Archive" : isAnd ? "Acharya Narendra Dev College (ANDC) Archive" : isRam ? "Ramanujan College Archive" : null;
 
                                   return (
                                     <a
@@ -350,6 +351,14 @@ export function DuPypBrowser({ programmes, groupedProgrammes, totalCount }: Prop
                                           title="Acharya Narendra Dev College (ANDC) Archive"
                                         >
                                           A
+                                        </span>
+                                      )}
+                                      {isRam && (
+                                        <span 
+                                          className="ml-1 px-1 py-px text-[9px] font-black tracking-tight rounded-sm bg-amber-500 text-amber-950 uppercase"
+                                          title="Ramanujan College Archive"
+                                        >
+                                          R
                                         </span>
                                       )}
                                     </a>

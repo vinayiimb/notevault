@@ -23,7 +23,8 @@ export type CatalogPaper = {
   isShivaji?: boolean;
   isKalindi?: boolean;
   isANDC?: boolean;
-  college?: "Shivaji" | "Kalindi" | "ANDC" | string;
+  isRamanujan?: boolean;
+  college?: "Shivaji" | "Kalindi" | "ANDC" | "Ramanujan" | string;
 };
 
 export const NO_SEMESTER = "Semester not specified";
