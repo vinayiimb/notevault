@@ -27,6 +27,12 @@ export function generateStaticParams() {
   return [];
 }
 export const dynamicParams = true;
+// Without this, Next can statically cache the first render of a given
+// /subjects/[id] URL — including a notFound() result — and never re-check
+// the database again until the next full redeploy. Subject rows created
+// or updated after that first visit (e.g. new notes saved via the admin
+// editor) then 404 forever despite existing in the DB.
+export const dynamic = "force-dynamic";
 
 export async function generateMetadata({
   params,
