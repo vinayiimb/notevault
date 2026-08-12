@@ -210,6 +210,15 @@ export async function getSubjectById(id: string) {
     });
     if (subject) return subject;
   } catch (err) {
+    // Only fall through to the static fallback matcher for IDs it can
+    // actually match (sub-* style).  CUID-style IDs (e.g. "cmshji...")
+    // exist only in the database, so if Prisma fails for those we must
+    // re-throw — otherwise ISR caches a false 404 for up to `revalidate`
+    // seconds (and permanently if revalidate isn't set).
+    const isCuid = /^c[a-z0-9]{24,}$/i.test(id);
+    if (isCuid) {
+      throw err;
+    }
     console.warn(`Database unavailable for getSubjectById(${id}), matching from fallback program...`);
   }
 
