@@ -257,6 +257,27 @@ model ScanRun {
 // AI/admin-authored path (see src/lib/note-schema.ts) — existing rows keep
 // rendering through the old markdown path untouched since format defaults
 // to MARKDOWN and structuredJson stays null for them.
+// Notes keyed directly by the 118-programme canonical syllabus file
+// (src/data/du-canonical-mapping.json), not by a Program/Term/Subject DB
+// row — that hierarchy has duplicate/legacy programme rows (120 vs the
+// syllabus's clean 118) and its Subject names don't reliably match the
+// canonical ones. This table is the source of truth for the admin
+// "drop a .md file per programme+subject" flow at /admin/subject-notes.
+model CanonicalSubjectNote {
+  id            String   @id @default(cuid())
+  programmeSlug String
+  programme     String
+  subjectSlug   String
+  subject       String
+  content       String
+  theme         String   @default("sky")
+  updatedAt     DateTime @updatedAt
+  createdAt     DateTime @default(now())
+
+  @@unique([programmeSlug, subjectSlug])
+  @@index([programmeSlug])
+}
+
 model SubjectNotes {
   id             String            @id @default(cuid())
   subjectId      String            @unique

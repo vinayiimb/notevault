@@ -905,6 +905,41 @@ export async function updateSubjectNotesAction(formData: FormData) {
   revalidatePath(`/subjects/${subjectId}`);
 }
 
+// Saves a note keyed directly by the 118-programme canonical syllabus file
+// (see canonical-subject-notes-data.ts) rather than a Program/Term/Subject
+// DB row — that hierarchy has duplicate/legacy programmes and names that
+// don't reliably match the canonical syllabus, which is what this action
+// exists to route around.
+export async function updateCanonicalSubjectNoteAction(formData: FormData) {
+  await requireAdmin();
+  const programmeSlug = String(formData.get("programmeSlug") ?? "");
+  const programme = String(formData.get("programme") ?? "");
+  const subjectSlug = String(formData.get("subjectSlug") ?? "");
+  const subject = String(formData.get("subject") ?? "");
+  const content = String(formData.get("content") ?? "").trim();
+  const themeRaw = String(formData.get("theme") ?? "sky");
+  const theme = (["sky", "violet", "emerald", "amber"] as const).includes(
+    themeRaw as "sky" | "violet" | "emerald" | "amber"
+  )
+    ? themeRaw
+    : "sky";
+  if (!programmeSlug || !subjectSlug) throw new Error("Programme and subject are required.");
+
+  if (!content) {
+    await prisma.canonicalSubjectNote.deleteMany({ where: { programmeSlug, subjectSlug } });
+  } else {
+    await prisma.canonicalSubjectNote.upsert({
+      where: { programmeSlug_subjectSlug: { programmeSlug, subjectSlug } },
+      create: { programmeSlug, programme, subjectSlug, subject, content, theme },
+      update: { programme, subject, content, theme },
+    });
+  }
+
+  revalidatePath(`/admin/subject-notes/subject/${programmeSlug}/${subjectSlug}`);
+  revalidatePath(`/admin/subject-notes/program/${programmeSlug}`);
+  revalidatePath(`/admin/subject-notes`);
+}
+
 // Shared by moveSubjectsToTermAction (UI-driven) and
 // matchUnsortedFromCsvAction (CSV-driven) — grouped by destination term,
 // then done in as few queries as possible: subjects whose existing slug
