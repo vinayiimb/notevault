@@ -49,6 +49,16 @@ export function SiteFooter() {
                   Full Archive
                 </Link>
               </li>
+              <li>
+                <Link href="/pyp" className="text-muted hover:text-accent transition">
+                  Official Papers (PYP)
+                </Link>
+              </li>
+              <li>
+                <Link href="/practice" className="text-muted hover:text-accent transition">
+                  Practice Mode
+                </Link>
+              </li>
             </ul>
           </div>
           <div>

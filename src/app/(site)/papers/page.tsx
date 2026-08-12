@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
-import { getUnifiedPyqArchive } from "@/lib/pyq-catalog";
 import { PaperBrowser } from "@/components/archive/paper-browser";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
-
-export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: "Browse Question Papers | DU PYQ Online",
@@ -12,9 +9,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/papers" },
 };
 
-export default async function PapersPage() {
-  const papers = await getUnifiedPyqArchive();
-
+export default function PapersPage() {
   return (
     <div className="w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-5">
       <BreadcrumbJsonLd
@@ -29,7 +24,7 @@ export default async function PapersPage() {
           Pick a course, semester and subject on the left to preview Delhi University previous year question papers instantly.
         </p>
       </div>
-      <PaperBrowser papers={papers} />
+      <PaperBrowser />
     </div>
   );
 }

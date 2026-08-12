@@ -1,0 +1,2339 @@
+{
+  "ba-hons-economics": {
+    "programme": "B.A. (Hons.) Economics",
+    "programmeSlug": "ba-hons-economics",
+    "collections": [
+      "Economics"
+    ],
+    "subjectCount": 29,
+    "paperCount": 45,
+    "yearsAvailable": [
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "officialSubjectCount": 6,
+    "expandedSubjectCount": 23,
+    "subjects": [
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--advanced-mathematical-methods-for-economics",
+        "subject": "Advanced Mathematical Methods for Economics",
+        "subjectFolder": "dsc__advanced-mathematical-methods-for-economics",
+        "relativePath": "/pyq/ba-hons-economics/dsc__advanced-mathematical-methods-for-economics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dse--comparative-economic-development-1850-1950",
+        "subject": "Comparative Economic Development (1850-1950)",
+        "subjectFolder": "dse__comparative-economic-development-1850-1950",
+        "relativePath": "/pyq/ba-hons-economics/dse__comparative-economic-development-1850-1950",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--development-economics-ii",
+        "subject": "Development Economics-II",
+        "subjectFolder": "core__development-economics-ii",
+        "relativePath": "/pyq/ba-hons-economics/core__development-economics-ii",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--development-theory-and-experience",
+        "subject": "Development Theory and Experience",
+        "subjectFolder": "dsc__development-theory-and-experience",
+        "relativePath": "/pyq/ba-hons-economics/dsc__development-theory-and-experience",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--economic-growth-and-business-cycles",
+        "subject": "Economic Growth and Business Cycles",
+        "subjectFolder": "dsc__economic-growth-and-business-cycles",
+        "relativePath": "/pyq/ba-hons-economics/dsc__economic-growth-and-business-cycles",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--eco-major-dse-economic-history-of-india",
+        "subject": "Economic History of India",
+        "subjectFolder": "dse-1__economic-history-of-india",
+        "relativePath": "/pyq/ba-hons-economics/dse-1__economic-history-of-india",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "III/V/VII"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--eco-major-dse-environmental-economics",
+        "subject": "Environmental Economics",
+        "subjectFolder": "dse-9__environmental-economics",
+        "relativePath": "/pyq/ba-hons-economics/dse-9__environmental-economics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "V/VII"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dse--environmental-economics",
+        "subject": "Environmental Economics",
+        "subjectFolder": "dse__environmental-economics",
+        "relativePath": "/pyq/ba-hons-economics/dse__environmental-economics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--eco-major-dse-financial-economics",
+        "subject": "Financial Economics",
+        "subjectFolder": "dse-16__financial-economics",
+        "relativePath": "/pyq/ba-hons-economics/dse-16__financial-economics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "4"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--indian-economy-ii",
+        "subject": "Indian Economy-II",
+        "subjectFolder": "core-dsc__indian-economy-ii",
+        "relativePath": "/pyq/ba-hons-economics/core-dsc__indian-economy-ii",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2023,
+          2024
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--indian-growth-and-development",
+        "subject": "Indian Growth and Development",
+        "subjectFolder": "dsc__indian-growth-and-development",
+        "relativePath": "/pyq/ba-hons-economics/dsc__indian-growth-and-development",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--intermediate-macroeconomics-ii-policy-issues",
+        "subject": "Intermediate Macroeconomics II: Policy Issues",
+        "subjectFolder": "core__intermediate-macroeconomics-ii-policy-issues",
+        "relativePath": "/pyq/ba-hons-economics/core__intermediate-macroeconomics-ii-policy-issues",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--intermediate-mathematical-methods-for-economics",
+        "subject": "Intermediate Mathematical Methods for Economics",
+        "subjectFolder": "core__intermediate-mathematical-methods-for-economics",
+        "relativePath": "/pyq/ba-hons-economics/core__intermediate-mathematical-methods-for-economics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "2",
+          "II"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--intermediate-microeconomics-i",
+        "subject": "Intermediate Microeconomics I",
+        "subjectFolder": "dsc__intermediate-microeconomics-i",
+        "relativePath": "/pyq/ba-hons-economics/dsc__intermediate-microeconomics-i",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--intermediate-microeconomics-ii",
+        "subject": "Intermediate Microeconomics II",
+        "subjectFolder": "core__intermediate-microeconomics-ii",
+        "relativePath": "/pyq/ba-hons-economics/core__intermediate-microeconomics-ii",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--intermediate-statistics-for-economics",
+        "subject": "Intermediate Statistics for Economics",
+        "subjectFolder": "dsc__intermediate-statistics-for-economics",
+        "relativePath": "/pyq/ba-hons-economics/dsc__intermediate-statistics-for-economics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "2",
+          "II"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--international-trade",
+        "subject": "International Trade",
+        "subjectFolder": "dsc__international-trade",
+        "relativePath": "/pyq/ba-hons-economics/dsc__international-trade",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--introductory-development-economics",
+        "subject": "Introductory Development Economics",
+        "subjectFolder": "dsc__introductory-development-economics",
+        "relativePath": "/pyq/ba-hons-economics/dsc__introductory-development-economics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--introductory-econometrics",
+        "subject": "Introductory Econometrics",
+        "subjectFolder": "dsc-dscc-12__introductory-econometrics",
+        "relativePath": "/pyq/ba-hons-economics/dsc-dscc-12__introductory-econometrics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--introductory-macroeconomics",
+        "subject": "Introductory Macroeconomics",
+        "subjectFolder": "dsc__introductory-macroeconomics",
+        "relativePath": "/pyq/ba-hons-economics/dsc__introductory-macroeconomics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "2",
+          "II"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--introductory-mathematical-methods-for-economics",
+        "subject": "Introductory Mathematical Methods for Economics",
+        "subjectFolder": "dsc__introductory-mathematical-methods-for-economics",
+        "relativePath": "/pyq/ba-hons-economics/dsc__introductory-mathematical-methods-for-economics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--introductory-microeconomics",
+        "subject": "Introductory Microeconomics",
+        "subjectFolder": "dsc__introductory-microeconomics",
+        "relativePath": "/pyq/ba-hons-economics/dsc__introductory-microeconomics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--introductory-statistics-for-economics",
+        "subject": "Introductory Statistics for Economics",
+        "subjectFolder": "dsc__introductory-statistics-for-economics",
+        "relativePath": "/pyq/ba-hons-economics/dsc__introductory-statistics-for-economics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dse--law-and-economics",
+        "subject": "Law and Economics",
+        "subjectFolder": "dse__law-and-economics",
+        "relativePath": "/pyq/ba-hons-economics/dse__law-and-economics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dse--money-and-financial-markets",
+        "subject": "Money & Financial Markets",
+        "subjectFolder": "dse__money-and-financial-markets",
+        "relativePath": "/pyq/ba-hons-economics/dse__money-and-financial-markets",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2024
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--eco-major-dse-public-economics",
+        "subject": "Public Economics",
+        "subjectFolder": "dse-14__public-economics",
+        "relativePath": "/pyq/ba-hons-economics/dse-14__public-economics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "V/VII"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--expanded--dsc-core--quantitative-methods",
+        "subject": "Quantitative Methods",
+        "subjectFolder": "dsc__quantitative-methods",
+        "relativePath": "/pyq/ba-hons-economics/dsc__quantitative-methods",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--eco-major-dse-research-methodology-for-economics",
+        "subject": "Research Methodology for Economics",
+        "subjectFolder": "dse-15__research-methodology-for-economics",
+        "relativePath": "/pyq/ba-hons-economics/dse-15__research-methodology-for-economics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-economics--eco-major-dse-sectoral-issue-in-indian-economy",
+        "subject": "Sectoral Issue in Indian Economy",
+        "subjectFolder": "dse-29__sectoral-issue-in-indian-economy",
+        "relativePath": "/pyq/ba-hons-economics/dse-29__sectoral-issue-in-indian-economy",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      }
+    ]
+  },
+  "ba-hons-history": {
+    "programme": "B.A. (Hons.) History",
+    "programmeSlug": "ba-hons-history",
+    "collections": [
+      "History"
+    ],
+    "subjectCount": 26,
+    "paperCount": 51,
+    "yearsAvailable": [
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "officialSubjectCount": 25,
+    "expandedSubjectCount": 1,
+    "subjects": [
+      {
+        "subjectId": "ba-hons-history--his-hons-dse-archaeology-theory-and-practice",
+        "subject": "Archaeology: Theory and Practice",
+        "subjectFolder": "dse-3__archaeology-theory-and-practice",
+        "relativePath": "/pyq/ba-hons-history/dse-3__archaeology-theory-and-practice",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VIII"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dse-fundamentals-of-historical-methodology",
+        "subject": "Fundamentals of Historical Methodology / Fundamemtal of Historical Methodology",
+        "subjectFolder": "dse-2-minor-dse-4-minor__fundamentals-of-historical-methodology-fundamemtal-of-historical-methodology",
+        "relativePath": "/pyq/ba-hons-history/dse-2-minor-dse-4-minor__fundamentals-of-historical-methodology-fundamemtal-of-historical-methodology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025,
+          2026
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "6",
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dse-history-of-africa-1500-1960s",
+        "subject": "History of Africa c.1500 \u2013 1960s",
+        "subjectFolder": "dse-3__history-of-africa-c-1500-1960s",
+        "relativePath": "/pyq/ba-hons-history/dse-3__history-of-africa-c-1500-1960s",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-india-the-beginning-to-fourth-century-bce",
+        "subject": "History of India (From the beginning to fourth century BCE)",
+        "subjectFolder": "dsc-1__history-of-india-from-the-beginning-to-fourth-century-bce",
+        "relativePath": "/pyq/ba-hons-history/dsc-1__history-of-india-from-the-beginning-to-fourth-century-bce",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-india-ii-4th-century-bce-to-750-ce",
+        "subject": "History of India \u2013 II c. 4th Century BCE to 750 CE",
+        "subjectFolder": "dsc-1__history-of-india-ii-c-4th-century-bce-to-750-ce",
+        "relativePath": "/pyq/ba-hons-history/dsc-1__history-of-india-ii-c-4th-century-bce-to-750-ce",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2025
+        ],
+        "paperCount": 4,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "2",
+          "II"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-india-iii-750-1200",
+        "subject": "History of India \u2013 III: 750 \u2013 1200",
+        "subjectFolder": "dsc-1__history-of-india-iii-750-1200",
+        "relativePath": "/pyq/ba-hons-history/dsc-1__history-of-india-iii-750-1200",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-india-iv-1200-1500",
+        "subject": "History of India \u2013 IV: c.1200 \u2013 1500",
+        "subjectFolder": "dsc-1__history-of-india-iv-c-1200-1500",
+        "relativePath": "/pyq/ba-hons-history/dsc-1__history-of-india-iv-c-1200-1500",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-india-v-1500-1600",
+        "subject": "History of India \u2013 V: c. 1500 \u2013 1600",
+        "subjectFolder": "dsc-1__history-of-india-v-c-1500-1600",
+        "relativePath": "/pyq/ba-hons-history/dsc-1__history-of-india-v-c-1500-1600",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2026
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "IV",
+          "V"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-india-vi-1750-1857",
+        "subject": "History of India \u2013 VI: c. 1750 \u2013 1857",
+        "subjectFolder": "dsc-2__history-of-india-vi-c-1750-1857",
+        "relativePath": "/pyq/ba-hons-history/dsc-2__history-of-india-vi-c-1750-1857",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2026
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "IV",
+          "V"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-india-vii-1600-1750s",
+        "subject": "History of India \u2013 VII: 1600 \u2013 1750s",
+        "subjectFolder": "dsc-1__history-of-india-vii-1600-1750s",
+        "relativePath": "/pyq/ba-hons-history/dsc-1__history-of-india-vii-1600-1750s",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-india-viii-1857-1950",
+        "subject": "History of India \u2013 VIII: c. 1857 \u2013 1950",
+        "subjectFolder": "dsc-2__history-of-india-viii-c-1857-1950",
+        "relativePath": "/pyq/ba-hons-history/dsc-2__history-of-india-viii-c-1857-1950",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-modern-china-1840-1950s",
+        "subject": "History of Modern China (1840 \u2013 1950s)",
+        "subjectFolder": "dsc-3__history-of-modern-china-1840-1950s",
+        "relativePath": "/pyq/ba-hons-history/dsc-3__history-of-modern-china-1840-1950s",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-modern-europe-i",
+        "subject": "History of Modern Europe \u2013 I",
+        "subjectFolder": "dsc-3__history-of-modern-europe-i",
+        "relativePath": "/pyq/ba-hons-history/dsc-3__history-of-modern-europe-i",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-modern-europe-ii",
+        "subject": "History of Modern Europe \u2013 II",
+        "subjectFolder": "dsc-3__history-of-modern-europe-ii",
+        "relativePath": "/pyq/ba-hons-history/dsc-3__history-of-modern-europe-ii",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-modern-japan-1868-1950s",
+        "subject": "History of Modern Japan (c. 1868 \u2013 1950s)",
+        "subjectFolder": "dsc-3__history-of-modern-japan-c-1868-1950s",
+        "relativePath": "/pyq/ba-hons-history/dsc-3__history-of-modern-japan-c-1868-1950s",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core",
+          "DSE"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dse-history-of-south-east-asia-i",
+        "subject": "History of South East Asia \u2013 I",
+        "subjectFolder": "dse-2__history-of-south-east-asia-i",
+        "relativePath": "/pyq/ba-hons-history/dse-2__history-of-south-east-asia-i",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-the-usa-independence-to-civil-war",
+        "subject": "History of the USA: Independence to Civil War",
+        "subjectFolder": "dsc-3__history-of-the-usa-independence-to-civil-war",
+        "relativePath": "/pyq/ba-hons-history/dsc-3__history-of-the-usa-independence-to-civil-war",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-history-of-the-usa-reconstruction-to-new-age-politics",
+        "subject": "History of the USA: Reconstruction to New Age Politics",
+        "subjectFolder": "dsc-3__history-of-the-usa-reconstruction-to-new-age-politics",
+        "relativePath": "/pyq/ba-hons-history/dsc-3__history-of-the-usa-reconstruction-to-new-age-politics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2025
+        ],
+        "paperCount": 5,
+        "typeGroups": [
+          "DSC/Core",
+          "DSE"
+        ],
+        "semestersSeen": [
+          "2",
+          "II",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dse-history-of-the-ussr-revolution-to-disintegration-1917-1991",
+        "subject": "History of the USSR: From Revolution to Disintegration (c. 1917 \u2013 1991)",
+        "subjectFolder": "dse-1__history-of-the-ussr-from-revolution-to-disintegration-c-1917-1991",
+        "relativePath": "/pyq/ba-hons-history/dse-1__history-of-the-ussr-from-revolution-to-disintegration-c-1917-1991",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2026
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "V",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--expanded--dsc-core--indian-epigraphy-i",
+        "subject": "Indian Epigraphy I",
+        "subjectFolder": "dscc-dsc__indian-epigraphy-i",
+        "relativePath": "/pyq/ba-hons-history/dscc-dsc__indian-epigraphy-i",
+        "catalogStatus": "expanded-archive-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dse-practice-of-history-i",
+        "subject": "Practice of Histroy -I",
+        "subjectFolder": "dse-2__practice-of-histroy-i",
+        "relativePath": "/pyq/ba-hons-history/dse-2__practice-of-histroy-i",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VIII"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dse-reading-sources-in-indian-history-an-introduction-to-literary-tradition-i",
+        "subject": "Reading Sources in Indian History: An Introduction to Literary Tradition I",
+        "subjectFolder": "none__reading-sources-in-indian-history-an-introduction-to-literary-tradition-i",
+        "relativePath": "/pyq/ba-hons-history/none__reading-sources-in-indian-history-an-introduction-to-literary-tradition-i",
+        "catalogStatus": "official-provisional-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-rise-of-the-modern-west-ii",
+        "subject": "Rise of the Modern West \u2013 II",
+        "subjectFolder": "dsc-2__rise-of-the-modern-west-ii",
+        "relativePath": "/pyq/ba-hons-history/dsc-2__rise-of-the-modern-west-ii",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2025
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-rise-of-the-modern-west-i",
+        "subject": "Rise of the Modern West-I",
+        "subjectFolder": "dsc-2__rise-of-the-modern-west-i",
+        "relativePath": "/pyq/ba-hons-history/dsc-2__rise-of-the-modern-west-i",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dsc-core-social-formations-and-cultural-patterns-of-the-medieval-world-ii",
+        "subject": "Social Formations and Cultural Patterns of the Medieval World \u2013 II",
+        "subjectFolder": "dsc-2__social-formations-and-cultural-patterns-of-the-medieval-world-ii",
+        "relativePath": "/pyq/ba-hons-history/dsc-2__social-formations-and-cultural-patterns-of-the-medieval-world-ii",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2025
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "2",
+          "II"
+        ]
+      },
+      {
+        "subjectId": "ba-hons-history--his-hons-dse-sources-and-practice-of-history-i",
+        "subject": "Sources and the Practice of Histroy -I",
+        "subjectFolder": "dse-1__sources-and-the-practice-of-histroy-i",
+        "relativePath": "/pyq/ba-hons-history/dse-1__sources-and-the-practice-of-histroy-i",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      }
+    ]
+  },
+  "ba-multidisciplinary-history": {
+    "programme": "B.A. Multidisciplinary History",
+    "programmeSlug": "ba-multidisciplinary-history",
+    "collections": [
+      "History"
+    ],
+    "subjectCount": 7,
+    "paperCount": 9,
+    "yearsAvailable": [
+      2025,
+      2026
+    ],
+    "officialSubjectCount": 7,
+    "expandedSubjectCount": 0,
+    "subjects": [
+      {
+        "subjectId": "ba-multidisciplinary-history--his-prog-dse-communicating-culture-tellings-representations-and-leisure",
+        "subject": "Communicating Culture: Tellings, Representations and Leisure",
+        "subjectFolder": "dse-6__communicating-culture-tellings-representations-and-leisure",
+        "relativePath": "/pyq/ba-multidisciplinary-history/dse-6__communicating-culture-tellings-representations-and-leisure",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "ba-multidisciplinary-history--his-prog-dse-cultural-transactions-between-india-and-the-world",
+        "subject": "Cultural Transactions between India and the World",
+        "subjectFolder": "dse-3__cultural-transactions-between-india-and-the-world",
+        "relativePath": "/pyq/ba-multidisciplinary-history/dse-3__cultural-transactions-between-india-and-the-world",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "ba-multidisciplinary-history--his-prog-dse-histories-of-regional-literature",
+        "subject": "Histories of Regional Literature",
+        "subjectFolder": "dse-1__histories-of-regional-literature",
+        "relativePath": "/pyq/ba-multidisciplinary-history/dse-1__histories-of-regional-literature",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "ba-multidisciplinary-history--his-prog-dsc-core-history-of-india-1700-1857",
+        "subject": "History of India 1700 \u2013 1857",
+        "subjectFolder": "dsc-1__history-of-india-1700-1857",
+        "relativePath": "/pyq/ba-multidisciplinary-history/dsc-1__history-of-india-1700-1857",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "ba-multidisciplinary-history--his-prog-dsc-core-history-of-india-1858-1947",
+        "subject": "History of India 1858 \u2013 1947",
+        "subjectFolder": "dsc-1__history-of-india-1858-1947",
+        "relativePath": "/pyq/ba-multidisciplinary-history/dsc-1__history-of-india-1858-1947",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      },
+      {
+        "subjectId": "ba-multidisciplinary-history--his-prog-dse-perspectives-on-south-indian-past-i-the-cholas",
+        "subject": "Perspectives on South Indian Past I: The Cholas",
+        "subjectFolder": "dse-5__perspectives-on-south-indian-past-i-the-cholas",
+        "relativePath": "/pyq/ba-multidisciplinary-history/dse-5__perspectives-on-south-indian-past-i-the-cholas",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "ba-multidisciplinary-history--his-prog-dse-urbanisation-and-urbanism-in-india",
+        "subject": "Urbanisation and Urbanism in India",
+        "subjectFolder": "dse-2__urbanisation-and-urbanism-in-india",
+        "relativePath": "/pyq/ba-multidisciplinary-history/dse-2__urbanisation-and-urbanism-in-india",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      }
+    ]
+  },
+  "ba-programme-business-economics": {
+    "programme": "B.A. Programme Business Economics",
+    "programmeSlug": "ba-programme-business-economics",
+    "collections": [
+      "Economics"
+    ],
+    "subjectCount": 4,
+    "paperCount": 8,
+    "yearsAvailable": [
+      2023,
+      2024,
+      2026
+    ],
+    "officialSubjectCount": 0,
+    "expandedSubjectCount": 4,
+    "subjects": [
+      {
+        "subjectId": "ba-programme-business-economics--expanded--dse--business-economics",
+        "subject": "Business Economics",
+        "subjectFolder": "dse__business-economics",
+        "relativePath": "/pyq/ba-programme-business-economics/dse__business-economics",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-business-economics--expanded--dsc-core--contemporary-policy-and-institutional-framework",
+        "subject": "Contemporary Policy and Institutional Framework",
+        "subjectFolder": "dsc__contemporary-policy-and-institutional-framework",
+        "relativePath": "/pyq/ba-programme-business-economics/dsc__contemporary-policy-and-institutional-framework",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-business-economics--expanded--dse--contemporary-policy-and-institutional-framework",
+        "subject": "Contemporary Policy and Institutional Framework",
+        "subjectFolder": "dse-4__contemporary-policy-and-institutional-framework",
+        "relativePath": "/pyq/ba-programme-business-economics/dse-4__contemporary-policy-and-institutional-framework",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2023,
+          2024
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-business-economics--expanded--dse--evolution-of-policy-and-institutional-framework",
+        "subject": "Evolution of Policy and Institutional Framework",
+        "subjectFolder": "dse__evolution-of-policy-and-institutional-framework",
+        "relativePath": "/pyq/ba-programme-business-economics/dse__evolution-of-policy-and-institutional-framework",
+        "catalogStatus": "expanded-programme-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      }
+    ]
+  },
+  "ba-programme-economics": {
+    "programme": "B.A. Programme Economics",
+    "programmeSlug": "ba-programme-economics",
+    "collections": [
+      "Economics"
+    ],
+    "subjectCount": 17,
+    "paperCount": 31,
+    "yearsAvailable": [
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "officialSubjectCount": 13,
+    "expandedSubjectCount": 4,
+    "subjects": [
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-basic-econometrics",
+        "subject": "Basic Econometrics",
+        "subjectFolder": "dsc-8__basic-econometrics",
+        "relativePath": "/pyq/ba-programme-economics/dsc-8__basic-econometrics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-basic-mathematics-for-economic-analysis",
+        "subject": "Basic Mathematics for Economic Analysis",
+        "subjectFolder": "dsc-2__basic-mathematics-for-economic-analysis",
+        "relativePath": "/pyq/ba-programme-economics/dsc-2__basic-mathematics-for-economic-analysis",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-basic-statistics-for-economics",
+        "subject": "Basic Statistics for Economics",
+        "subjectFolder": "dsc-4__basic-statistics-for-economics",
+        "relativePath": "/pyq/ba-programme-economics/dsc-4__basic-statistics-for-economics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "II"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--expanded--dsc-core--economic-development-and-policy-in-india-i",
+        "subject": "Economic Development and Policy in India-I",
+        "subjectFolder": "dsc__economic-development-and-policy-in-india-i",
+        "relativePath": "/pyq/ba-programme-economics/dsc__economic-development-and-policy-in-india-i",
+        "catalogStatus": "expanded-archive-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--expanded--dse--economic-development-and-policy-in-india-ii",
+        "subject": "Economic Development and Policy in India-II",
+        "subjectFolder": "dse__economic-development-and-policy-in-india-ii",
+        "relativePath": "/pyq/ba-programme-economics/dse__economic-development-and-policy-in-india-ii",
+        "catalogStatus": "expanded-archive-subject",
+        "yearsAvailable": [
+          2024
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--expanded--dse--economy-and-politics-histories-of-capitalism-and-colonialism-ii",
+        "subject": "Economy and Politics: Histories of Capitalism and Colonialism II",
+        "subjectFolder": "dse-2b__economy-and-politics-histories-of-capitalism-and-colonialism-ii",
+        "relativePath": "/pyq/ba-programme-economics/dse-2b__economy-and-politics-histories-of-capitalism-and-colonialism-ii",
+        "catalogStatus": "expanded-archive-subject",
+        "yearsAvailable": [
+          2023
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dse-fiscal-policy-and-public-finance-in-india",
+        "subject": "Fiscal Policy and Public Finance in India",
+        "subjectFolder": "dse-4__fiscal-policy-and-public-finance-in-india",
+        "relativePath": "/pyq/ba-programme-economics/dse-4__fiscal-policy-and-public-finance-in-india",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "III/V/VII"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-indian-growth-and-development",
+        "subject": "Indian Growth and Development",
+        "subjectFolder": "dsc-12-major-dsc-6-minor__indian-growth-and-development",
+        "relativePath": "/pyq/ba-programme-economics/dsc-12-major-dsc-6-minor__indian-growth-and-development",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-intermediate-macroeconomics-i-foundations-of-aggregate-income-determination",
+        "subject": "Intermediate Macroeconomics I: Foundations of Aggregate Income Determination",
+        "subjectFolder": "dsc-7-major-dsc-4-minor__intermediate-macroeconomics-i-foundations-of-aggregate-income-determination",
+        "relativePath": "/pyq/ba-programme-economics/dsc-7-major-dsc-4-minor__intermediate-macroeconomics-i-foundations-of-aggregate-income-determination",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 4,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-intermediate-macroeconomics-ii-policy-issues",
+        "subject": "Intermediate Macroeconomics II: Policy Issues",
+        "subjectFolder": "dsc-11__intermediate-macroeconomics-ii-policy-issues",
+        "relativePath": "/pyq/ba-programme-economics/dsc-11__intermediate-macroeconomics-ii-policy-issues",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-intermediate-microeconomics-i-behavioral-foundations-of-market-interactions",
+        "subject": "Intermediate Microeconomics I: Behavioural Foundations of Market Interactions",
+        "subjectFolder": "dsc-5-major-dsc-3-minor__intermediate-microeconomics-i-behavioural-foundations-of-market-interactions",
+        "relativePath": "/pyq/ba-programme-economics/dsc-5-major-dsc-3-minor__intermediate-microeconomics-i-behavioural-foundations-of-market-interactions",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core",
+          "DSE"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-introductory-development-economics",
+        "subject": "Introductory Development Economics",
+        "subjectFolder": "dsc-10-major-dsc-5-minor__introductory-development-economics",
+        "relativePath": "/pyq/ba-programme-economics/dsc-10-major-dsc-5-minor__introductory-development-economics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-introductory-macroeconomics",
+        "subject": "Introductory Macroeconomics",
+        "subjectFolder": "dsc-3-major-dsc-2-minor__introductory-macroeconomics",
+        "relativePath": "/pyq/ba-programme-economics/dsc-3-major-dsc-2-minor__introductory-macroeconomics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2025
+        ],
+        "paperCount": 4,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "2",
+          "II"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-introductory-microeconomics",
+        "subject": "Introductory Microeconomics",
+        "subjectFolder": "dsc-1__introductory-microeconomics",
+        "relativePath": "/pyq/ba-programme-economics/dsc-1__introductory-microeconomics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-dsc-core-optimization-methods-for-economic-analysis",
+        "subject": "Optimization Methods for Economic Analysis",
+        "subjectFolder": "dsc-6__optimization-methods-for-economic-analysis",
+        "relativePath": "/pyq/ba-programme-economics/dsc-6__optimization-methods-for-economic-analysis",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--eco-major-ge-principles-of-macroeconomics-ii",
+        "subject": "Principles of Macroeconomics II",
+        "subjectFolder": "ge-15__principles-of-macroeconomics-ii",
+        "relativePath": "/pyq/ba-programme-economics/ge-15__principles-of-macroeconomics-ii",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-economics--expanded--dse--public-finance",
+        "subject": "Public Finance",
+        "subjectFolder": "dse__public-finance",
+        "relativePath": "/pyq/ba-programme-economics/dse__public-finance",
+        "catalogStatus": "expanded-archive-subject",
+        "yearsAvailable": [
+          2024
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      }
+    ]
+  },
+  "ba-programme-history": {
+    "programme": "B.A. Programme History",
+    "programmeSlug": "ba-programme-history",
+    "collections": [
+      "History"
+    ],
+    "subjectCount": 15,
+    "paperCount": 39,
+    "yearsAvailable": [
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "officialSubjectCount": 11,
+    "expandedSubjectCount": 4,
+    "subjects": [
+      {
+        "subjectId": "ba-programme-history--expanded--dse--ancient-indian-arts",
+        "subject": "Ancient Indian Arts",
+        "subjectFolder": "dse__ancient-indian-arts",
+        "relativePath": "/pyq/ba-programme-history/dse__ancient-indian-arts",
+        "catalogStatus": "expanded-archive-subject",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-prog-dsc-core-ancient-societies",
+        "subject": "Ancient Societies",
+        "subjectFolder": "dsc-2__ancient-societies",
+        "relativePath": "/pyq/ba-programme-history/dsc-2__ancient-societies",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-hons-dse-archaeology-theory-and-practice",
+        "subject": "Archaeology: Theory and Practice",
+        "subjectFolder": "dse-3__archaeology-theory-and-practice",
+        "relativePath": "/pyq/ba-programme-history/dse-3__archaeology-theory-and-practice",
+        "catalogStatus": "official-provisional-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-prog-dsc-core-contemporary-india-1950-1990s",
+        "subject": "Contemporary India (1950 \u2013 1990s)",
+        "subjectFolder": "dsc-1__contemporary-india-1950-1990s",
+        "relativePath": "/pyq/ba-programme-history/dsc-1__contemporary-india-1950-1990s",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-prog-dsc-core-cultural-transformations-in-early-modern-europe-ii",
+        "subject": "Cultural Transformations in Early Modern Europe \u2013 II",
+        "subjectFolder": "dsc-2__cultural-transformations-in-early-modern-europe-ii",
+        "relativePath": "/pyq/ba-programme-history/dsc-2__cultural-transformations-in-early-modern-europe-ii",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core",
+          "DSE"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-prog-dsc-core-cultural-transformations-in-early-modern-europe-i",
+        "subject": "Cultural Transformations in Early Modern Europe-I",
+        "subjectFolder": "dsc-2__cultural-transformations-in-early-modern-europe-i",
+        "relativePath": "/pyq/ba-programme-history/dsc-2__cultural-transformations-in-early-modern-europe-i",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--expanded--sec--history-and-archaeology",
+        "subject": "History and Archaeology",
+        "subjectFolder": "sec__history-and-archaeology",
+        "relativePath": "/pyq/ba-programme-history/sec__history-and-archaeology",
+        "catalogStatus": "expanded-archive-subject",
+        "yearsAvailable": [
+          2023,
+          2024
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "SEC"
+        ],
+        "semestersSeen": [
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-prog-dsc-core-history-of-europe-1870-1945",
+        "subject": "History of Europe: 1870 \u2013 1945",
+        "subjectFolder": "dsc-2__history-of-europe-1870-1945",
+        "relativePath": "/pyq/ba-programme-history/dsc-2__history-of-europe-1870-1945",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2025
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-prog-dsc-core-history-of-india-c-1550-1700",
+        "subject": "History of India c.1550 \u2013 1700",
+        "subjectFolder": "dsc-1__history-of-india-c-1550-1700",
+        "relativePath": "/pyq/ba-programme-history/dsc-1__history-of-india-c-1550-1700",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 4,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--expanded--dsc-core--history-of-india-from-1700-to-1950",
+        "subject": "History of India from 1700 to 1950",
+        "subjectFolder": "dsc__history-of-india-from-1700-to-1950",
+        "relativePath": "/pyq/ba-programme-history/dsc__history-of-india-from-1700-to-1950",
+        "catalogStatus": "expanded-archive-subject",
+        "yearsAvailable": [
+          2023,
+          2024
+        ],
+        "paperCount": 4,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-prog-dsc-core-history-of-india-from-earliest-times-upto-c-300-ce",
+        "subject": "History of India from earliest times upto c. 300 CE",
+        "subjectFolder": "dsc-1__history-of-india-from-earliest-times-upto-c-300-ce",
+        "relativePath": "/pyq/ba-programme-history/dsc-1__history-of-india-from-earliest-times-upto-c-300-ce",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-prog-dsc-core-history-of-india-1200-1550",
+        "subject": "History of India, 1200 \u2013 1550",
+        "subjectFolder": "dsc-1__history-of-india-1200-1550",
+        "relativePath": "/pyq/ba-programme-history/dsc-1__history-of-india-1200-1550",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-prog-dsc-core-history-of-india-300-ce-to-1200-ce",
+        "subject": "History of India, 300 CE to 1200 CE",
+        "subjectFolder": "dsc-1__history-of-india-300-ce-to-1200-ce",
+        "relativePath": "/pyq/ba-programme-history/dsc-1__history-of-india-300-ce-to-1200-ce",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2025
+        ],
+        "paperCount": 8,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "2",
+          "II"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--expanded--dse--issues-in-twentieth-century-world-history-ii",
+        "subject": "Issues in Twentieth-Century World History-II",
+        "subjectFolder": "dse-2b__issues-in-twentieth-century-world-history-ii",
+        "relativePath": "/pyq/ba-programme-history/dse-2b__issues-in-twentieth-century-world-history-ii",
+        "catalogStatus": "expanded-archive-subject",
+        "yearsAvailable": [
+          2023,
+          2024
+        ],
+        "paperCount": 4,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "ba-programme-history--his-prog-dsc-core-medieval-societies-global-perspectives",
+        "subject": "Medieval Societies: Global Perspectives",
+        "subjectFolder": "dsc-2__medieval-societies-global-perspectives",
+        "relativePath": "/pyq/ba-programme-history/dsc-2__medieval-societies-global-perspectives",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2025
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "2",
+          "II"
+        ]
+      }
+    ]
+  },
+  "bsc-hons-zoology": {
+    "programme": "B.Sc. (Hons.) Zoology",
+    "programmeSlug": "bsc-hons-zoology",
+    "collections": [
+      "Zoology"
+    ],
+    "subjectCount": 24,
+    "paperCount": 44,
+    "yearsAvailable": [
+      2023,
+      2024,
+      2025,
+      2026
+    ],
+    "officialSubjectCount": 24,
+    "expandedSubjectCount": 0,
+    "subjects": [
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-animal-behavior",
+        "subject": "Animal Behaviour",
+        "subjectFolder": "dsc-12__animal-behaviour",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-12__animal-behaviour",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-animal-biotechnology",
+        "subject": "Animal Biotechnology",
+        "subjectFolder": "dsc-16__animal-biotechnology",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-16__animal-biotechnology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core",
+          "DSE"
+        ],
+        "semestersSeen": [
+          "6",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dse-animal-models-and-experimentation",
+        "subject": "Animal Models and Experimentation",
+        "subjectFolder": "none__animal-models-and-experimentation",
+        "relativePath": "/pyq/bsc-hons-zoology/none__animal-models-and-experimentation",
+        "catalogStatus": "official-provisional-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-biochemistry-metabolic-processes",
+        "subject": "Biochemistry: Metabolic Processes",
+        "subjectFolder": "dsc-8__biochemistry-metabolic-processes",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-8__biochemistry-metabolic-processes",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2026
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III",
+          "IV",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-cell-and-molecular-biology",
+        "subject": "Cell and Molecular Biology",
+        "subjectFolder": "dsc-14__cell-and-molecular-biology",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-14__cell-and-molecular-biology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-comparative-anatomy-of-vertebrates",
+        "subject": "Comparative Anatomy of Vertebrates",
+        "subjectFolder": "dsc-10__comparative-anatomy-of-vertebrates",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-10__comparative-anatomy-of-vertebrates",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2025
+        ],
+        "paperCount": 4,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-concept-of-ecology",
+        "subject": "Concept of Ecology",
+        "subjectFolder": "dsc-3__concept-of-ecology",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-3__concept-of-ecology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-developmental-biology",
+        "subject": "Developmental Biology",
+        "subjectFolder": "dsc-11__developmental-biology",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-11__developmental-biology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2025
+        ],
+        "paperCount": 4,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-diversity-of-chordates",
+        "subject": "Diversity of Chordates",
+        "subjectFolder": "dsc-7__diversity-of-chordates",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-7__diversity-of-chordates",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-evolutionary-biology",
+        "subject": "Evolutionary Biology",
+        "subjectFolder": "dsc-18__evolutionary-biology",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-18__evolutionary-biology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-fundamentals-of-biomolecules",
+        "subject": "Fundamentals of Biomolecules",
+        "subjectFolder": "dsc-5__fundamentals-of-biomolecules",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-5__fundamentals-of-biomolecules",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "II"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-fundamentals-of-genetics",
+        "subject": "Fundamentals of Genetics",
+        "subjectFolder": "dsc-15__fundamentals-of-genetics",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-15__fundamentals-of-genetics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dse-human-endocrinology",
+        "subject": "Human Endocrinology",
+        "subjectFolder": "zoo-dse-15__human-endocrinology",
+        "relativePath": "/pyq/bsc-hons-zoology/zoo-dse-15__human-endocrinology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-human-physiology-control-and-coordination-systems",
+        "subject": "Human Physiology Control and Coordination Systems",
+        "subjectFolder": "dsc-6__human-physiology-control-and-coordination-systems",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-6__human-physiology-control-and-coordination-systems",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024
+        ],
+        "paperCount": 2,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "II"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-human-physiology-life-sustaining-systems",
+        "subject": "Human Physiology Life Sustaining Systems",
+        "subjectFolder": "dsc-9__human-physiology-life-sustaining-systems",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-9__human-physiology-life-sustaining-systems",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024,
+          2026
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "III",
+          "IV"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dse-ichthyology",
+        "subject": "Ichthyology",
+        "subjectFolder": "zoo-dse-19__ichthyology",
+        "relativePath": "/pyq/bsc-hons-zoology/zoo-dse-19__ichthyology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "VII"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dse-medical-zoology",
+        "subject": "Medical Zoology",
+        "subjectFolder": "zoo-dse-3__medical-zoology",
+        "relativePath": "/pyq/bsc-hons-zoology/zoo-dse-3__medical-zoology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "III"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-methods-in-biostatistics",
+        "subject": "Methods in Biostatistics",
+        "subjectFolder": "dsc-17__methods-in-biostatistics",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-17__methods-in-biostatistics",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-non-chordata-protists-to-pseudocoelomates",
+        "subject": "Nonchordata \u2013 Protists to Pseudocoelomates",
+        "subjectFolder": "dsc-1__nonchordata-protists-to-pseudocoelomates",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-1__nonchordata-protists-to-pseudocoelomates",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "I"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-non-chordata-coelomates",
+        "subject": "NonChordata: Coelomates",
+        "subjectFolder": "dsc-4__nonchordata-coelomates",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-4__nonchordata-coelomates",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2023,
+          2024
+        ],
+        "paperCount": 4,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "II"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dse-parasitology",
+        "subject": "Parasitology",
+        "subjectFolder": "zoo-dse-8__parasitology",
+        "relativePath": "/pyq/bsc-hons-zoology/zoo-dse-8__parasitology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2024,
+          2025
+        ],
+        "paperCount": 3,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "4",
+          "IV",
+          "VI"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dsc-core-principles-of-immunology",
+        "subject": "Principles of Immunology",
+        "subjectFolder": "dsc-13__principles-of-immunology",
+        "relativePath": "/pyq/bsc-hons-zoology/dsc-13__principles-of-immunology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSC/Core"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dse-reproductive-biology-and-assisted-reproductive-technology-art",
+        "subject": "Reproductive Biology and Assisted Reproductive Technology (ART)",
+        "subjectFolder": "zoo-dse-13__reproductive-biology-and-assisted-reproductive-technology-art",
+        "relativePath": "/pyq/bsc-hons-zoology/zoo-dse-13__reproductive-biology-and-assisted-reproductive-technology-art",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2026
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "V"
+        ]
+      },
+      {
+        "subjectId": "bsc-hons-zoology--zoo-hons-dse-research-methodology-for-zoology",
+        "subject": "Research Methodology for Zoology",
+        "subjectFolder": "zoo-dse-17__research-methodology-for-zoology",
+        "relativePath": "/pyq/bsc-hons-zoology/zoo-dse-17__research-methodology-for-zoology",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "6"
+        ]
+      }
+    ]
+  },
+  "bsc-hons-zoology-and-life-science": {
+    "programme": "B.Sc. (Hons.) Zoology / B.Sc. Life Science",
+    "programmeSlug": "bsc-hons-zoology-and-life-science",
+    "collections": [
+      "Zoology"
+    ],
+    "subjectCount": 1,
+    "paperCount": 1,
+    "yearsAvailable": [
+      2025
+    ],
+    "officialSubjectCount": 1,
+    "expandedSubjectCount": 0,
+    "subjects": [
+      {
+        "subjectId": "bsc-hons-zoology-and-life-science--zoo-hons-dse-cell-growth-and-regulation",
+        "subject": "Cell Growth and Regulation",
+        "subjectFolder": "zoo-dse-6__cell-growth-and-regulation",
+        "relativePath": "/pyq/bsc-hons-zoology-and-life-science/zoo-dse-6__cell-growth-and-regulation",
+        "catalogStatus": "official-syllabus-match",
+        "yearsAvailable": [
+          2025
+        ],
+        "paperCount": 1,
+        "typeGroups": [
+          "DSE"
+        ],
+        "semestersSeen": [
+          "4"
+        ]
+      }
+    ]
+  }
+}

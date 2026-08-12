@@ -20,6 +20,10 @@ export type CatalogPaper = {
   matchStatus?: "Exact" | "Strong" | "Review" | "Unmatched";
   matchConfidence?: number;
   semesterCheck?: string;
+  isShivaji?: boolean;
+  isKalindi?: boolean;
+  isANDC?: boolean;
+  college?: "Shivaji" | "Kalindi" | "ANDC" | string;
 };
 
 export const NO_SEMESTER = "Semester not specified";

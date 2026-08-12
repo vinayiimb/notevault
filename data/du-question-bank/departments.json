@@ -1,0 +1,302 @@
+[
+  {
+    "departmentId": "601",
+    "departmentName": "ACHARYA NARENDRA DEV COLLEGE"
+  },
+  {
+    "departmentId": "705",
+    "departmentName": "AECC"
+  },
+  {
+    "departmentId": "318",
+    "departmentName": "AMBEDKAR CENTER FOR BIOMEDICAL RESEARCH"
+  },
+  {
+    "departmentId": "609",
+    "departmentName": "BHASKARACHARYA COLLEGE OF APPLIED SCIENCE"
+  },
+  {
+    "departmentId": "351",
+    "departmentName": "CENTRE FOR HINDU STUDIES"
+  },
+  {
+    "departmentId": "320",
+    "departmentName": "CENTRE OF GLOBAL STUDIES"
+  },
+  {
+    "departmentId": "312",
+    "departmentName": "CLUSTER INNOVATION CENTRE (CIC)"
+  },
+  {
+    "departmentId": "687",
+    "departmentName": "COLLEGE OF ART"
+  },
+  {
+    "departmentId": "613",
+    "departmentName": "COLLEGE OF VOCATIONAL STUDIES"
+  },
+  {
+    "departmentId": "697",
+    "departmentName": "COUNCIL FOR IAPC"
+  },
+  {
+    "departmentId": "695",
+    "departmentName": "COUNCIL FOR SEC"
+  },
+  {
+    "departmentId": "696",
+    "departmentName": "COUNCIL FOR VAC"
+  },
+  {
+    "departmentId": "614",
+    "departmentName": "DAULAT RAM COLLEGE"
+  },
+  {
+    "departmentId": "690",
+    "departmentName": "DELHI SCHOOL FOR SKILL ENHANCEMENT AND ENTREPRENEURSHIP DEVELOPMENT"
+  },
+  {
+    "departmentId": "691",
+    "departmentName": "DELHI SCHOOL OF ANALYTICS"
+  },
+  {
+    "departmentId": "316",
+    "departmentName": "DELHI SCHOOL OF JOURNALISM"
+  },
+  {
+    "departmentId": "215",
+    "departmentName": "DEPARTMENT OF ANTHROPOLOGY"
+  },
+  {
+    "departmentId": "296",
+    "departmentName": "DEPARTMENT OF APPLIED SCIENCES AND HUMANITIES"
+  },
+  {
+    "departmentId": "201",
+    "departmentName": "DEPARTMENT OF ARABIC"
+  },
+  {
+    "departmentId": "249",
+    "departmentName": "DEPARTMENT OF BIOCHEMISTRY"
+  },
+  {
+    "departmentId": "216",
+    "departmentName": "DEPARTMENT OF BOTANY"
+  },
+  {
+    "departmentId": "202",
+    "departmentName": "DEPARTMENT OF BUDDHIST STUDIES"
+  },
+  {
+    "departmentId": "217",
+    "departmentName": "DEPARTMENT OF CHEMISTRY"
+  },
+  {
+    "departmentId": "241",
+    "departmentName": "DEPARTMENT OF COMMERCE"
+  },
+  {
+    "departmentId": "293",
+    "departmentName": "DEPARTMENT OF COMPUTER ENGINEERING"
+  },
+  {
+    "departmentId": "234",
+    "departmentName": "DEPARTMENT OF COMPUTER SCIENCE"
+  },
+  {
+    "departmentId": "227",
+    "departmentName": "DEPARTMENT OF ECONOMICS"
+  },
+  {
+    "departmentId": "243",
+    "departmentName": "DEPARTMENT OF EDUCATION"
+  },
+  {
+    "departmentId": "295",
+    "departmentName": "DEPARTMENT OF ELECTRICAL ENGINEERING"
+  },
+  {
+    "departmentId": "251",
+    "departmentName": "DEPARTMENT OF ELECTRONIC SCIENCE"
+  },
+  {
+    "departmentId": "294",
+    "departmentName": "DEPARTMENT OF ELECTRONICS AND COMMUNICATION ENGINEERING"
+  },
+  {
+    "departmentId": "203",
+    "departmentName": "DEPARTMENT OF ENGLISH"
+  },
+  {
+    "departmentId": "218",
+    "departmentName": "DEPARTMENT OF ENVIRONMENTAL SCIENCE"
+  },
+  {
+    "departmentId": "292",
+    "departmentName": "DEPARTMENT OF FINANCE & BUSINESS ECONOMICS"
+  },
+  {
+    "departmentId": "701",
+    "departmentName": "DEPARTMENT OF FOOD TECHNOLOGY"
+  },
+  {
+    "departmentId": "229",
+    "departmentName": "DEPARTMENT OF GEOGRAPHY"
+  },
+  {
+    "departmentId": "219",
+    "departmentName": "DEPARTMENT OF GEOLOGY"
+  },
+  {
+    "departmentId": "204",
+    "departmentName": "DEPARTMENT OF GERMANIC & ROMANCE STUDIES"
+  },
+  {
+    "departmentId": "205",
+    "departmentName": "DEPARTMENT OF HINDI"
+  },
+  {
+    "departmentId": "231",
+    "departmentName": "DEPARTMENT OF HISTORY"
+  },
+  {
+    "departmentId": "220",
+    "departmentName": "DEPARTMENT OF HOME SCIENCE"
+  },
+  {
+    "departmentId": "703",
+    "departmentName": "DEPARTMENT OF HUMAN RESOURCE MANAGEMENT"
+  },
+  {
+    "departmentId": "708",
+    "departmentName": "DEPARTMENT OF LIBRARY SCIENCE"
+  },
+  {
+    "departmentId": "207",
+    "departmentName": "DEPARTMENT OF LINGUISTICS"
+  },
+  {
+    "departmentId": "235",
+    "departmentName": "DEPARTMENT OF MATHEMATICS"
+  },
+  {
+    "departmentId": "253",
+    "departmentName": "DEPARTMENT OF MICROBIOLOGY"
+  },
+  {
+    "departmentId": "208",
+    "departmentName": "DEPARTMENT OF MIL & LS"
+  },
+  {
+    "departmentId": "244",
+    "departmentName": "DEPARTMENT OF MUSIC"
+  },
+  {
+    "departmentId": "236",
+    "departmentName": "DEPARTMENT OF OPERATIONAL RESEARCH"
+  },
+  {
+    "departmentId": "209",
+    "departmentName": "DEPARTMENT OF PERSIAN"
+  },
+  {
+    "departmentId": "210",
+    "departmentName": "DEPARTMENT OF PHILOSOPHY"
+  },
+  {
+    "departmentId": "255",
+    "departmentName": "DEPARTMENT OF PHYSICAL EDUCATION AND SPORTS SCIENCES"
+  },
+  {
+    "departmentId": "222",
+    "departmentName": "DEPARTMENT OF PHYSICS"
+  },
+  {
+    "departmentId": "702",
+    "departmentName": "DEPARTMENT OF PHYSICS AND ASTROPHYSICS"
+  },
+  {
+    "departmentId": "232",
+    "departmentName": "DEPARTMENT OF POLITICAL SCIENCE"
+  },
+  {
+    "departmentId": "211",
+    "departmentName": "DEPARTMENT OF PSYCHOLOGY"
+  },
+  {
+    "departmentId": "212",
+    "departmentName": "DEPARTMENT OF PUNJABI"
+  },
+  {
+    "departmentId": "213",
+    "departmentName": "DEPARTMENT OF SANSKRIT"
+  },
+  {
+    "departmentId": "709",
+    "departmentName": "DEPARTMENT OF SLAVONIC AND FINNO-URGIAN STUDIES"
+  },
+  {
+    "departmentId": "233",
+    "departmentName": "DEPARTMENT OF SOCIAL WORK"
+  },
+  {
+    "departmentId": "230",
+    "departmentName": "DEPARTMENT OF SOCIOLOGY"
+  },
+  {
+    "departmentId": "698",
+    "departmentName": "DEPARTMENT OF SPANISH"
+  },
+  {
+    "departmentId": "237",
+    "departmentName": "DEPARTMENT OF STATISTICS"
+  },
+  {
+    "departmentId": "707",
+    "departmentName": "DEPARTMENT OF TELUGU"
+  },
+  {
+    "departmentId": "214",
+    "departmentName": "DEPARTMENT OF URDU"
+  },
+  {
+    "departmentId": "223",
+    "departmentName": "DEPARTMENT OF ZOOLOGY"
+  },
+  {
+    "departmentId": "350",
+    "departmentName": "FACULTY OF LAW"
+  },
+  {
+    "departmentId": "706",
+    "departmentName": "FIVE-YEAR INTEGRATED PROGRAMME IN JOURNALISM"
+  },
+  {
+    "departmentId": "700",
+    "departmentName": "FMS"
+  },
+  {
+    "departmentId": "699",
+    "departmentName": "GENERIC ELECTIVE"
+  },
+  {
+    "departmentId": "629",
+    "departmentName": "INDRAPRASTHA COLLEGE"
+  },
+  {
+    "departmentId": "632",
+    "departmentName": "JESUS & MARY COLLEGE"
+  },
+  {
+    "departmentId": "633",
+    "departmentName": "KALINDI COLLEGE"
+  },
+  {
+    "departmentId": "620",
+    "departmentName": "RAMANUJAN COLLEGE"
+  },
+  {
+    "departmentId": "679",
+    "departmentName": "SRI VENKATESHWARA COLLEGE"
+  }
+]

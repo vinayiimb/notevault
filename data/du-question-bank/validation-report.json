@@ -1,0 +1,20 @@
+{
+  "generatedAt": "2026-08-10T13:58:07.131Z",
+  "counts": {
+    "departments": 75,
+    "papers": 10767,
+    "sessions": 7,
+    "questionPapers": 14855,
+    "uniquePdfUrls": 14818,
+    "missingPdf": 1,
+    "missingUpc": 0,
+    "failedRequests": 0
+  },
+  "sample": {
+    "size": 30,
+    "detailOk": 30,
+    "pdfChecked": 30,
+    "pdfOk": 30,
+    "problems": []
+  }
+}

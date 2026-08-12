@@ -1,0 +1,36 @@
+{
+  "label": "web-search",
+  "path": "/web-search",
+  "finalUrl": "https://qb.exam.du.ac.in/web-search",
+  "title": "Question Search Page - Examination Branch, University of Delhi, 110007",
+  "forms": [
+    {
+      "action": "https://qb.exam.du.ac.in/logout",
+      "method": "post",
+      "id": null
+    },
+    {
+      "action": "https://qb.exam.du.ac.in/web-search",
+      "method": "get",
+      "id": null
+    },
+    {
+      "action": "https://qb.exam.du.ac.in/web-search",
+      "method": "get",
+      "id": null
+    },
+    {
+      "action": "https://qb.exam.du.ac.in/web-search",
+      "method": "get",
+      "id": "form2"
+    },
+    {
+      "action": "https://translate.googleapis.com/translate_voting?client=te",
+      "method": "post",
+      "id": "goog-gt-votingForm"
+    }
+  ],
+  "selects": [],
+  "allXhrFetch": [],
+  "dependentProbe": []
+}

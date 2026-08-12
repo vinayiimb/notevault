@@ -49,3 +49,6 @@ next-env.d.ts
 
 # one-time Postgres/Blob migration dump (contains password hashes — never commit)
 /prisma/migration-export.json
+
+# DU Question Paper Bank scraper — persisted login session, never commit
+/.tmp/du-question-bank/

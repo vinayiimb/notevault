@@ -19,7 +19,14 @@
     "import:core-pyqs": "tsx prisma/import-core-pyqs.ts",
     "import:full-archive-csv": "tsx prisma/import-full-archive-csv.ts",
     "migrate:export": "tsx prisma/migrate-to-postgres-blob.ts export",
-    "migrate:import": "tsx prisma/migrate-to-postgres-blob.ts import"
+    "migrate:import": "tsx prisma/migrate-to-postgres-blob.ts import",
+    "du:login": "tsx scripts/du-question-bank/login.ts",
+    "du:inspect": "tsx scripts/du-question-bank/inspect.ts",
+    "du:scrape": "tsx scripts/du-question-bank/scrape.ts",
+    "du:validate": "tsx scripts/du-question-bank/validate.ts",
+    "du:compare": "tsx scripts/du-question-bank/compare.ts",
+    "du:report": "tsx scripts/du-question-bank/report.ts",
+    "du:download-pdfs": "tsx scripts/du-question-bank/download-pdfs.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",
@@ -30,6 +37,7 @@
     "@types/katex": "^0.16.8",
     "@vercel/blob": "^2.6.1",
     "bcryptjs": "^3.0.3",
+    "cheerio": "^1.2.0",
     "gray-matter": "^4.0.3",
     "groq-sdk": "^1.3.0",
     "jsonwebtoken": "^9.0.3",
@@ -68,6 +76,7 @@
     "dotenv": "^17.4.2",
     "eslint": "^9",
     "eslint-config-next": "16.2.10",
+    "playwright": "^1.62.1",
     "tailwindcss": "^4",
     "tsx": "^4.23.1",
     "typescript": "^5"

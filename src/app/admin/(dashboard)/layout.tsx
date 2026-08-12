@@ -14,6 +14,7 @@ import {
   MagnifyingGlass,
   PaintBrush,
   Question,
+  SealCheck,
   ShieldCheck,
   Shuffle,
   Sparkle,
@@ -91,6 +92,13 @@ export default async function AdminDashboardLayout({
           >
             <ClockCounterClockwise size={16} />
             Upload batches
+          </Link>
+          <Link
+            href="/admin/du-question-bank"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <SealCheck size={16} />
+            DU Question Bank
           </Link>
           <Link
             href="/admin/resources"

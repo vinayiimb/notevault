@@ -208,7 +208,36 @@ function sortGroupsSemesterFirst(a: SubjectGroup, b: SubjectGroup) {
   );
 }
 
-export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
+export function CatalogArchiveBrowser({ papers: initialPapers = [] }: { papers?: CatalogPaper[] }) {
+  const [papers, setPapers] = useState<CatalogPaper[]>(initialPapers);
+  const [loading, setLoading] = useState(initialPapers.length === 0);
+
+  useEffect(() => {
+    if (initialPapers.length > 0) {
+      setPapers(initialPapers);
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    fetch("/data/papers-catalog.json")
+      .then((res) => res.json())
+      .then((data: CatalogPaper[]) => {
+        if (isMounted) {
+          setPapers(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch catalog:", err);
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialPapers]);
+
   const searchParams = useSearchParams();
   const initialCourse = searchParams.get("course") ?? ALL;
   const initialSearch = searchParams.get("q") ?? searchParams.get("search") ?? "";
@@ -318,6 +347,15 @@ export function CatalogArchiveBrowser({ papers }: { papers: CatalogPaper[] }) {
 
   const hasFilters =
     course !== ALL || semester !== ALL || paperType !== ALL || session !== ALL || search.trim().length > 0;
+
+  if (loading) {
+    return (
+      <div className="mt-10 space-y-6">
+        <div className="h-48 animate-pulse rounded-2xl border border-border bg-surface p-6" />
+        <div className="h-96 animate-pulse rounded-2xl border border-border bg-surface p-6" />
+      </div>
+    );
+  }
 
   return (
     <>

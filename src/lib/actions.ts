@@ -2973,3 +2973,44 @@ export async function deleteFeedbackAction(formData: FormData) {
   await prisma.feedback.delete({ where: { id } });
   revalidatePath("/admin/feedback");
 }
+
+// One-click import of the full DU Question Paper Bank scrape into its own
+// standalone table (DuQuestionBankPaper) — deliberately not CatalogPaperUpload,
+// so it never mixes into the Full Archive (/pyq-notes). Reads the bundled
+// source JSON (src/data/du-question-bank-full-mapped.json, ~15k rows) and
+// bulk-inserts everything with createMany in large chunks: no per-row
+// existence/duplicate lookups, by design — every row from the scrape lands
+// here as-is, including duplicates, since the point is to hold the complete
+// raw output. This makes it fast (a handful of round trips instead of
+// thousands) at the cost of not deduping; re-running this action will
+// insert the whole file again as new rows.
+export async function importDuQuestionBankPapersAction(): Promise<{
+  ok: true;
+  imported: number;
+} | { ok: false; message: string }> {
+  await requireAdmin();
+
+  const { default: rows } = await import("@/data/du-question-bank-full-mapped.json");
+  const CHUNK_SIZE = 2000;
+  let imported = 0;
+
+  try {
+    for (let i = 0; i < rows.length; i += CHUNK_SIZE) {
+      const chunk = rows.slice(i, i + CHUNK_SIZE);
+      const result = await prisma.duQuestionBankPaper.createMany({ data: chunk });
+      imported += result.count;
+    }
+  } catch (err) {
+    return { ok: false, message: err instanceof Error ? err.message : "Unexpected error during import" };
+  }
+
+  revalidatePath("/admin/du-question-bank");
+  revalidatePath("/pyp");
+  return { ok: true, imported };
+}
+
+export async function getDuQuestionBankImportStatusAction(): Promise<{ count: number }> {
+  await requireAdmin();
+  const count = await prisma.duQuestionBankPaper.count();
+  return { count };
+}

@@ -1,5 +1,7 @@
 import rawCatalog from "@/data/ramanujan-pyq-catalog.json";
 import rawOfficialArchiveMap from "@/data/archive-official-map.json";
+import duProgrammeMappings from "@/data/du-programme-mappings.json";
+import rawQuestionBank from "@/data/du-question-bank-full-mapped.json";
 import { geographyDriveCatalog } from "@/data/geography-drive-catalog";
 import { politicalScienceDriveCatalog } from "@/data/political-science-drive-catalog";
 import { duMasterDriveCatalog } from "@/data/du-master-drive-catalog";
@@ -204,6 +206,64 @@ export async function getFullPyqCatalog(): Promise<CatalogPaper[]> {
   }
 }
 
+// Papers from the DU Question Paper Bank scrape (see scripts/du-question-bank/)
+// live in their own standalone table, DuQuestionBankPaper — deliberately NOT
+// CatalogPaperUpload, so this never mixes into the Full Archive union above
+// (getFullPyqCatalog / /pyq-notes). Only rows that actually have a PDF link
+// are shown; the rest are syllabus-only matches with nothing to browse to yet.
+function duQuestionBankYearRange(session: string | null, year: string | null): string {
+  const sessionU = (session ?? "").toUpperCase();
+  const y = year ? Number(year) : NaN;
+  if (!Number.isFinite(y)) return session ?? year ?? "";
+  if (sessionU.includes("NOV") || sessionU.includes("DEC")) return `${y}-${y + 1}`;
+  if (sessionU.includes("MAY") || sessionU.includes("JUNE")) return `${y - 1}-${y}`;
+  return String(y);
+}
+
+export async function getDuQuestionBankPapers(): Promise<CatalogPaper[]> {
+  try {
+    const rows = rawQuestionBank as any[];
+    return rows
+      .filter((row) => row.questionPaperLink)
+      .map((row, idx): CatalogPaper => {
+        const collegeLabel = row.isShivaji ? "[S] Shivaji" : row.isKalindi ? "[K] Kalindi" : row.isANDC ? "[A] ANDC" : (row.college ? `[${row.college[0]}] ${row.college}` : null);
+        const note = [
+          collegeLabel,
+          row.upc ? `UPC ${row.upc}` : null,
+          row.paperType,
+          row.courseNumber,
+          row.questionPaperSession,
+          row.questionPaperSet,
+          row.questionPaperMarks ? `${row.questionPaperMarks} marks` : null,
+        ]
+          .filter(Boolean)
+          .join(" | ");
+
+        return {
+          id: `du-qb-${idx}`,
+          yearRange: duQuestionBankYearRange(row.questionPaperSession, row.questionPaperYear),
+          semesterGroup: row.semester ? `Semester ${row.semester}` : "Semester Unknown",
+          course: normalizeArchiveCourseName(row.officialProgramme),
+          subject: row.subjectPaperName,
+          semester: row.semester || null,
+          pdfUrl: row.questionPaperLink as string,
+          note: note || null,
+          source: "upload",
+          upc: row.upc || null,
+          paperType: row.paperType || null,
+          courseNumber: row.courseNumber || null,
+          isShivaji: !!row.isShivaji,
+          isKalindi: !!row.isKalindi,
+          isANDC: !!row.isANDC,
+          college: row.college || (row.isShivaji ? "Shivaji" : row.isKalindi ? "Kalindi" : row.isANDC ? "ANDC" : undefined),
+        };
+      });
+  } catch (err) {
+    console.warn("Error loading getDuQuestionBankPapers from JSON:", err instanceof Error ? err.message : err);
+    return [];
+  }
+}
+
 export async function getCoverageCatalogCourses() {
   const papers = await getFullPyqCatalog();
   const courses = [...new Set(papers.map((paper) => paper.course))].sort((a, b) =>
@@ -241,18 +301,35 @@ const ARCHIVE_COURSE_ALIASES: Record<string, string> = {
   "b.com (prog.)": "B. Com. (P)",
   "b.com. (p)": "B. Com. (P)",
   "b.com (p)": "B. Com. (P)",
+  "b.a. (h) economics": "Economics",
+  "b.a. (h) history": "History",
+  "b.a. (h) political science": "Political Science",
+  "b.a. (programme) political science": "Political Science",
+  "b.a. programme": "B.A. (P)",
+  "b.a. program": "B.A. (P)",
+  "b.a. (prog)": "B.A. (P)",
+  "b.a. (prog.)": "B.A. (P)",
+  "b.sc. (h) mathematics": "Mathematics",
+  "b.sc. (h) botany": "Another Question Papers",
+  "b.sc. (h) chemistry": "Another Question Papers",
+  "b.sc. (h) physics": "Another Question Papers",
+  "b.sc. (h) zoology": "Another Question Papers",
+  "b.sc. (h) environmental science": "Environmental Science",
+  "common programme group": "Another Question Papers",
+  "other political science courses": "Political Science",
 };
 
 function normalizeArchiveCourseName(course: string): string {
-  const key = course.trim().toLowerCase().replace(/\s+/g, " ");
-  return ARCHIVE_COURSE_ALIASES[key] ?? course;
+  if (!course) return "General / Interdisciplinary";
+  return course.trim();
 }
 
 export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
-  const [catalog, readOnline, driveFiles] = await Promise.all([
+  const [catalog, readOnline, driveFiles, duQbPyp] = await Promise.all([
     getFullPyqCatalog(),
     getPyqArchiveIndex(),
     getFullDriveArchiveIndex(),
+    getDuQuestionBankPapers(),
   ]);
 
   const readOnlinePapers: CatalogPaper[] = readOnline.map((paper) => ({
@@ -295,6 +372,7 @@ export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
     ...duMasterDriveCatalog,
     ...extractedZipCatalog,
     ...bcomDriveCatalog,
+    ...duQbPyp,
   ].map((paper) => ({ ...paper, course: normalizeArchiveCourseName(paper.course) }));
 }
 
@@ -343,7 +421,26 @@ export async function getUnifiedPyqArchive(): Promise<CatalogPaper[]> {
     getRawUnifiedPyqArchive(),
     getOverridesByKey(),
   ]);
-  return papers.map(applyOfficialFileMap).map((paper) => applyOverride(paper, overrides));
+  return papers.map((p) => {
+    const o = applyOverride(applyOfficialFileMap(p), overrides);
+    return {
+      id: o.id,
+      yearRange: o.yearRange,
+      semesterGroup: o.semesterGroup,
+      course: o.course,
+      subject: o.subject,
+      semester: o.semester,
+      pdfUrl: o.pdfUrl,
+      note: o.note,
+      source: o.source,
+      fileName: o.fileName,
+      highlighted: o.highlighted,
+      isShivaji: o.isShivaji,
+      isKalindi: o.isKalindi,
+      isANDC: o.isANDC,
+      college: o.college,
+    };
+  });
 }
 
 export function isCatalogCourseSubject(course: string, subject: string) {

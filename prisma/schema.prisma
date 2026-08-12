@@ -407,6 +407,40 @@ model CatalogPaperUpload {
   @@index([course, subject, yearRange])
 }
 
+// A separate, standalone table for the DU Question Paper Bank scrape
+// (scripts/du-question-bank/) — deliberately NOT part of CatalogPaperUpload
+// / the Full Archive union (getFullPyqCatalog), so it never mixes into
+// /pyq-notes. Mirrors the "Full Archive Map" mapped-CSV's own columns
+// directly rather than squeezing them into CatalogPaperUpload's narrower
+// shape. Bulk-inserted via createMany with no per-row dedupe check — every
+// row from the source file lands here as-is, duplicates included, since the
+// point of this table is to hold the complete raw scrape output.
+model DuQuestionBankPaper {
+  id                   String   @id @default(cuid())
+  officialProgramme    String
+  semester             String?
+  paperType            String?
+  subjectPaperName     String
+  courseNumber         String?
+  upc                  String?
+  credits              String?
+  matchedCategories    String?
+  sourceType           String?
+  officialPageUrl      String?
+  officialPaperLink    String?
+  questionPaperLink    String?
+  questionPaperSession String?
+  questionPaperYear    String?
+  questionPaperSet     String?
+  questionPaperMarks   String?
+  matchSource          String?
+  recoveredUpc         String?
+  createdAt            DateTime @default(now())
+
+  @@index([officialProgramme])
+  @@index([upc])
+}
+
 // Admin override layered on top of the Full Archive (/pyq-notes) at render
 // time — lets an admin rename a subject, force which semester it's grouped
 // under, or highlight it, without touching the underlying scraped library

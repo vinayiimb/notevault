@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ArrowSquareOut, DownloadSimple, MagnifyingGlass } from "@phosphor-icons/react";
 import { CopyButton } from "@/components/pyq/copy-button";
 import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
@@ -74,7 +74,9 @@ function toggle(set: Set<string>, value: string): Set<string> {
 
 type Tab = "course" | "semester" | "subject";
 
-export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
+export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogPaper[] }) {
+  const [papers, setPapers] = useState<CatalogPaper[]>(initialPapers);
+  const [loading, setLoading] = useState(initialPapers.length === 0);
   const [activeTab, setActiveTab] = useState<Tab>("course");
   const [courseSearch, setCourseSearch] = useState("");
   const [subjectSearch, setSubjectSearch] = useState("");
@@ -84,10 +86,36 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
   const [yearRange, setYearRange] = useState<string | null>(null);
   const [paperIndex, setPaperIndex] = useState(0);
 
+  useEffect(() => {
+    if (initialPapers.length > 0) {
+      setPapers(initialPapers);
+      setLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+    fetch("/data/papers-catalog.json")
+      .then((res) => res.json())
+      .then((data: CatalogPaper[]) => {
+        if (isMounted) {
+          setPapers(data);
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        console.error("Failed to fetch papers catalog:", err);
+        if (isMounted) setLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [initialPapers]);
+
   const courses = useMemo(() => {
     const counts = new Map<string, number>();
     for (const p of papers) {
-      const name = canonicalCourseName(p.course);
+      const name = (p.course || "General / Interdisciplinary").trim();
       counts.set(name, (counts.get(name) ?? 0) + 1);
     }
     let entries = [...counts.entries()];
@@ -103,7 +131,8 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
   const semesters = useMemo(() => {
     const counts = new Map<string, number>();
     for (const p of papers) {
-      if (selectedCourses.size > 0 && !selectedCourses.has(canonicalCourseName(p.course))) continue;
+      const cName = (p.course || "General / Interdisciplinary").trim();
+      if (selectedCourses.size > 0 && !selectedCourses.has(cName)) continue;
       const label = semesterLabel(p);
       counts.set(label, (counts.get(label) ?? 0) + 1);
     }
@@ -115,7 +144,8 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
   const subjects = useMemo(() => {
     const map = new Map<string, { labels: string[]; count: number }>();
     for (const p of papers) {
-      if (selectedCourses.size > 0 && !selectedCourses.has(canonicalCourseName(p.course))) continue;
+      const cName = (p.course || "General / Interdisciplinary").trim();
+      if (selectedCourses.size > 0 && !selectedCourses.has(cName)) continue;
       if (selectedSemesters.size > 0 && !selectedSemesters.has(semesterLabel(p))) continue;
       const key = canonicalSubjectKey(p.subject);
       const entry = map.get(key) ?? { labels: [], count: 0 };
@@ -134,7 +164,8 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
   const matchingPapers = useMemo(() => {
     if (selectedCourses.size === 0 && selectedSemesters.size === 0 && selectedSubjectKeys.size === 0) return papers;
     return papers.filter((p) => {
-      if (selectedCourses.size > 0 && !selectedCourses.has(canonicalCourseName(p.course))) return false;
+      const cName = (p.course || "General / Interdisciplinary").trim();
+      if (selectedCourses.size > 0 && !selectedCourses.has(cName)) return false;
       if (selectedSemesters.size > 0 && !selectedSemesters.has(semesterLabel(p))) return false;
       if (selectedSubjectKeys.size > 0 && !selectedSubjectKeys.has(canonicalSubjectKey(p.subject))) return false;
       return true;
@@ -157,7 +188,7 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
       .filter((p) => p.yearRange === effectiveYear)
       .sort(
         (a, b) =>
-          canonicalCourseName(a.course).localeCompare(canonicalCourseName(b.course)) ||
+          (a.course || "").localeCompare(b.course || "") ||
           a.subject.localeCompare(b.subject) ||
           fileName(a).localeCompare(fileName(b)),
       );
@@ -194,6 +225,15 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
   }
 
   const totalFiltersActive = selectedCourses.size + selectedSemesters.size + selectedSubjectKeys.size;
+
+  if (loading) {
+    return (
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[290px_1fr] xl:grid-cols-[330px_1fr]">
+        <div className="h-[600px] animate-pulse rounded-2xl border border-border bg-surface p-4" />
+        <div className="h-[600px] animate-pulse rounded-2xl border border-border bg-surface p-6" />
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[290px_1fr] xl:grid-cols-[330px_1fr]">
@@ -306,7 +346,7 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
             <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5 shadow-2xs">
               <div className="min-w-0 flex-1">
                 <span className="inline-block rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent">
-                  {canonicalCourseName(selectedPaper.course)}
+                  {selectedPaper.course || "General"}
                 </span>
                 <h2 className="mt-1.5 text-lg sm:text-xl font-bold text-foreground leading-snug">
                   {selectedPaper.subject}
@@ -364,56 +404,98 @@ export function PaperBrowser({ papers }: { papers: CatalogPaper[] }) {
               <div className="mt-2.5">
                 {papersForYear.length <= 10 ? (
                   <div className="flex flex-wrap gap-2">
-                    {papersForYear.map((p, i) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setPaperIndex(i)}
-                        className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-semibold transition ${
-                          i === effectivePaperIndex
-                            ? "border-accent bg-accent-soft text-accent shadow-2xs"
-                            : "border-border bg-surface text-muted hover:border-border/80 hover:text-foreground"
-                        }`}
-                      >
-                        <span>{p.note ?? `Paper ${i + 1}`}</span>
-                        {p.isShivaji && (
-                          <span
-                            className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-emerald-500 text-emerald-950 uppercase"
-                            title="Shivaji College Archive"
-                          >
-                            S
-                          </span>
-                        )}
-                      </button>
-                    ))}
-                  </div>
-                ) : (
-                  <div className="max-h-40 space-y-0.5 overflow-y-auto rounded-xl border border-border bg-surface p-1.5 shadow-2xs">
-                    {papersForYear.map((p, i) => (
-                      <button
-                        key={p.id}
-                        type="button"
-                        onClick={() => setPaperIndex(i)}
-                        className={`flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs transition ${
-                          i === effectivePaperIndex
-                            ? "bg-accent-soft font-bold text-accent"
-                            : "text-foreground hover:bg-surface-muted"
-                        }`}
-                      >
-                        <span className="truncate flex items-center gap-1.5">
-                          {canonicalCourseName(p.course)} · {p.subject}
-                          {p.isShivaji && (
+                    {papersForYear.map((p, i) => {
+                      const isShiv = p.isShivaji || p.college === "Shivaji";
+                      const isKal = p.isKalindi || p.college === "Kalindi";
+                      const isAnd = p.isANDC || p.college === "ANDC";
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setPaperIndex(i)}
+                          className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-semibold transition ${
+                            i === effectivePaperIndex
+                              ? "border-accent bg-accent-soft text-accent shadow-2xs"
+                              : "border-border bg-surface text-muted hover:border-border/80 hover:text-foreground"
+                          }`}
+                        >
+                          <span>{p.note ?? `Paper ${i + 1}`}</span>
+                          {isShiv && (
                             <span
-                              className="shrink-0 px-1 py-px text-[9px] font-black tracking-tight rounded bg-emerald-500 text-emerald-950 uppercase"
+                              className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-emerald-500 text-emerald-950 uppercase"
                               title="Shivaji College Archive"
                             >
                               S
                             </span>
                           )}
-                        </span>
-                        <span className="shrink-0 text-muted">{p.note ?? fileName(p)}</span>
-                      </button>
-                    ))}
+                          {isKal && (
+                            <span
+                              className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-rose-500 text-white uppercase"
+                              title="Kalindi College Archive"
+                            >
+                              K
+                            </span>
+                          )}
+                          {isAnd && (
+                            <span
+                              className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-blue-500 text-white uppercase"
+                              title="Acharya Narendra Dev College (ANDC) Archive"
+                            >
+                              A
+                            </span>
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="max-h-40 space-y-0.5 overflow-y-auto rounded-xl border border-border bg-surface p-1.5 shadow-2xs">
+                    {papersForYear.map((p, i) => {
+                      const isShiv = p.isShivaji || p.college === "Shivaji";
+                      const isKal = p.isKalindi || p.college === "Kalindi";
+                      const isAnd = p.isANDC || p.college === "ANDC";
+                      return (
+                        <button
+                          key={p.id}
+                          type="button"
+                          onClick={() => setPaperIndex(i)}
+                          className={`flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs transition ${
+                            i === effectivePaperIndex
+                              ? "bg-accent-soft font-bold text-accent"
+                              : "text-foreground hover:bg-surface-muted"
+                          }`}
+                        >
+                          <span className="truncate flex items-center gap-1.5">
+                            {p.course} · {p.subject}
+                            {isShiv && (
+                              <span
+                                className="shrink-0 px-1 py-px text-[9px] font-black tracking-tight rounded bg-emerald-500 text-emerald-950 uppercase"
+                                title="Shivaji College Archive"
+                              >
+                                S
+                              </span>
+                            )}
+                            {isKal && (
+                              <span
+                                className="shrink-0 px-1 py-px text-[9px] font-black tracking-tight rounded bg-rose-500 text-white uppercase"
+                                title="Kalindi College Archive"
+                              >
+                                K
+                              </span>
+                            )}
+                            {isAnd && (
+                              <span
+                                className="shrink-0 px-1 py-px text-[9px] font-black tracking-tight rounded bg-blue-500 text-white uppercase"
+                                title="Acharya Narendra Dev College (ANDC) Archive"
+                              >
+                                A
+                              </span>
+                            )}
+                          </span>
+                          <span className="shrink-0 text-muted">{p.note ?? fileName(p)}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 )}
               </div>

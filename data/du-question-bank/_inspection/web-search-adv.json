@@ -1,0 +1,295 @@
+{
+  "label": "web-search-adv",
+  "path": "/web-search-adv",
+  "finalUrl": "https://qb.exam.du.ac.in/web-search-adv",
+  "title": "Question Search Page - Examination Branch, University of Delhi, 110007",
+  "forms": [
+    {
+      "action": "https://qb.exam.du.ac.in/logout",
+      "method": "post",
+      "id": null
+    },
+    {
+      "action": "https://qb.exam.du.ac.in/web-search-adv",
+      "method": "get",
+      "id": null
+    },
+    {
+      "action": "https://qb.exam.du.ac.in/web-search",
+      "method": "get",
+      "id": null
+    },
+    {
+      "action": "https://qb.exam.du.ac.in/web-search-adv",
+      "method": "get",
+      "id": null
+    },
+    {
+      "action": "https://qb.exam.du.ac.in/web-search-adv",
+      "method": "get",
+      "id": "form2"
+    },
+    {
+      "action": "https://translate.googleapis.com/translate_voting?client=te",
+      "method": "post",
+      "id": "goog-gt-votingForm"
+    }
+  ],
+  "selects": [
+    {
+      "id": "department_id",
+      "name": "department_id",
+      "optionCount": 76,
+      "options": [
+        {
+          "value": "",
+          "text": "-- Select a Department --"
+        },
+        {
+          "value": "601",
+          "text": "ACHARYA NARENDRA DEV COLLEGE"
+        },
+        {
+          "value": "705",
+          "text": "AECC"
+        },
+        {
+          "value": "318",
+          "text": "AMBEDKAR CENTER FOR BIOMEDICAL RESEARCH"
+        },
+        {
+          "value": "609",
+          "text": "BHASKARACHARYA COLLEGE OF APPLIED SCIENCE"
+        },
+        {
+          "value": "351",
+          "text": "CENTRE FOR HINDU STUDIES"
+        },
+        {
+          "value": "320",
+          "text": "CENTRE OF GLOBAL STUDIES"
+        },
+        {
+          "value": "312",
+          "text": "CLUSTER INNOVATION CENTRE (CIC)"
+        },
+        {
+          "value": "687",
+          "text": "COLLEGE OF ART"
+        },
+        {
+          "value": "613",
+          "text": "COLLEGE OF VOCATIONAL STUDIES"
+        },
+        {
+          "value": "697",
+          "text": "COUNCIL FOR IAPC"
+        },
+        {
+          "value": "695",
+          "text": "COUNCIL FOR SEC"
+        },
+        {
+          "value": "696",
+          "text": "COUNCIL FOR VAC"
+        },
+        {
+          "value": "614",
+          "text": "DAULAT RAM COLLEGE"
+        },
+        {
+          "value": "690",
+          "text": "DELHI SCHOOL FOR SKILL ENHANCEMENT AND ENTREPRENEURSHIP DEVELOPMENT"
+        },
+        {
+          "value": "691",
+          "text": "DELHI SCHOOL OF ANALYTICS"
+        },
+        {
+          "value": "316",
+          "text": "DELHI SCHOOL OF JOURNALISM"
+        },
+        {
+          "value": "215",
+          "text": "DEPARTMENT OF ANTHROPOLOGY"
+        },
+        {
+          "value": "296",
+          "text": "DEPARTMENT OF APPLIED SCIENCES AND HUMANITIES"
+        },
+        {
+          "value": "201",
+          "text": "DEPARTMENT OF ARABIC"
+        },
+        {
+          "value": "249",
+          "text": "DEPARTMENT OF BIOCHEMISTRY"
+        },
+        {
+          "value": "216",
+          "text": "DEPARTMENT OF BOTANY"
+        },
+        {
+          "value": "202",
+          "text": "DEPARTMENT OF BUDDHIST STUDIES"
+        },
+        {
+          "value": "217",
+          "text": "DEPARTMENT OF CHEMISTRY"
+        },
+        {
+          "value": "241",
+          "text": "DEPARTMENT OF COMMERCE"
+        }
+      ]
+    },
+    {
+      "id": "paper_id",
+      "name": "paper_id",
+      "optionCount": 10788,
+      "options": [
+        {
+          "value": "",
+          "text": "Select Paper"
+        },
+        {
+          "value": "1",
+          "text": "HERITAGE TOURISM : EXPLORING THE BUDDHIST AND JAIN CIRCUITS - 12035916 - DSE"
+        },
+        {
+          "value": "2",
+          "text": "Aerobics Training - 12555324 - DSE1/GE3"
+        },
+        {
+          "value": "3",
+          "text": "ARABIC READING & WRITING FOR BEGINNERS - 2012101101 - DSC1"
+        },
+        {
+          "value": "4",
+          "text": "ARABIC GRAMMAR FOR BEGINNERS - 2012101102 - DSC2"
+        },
+        {
+          "value": "5",
+          "text": "ARABIC TRANSLATION FOR BEGINNERS - 2012101103 - DSC3"
+        },
+        {
+          "value": "6",
+          "text": "ELEMENTARY ARABIC: READING & WRITING - 2012101201 - DSC4"
+        },
+        {
+          "value": "7",
+          "text": "ELEMENTARY ARABIC GRAMMAR - 2012101202 - DSC"
+        },
+        {
+          "value": "8",
+          "text": "ELEMENTARY ARABIC TRANSLATION - 2012101203 - DSC"
+        },
+        {
+          "value": "9",
+          "text": "INTERMEDIATE ARABIC: MODERN ARABIC PROSE & POETRY-1 - 2012102301 - DSC7"
+        },
+        {
+          "value": "10",
+          "text": "INTERMEDIATE ARABIC GRAMMAR - 2012102302 - DSC"
+        },
+        {
+          "value": "11",
+          "text": "INTERMEDIATE ARABIC TRANSLATION & CONVERSATION - 2012102303 - DSC9"
+        },
+        {
+          "value": "12",
+          "text": "UPPER INTERMEDIATE ARABIC: MODERN ARABIC PROSE & POETRY - 2012102401 - DSC10"
+        },
+        {
+          "value": "13",
+          "text": "UPPER INTERMEDIATE ARABIC GRAMMAR - 2012102402 - DSC11"
+        },
+        {
+          "value": "14",
+          "text": "UPPER INTERMEDIATE ARABIC TRANSLATION & COMPOSITION - 2012102403 - DSC12"
+        },
+        {
+          "value": "15",
+          "text": "CLASSICAL ARABIC PROSE & POETRY-1 - 2012103501 - DSC13"
+        },
+        {
+          "value": "16",
+          "text": "HISTORY OF ARBIC LITERATURE-1 - 2012103502 - DSC14"
+        },
+        {
+          "value": "17",
+          "text": "ADVANCED ARABIC GRAMMAR & TRANSLATION - 2012103503 - DSC"
+        },
+        {
+          "value": "18",
+          "text": "ARABIC: TEXT, GRAMMAR & TRANSLATION - I - 2012201101 - DSC"
+        },
+        {
+          "value": "19",
+          "text": "INTRODUCTORY ARABIC-1 - 2012201102 - DSC3"
+        },
+        {
+          "value": "20",
+          "text": "ARABIC: TEXT, GRAMMAR & TRANSLATION - II - 2012201201 - DSC4"
+        },
+        {
+          "value": "21",
+          "text": "INTRODUCTORY ARABIC-2 - 2012201202 - DSC"
+        },
+        {
+          "value": "22",
+          "text": "ARABIC: TEXT, GRAMMAR & TRANSLATION - III - 2012202301 - DSC"
+        },
+        {
+          "value": "23",
+          "text": "MODERN ARABIC-I - 2012202302 - DSC9"
+        },
+        {
+          "value": "24",
+          "text": "ARABIC : TEXT, GRAMMAR & TRANSLATION ?IV - 2012202401 - DSC10"
+        }
+      ]
+    },
+    {
+      "id": "session",
+      "name": "session",
+      "optionCount": 8,
+      "options": [
+        {
+          "value": "",
+          "text": "--Select Session--"
+        },
+        {
+          "value": "MAY-JUNE-2026",
+          "text": "MAY-JUNE-2026"
+        },
+        {
+          "value": "NOV-DEC-2025",
+          "text": "NOV-DEC-2025"
+        },
+        {
+          "value": "MAY-JUNE-2024",
+          "text": "MAY-JUNE-2024"
+        },
+        {
+          "value": "NOV-DEC-2023",
+          "text": "NOV-DEC-2023"
+        },
+        {
+          "value": "MAY-JUNE-2023",
+          "text": "MAY-JUNE-2023"
+        },
+        {
+          "value": "NOV-DEC-2022",
+          "text": "NOV-DEC-2022"
+        },
+        {
+          "value": "MAY-JUNE-2022",
+          "text": "MAY-JUNE-2022"
+        }
+      ]
+    }
+  ],
+  "allXhrFetch": [],
+  "dependentProbe": []
+}

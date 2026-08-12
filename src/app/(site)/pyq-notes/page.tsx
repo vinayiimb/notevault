@@ -1,12 +1,8 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { BookOpenText } from "@phosphor-icons/react/dist/ssr";
-import { connection } from "next/server";
 import { CatalogArchiveBrowser } from "@/components/archive/catalog-archive-browser";
-import {
-  catalogIntegrity,
-  getUnifiedPyqArchive,
-} from "@/lib/pyq-catalog";
+import { catalogIntegrity } from "@/lib/pyq-catalog";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
@@ -18,15 +14,7 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-export default async function PyqNotesArchivePage() {
-  const papers = await getUnifiedPyqArchive();
-  const courseCount = new Set(papers.map((paper) => paper.course)).size;
-  const uploadCount = papers.filter((paper) => paper.source === "upload").length;
-  const driveCount = papers.filter((paper) => paper.source === "drive").length;
-  const existingNoteVaultCount = papers.filter((paper) => paper.source === "notevault").length;
-  const officialMatchCount = papers.filter((paper) => Boolean(paper.originalSubject)).length;
-  const reviewCount = papers.length - officialMatchCount;
-
+export default function PyqNotesArchivePage() {
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6 sm:py-16">
       <BreadcrumbJsonLd
@@ -43,47 +31,27 @@ export default async function PyqNotesArchivePage() {
           Every paper and study file on the site.
         </h1>
         <p className="mt-4 max-w-2xl text-base leading-7 text-muted">
-          Browse the complete Ramanujan College library catalog, DU PYQ Online&apos;s read-online
-          papers, and course-organized Google Drive study collections.
+          Browse Delhi University previous year question papers across all colleges, official university archives, and course collections.
         </p>
       </div>
 
       <div className="mt-8 flex flex-wrap gap-3 text-sm text-muted">
         <span className="rounded-full bg-accent-soft px-3 py-1.5 font-medium text-accent">
-          {papers.length} files total
+          27,800+ files total
         </span>
         <span className="rounded-full bg-surface-muted px-3 py-1.5">
-          {courseCount} course categories
+          165+ course categories
         </span>
         <span className="rounded-full bg-success-soft px-3 py-1.5 text-success">
-          {officialMatchCount} official subject matches
-        </span>
-        <span className="rounded-full bg-yellow-soft px-3 py-1.5 text-warning">
-          {reviewCount} original labels pending review
+          DU Official, Shivaji, Kalindi & ANDC Archives
         </span>
         <span className="rounded-full bg-surface-muted px-3 py-1.5">
           {catalogIntegrity.sourceRows} official-library links
         </span>
-        <span className="rounded-full bg-surface-muted px-3 py-1.5">
-          {driveCount} Google Drive file{driveCount === 1 ? "" : "s"}
-        </span>
-        {existingNoteVaultCount > 0 ? (
-          <span className="rounded-full bg-surface-muted px-3 py-1.5">
-            {existingNoteVaultCount} read-online paper{existingNoteVaultCount === 1 ? "" : "s"}
-          </span>
-        ) : null}
-        <span className="rounded-full bg-surface-muted px-3 py-1.5">
-          {catalogIntegrity.duplicateSessionGroups} multi-file sessions
-        </span>
-        {uploadCount > 0 ? (
-          <span className="rounded-full bg-success-soft px-3 py-1.5 text-success">
-            {uploadCount} admin upload{uploadCount === 1 ? "" : "s"}
-          </span>
-        ) : null}
       </div>
 
       <Suspense fallback={<div className="mt-10 h-[500px] w-full animate-pulse rounded-2xl bg-surface-muted border border-border/60" />}>
-        <CatalogArchiveBrowser papers={papers} />
+        <CatalogArchiveBrowser />
       </Suspense>
     </div>
   );
