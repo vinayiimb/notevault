@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { BookOpenText } from "@phosphor-icons/react/dist/ssr";
 import { connection } from "next/server";
-import { CatalogArchiveBrowser } from "@/components/archive/catalog-archive-browser";
+import { CanonicalArchiveBrowser } from "@/components/archive/canonical-archive-browser";
 import {
   catalogIntegrity,
   getUnifiedPyqArchive,
@@ -83,7 +83,7 @@ export default async function PyqNotesArchivePage() {
       </div>
 
       <Suspense fallback={<div className="mt-10 h-[500px] w-full animate-pulse rounded-2xl bg-surface-muted border border-border/60" />}>
-        <CatalogArchiveBrowser papers={papers} />
+        <CanonicalArchiveBrowser papers={papers} />
       </Suspense>
     </div>
   );

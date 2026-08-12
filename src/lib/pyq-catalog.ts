@@ -14,6 +14,7 @@ import {
   canonicalSubjectKey,
   preferredSubjectLabel,
 } from "@/lib/subject-normalization";
+import { enrichPapersWithCanonical } from "@/lib/du-canonical-enrichment";
 import type {
   CatalogCourseCoverage,
   CatalogPaper,
@@ -331,7 +332,10 @@ export async function getUnifiedPyqArchive(scope: PyqArchiveScope = {}): Promise
       getRawUnifiedPyqArchive(scope),
       getOverridesByKey(),
     ]);
-    return papers.map(applyOfficialFileMap).map((paper) => applyOverride(paper, overrides));
+    const enriched = enrichPapersWithCanonical(
+      papers.map(applyOfficialFileMap).map((paper) => applyOverride(paper, overrides)),
+    );
+    return enriched;
   });
 }
 
