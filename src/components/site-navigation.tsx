@@ -67,6 +67,22 @@ export function SiteNavigation() {
     <nav className="hidden items-center gap-0.5 text-xs lg:text-sm font-medium md:flex" aria-label="Main navigation">
       {links.map((link) => {
         const isActive = pathname === link.href || (link.href !== "/" && pathname.startsWith(link.href));
+        const isExternal = (link as any).external || link.href.startsWith("http");
+
+        if (isExternal) {
+          return (
+            <a
+              key={link.href}
+              href={link.href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`flex min-h-9 items-center rounded-xl px-2.5 py-1.5 transition-colors text-muted hover:bg-surface-muted hover:text-foreground`}
+            >
+              {link.label}
+            </a>
+          );
+        }
+
         return (
           <Link
             key={link.href}
