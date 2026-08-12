@@ -5,6 +5,7 @@ import { GET as searchSuggestionsGET } from "../search-suggestions/_route-impl";
 import { GET as subjectDownloadAllGET } from "../subjects/[id]/download-all/_route-impl";
 import { GET as practiceQuestionsGET } from "../practice-questions/_route-impl";
 import { GET as pypGridGET } from "../pyp-grid/_route-impl";
+import { GET as revalidateGET } from "../revalidate/_route-impl";
 
 export const runtime = "nodejs";
 
@@ -37,6 +38,10 @@ export async function GET(
 
   if (route[0] === "pyp-grid") {
     return pypGridGET(request);
+  }
+
+  if (route[0] === "revalidate") {
+    return revalidateGET(request);
   }
 
   return NextResponse.json({ error: "Not found" }, { status: 404 });
