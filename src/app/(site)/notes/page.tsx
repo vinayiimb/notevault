@@ -6,7 +6,7 @@ export const revalidate = 300;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpenText, FileText, Sparkle } from "@phosphor-icons/react/dist/ssr";
-import { getProgramsByLevel } from "@/lib/data";
+import { getProgrammesWithNotesStatus } from "@/lib/canonical-subject-notes-data";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NotesPage() {
-  const programs = await getProgramsByLevel("COLLEGE");
+  const programmes = await getProgrammesWithNotesStatus();
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
@@ -82,42 +82,36 @@ export default async function NotesPage() {
       <section className="mt-16 border-t border-border/60 pt-12">
         <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
           <BookOpenText size={22} className="text-accent" />
-          Study Materials by Course
+          Compiled Notes by Programme
         </h2>
-        <p className="text-sm text-muted mt-1">Select a course to view its notes, syllabus, and papers organized by semester.</p>
+        <p className="text-sm text-muted mt-1">
+          All {programmes.length} official DU programmes. Pick yours to see which subjects have compiled
+          notes ready to read.
+        </p>
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {programs.map((program) => (
-            <div
-              key={program.id}
+          {programmes.map((programme) => (
+            <Link
+              key={programme.slug}
+              href={`/notes/${programme.slug}`}
               className="flex flex-col justify-between rounded-xl border border-border bg-surface p-5 transition hover:border-accent"
             >
               <div>
-                <h3 className="font-semibold text-foreground text-sm sm:text-base">{program.name}</h3>
-                {program.summary && <p className="mt-1 text-xs text-muted leading-relaxed">{program.summary}</p>}
+                <h3 className="font-semibold text-foreground text-sm sm:text-base">{programme.name}</h3>
+                <p className="mt-1 text-xs text-muted">{programme.subjectCount} subjects</p>
               </div>
 
-              <div className="mt-4 pt-4 border-t border-border/40 flex flex-wrap items-center justify-between gap-2">
-                <div className="flex gap-1.5">
-                  {program.terms.slice(0, 3).map((term) => (
-                    <Link
-                      key={term.id}
-                      href={`/terms/${term.id}`}
-                      className="text-xs text-muted hover:text-brand hover:underline"
-                    >
-                      {term.name.replace("Semester ", "Sem ")}
-                    </Link>
-                  ))}
-                  {program.terms.length > 3 && <span className="text-xs text-muted">...</span>}
-                </div>
-                <Link
-                  href={`/programs/${program.slug}`}
-                  className="text-xs font-bold text-brand hover:underline"
-                >
-                  Explore →
-                </Link>
+              <div className="mt-4 pt-4 border-t border-border/40 flex items-center justify-between gap-2">
+                {programme.notesCount > 0 ? (
+                  <span className="rounded-full bg-success-soft px-2 py-0.5 text-xs font-bold text-success">
+                    {programme.notesCount} note{programme.notesCount === 1 ? "" : "s"} available
+                  </span>
+                ) : (
+                  <span className="text-xs text-muted">Notes coming soon</span>
+                )}
+                <span className="text-xs font-bold text-brand">Open →</span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       </section>
