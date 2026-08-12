@@ -11,6 +11,7 @@ import {
 } from "@phosphor-icons/react/dist/ssr";
 import { SearchBar } from "@/components/search-bar";
 import { getProgramsByLevel, getSiteSettings } from "@/lib/data";
+import { getAllDuPypProgrammes } from "@/lib/du-pyp-data";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 import { StudyAccessShowcase } from "@/components/study-access-showcase";
 
@@ -31,6 +32,7 @@ export default async function HomePage() {
     getProgramsByLevel("COLLEGE"),
     getSiteSettings(),
   ]);
+  const duProgrammes = getAllDuPypProgrammes();
   const heroImage = siteSettings.heroImageUrl;
   const jumpData = programs.map((program) => ({
     id: program.id,
@@ -94,7 +96,7 @@ export default async function HomePage() {
       </section>
 
       <div className="relative z-10 mx-auto mt-8 max-w-6xl px-4 sm:mt-12 sm:px-6">
-        {/* Tier 1: Express Course & Semester Jump */}
+        {/* Tier 1: Express Course & Degree Jump */}
         <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-surface p-6 shadow-[0_12px_40px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-brand/30 hover:shadow-[0_16px_50px_rgba(83,88,227,0.08)] sm:p-8 lg:p-10">
           {/* Subtle decoration orbs inside card */}
           <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-brand/5 blur-3xl" />
@@ -108,10 +110,10 @@ export default async function HomePage() {
                 </span>
                 <div>
                   <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                    Take me to my semester
+                    Take me to my course papers
                   </h2>
                   <p className="mt-1 text-sm text-muted sm:text-base">
-                    Pick your course once and jump directly to the papers that matter.
+                    Pick your degree once and jump directly into the interactive PDF archive.
                   </p>
                 </div>
               </div>
@@ -120,11 +122,11 @@ export default async function HomePage() {
               </span>
             </div>
 
-            {jumpData.length > 0 ? (
-              <CourseSemesterJump programs={jumpData} embedded />
-            ) : (
-              <p className="py-4 text-sm text-muted">Courses are being added. Browse the archive in the meantime.</p>
-            )}
+            <CourseSemesterJump
+              programs={jumpData}
+              allProgrammes={duProgrammes}
+              embedded
+            />
           </div>
         </section>
 

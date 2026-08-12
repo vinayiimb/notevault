@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { ArrowSquareOut, DownloadSimple, MagnifyingGlass } from "@phosphor-icons/react";
 import { CopyButton } from "@/components/pyq/copy-button";
 import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
@@ -75,6 +76,9 @@ function toggle(set: Set<string>, value: string): Set<string> {
 type Tab = "course" | "semester" | "subject";
 
 export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogPaper[] }) {
+  const searchParams = useSearchParams();
+  const requestedCourse = searchParams.get("course");
+
   const [papers, setPapers] = useState<CatalogPaper[]>(initialPapers);
   const [loading, setLoading] = useState(initialPapers.length === 0);
   const [activeTab, setActiveTab] = useState<Tab>("course");
@@ -111,6 +115,24 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
       isMounted = false;
     };
   }, [initialPapers]);
+
+  // Sync course from query parameter if provided
+  useEffect(() => {
+    if (requestedCourse && papers.length > 0) {
+      const q = requestedCourse.trim().toLowerCase();
+      // Look for direct match or substring match in papers
+      const match = papers.find(
+        (p) => (p.course || "").toLowerCase() === q ||
+               (p.course || "").toLowerCase().includes(q) ||
+               q.includes((p.course || "").toLowerCase())
+      );
+      if (match?.course) {
+        setSelectedCourses(new Set([match.course]));
+      } else {
+        setSelectedCourses(new Set([requestedCourse]));
+      }
+    }
+  }, [requestedCourse, papers]);
 
   const courses = useMemo(() => {
     const counts = new Map<string, number>();

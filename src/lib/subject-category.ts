@@ -7,13 +7,23 @@
 export type SubjectCategory = "DSC" | "DSE" | "GE" | "SEC" | "VAC" | "AEC" | "CORE";
 
 export const CATEGORY_LABELS: Record<SubjectCategory, string> = {
-  DSC: "DSC",
-  DSE: "DSE",
-  GE: "GE",
-  SEC: "SEC",
-  VAC: "VAC",
-  AEC: "AEC",
-  CORE: "Core",
+  DSC: "Discipline Specific Core (DSC)",
+  DSE: "Discipline Specific Elective (DSE)",
+  GE: "Generic Elective (GE)",
+  SEC: "Skill Enhancement Course (SEC)",
+  VAC: "Value Addition Course (VAC)",
+  AEC: "Ability Enhancement Course (AEC)",
+  CORE: "Core Subjects",
+};
+
+export const CATEGORY_DESCRIPTIONS: Record<SubjectCategory, string> = {
+  DSC: "Core discipline subjects specific to your programme.",
+  DSE: "Elective subjects specific to your core discipline.",
+  GE: "Multidisciplinary courses offered by other departments.",
+  SEC: "Practical, hands-on skill-based courses from the common pool.",
+  VAC: "Courses for ethical, cultural, and holistic personality development.",
+  AEC: "Language, literature, and environmental science courses.",
+  CORE: "Main program subjects.",
 };
 
 // Order tabs should render in.

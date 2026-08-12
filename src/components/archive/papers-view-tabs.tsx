@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { SquaresFour, FilePdf } from "@phosphor-icons/react";
 import { DuPypBrowser } from "@/components/pyp/du-pyp-browser";
 import { PaperBrowser } from "@/components/archive/paper-browser";
@@ -12,7 +13,19 @@ interface Props {
 }
 
 export function PapersViewTabs({ programmes, groupedProgrammes, totalCount }: Props) {
-  const [viewMode, setViewMode] = useState<"grid" | "reader">("grid");
+  const searchParams = useSearchParams();
+  const requestedView = searchParams.get("view");
+  const requestedCourse = searchParams.get("course");
+
+  const [viewMode, setViewMode] = useState<"grid" | "reader">(
+    requestedView === "reader" || requestedCourse ? "reader" : "grid"
+  );
+
+  useEffect(() => {
+    if (requestedView === "reader" || requestedCourse) {
+      setViewMode("reader");
+    }
+  }, [requestedView, requestedCourse]);
 
   return (
     <div className="space-y-6">
