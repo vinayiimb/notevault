@@ -43,38 +43,22 @@ export function CanonicalArchiveBrowser({ papers: rawPapers }: { papers: Catalog
     return { matched: m, unmatched: u };
   }, [enrichedPapers]);
 
-  // Combine for display (matched first, then unmatched)
-  const displayPapers = useMemo(() => [...matched, ...unmatched], [matched, unmatched]);
-
   return (
     <div className="space-y-8">
-      {/* Matched papers in canonical structure */}
+      {/* ONLY show matched papers in canonical structure */}
       {matched.length > 0 && (
         <section>
           <div className="mb-4">
-            <h2 className="text-lg font-semibold text-foreground">DU Official Catalogue</h2>
+            <h2 className="text-lg font-semibold text-foreground">Delhi University Question Papers Archive</h2>
             <p className="text-sm text-muted">
-              {matched.length} file{matched.length === 1 ? "" : "s"} organized by DU programme, semester, and subject category.
+              {matched.length} files across 118 programmes, organized by semester and subject category.
             </p>
           </div>
           <CatalogArchiveBrowser papers={matched} />
         </section>
       )}
 
-      {/* Unmatched papers */}
-      {unmatched.length > 0 && (
-        <section>
-          <div className="mb-4 rounded-2xl border border-dashed border-yellow/50 bg-yellow-soft/20 p-4">
-            <h2 className="text-lg font-semibold text-foreground">Other Papers / Needs Verification</h2>
-            <p className="mt-1 text-sm text-muted">
-              {unmatched.length} file{unmatched.length === 1 ? "" : "s"} awaiting official DU curriculum mapping. All files are fully downloadable and searchable.
-            </p>
-          </div>
-          <CatalogArchiveBrowser papers={unmatched} />
-        </section>
-      )}
-
-      {displayPapers.length === 0 && (
+      {matched.length === 0 && (
         <div className="rounded-2xl border border-dashed border-border bg-surface-muted p-8 text-center">
           <p className="text-sm text-muted">No papers found.</p>
         </div>
