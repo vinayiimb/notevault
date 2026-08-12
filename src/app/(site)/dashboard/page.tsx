@@ -1,4 +1,8 @@
-export const dynamic = "force-static";
+// force-dynamic, not revalidate — this page is per-student (ensureStudent()
+// below reads/creates a student tied to the visitor's session), so an ISR
+// cache would serve one student's dashboard (oranges, streak, personalized
+// recents) to every other visitor. Must be a real per-request render.
+export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { ensureStudent, getCommunityOrangesTotal, getTodayOranges } from "@/lib/student";
 import { getDailyQuestion, getProgramsByLevel, getRecentResources, getResourceHighlights, getSiteSettings } from "@/lib/data";

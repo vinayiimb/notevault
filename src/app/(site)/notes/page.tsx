@@ -1,4 +1,8 @@
-export const dynamic = "force-static";
+// ISR, not force-static — same fix as /browse/college and /subjects/[id]:
+// force-static bakes this page in once at build time and never re-fetches
+// the database, so it only ever shows whatever programmes existed at the
+// last build instead of all 120+.
+export const revalidate = 300;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpenText, FileText, Sparkle } from "@phosphor-icons/react/dist/ssr";

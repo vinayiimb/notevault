@@ -1,6 +1,10 @@
 export function generateStaticParams() { return []; }
 export const dynamicParams = true;
-export const dynamic = "force-static";
+// ISR, not force-static — same fix as /browse/college, /notes, and
+// /subjects/[id]: force-static + generateStaticParams()=[] permanently
+// bakes in whatever existed at the last build, never re-checking the
+// database afterward.
+export const revalidate = 300;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";

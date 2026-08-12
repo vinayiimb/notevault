@@ -1,4 +1,9 @@
-export const dynamic = "force-static";
+// ISR, not force-static — same fix as /browse/college, /notes, and
+// /subjects/[id]: force-static + generateStaticParams()=[] permanently
+// bakes in whatever programmes existed at the last build (or a stale
+// notFound() for any that didn't exist yet), never re-checking the
+// database afterward.
+export const revalidate = 300;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";

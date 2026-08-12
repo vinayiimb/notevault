@@ -1,4 +1,7 @@
-export const dynamic = "force-static";
+// ISR, not force-static — same fix as /browse/college, /notes, and
+// /subjects/[id]: force-static bakes this page in once at build time and
+// never re-fetches the database again.
+export const revalidate = 300;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Calendar, GraduationCap } from "@phosphor-icons/react/dist/ssr";
