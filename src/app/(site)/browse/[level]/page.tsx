@@ -1,4 +1,11 @@
-export const dynamic = "force-static";
+// ISR, not force-static — force-static bakes this page in once at build
+// time and never re-fetches from the database again, so newly-seeded or
+// updated programmes never show up without a full redeploy. That's the
+// exact bug that made this page show only a handful of programmes despite
+// the database having many more (same class of issue as the /subjects/[id]
+// permanent-404 fix). revalidate (not force-dynamic) keeps this off
+// Vercel's serverless function count, same reasoning as that fix.
+export const revalidate = 300;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
