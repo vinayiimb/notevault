@@ -33,6 +33,16 @@
   }
 }
 
+/* Sizing context for the breakout rule below — has to live on a wrapper
+   OUTSIDE .nt-article, not on .nt-article itself, since .nt-article is
+   already ch-width-constrained: querying its own post-max-width size
+   would make cqw units measure the narrow column instead of the full
+   grid cell, defeating the point of the breakout. */
+.nt-article-col {
+  container-type: inline-size;
+  min-width: 0; /* grid items default to min-width:auto, which blocks proper shrink/overflow here */
+}
+
 .nt-article {
   max-width: var(--nt-content-width);
   margin-inline: auto;
@@ -40,6 +50,18 @@
 }
 @media (min-width: 640px) {
   .nt-article { padding: 2.5rem 2rem 6rem; }
+}
+
+/* Tables and diagrams read better wide — this is content students scan
+   for structure, not prose they read line by line, so the same ch-based
+   width that keeps paragraphs comfortable to read just wastes space here.
+   Breaks out to the full grid-cell width (not the viewport) using
+   container query units against .nt-article-col above. */
+.nt-table-wrap,
+.nt-mermaid-wrap {
+  width: 100cqw;
+  max-width: none;
+  margin-inline: calc(50% - 50cqw);
 }
 
 .nt-prose > * + * { margin-top: var(--nt-paragraph-spacing); }

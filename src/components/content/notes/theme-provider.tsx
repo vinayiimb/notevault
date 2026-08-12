@@ -34,7 +34,7 @@ export const DEFAULT_TYPOGRAPHY: ContentTypography = {
   fontSize: 16,
   lineHeight: 1.7,
   paragraphSpacing: 1.1,
-  contentWidth: 72,
+  contentWidth: 100,
   headingScale: 1,
 };
 

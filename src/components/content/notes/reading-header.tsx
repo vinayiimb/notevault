@@ -3,6 +3,7 @@
 import { ContentSearch } from "./note-search";
 import { ContentPrintButton } from "./print-button";
 import { ContentThemeSwitcher } from "./theme-switcher";
+import { ContentDarkModeToggle } from "./dark-mode-toggle";
 
 export function ContentReadingHeader({ title, targetId }: { title: string; targetId: string }) {
   return (
@@ -19,6 +20,7 @@ export function ContentReadingHeader({ title, targetId }: { title: string; targe
         <div className="flex items-center gap-2">
           <ContentSearch targetId={targetId} />
           <ContentPrintButton />
+          <ContentDarkModeToggle />
           <ContentThemeSwitcher />
         </div>
       </div>

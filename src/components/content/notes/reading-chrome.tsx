@@ -32,9 +32,11 @@ export function NotesReadingChrome({
           <ContentReadingProgress />
           <ContentReadingHeader title={title} targetId={ARTICLE_ID} />
           <div className="nt-shell" data-toc={headings.length > 0}>
-            <main className="nt-article" id={ARTICLE_ID}>
-              <NotesMarkdown content={content} />
-            </main>
+            <div className="nt-article-col">
+              <main className="nt-article" id={ARTICLE_ID}>
+                <NotesMarkdown content={content} />
+              </main>
+            </div>
             <div className="nt-no-print px-4">
               <ContentTocSidebar headings={headings} />
             </div>
