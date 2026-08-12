@@ -14,6 +14,7 @@ import {
   canonicalSubjectKey,
   preferredSubjectLabel,
 } from "@/lib/subject-normalization";
+import { enrichPapersWithCanonical } from "@/lib/du-canonical-enrichment";
 import type {
   CatalogCourseCoverage,
   CatalogPaper,
@@ -183,7 +184,7 @@ export async function getFullPyqCatalog(): Promise<CatalogPaper[]> {
       orderBy: { createdAt: "asc" },
     });
 
-    return [
+    const allPapers = [
       ...sourceCatalog,
       ...uploads.map(
         (paper): CatalogPaper => ({
@@ -200,9 +201,12 @@ export async function getFullPyqCatalog(): Promise<CatalogPaper[]> {
         }),
       ),
     ];
+
+    // Enrich papers with canonical DU mapping data
+    return enrichPapersWithCanonical(allPapers);
   } catch (err) {
     console.warn("Database unavailable for getFullPyqCatalog, returning sourceCatalog:", err instanceof Error ? err.message : err);
-    return sourceCatalog;
+    return enrichPapersWithCanonical(sourceCatalog);
   }
 }
 

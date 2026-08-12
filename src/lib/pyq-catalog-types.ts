@@ -1,5 +1,7 @@
 export type CatalogPaperSource = "library" | "upload" | "notevault" | "drive";
 
+export type CanonicalMappingStatus = "MATCHED" | "CODE_MATCHED" | "ALIAS_MATCHED" | "UNMATCHED";
+
 export type CatalogPaper = {
   id: string;
   yearRange: string;
@@ -25,6 +27,14 @@ export type CatalogPaper = {
   isANDC?: boolean;
   isRamanujan?: boolean;
   college?: "Shivaji" | "Kalindi" | "ANDC" | "Ramanujan" | string;
+  // Canonical DU mapping fields
+  canonicalProgramme?: string;
+  canonicalSubject?: string;
+  canonicalCategory?: string;
+  canonicalSemester?: string | null;
+  canonicalMappingStatus?: CanonicalMappingStatus;
+  canonicalUPC?: string;
+  canonicalMatchMethod?: string;
 };
 
 export const NO_SEMESTER = "Semester not specified";
