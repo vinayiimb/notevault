@@ -48,11 +48,16 @@ export function findCanonicalSubject(programmeSlug: string, subjectSlug: string)
 }
 
 export async function getProgrammesWithNotesStatus() {
-  const counts = await prisma.canonicalSubjectNote.groupBy({
-    by: ["programmeSlug"],
-    _count: { _all: true },
-  });
-  const countMap = new Map(counts.map((c) => [c.programmeSlug, c._count._all]));
+  let countMap = new Map<string, number>();
+  try {
+    const counts = await prisma.canonicalSubjectNote.groupBy({
+      by: ["programmeSlug"],
+      _count: { _all: true },
+    });
+    countMap = new Map(counts.map((c) => [c.programmeSlug, c._count._all]));
+  } catch (err) {
+    console.warn("Database unavailable for getProgrammesWithNotesStatus, returning zero counts:", err instanceof Error ? err.message : err);
+  }
 
   return programmeList().map((p) => ({
     slug: p.slug,
