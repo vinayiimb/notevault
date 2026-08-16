@@ -52,3 +52,9 @@ next-env.d.ts
 
 # DU Question Paper Bank scraper — persisted login session, never commit
 /.tmp/du-question-bank/
+
+# Claude Code agent worktrees — these are separate git checkouts (nested
+# repos), so if ever `git add`-ed they land as broken gitlink/submodule
+# entries with no .gitmodules, which fails every fresh clone (Netlify,
+# Railway, CI) with "No url found for submodule path ...". Never commit them.
+/.claude/worktrees/
