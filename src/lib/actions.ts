@@ -3011,9 +3011,17 @@ export async function deleteFeedbackAction(formData: FormData) {
 
 // One-click import of the full DU Question Paper Bank scrape into its own
 // standalone table (DuQuestionBankPaper) — deliberately not CatalogPaperUpload,
-// so it never mixes into the Full Archive (/pyq-notes). Reads the bundled
-// source JSON (src/data/du-question-bank-full-mapped.json, ~15k rows) and
-// bulk-inserts everything with createMany in large chunks: no per-row
+// so it never mixes into the Full Archive (/pyq-notes). Reads the source
+// JSON (src/data/du-question-bank-full-mapped.json, ~15k rows, 18MB) via
+// fs.readFileSync at runtime rather than a static/dynamic `import`: this
+// file (actions.ts) is imported by nearly every route, and a JS import of
+// an 18MB JSON gets inlined into every function that pulls it in — on
+// Netlify specifically, the whole app collapses into one function, so that
+// single function blew past the 250MB deploy limit. Same fix as
+// canonical-subject-notes-data.ts (see its comment) — the matching
+// outputFileTracingIncludes entry in next.config.ts is what makes the file
+// actually present on disk for readFileSync to find at runtime.
+// Then bulk-inserts everything with createMany in large chunks: no per-row
 // existence/duplicate lookups, by design — every row from the scrape lands
 // here as-is, including duplicates, since the point is to hold the complete
 // raw output. This makes it fast (a handful of round trips instead of
@@ -3025,7 +3033,10 @@ export async function importDuQuestionBankPapersAction(): Promise<{
 } | { ok: false; message: string }> {
   await requireAdmin();
 
-  const { default: rows } = await import("@/data/du-question-bank-full-mapped.json");
+  const { readFileSync } = await import("node:fs");
+  const path = await import("node:path");
+  const filePath = path.join(process.cwd(), "src/data/du-question-bank-full-mapped.json");
+  const rows: Prisma.DuQuestionBankPaperCreateManyInput[] = JSON.parse(readFileSync(filePath, "utf-8"));
   const CHUNK_SIZE = 2000;
   let imported = 0;
 

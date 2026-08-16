@@ -1,7 +1,7 @@
 import rawCatalog from "@/data/ramanujan-pyq-catalog.json";
 import rawOfficialArchiveMap from "@/data/archive-official-map.json";
 import duProgrammeMappings from "@/data/du-programme-mappings.json";
-import rawQuestionBank from "@/data/du-question-bank-full-mapped.json";
+import { getDuQuestionBankRows } from "@/lib/du-question-bank-raw-data";
 import { geographyDriveCatalog } from "@/data/geography-drive-catalog";
 import { politicalScienceDriveCatalog } from "@/data/political-science-drive-catalog";
 import { duMasterDriveCatalog } from "@/data/du-master-drive-catalog";
@@ -226,7 +226,7 @@ function duQuestionBankYearRange(session: string | null, year: string | null): s
 
 export async function getDuQuestionBankPapers(): Promise<CatalogPaper[]> {
   try {
-    const rows = rawQuestionBank as any[];
+    const rows = getDuQuestionBankRows();
     return rows
       .filter((row) => row.questionPaperLink)
       .map((row, idx): CatalogPaper => {

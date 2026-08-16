@@ -3,29 +3,8 @@
  * Source: du-question-bank-full-mapped.json (15,165 rows scraped from qb.exam.du.ac.in,
  * matched against the official syllabus catalogue).
  */
-import rawQuestionBank from "@/data/du-question-bank-full-mapped.json";
+import { getDuQuestionBankRows, type DuQuestionBankRow as RawQuestionBankRow } from "@/lib/du-question-bank-raw-data";
 import rawRamanujan from "@/data/ramanujan-pyq-catalog.json";
-
-interface RawQuestionBankRow {
-  officialProgramme: string;
-  semester: string | null;
-  paperType: string | null;
-  subjectPaperName: string;
-  courseNumber: string | null;
-  upc: string | null;
-  credits: string | null;
-  officialPaperLink: string | null;
-  questionPaperLink: string | null;
-  questionPaperSession: string | null;
-  questionPaperYear: string | null;
-  questionPaperSet: string | null;
-  questionPaperMarks: string | null;
-  isShivaji?: boolean;
-  isKalindi?: boolean;
-  isANDC?: boolean;
-  isRamanujan?: boolean;
-  college?: string;
-}
 
 export interface DuExamPaper {
   year: string | null;
@@ -124,7 +103,7 @@ interface BuiltSubject extends DuPypPaper {
 }
 
 function buildPapers(): DuPypPaper[] {
-  const rows = rawQuestionBank as RawQuestionBankRow[];
+  const rows = getDuQuestionBankRows();
   const bySubject = new Map<string, BuiltSubject>();
 
   for (const row of rows) {
@@ -235,7 +214,7 @@ function buildPapers(): DuPypPaper[] {
 const allPapers = buildPapers();
 
 export function getTotalDuPypCount(): number {
-  return (rawQuestionBank as RawQuestionBankRow[]).length + (rawRamanujan as any[]).length;
+  return getDuQuestionBankRows().length + (rawRamanujan as any[]).length;
 }
 
 // All 118 unique official programme names, sorted and grouped

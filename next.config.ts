@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
       // — same reasoning as the pdf.js entries above — Next's automatic
       // file tracer can't find it on its own without this being explicit.
       "./src/data/du-canonical-mapping.json",
+      // du-question-bank-raw-data.ts reads this via fs.readFileSync at a
+      // constructed path (see its comment) rather than a static import —
+      // same reasoning as the entries above.
+      "./src/data/du-question-bank-full-mapped.json",
     ],
   },
   experimental: {

@@ -1,6 +1,12 @@
 import { prisma } from "@/lib/prisma";
-import duQuestionBankRows from "@/data/du-question-bank-full-mapped.json";
 import { DuQuestionBankImportPanel } from "@/components/admin/du-question-bank/du-question-bank-import-panel";
+
+// Row count of src/data/du-question-bank-full-mapped.json, fixed at build
+// time — not read from the file itself, so this page never imports that
+// 18MB JSON (only importDuQuestionBankPapersAction does, via fs.readFileSync
+// at runtime; see its comment in actions.ts for why a JS import is unsafe
+// here).
+const TOTAL_ROWS_IN_FILE = 15165;
 
 export default async function DuQuestionBankAdminPage() {
   const initialCount = await prisma.duQuestionBankPaper.count().catch(() => 0);
@@ -16,7 +22,7 @@ export default async function DuQuestionBankAdminPage() {
         </p>
       </div>
 
-      <DuQuestionBankImportPanel initialCount={initialCount} totalInFile={duQuestionBankRows.length} />
+      <DuQuestionBankImportPanel initialCount={initialCount} totalInFile={TOTAL_ROWS_IN_FILE} />
     </div>
   );
 }
