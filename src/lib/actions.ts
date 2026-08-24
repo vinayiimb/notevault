@@ -2320,6 +2320,9 @@ export async function upsertCatalogSubjectOverrideAction(formData: FormData) {
   });
 
   revalidatePath("/pyq-notes");
+  revalidatePath("/papers");
+  revalidatePath("/notes");
+  revalidatePath("/admin/subject-notes");
   if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
 }
 
@@ -2355,6 +2358,9 @@ export async function mergeCatalogSubjectsAction(formData: FormData) {
   );
 
   revalidatePath("/pyq-notes");
+  revalidatePath("/papers");
+  revalidatePath("/notes");
+  revalidatePath("/admin/subject-notes");
   if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
 }
 
@@ -2387,6 +2393,9 @@ export async function manualMergeCatalogSubjectsAction(
   );
 
   revalidatePath("/pyq-notes");
+  revalidatePath("/papers");
+  revalidatePath("/notes");
+  revalidatePath("/admin/subject-notes");
   if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
 }
 
@@ -2409,6 +2418,9 @@ export async function resetCatalogSubjectOverrideAction(formData: FormData) {
   await prisma.catalogSubjectOverride.delete({ where: { id } }).catch(() => {});
 
   revalidatePath("/pyq-notes");
+  revalidatePath("/papers");
+  revalidatePath("/notes");
+  revalidatePath("/admin/subject-notes");
   if (courseSlug) revalidatePath(`/admin/archive-customize/${courseSlug}`);
 }
 
