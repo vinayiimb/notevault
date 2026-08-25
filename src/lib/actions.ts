@@ -30,7 +30,7 @@ import {
   getSession,
   verifyPassword,
 } from "@/lib/auth";
-import type { Prisma, BulkUploadRowStatus } from "@/generated/prisma";
+import type { Prisma, BulkUploadRowStatus } from "@prisma/client";
 import { DEFAULT_THEME, ThemeValuesSchema } from "@/lib/note-theme";
 import { StructuredNoteSchema } from "@/lib/note-schema";
 import { generateStructuredNote } from "@/lib/ai";
@@ -1552,13 +1552,13 @@ export async function uploadCatalogPaperAction(
   const semester = semesterRaw ? Number(semesterRaw) : null;
   const file = formData.get("file");
 
-  if (!isCatalogCourseSubject(course, subject)) {
+  if (!(await isCatalogCourseSubject(course, subject))) {
     return { ok: false, status: "error", message: "That course and subject are not in the catalog." };
   }
-  if (!getCatalogYearRanges().includes(yearRange)) {
+  if (!(await getCatalogYearRanges()).includes(yearRange)) {
     return { ok: false, status: "error", message: "Choose a valid source year/session." };
   }
-  if (!getSemesterGroupsForYear(yearRange).includes(semesterGroup)) {
+  if (!(await getSemesterGroupsForYear(yearRange)).includes(semesterGroup)) {
     return { ok: false, status: "error", message: "Choose a valid semester group for that session." };
   }
   if (semester !== null && (!Number.isInteger(semester) || semester < 1 || semester > 7)) {

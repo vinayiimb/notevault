@@ -4,23 +4,22 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import {
-  Archive,
+  CalendarCheck,
   CaretLeft,
   CaretRight,
   ChatCircleText,
   ClockCounterClockwise,
   Exam,
   Headset,
-  SquaresFour,
+  NotePencil,
 } from "@phosphor-icons/react";
 import { SearchBar } from "@/components/search-bar";
 
 const COLLAPSED_KEY = "notevault-sidebar-collapsed";
 
 const NAV = [
-  { href: "/browse/college", label: "PYQ", match: "/browse", Icon: ClockCounterClockwise },
-  { href: "/pyq-notes", label: "Full archive", match: "/pyq-notes", Icon: Archive },
-  { href: "/dashboard", label: "Dashboard", match: "/dashboard", Icon: SquaresFour },
+  { href: "/papers", label: "Papers", match: "/papers", Icon: ClockCounterClockwise },
+  { href: "/notes", label: "Notes", match: "/notes", Icon: NotePencil },
   { href: "/tools/exam-kit", label: "Exam Kit", match: "/tools/exam-kit", Icon: Exam },
 ] as const;
 

@@ -85,3 +85,61 @@ export function breadcrumbJsonLd(items: { name: string; url: string }[]) {
     })),
   };
 }
+
+export function generateSubjectMetadata(subjectName: string, program: string, semester: string, type: 'home' | 'pyq' | 'notes' | 'test' | 'questions' | 'syllabus') {
+  const baseTitle = `${subjectName} — DU ${program} Semester ${semester}`;
+  
+  switch (type) {
+    case 'pyq':
+      return {
+        title: `${subjectName} DU Previous Year Question Papers | ${program}`,
+        description: `Download 10 years of DU PYQs for ${subjectName} (${program} Sem ${semester}). PDF question papers with solutions.`,
+      };
+    case 'notes':
+      return {
+        title: `${subjectName} Notes DU | ${program} Semester ${semester}`,
+        description: `Complete study notes, unit summaries, and revision material for ${subjectName} at Delhi University.`,
+      };
+    case 'questions':
+      return {
+        title: `${subjectName} Important Questions DU | Most Repeated`,
+        description: `Top repeated and most expected questions for DU ${subjectName} exam. Based on past 10 years of Delhi University PYQs.`,
+      };
+    case 'test':
+      return {
+        title: `${subjectName} DU Mock Test & MCQ Practice`,
+        description: `Practice online tests and MCQs for DU ${subjectName}. Generated from actual Delhi University previous year question papers.`,
+      };
+    case 'syllabus':
+      return {
+        title: `${subjectName} DU Syllabus 2026 | ${program}`,
+        description: `Latest UGCF syllabus for ${subjectName} (${program} Sem ${semester}) at Delhi University.`,
+      };
+    case 'home':
+    default:
+      return {
+        title: `${baseTitle} | Notes, PYQs & Syllabus`,
+        description: `Everything you need for DU ${subjectName} (${program} Semester ${semester}). PYQs, notes, syllabus, important questions, and tests.`,
+      };
+  }
+}
+
+export function educationalCourseJsonLd(courseName: string, description: string, url: string) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Course",
+    "name": courseName,
+    "description": description,
+    "provider": {
+      "@type": "Organization",
+      "name": "Delhi University",
+      "sameAs": "http://www.du.ac.in/"
+    },
+    "hasCourseInstance": {
+      "@type": "CourseInstance",
+      "courseMode": "Onsite",
+      "location": "Delhi, India"
+    },
+    "url": absoluteUrl(url)
+  };
+}

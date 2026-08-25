@@ -12,7 +12,7 @@ import {
   type BulkUploadRowSummary,
   type BulkUploadValidateResult,
 } from "@/lib/actions";
-import type { BulkUploadRowStatus } from "@/generated/prisma";
+import type { BulkUploadRowStatus } from "@prisma/client";
 
 // Rows per commit/validate call — each chunk is one progress-bar tick.
 // Validate chunks are bigger than commit chunks because persisting a

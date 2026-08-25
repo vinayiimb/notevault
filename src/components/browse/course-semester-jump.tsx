@@ -51,7 +51,7 @@ export function CourseSemesterJump({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
         <div className="flex w-full flex-col gap-2">
-          <label className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-muted">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-gray-500">
             <span>Select Course / Degree Program</span>
           </label>
           <div className="relative">
@@ -64,7 +64,7 @@ export function CourseSemesterJump({
                   router.push(`/papers?view=reader&course=${encodeURIComponent(val)}`);
                 }
               }}
-              className="h-13 w-full appearance-none rounded-2xl border border-border bg-background px-4 py-3 pr-10 text-sm font-semibold text-foreground shadow-2xs transition-all hover:border-brand/50 focus:border-brand focus:outline-none focus:ring-4 focus:ring-brand/15 cursor-pointer"
+              className="h-12 w-full appearance-none rounded-xl border border-gray-200 bg-white px-4 py-2 pr-10 text-sm font-medium text-gray-900 shadow-sm transition-all focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer"
             >
               <option value="">Select your DU degree / programme (118 official courses)...</option>
               {courseOptions.map((name) => (
@@ -73,8 +73,10 @@ export function CourseSemesterJump({
                 </option>
               ))}
             </select>
-            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-muted">
-              <span className="text-xs">▼</span>
+            <div className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-gray-400">
+              <svg width="10" height="6" viewBox="0 0 10 6" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 1L5 5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+              </svg>
             </div>
           </div>
         </div>
@@ -83,7 +85,7 @@ export function CourseSemesterJump({
           type="button"
           disabled={!selectedCourse}
           onClick={handleGo}
-          className="inline-flex h-13 w-full items-center justify-center gap-2 rounded-2xl bg-brand px-8 text-sm font-bold text-brand-foreground shadow-md transition-all hover:bg-brand-hover hover:shadow-lg hover:shadow-brand/20 active:scale-98 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:shadow-none sm:w-auto shrink-0 cursor-pointer"
+          className="inline-flex h-12 items-center justify-center gap-2 rounded-xl bg-[#c1c4f5] px-6 text-sm font-bold text-white transition-all hover:bg-[#a6a9f0] disabled:cursor-not-allowed disabled:opacity-80 sm:w-auto shrink-0 cursor-pointer"
         >
           <FilePdf size={18} weight="bold" />
           <span>Open in Interactive PDF</span>
@@ -91,11 +93,11 @@ export function CourseSemesterJump({
         </button>
       </div>
 
-      <div className="mt-5 flex flex-col justify-between gap-2 border-t border-border/50 pt-4 text-xs text-muted sm:flex-row sm:items-center">
+      <div className="mt-5 flex flex-col justify-between gap-2 pt-2 text-xs text-gray-500 sm:flex-row sm:items-center">
         <span>Selecting your course takes you directly to the interactive PDF archive with all matched papers.</span>
         <span>
           Want the full 118-programme matrix?{" "}
-          <Link href="/papers" className="font-bold text-brand hover:underline inline-flex items-center gap-1">
+          <Link href="/papers" className="font-bold text-blue-600 hover:underline inline-flex items-center gap-1">
             <span>Explore All 118 Programmes</span>
             <ArrowRight size={12} weight="bold" />
           </Link>

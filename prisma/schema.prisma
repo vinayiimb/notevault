@@ -2,8 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
-  output   = "../src/generated/prisma"
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
 }
 
 datasource db {
@@ -106,14 +106,19 @@ model Subject {
   mergedInto   Subject?  @relation("SubjectMerge", fields: [mergedIntoId], references: [id], onDelete: SetNull)
   mergedFrom   Subject[] @relation("SubjectMerge")
 
-  resources      Resource[]
-  questions      Question[]
-  analysis       SubjectAnalysis?
-  notes          SubjectNotes?
-  driveSubjects  DriveSubject[]
-  noteThemes     NoteTheme[]
-  examDates      StudentExamDate[]
-  subjectAliases SubjectAlias[]
+  resources         Resource[]
+  questions         Question[]
+  analysis          SubjectAnalysis?
+  notes             SubjectNotes?
+  driveSubjects     DriveSubject[]
+  noteThemes        NoteTheme[]
+  examDates         StudentExamDate[]
+  subjectAliases    SubjectAlias[]
+  studyPlanSubjects StudyPlanSubject[]
+  plannerTasks      PlannerTask[]
+  units             Unit[]
+  notesAI           Note[]            @relation("NoteSubject")
+  quizzes           Quiz[]            @relation("QuizSubject")
 
   @@unique([termId, slug])
   @@index([upc])
@@ -787,8 +792,9 @@ model Student {
   lastActiveDate String? // "YYYY-MM-DD", used to compute streak continuation
   createdAt      DateTime @default(now())
 
-  events    OrangeEvent[]
-  examDates StudentExamDate[]
+  events     OrangeEvent[]
+  examDates  StudentExamDate[]
+  studyPlans StudyPlan[]
 }
 
 // A manually-added upcoming exam date for a student's dashboard countdown.
@@ -818,6 +824,116 @@ model OrangeEvent {
   createdAt DateTime @default(now())
 }
 
+enum PlanStrategy {
+  BALANCED
+  PYQ_FOCUSED
+  SYLLABUS_FIRST
+  WEAK_TOPICS_FIRST
+  LAST_MINUTE
+  SMART_DU
+}
+
+enum PlanStatus {
+  ACTIVE
+  ARCHIVED
+}
+
+enum PrepLevel {
+  NOT_STARTED
+  BASIC
+  AVERAGE
+  STRONG
+}
+
+enum TargetLevel {
+  PASS
+  GOOD_SCORE
+  TOP_SCORE
+}
+
+enum TaskType {
+  LEARN
+  REVISE
+  SOLVE_PYQS
+  PRACTICE
+  ATTEMPT_PAPER
+  MOCK_TEST
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  SKIPPED
+  RESCHEDULED
+}
+
+// A student's personalized study plan for one programme/term, tied to the
+// same anonymous device-cookie Student used everywhere else on the site
+// (see src/lib/student.ts) — no separate login required. One ACTIVE plan
+// at a time is the expected usage; older plans are ARCHIVED, not deleted.
+model StudyPlan {
+  id             String       @id @default(cuid())
+  studentId      String
+  student        Student      @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  programId      String
+  termId         String
+  hoursWeekday   Int
+  hoursWeekend   Int
+  preferredTimes String[]     @default([]) // "morning" | "afternoon" | "evening" | "night"
+  studyDays      String[]     @default([]) // enabled day codes, e.g. ["mon","tue",...]
+  strategy       PlanStrategy @default(SMART_DU)
+  status         PlanStatus   @default(ACTIVE)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  subjects StudyPlanSubject[]
+  tasks    PlannerTask[]
+
+  @@index([studentId, status])
+}
+
+// One row per subject included in a plan — the exam date, self-reported
+// prep level, and target the scoring algorithm in src/lib/planner-data.ts
+// weighs into task priority.
+model StudyPlanSubject {
+  id               String      @id @default(cuid())
+  planId           String
+  plan             StudyPlan   @relation(fields: [planId], references: [id], onDelete: Cascade)
+  subjectId        String
+  subject          Subject     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  examDate         DateTime
+  examTime         String?
+  preparationLevel PrepLevel   @default(NOT_STARTED)
+  targetLevel      TargetLevel @default(GOOD_SCORE)
+
+  @@unique([planId, subjectId])
+}
+
+// A single scheduled study task generated (or manually added) for a plan.
+// `topic` is populated only when derivable from tagged Question.topics for
+// the subject — most subjects don't have that data yet, so it stays null
+// and the task is framed at subject/paper-year granularity instead.
+model PlannerTask {
+  id               String     @id @default(cuid())
+  planId           String
+  plan             StudyPlan  @relation(fields: [planId], references: [id], onDelete: Cascade)
+  subjectId        String
+  subject          Subject    @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  topic            String?
+  type             TaskType
+  title            String
+  scheduledDate    DateTime
+  estimatedMinutes Int
+  priority         Int
+  status           TaskStatus @default(TODO)
+  resourceUrl      String?
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+
+  @@index([planId, scheduledDate])
+}
+
 // A message submitted through the public /feedback page, optionally with a
 // screenshot attached. No login required — anyone can submit. Reviewed by
 // an admin at /admin/feedback, where `read` tracks what's already been seen.
@@ -830,4 +946,388 @@ model Feedback {
   createdAt      DateTime @default(now())
 
   @@index([read])
+}
+
+// ----------------------------------------------------------------------
+// AI NOTE VAULT / STUDY PLATFORM EXTENSIONS
+// ----------------------------------------------------------------------
+
+model User {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String   @unique
+  name      String?
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  folders          Folder[]
+  notes            Note[]
+  sources          Source[]
+  flashcards       Flashcard[]
+  flashcardReviews FlashcardReview[]
+  quizzes          Quiz[]
+  quizAttempts     QuizAttempt[]
+  mindMaps         MindMap[]
+  studySessions    StudySession[]
+  revisionHistory  RevisionHistory[]
+  topicMastery     TopicMastery[]
+  shares           Share[]
+  comments         Comment[]
+}
+
+model Unit {
+  id        String   @id @default(cuid())
+  subjectId String
+  subject   Subject  @relation(fields: [subjectId], references: [id], onDelete: Cascade)
+  name      String
+  order     Int      @default(1)
+  createdAt DateTime @default(now())
+
+  topics    Topic[]
+  notes     Note[]
+}
+
+model Topic {
+  id        String   @id @default(cuid())
+  unitId    String
+  unit      Unit     @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  name      String
+  order     Int      @default(1)
+  status    String   @default("Not Started") // e.g., "Not Started", "Learning", "Revision Needed", "Completed"
+  createdAt DateTime @default(now())
+
+  notes           Note[]
+  topicMasteries  TopicMastery[]
+  syllabusTopics  SyllabusTopic[]
+}
+
+model SyllabusTopic {
+  id        String   @id @default(cuid())
+  topicId   String
+  topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model Folder {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  parentId  String?
+  parent    Folder?  @relation("FolderParent", fields: [parentId], references: [id], onDelete: SetNull)
+  children  Folder[] @relation("FolderParent")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  notes     Note[]
+}
+
+model Tag {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+
+  notes     NoteTag[]
+}
+
+model Note {
+  id          String   @id @default(cuid())
+  title       String
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folderId    String?
+  folder      Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
+  
+  subjectId   String?
+  subject     Subject? @relation("NoteSubject", fields: [subjectId], references: [id], onDelete: SetNull)
+  unitId      String?
+  unit        Unit?    @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  topicId     String?
+  topic       Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+  
+  isFavorite  Boolean  @default(false)
+  isPinned    Boolean  @default(false)
+  isArchived  Boolean  @default(false)
+  isPublic    Boolean  @default(false)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  tags        NoteTag[]
+  blocks      NoteBlock[]
+  attachments Attachment[]
+  mindMaps    MindMap[]
+  shares      Share[]
+  comments    Comment[]
+  flashcards  Flashcard[]
+}
+
+model NoteTag {
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tagId     String
+  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([noteId, tagId])
+}
+
+model NoteBlock {
+  id        String   @id @default(cuid())
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  type      String   // e.g., paragraph, heading_1, image, math, code_block
+  content   String   @db.Text
+  order     Int
+  props     Json?    // Optional properties (e.g., text color, alignment)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([noteId])
+}
+
+model Source {
+  id        String   @id @default(cuid())
+  title     String
+  type      String   // PDF, DOCX, PPTX, IMAGE, URL, AUDIO
+  url       String
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Attachment {
+  id        String   @id @default(cuid())
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  url       String
+  type      String
+  size      Int
+  createdAt DateTime @default(now())
+}
+
+model Flashcard {
+  id          String   @id @default(cuid())
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  noteId      String?
+  note        Note?    @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  front       String   @db.Text
+  back        String   @db.Text
+  type        String   // QUESTION_ANSWER, FILL_IN_BLANK
+  createdAt   DateTime @default(now())
+
+  reviews     FlashcardReview[]
+}
+
+model FlashcardReview {
+  id          String   @id @default(cuid())
+  flashcardId String
+  flashcard   Flashcard @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating      String   // AGAIN, HARD, GOOD, EASY
+  reviewDate  DateTime @default(now())
+  nextReview  DateTime?
+}
+
+model Quiz {
+  id          String   @id @default(cuid())
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  subjectId   String?
+  subject     Subject? @relation("QuizSubject", fields: [subjectId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+
+  questions   QuizQuestion[]
+  attempts    QuizAttempt[]
+}
+
+model QuizQuestion {
+  id            String   @id @default(cuid())
+  quizId        String
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  questionText  String   @db.Text
+  type          String   // MCQ, TRUE_FALSE, SHORT_ANSWER
+  options       Json?
+  correctAnswer String   @db.Text
+  explanation   String?  @db.Text
+  createdAt     DateTime @default(now())
+}
+
+model QuizAttempt {
+  id          String   @id @default(cuid())
+  quizId      String
+  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId      String   @db.Uuid
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score       Int
+  total       Int
+  createdAt   DateTime @default(now())
+}
+
+model MindMap {
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  noteId    String?
+  note      Note?    @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  title     String
+  data      Json     // The mindmap nodes and edges
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model StudySession {
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startTime DateTime @default(now())
+  endTime   DateTime?
+  duration  Int?     // in seconds
+  type      String   // REVISION, QUIZ, READING
+}
+
+model RevisionHistory {
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subjectId String?
+  topicId   String?
+  date      DateTime @default(now())
+  details   String?  @db.Text
+}
+
+model TopicMastery {
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  topicId   String
+  topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
+  level     String   // NEW, LEARNING, WEAK, GOOD, MASTERED
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, topicId])
+}
+
+model Share {
+  id          String   @id @default(cuid())
+  noteId      String
+  note        Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  ownerId     String   @db.Uuid
+  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  permission  String   // VIEW, COMMENT, EDIT
+  isPublic    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  noteId    String
+  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @db.Text
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+// ==============================================================================
+// DU ACADEMIC INTELLIGENCE MODELS (Phase 0)
+// ==============================================================================
+
+model DuCourse {
+  id               String            @id @default(cuid())
+  canonicalTitle   String
+  slug             String            @unique
+  department       String?           
+  courseType       String            // e.g., SEC, VAC, AEC, DSC, DSE, GE
+  totalCredits     Int
+  
+  codes            DuCourseCode[]
+  versions         DuCourseVersion[]
+  createdAt        DateTime          @default(now())
+}
+
+model DuCourseCode {
+  id               String            @id @default(cuid())
+  upc              String            @unique
+  courseId         String
+  course           DuCourse          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status           String            @default("CURRENT") // CURRENT, LEGACY, TBA
+}
+
+model DuCourseVersion {
+  id               String            @id @default(cuid())
+  courseId         String
+  course           DuCourse          @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  
+  scheme           String            @default("UGCF-2022")
+  theoryCredits    Int               @default(0)
+  tutorialCredits  Int               @default(0)
+  practicalCredits Int               @default(0)
+  
+  assessmentRuleId String?
+  assessmentRule   DuAssessmentRule? @relation(fields: [assessmentRuleId], references: [id])
+  
+  officialSourceId String?
+  officialSource   DuOfficialSource? @relation(fields: [officialSourceId], references: [id])
+  
+  effectiveFrom    DateTime?
+  status           String            @default("ACTIVE")
+}
+
+model DuAssessmentRule {
+  id               String            @id @default(cuid())
+  ruleIdentifier   String            @unique // e.g., "4CR-3L-1P"
+  theoryMarks      Int               @default(0)
+  internalAssess   Int               @default(0)
+  tutorialCa       Int               @default(0)
+  practicalCa      Int               @default(0)
+  endTermPractical Int               @default(0)
+  viva             Int               @default(0)
+  totalMarks       Int               @default(0)
+  theoryDuration   String?           // e.g., "3 hr"
+  
+  versions         DuCourseVersion[]
+}
+
+model DuOfficialSource {
+  id               String            @id @default(cuid())
+  authority        String            // e.g., "DU Academic Affairs"
+  url              String?
+  sourceType       String            // Formal Notification, Syllabus Page
+  retrievedAt      DateTime          @default(now())
+  authorityLevel   Int               @default(1) // 1=Formal, 2=Programme Page, etc.
+  
+  versions         DuCourseVersion[]
+}
+
+// The unified, static catalog of all papers (DU Question Bank + Ramanujan + Drive).
+// Migrated from the static JSON file to allow database-level pagination and
+// seamless integration with admin overrides.
+model UnifiedCatalogPaper {
+  id            String   @id
+  yearRange     String
+  semesterGroup String
+  course        String
+  subject       String
+  semester      String?
+  pdfUrl        String
+  note          String?
+  source        String
+  isShivaji     Boolean  @default(false)
+  isKalindi     Boolean  @default(false)
+  isANDC        Boolean  @default(false)
+  isRamanujan   Boolean  @default(false)
+  college       String?
+  fileName      String?
+  createdAt     DateTime @default(now())
+
+  @@index([course])
+  @@index([subject])
+  @@index([semester])
+  @@index([yearRange])
 }

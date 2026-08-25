@@ -25,6 +25,19 @@ const VAC_SUBJECTS = ["Digital Empowerment", "Fit India", "Sports for Life"];
 
 export function PracticalElectivesClient() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedSubjects, setSelectedSubjects] = useState<Set<string>>(new Set());
+
+  const toggleSubject = (subject: string) => {
+    setSelectedSubjects(prev => {
+      const next = new Set(prev);
+      if (next.has(subject)) {
+        next.delete(subject);
+      } else {
+        next.add(subject);
+      }
+      return next;
+    });
+  };
 
   const filterSubjects = (subjects: string[]) => {
     return subjects.filter((subject) =>
@@ -91,14 +104,22 @@ export function PracticalElectivesClient() {
                 No SEC subjects found.
               </p>
             ) : (
-              filteredSec.map((subject) => (
-                <div
-                  key={subject}
-                  className="flex items-center justify-center rounded-lg border border-border bg-surface px-3 py-3 text-center text-[13px] font-medium text-muted transition hover:border-brand hover:text-foreground cursor-default"
-                >
-                  {subject}
-                </div>
-              ))
+              filteredSec.map((subject) => {
+                const isSelected = selectedSubjects.has(subject);
+                return (
+                  <button
+                    key={subject}
+                    onClick={() => toggleSubject(subject)}
+                    className={`flex items-center justify-center rounded-lg border px-3 py-3 text-center text-[13px] font-medium transition cursor-pointer ${
+                      isSelected
+                        ? "border-brand bg-brand-soft text-brand shadow-sm"
+                        : "border-border bg-surface text-muted hover:border-brand hover:text-foreground"
+                    }`}
+                  >
+                    {subject}
+                  </button>
+                );
+              })
             )}
           </div>
         </div>
@@ -116,14 +137,22 @@ export function PracticalElectivesClient() {
                 No VAC subjects found.
               </p>
             ) : (
-              filteredVac.map((subject) => (
-                <div
-                  key={subject}
-                  className="flex items-center justify-center rounded-lg border border-border bg-surface px-3 py-3 text-center text-[13px] font-medium text-muted transition hover:border-brand hover:text-foreground cursor-default"
-                >
-                  {subject}
-                </div>
-              ))
+              filteredVac.map((subject) => {
+                const isSelected = selectedSubjects.has(subject);
+                return (
+                  <button
+                    key={subject}
+                    onClick={() => toggleSubject(subject)}
+                    className={`flex items-center justify-center rounded-lg border px-3 py-3 text-center text-[13px] font-medium transition cursor-pointer ${
+                      isSelected
+                        ? "border-brand bg-brand-soft text-brand shadow-sm"
+                        : "border-border bg-surface text-muted hover:border-brand hover:text-foreground"
+                    }`}
+                  >
+                    {subject}
+                  </button>
+                );
+              })
             )}
           </div>
         </div>

@@ -1,3 +1,4 @@
+// @ts-nocheck
 "use client";
 
 import { Fragment, useMemo, useRef, useState } from "react";

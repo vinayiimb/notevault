@@ -6,18 +6,5 @@
 // the same reason the existing restore tool does it this way. Only ever
 // call this from a "use client" component.
 export async function ocrImageFile(file: File, onProgress?: (percent: number) => void): Promise<string> {
-  const Tesseract = await import("tesseract.js");
-  const worker = await Tesseract.createWorker("eng", 1, {
-    logger: onProgress
-      ? (m) => {
-          if (m.status === "recognizing text") onProgress(Math.round(m.progress * 100));
-        }
-      : undefined,
-  });
-  try {
-    const { data } = await worker.recognize(file);
-    return data.text.trim();
-  } finally {
-    await worker.terminate();
-  }
+  throw new Error("OCR disabled for Cloudflare Workers due to size limits");
 }

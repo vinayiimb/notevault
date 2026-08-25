@@ -1,0 +1,1462 @@
+[
+  {
+    "subject": "Indian Economy",
+    "total_questions": 191,
+    "topics": [
+      {
+        "name": "1B1: Bank Classification",
+        "total_questions": 30,
+        "subtopics": [
+          "1B1: Bank Classification",
+          "1B1: Bank Classification - Bank",
+          "1B1: Bank Classification - Business",
+          "1B1: Bank Classification - Central",
+          "1B1: Bank Classification - Demand",
+          "1B1: Bank Classification - District",
+          "1B1: Bank Classification - European",
+          "1B1: Bank Classification - Lending",
+          "1B1: Bank Classification - Marginal",
+          "1B1: Bank Classification - Monetary",
+          "1B1: Bank Classification - Open",
+          "1B1: Bank Classification - Payment",
+          "1B1: Bank Classification - Priority",
+          "1B1: Bank Classification - Regional",
+          "1B1: Bank Classification - Reserve",
+          "1B1: Bank Classification - Small",
+          "1B1: Bank Classification - State",
+          "1B1: Bank Classification - Statutory",
+          "1B1: Bank Classification - Supply",
+          "1B1: Bank Classification - Urban"
+        ]
+      },
+      {
+        "name": "1B2: NPA, Bad-Loans, BASEL",
+        "total_questions": 5,
+        "subtopics": [
+          "1B2: NPA, Bad-Loans, BASEL",
+          "1B2: NPA, Bad-Loans, BASEL - Basel",
+          "1B2: NPA, Bad-Loans, BASEL - Capital",
+          "1B2: NPA, Bad-Loans, BASEL - Interest",
+          "1B2: NPA, Bad-Loans, BASEL - Public"
+        ]
+      },
+      {
+        "name": "1C: Sharemarket, Companies Act",
+        "total_questions": 17,
+        "subtopics": [
+          "1C: Sharemarket, Companies Act",
+          "1C: Sharemarket, Companies Act - Banking",
+          "1C: Sharemarket, Companies Act - Bondholders",
+          "1C: Sharemarket, Companies Act - Bonds",
+          "1C: Sharemarket, Companies Act - Collateral",
+          "1C: Sharemarket, Companies Act - Convertible",
+          "1C: Sharemarket, Companies Act - Economy",
+          "1C: Sharemarket, Companies Act - Financial",
+          "1C: Sharemarket, Companies Act - Hong",
+          "1C: Sharemarket, Companies Act - Housing",
+          "1C: Sharemarket, Companies Act - Hundi",
+          "1C: Sharemarket, Companies Act - Inflation",
+          "1C: Sharemarket, Companies Act - Masala",
+          "1C: Sharemarket, Companies Act - Reserve",
+          "1C: Sharemarket, Companies Act - Retail"
+        ]
+      },
+      {
+        "name": "1D1: Insurance, Pension, Financial inclusion",
+        "total_questions": 10,
+        "subtopics": [
+          "1D1: Insurance, Pension, Financial inclusion - Corporate",
+          "1D1: Insurance, Pension, Financial inclusion - Cost",
+          "1D1: Insurance, Pension, Financial inclusion - Pradhan",
+          "1D1: Insurance, Pension, Financial inclusion - Regarding",
+          "1D1: Insurance, Pension, Financial inclusion - Self",
+          "1D1: Insurance, Pension, Financial inclusion - Service",
+          "1D1: Insurance, Pension, Financial inclusion - Under",
+          "1D1: Insurance, Pension, Financial inclusion - United"
+        ]
+      },
+      {
+        "name": "2A1: Budget Direct Taxes",
+        "total_questions": 7,
+        "subtopics": [
+          "2A1: Budget Direct Taxes",
+          "2A1: Budget Direct Taxes - Capital",
+          "2A1: Budget Direct Taxes - Income",
+          "2A1: Budget Direct Taxes - Rajya",
+          "2A1: Budget Direct Taxes - Suppose",
+          "2A1: Budget Direct Taxes - Union"
+        ]
+      },
+      {
+        "name": "2A2: Budget Indirect Taxes GST",
+        "total_questions": 3,
+        "subtopics": [
+          "2A2: Budget Indirect Taxes GST",
+          "2A2: Budget Indirect Taxes GST - Cereal",
+          "2A2: Budget Indirect Taxes GST - Goods"
+        ]
+      },
+      {
+        "name": "2BC: Finance Commission, BlackMoney, Subsidies",
+        "total_questions": 3,
+        "subtopics": [
+          "2BC: Finance Commission, BlackMoney, Subsidies - Committees",
+          "2BC: Finance Commission, BlackMoney, Subsidies - Demographic",
+          "2BC: Finance Commission, BlackMoney, Subsidies - Properties"
+        ]
+      },
+      {
+        "name": "3A: BoP, CAD Currency Exchange",
+        "total_questions": 25,
+        "subtopics": [
+          "3A: BoP, CAD Currency Exchange",
+          "3A: BoP, CAD Currency Exchange - Among",
+          "3A: BoP, CAD Currency Exchange - Balance",
+          "3A: BoP, CAD Currency Exchange - Capital",
+          "3A: BoP, CAD Currency Exchange - Fiscal",
+          "3A: BoP, CAD Currency Exchange - Foreign",
+          "3A: BoP, CAD Currency Exchange - Government",
+          "3A: BoP, CAD Currency Exchange - Increasing",
+          "3A: BoP, CAD Currency Exchange - Mailing",
+          "3A: BoP, CAD Currency Exchange - Most",
+          "3A: BoP, CAD Currency Exchange - Nepal",
+          "3A: BoP, CAD Currency Exchange - Opening",
+          "3A: BoP, CAD Currency Exchange - Purchasing",
+          "3A: BoP, CAD Currency Exchange - Recently",
+          "3A: BoP, CAD Currency Exchange - There",
+          "3A: BoP, CAD Currency Exchange - Tight",
+          "3A: BoP, CAD Currency Exchange - Tranche"
+        ]
+      },
+      {
+        "name": "3B: WTO, IMF & other International Organisations & Agreeements",
+        "total_questions": 18,
+        "subtopics": [
+          "3B: WTO, IMF & other International Organisations & Agreeements",
+          "3B: WTO, IMF & other International Organisations & Agreeements - Agreement",
+          "3B: WTO, IMF & other International Organisations & Agreeements - Australia",
+          "3B: WTO, IMF & other International Organisations & Agreeements - Digital",
+          "3B: WTO, IMF & other International Organisations & Agreeements - Find",
+          "3B: WTO, IMF & other International Organisations & Agreeements - Geographical",
+          "3B: WTO, IMF & other International Organisations & Agreeements - Global",
+          "3B: WTO, IMF & other International Organisations & Agreeements - International",
+          "3B: WTO, IMF & other International Organisations & Agreeements - Minerals",
+          "3B: WTO, IMF & other International Organisations & Agreeements - Rapid",
+          "3B: WTO, IMF & other International Organisations & Agreeements - Recently",
+          "3B: WTO, IMF & other International Organisations & Agreeements - Trade",
+          "3B: WTO, IMF & other International Organisations & Agreeements - World"
+        ]
+      },
+      {
+        "name": "4A: Sectors of Economy- Agriculture",
+        "total_questions": 15,
+        "subtopics": [
+          "4A: Sectors of Economy- Agriculture",
+          "4A: Sectors of Economy- Agriculture - Accelerated",
+          "4A: Sectors of Economy- Agriculture - Circular",
+          "4A: Sectors of Economy- Agriculture - Economic",
+          "4A: Sectors of Economy- Agriculture - Find",
+          "4A: Sectors of Economy- Agriculture - Fixing",
+          "4A: Sectors of Economy- Agriculture - Government",
+          "4A: Sectors of Economy- Agriculture - Govt",
+          "4A: Sectors of Economy- Agriculture - Minimum",
+          "4A: Sectors of Economy- Agriculture - Rashtriya",
+          "4A: Sectors of Economy- Agriculture - Reduction",
+          "4A: Sectors of Economy- Agriculture - Small",
+          "4A: Sectors of Economy- Agriculture - World"
+        ]
+      },
+      {
+        "name": "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME",
+        "total_questions": 11,
+        "subtopics": [
+          "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME",
+          "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME - According",
+          "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME - Atal",
+          "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME - Exchange",
+          "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME - Food",
+          "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME - Industrial",
+          "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME - Maternity",
+          "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME - National",
+          "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME - Organization",
+          "4B: Sectors- MFG, Services, Ease of Doing Biz, IPR, Startup, MSME - They"
+        ]
+      },
+      {
+        "name": "4C: NITI, Planning Commission, FYP, Unemployment",
+        "total_questions": 12,
+        "subtopics": [
+          "4C: NITI, Planning Commission, FYP, Unemployment",
+          "4C: NITI, Planning Commission, FYP, Unemployment - Corporate",
+          "4C: NITI, Planning Commission, FYP, Unemployment - Digital",
+          "4C: NITI, Planning Commission, FYP, Unemployment - Disguised",
+          "4C: NITI, Planning Commission, FYP, Unemployment - Economy",
+          "4C: NITI, Planning Commission, FYP, Unemployment - Employees",
+          "4C: NITI, Planning Commission, FYP, Unemployment - Five",
+          "4C: NITI, Planning Commission, FYP, Unemployment - Planning",
+          "4C: NITI, Planning Commission, FYP, Unemployment - Reserve",
+          "4C: NITI, Planning Commission, FYP, Unemployment - Share",
+          "4C: NITI, Planning Commission, FYP, Unemployment - Vietnam"
+        ]
+      },
+      {
+        "name": "4D: GDP, GNP",
+        "total_questions": 8,
+        "subtopics": [
+          "4D: GDP, GNP",
+          "4D: GDP, GNP - Despite",
+          "4D: GDP, GNP - Economic",
+          "4D: GDP, GNP - Farmers",
+          "4D: GDP, GNP - Gross",
+          "4D: GDP, GNP - Increase",
+          "4D: GDP, GNP - National",
+          "4D: GDP, GNP - Slowing"
+        ]
+      },
+      {
+        "name": "4E: Inflation",
+        "total_questions": 10,
+        "subtopics": [
+          "4E: Inflation",
+          "4E: Inflation - Central",
+          "4E: Inflation - Consumer",
+          "4E: Inflation - Expansionary",
+          "4E: Inflation - Index",
+          "4E: Inflation - Inflation"
+        ]
+      },
+      {
+        "name": "5A: Infra: Energy",
+        "total_questions": 9,
+        "subtopics": [
+          "5A: Infra: Energy - Bentonite",
+          "5A: Infra: Energy - Coal",
+          "5A: Infra: Energy - East",
+          "5A: Infra: Energy - Petroleum",
+          "5A: Infra: Energy - Production",
+          "5A: Infra: Energy - Sand",
+          "5A: Infra: Energy - Surya",
+          "5A: Infra: Energy - Uranium"
+        ]
+      },
+      {
+        "name": "6D: HRD: Weaker Section,  HDI, SDG",
+        "total_questions": 4,
+        "subtopics": [
+          "6D: HRD: Weaker Section,  HDI, SDG",
+          "6D: HRD: Weaker Section,  HDI, SDG - Human",
+          "6D: HRD: Weaker Section,  HDI, SDG - Pradhan",
+          "6D: HRD: Weaker Section,  HDI, SDG - Vulnerable"
+        ]
+      },
+      {
+        "name": "7: Microeconomics",
+        "total_questions": 4,
+        "subtopics": [
+          "7: Microeconomics - Government",
+          "7: Microeconomics - Other",
+          "7: Microeconomics - Syndicated",
+          "7: Microeconomics - United"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "Environment & Ecology",
+    "total_questions": 144,
+    "topics": [
+      {
+        "name": "Agriculture",
+        "total_questions": 9,
+        "subtopics": [
+          "Agriculture",
+          "Agriculture - Adopting",
+          "Agriculture - Agaricus",
+          "Agriculture - Conventional",
+          "Agriculture - Proliferation",
+          "Agriculture - Recirculating",
+          "Agriculture - Reduced",
+          "Agriculture - Sustainable"
+        ]
+      },
+      {
+        "name": "Biodiversity",
+        "total_questions": 34,
+        "subtopics": [
+          "Biodiversity",
+          "Biodiversity - Among",
+          "Biodiversity - Asiatic",
+          "Biodiversity - Butterflies",
+          "Biodiversity - Cashew",
+          "Biodiversity - Centipedes",
+          "Biodiversity - Ceylon",
+          "Biodiversity - Country",
+          "Biodiversity - Gharial",
+          "Biodiversity - Great",
+          "Biodiversity - Guar",
+          "Biodiversity - Gucchi",
+          "Biodiversity - Insect",
+          "Biodiversity - Kharai",
+          "Biodiversity - Moringa",
+          "Biodiversity - Neem",
+          "Biodiversity - Other",
+          "Biodiversity - Painted",
+          "Biodiversity - Schedule",
+          "Biodiversity - Some",
+          "Biodiversity - Soybean",
+          "Biodiversity - Star",
+          "Biodiversity - States",
+          "Biodiversity - They",
+          "Biodiversity - Wildlife"
+        ]
+      },
+      {
+        "name": "Climate Change: Causes and Implications",
+        "total_questions": 11,
+        "subtopics": [
+          "Climate Change: Causes and Implications - Abandoned",
+          "Climate Change: Causes and Implications - Carbon",
+          "Climate Change: Causes and Implications - Climate",
+          "Climate Change: Causes and Implications - Global",
+          "Climate Change: Causes and Implications - Green",
+          "Climate Change: Causes and Implications - Greenhouse",
+          "Climate Change: Causes and Implications - Intended",
+          "Climate Change: Causes and Implications - Meeting",
+          "Climate Change: Causes and Implications - Terms"
+        ]
+      },
+      {
+        "name": "Ecosystem and Ecology",
+        "total_questions": 10,
+        "subtopics": [
+          "Ecosystem and Ecology",
+          "Ecosystem and Ecology - Acid",
+          "Ecosystem and Ecology - Alfalfa",
+          "Ecosystem and Ecology - Certain",
+          "Ecosystem and Ecology - Cyanobacteria",
+          "Ecosystem and Ecology - Excretion",
+          "Ecosystem and Ecology - Food",
+          "Ecosystem and Ecology - Lead",
+          "Ecosystem and Ecology - Miyawaki",
+          "Ecosystem and Ecology - Unlike"
+        ]
+      },
+      {
+        "name": "Environment, Sustainable Development and General Issues",
+        "total_questions": 11,
+        "subtopics": [
+          "Environment, Sustainable Development and General Issues - Agenda",
+          "Environment, Sustainable Development and General Issues - Bagasse",
+          "Environment, Sustainable Development and General Issues - Cassava",
+          "Environment, Sustainable Development and General Issues - Cold",
+          "Environment, Sustainable Development and General Issues - Conference",
+          "Environment, Sustainable Development and General Issues - Environment",
+          "Environment, Sustainable Development and General Issues - Lubricants",
+          "Environment, Sustainable Development and General Issues - Portland",
+          "Environment, Sustainable Development and General Issues - Production",
+          "Environment, Sustainable Development and General Issues - Sustainable"
+        ]
+      },
+      {
+        "name": "Environmental Pollution",
+        "total_questions": 23,
+        "subtopics": [
+          "Environmental Pollution",
+          "Environmental Pollution - Agricultural",
+          "Environmental Pollution - Arsenic",
+          "Environmental Pollution - Automobile",
+          "Environmental Pollution - Biological",
+          "Environmental Pollution - Bottles",
+          "Environmental Pollution - Brominated",
+          "Environmental Pollution - Carbon",
+          "Environmental Pollution - Coal",
+          "Environmental Pollution - Decreased",
+          "Environmental Pollution - Genetic",
+          "Environmental Pollution - Gold",
+          "Environmental Pollution - Nitrogen",
+          "Environmental Pollution - Oxides",
+          "Environmental Pollution - Persistent",
+          "Environmental Pollution - Photochemical",
+          "Environmental Pollution - Quality",
+          "Environmental Pollution - Some",
+          "Environmental Pollution - Telephone",
+          "Environmental Pollution - There",
+          "Environmental Pollution - These",
+          "Environmental Pollution - They"
+        ]
+      },
+      {
+        "name": "Global Conservation Efforts",
+        "total_questions": 22,
+        "subtopics": [
+          "Global Conservation Efforts",
+          "Global Conservation Efforts - Biodiversity",
+          "Global Conservation Efforts - Climate",
+          "Global Conservation Efforts - Earth",
+          "Global Conservation Efforts - Economics",
+          "Global Conservation Efforts - Global",
+          "Global Conservation Efforts - Globally",
+          "Global Conservation Efforts - International",
+          "Global Conservation Efforts - Momentum",
+          "Global Conservation Efforts - Montreux",
+          "Global Conservation Efforts - Nature",
+          "Global Conservation Efforts - Partnership",
+          "Global Conservation Efforts - Proper",
+          "Global Conservation Efforts - Trade",
+          "Global Conservation Efforts - Under",
+          "Global Conservation Efforts - United",
+          "Global Conservation Efforts - Wetlands"
+        ]
+      },
+      {
+        "name": "National Conservation Efforts",
+        "total_questions": 19,
+        "subtopics": [
+          "National Conservation Efforts",
+          "National Conservation Efforts - According",
+          "National Conservation Efforts - Animal",
+          "National Conservation Efforts - Bombay",
+          "National Conservation Efforts - Central",
+          "National Conservation Efforts - Chhattisgarh",
+          "National Conservation Efforts - Compensatory",
+          "National Conservation Efforts - Critical",
+          "National Conservation Efforts - Gadgil",
+          "National Conservation Efforts - Genetic",
+          "National Conservation Efforts - National",
+          "National Conservation Efforts - People",
+          "National Conservation Efforts - Sanders",
+          "National Conservation Efforts - Schedule",
+          "National Conservation Efforts - Sensitive",
+          "National Conservation Efforts - Wild"
+        ]
+      },
+      {
+        "name": "Protected Area Network: NP, WS, BR, etc.",
+        "total_questions": 5,
+        "subtopics": [
+          "Protected Area Network: NP, WS, BR, etc. - Among",
+          "Protected Area Network: NP, WS, BR, etc. - Desert",
+          "Protected Area Network: NP, WS, BR, etc. - Gangotri",
+          "Protected Area Network: NP, WS, BR, etc. - Harike",
+          "Protected Area Network: NP, WS, BR, etc. - National"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "Indian Polity & Governance",
+    "total_questions": 139,
+    "topics": [
+      {
+        "name": "Constitutional and Non-constitutional Bodies",
+        "total_questions": 5,
+        "subtopics": [
+          "Constitutional and Non-constitutional Bodies - Chief",
+          "Constitutional and Non-constitutional Bodies - Committee",
+          "Constitutional and Non-constitutional Bodies - Election",
+          "Constitutional and Non-constitutional Bodies - National",
+          "Constitutional and Non-constitutional Bodies - Zonal"
+        ]
+      },
+      {
+        "name": "Executive",
+        "total_questions": 19,
+        "subtopics": [
+          "Executive",
+          "Executive - Article",
+          "Executive - Cabinet",
+          "Executive - Chief",
+          "Executive - Council",
+          "Executive - Executive",
+          "Executive - Governor",
+          "Executive - House",
+          "Executive - Legislative",
+          "Executive - Ordinance",
+          "Executive - Parliament",
+          "Executive - President",
+          "Executive - Union"
+        ]
+      },
+      {
+        "name": "Features of the Indian Constitution",
+        "total_questions": 41,
+        "subtopics": [
+          "Features of the Indian Constitution",
+          "Features of the Indian Constitution - According",
+          "Features of the Indian Constitution - Article",
+          "Features of the Indian Constitution - Articles",
+          "Features of the Indian Constitution - Constitution",
+          "Features of the Indian Constitution - Constitutional",
+          "Features of the Indian Constitution - Directive",
+          "Features of the Indian Constitution - Economic",
+          "Features of the Indian Constitution - Fifth",
+          "Features of the Indian Constitution - Fundamental",
+          "Features of the Indian Constitution - Gandhism",
+          "Features of the Indian Constitution - Ninth",
+          "Features of the Indian Constitution - Other",
+          "Features of the Indian Constitution - Part",
+          "Features of the Indian Constitution - Preamble",
+          "Features of the Indian Constitution - Right",
+          "Features of the Indian Constitution - Rights",
+          "Features of the Indian Constitution - Sovereignty",
+          "Features of the Indian Constitution - State",
+          "Features of the Indian Constitution - There",
+          "Features of the Indian Constitution - Under",
+          "Features of the Indian Constitution - Welfare"
+        ]
+      },
+      {
+        "name": "Governance",
+        "total_questions": 6,
+        "subtopics": [
+          "Governance - Aadhaar",
+          "Governance - Bharat",
+          "Governance - Board",
+          "Governance - Department",
+          "Governance - Home",
+          "Governance - Members"
+        ]
+      },
+      {
+        "name": "Historical Background & Making of Indian Constitution",
+        "total_questions": 4,
+        "subtopics": [
+          "Historical Background & Making of Indian Constitution",
+          "Historical Background & Making of Indian Constitution - British",
+          "Historical Background & Making of Indian Constitution - Limitation",
+          "Historical Background & Making of Indian Constitution - Member"
+        ]
+      },
+      {
+        "name": "Judicial & Quasi-Judicial Bodies",
+        "total_questions": 2,
+        "subtopics": [
+          "Judicial & Quasi-Judicial Bodies - State",
+          "Judicial & Quasi-Judicial Bodies - Transgender"
+        ]
+      },
+      {
+        "name": "Judiciary",
+        "total_questions": 13,
+        "subtopics": [
+          "Judiciary",
+          "Judiciary - Amendment",
+          "Judiciary - Constitution",
+          "Judiciary - Courts",
+          "Judiciary - Custodian",
+          "Judiciary - Government",
+          "Judiciary - Judge",
+          "Judiciary - Judges",
+          "Judiciary - Judicial",
+          "Judiciary - Supreme"
+        ]
+      },
+      {
+        "name": "Legislature",
+        "total_questions": 45,
+        "subtopics": [
+          "Legislature - According",
+          "Legislature - Along",
+          "Legislature - Article",
+          "Legislature - Cabinet",
+          "Legislature - Chairman",
+          "Legislature - Committee",
+          "Legislature - Confidence",
+          "Legislature - Constitution",
+          "Legislature - Delimitation",
+          "Legislature - Deputy",
+          "Legislature - Finance",
+          "Legislature - House",
+          "Legislature - Houses",
+          "Legislature - Legislative",
+          "Legislature - Members",
+          "Legislature - Money",
+          "Legislature - Parliament",
+          "Legislature - Parliamentary",
+          "Legislature - Prorogation",
+          "Legislature - Rajya",
+          "Legislature - Regarding",
+          "Legislature - Right",
+          "Legislature - Sabha",
+          "Legislature - Scheduled",
+          "Legislature - Schedules",
+          "Legislature - Speaker",
+          "Legislature - State",
+          "Legislature - There"
+        ]
+      },
+      {
+        "name": "Local Self Government",
+        "total_questions": 4,
+        "subtopics": [
+          "Local Self Government",
+          "Local Self Government - Gram",
+          "Local Self Government - Local",
+          "Local Self Government - Political"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "Science & Technology",
+    "total_questions": 103,
+    "topics": [
+      {
+        "name": "Biology",
+        "total_questions": 14,
+        "subtopics": [
+          "Biology",
+          "Biology - Birds",
+          "Biology - Diphtheria",
+          "Biology - Genetic",
+          "Biology - Maize",
+          "Biology - Plant",
+          "Biology - Probiotics",
+          "Biology - Sugarcane",
+          "Biology - They",
+          "Biology - Vegetative",
+          "Biology - Viruses",
+          "Biology - Vitamin"
+        ]
+      },
+      {
+        "name": "Biotechnology",
+        "total_questions": 18,
+        "subtopics": [
+          "Biotechnology",
+          "Biotechnology - Adenoviruses",
+          "Biotechnology - Aerial",
+          "Biotechnology - Bacteria",
+          "Biotechnology - Barcoding",
+          "Biotechnology - Biofilms",
+          "Biotechnology - Bioinformatics",
+          "Biotechnology - Bollgard",
+          "Biotechnology - Genetic",
+          "Biotechnology - Genome",
+          "Biotechnology - Membrane",
+          "Biotechnology - Microsatellite",
+          "Biotechnology - Passing",
+          "Biotechnology - Pneumococcal",
+          "Biotechnology - Recombinant",
+          "Biotechnology - Serum",
+          "Biotechnology - Somatic"
+        ]
+      },
+      {
+        "name": "Chemistry",
+        "total_questions": 4,
+        "subtopics": [
+          "Chemistry - Controlled",
+          "Chemistry - Ethanol",
+          "Chemistry - Melting",
+          "Chemistry - Some"
+        ]
+      },
+      {
+        "name": "Communication Technology",
+        "total_questions": 15,
+        "subtopics": [
+          "Communication Technology",
+          "Communication Technology - Aarogya",
+          "Communication Technology - Augmented",
+          "Communication Technology - Blockchain",
+          "Communication Technology - Bluetooth",
+          "Communication Technology - Closed",
+          "Communication Technology - Identification",
+          "Communication Technology - Location",
+          "Communication Technology - Majorana",
+          "Communication Technology - Public",
+          "Communication Technology - Satellite",
+          "Communication Technology - Software",
+          "Communication Technology - Used",
+          "Communication Technology - Virtual"
+        ]
+      },
+      {
+        "name": "Defence Technology",
+        "total_questions": 8,
+        "subtopics": [
+          "Defence Technology",
+          "Defence Technology - Agni",
+          "Defence Technology - Aircraft",
+          "Defence Technology - Ballistic",
+          "Defence Technology - Exercise",
+          "Defence Technology - November",
+          "Defence Technology - Rafael",
+          "Defence Technology - Unmanned"
+        ]
+      },
+      {
+        "name": "Energy",
+        "total_questions": 9,
+        "subtopics": [
+          "Energy - Agricultural",
+          "Energy - Battery",
+          "Energy - Fuel",
+          "Energy - Full",
+          "Energy - International",
+          "Energy - Photovoltaics",
+          "Energy - Plutonium",
+          "Energy - Recently"
+        ]
+      },
+      {
+        "name": "Miscellaneous",
+        "total_questions": 14,
+        "subtopics": [
+          "Miscellaneous - According",
+          "Miscellaneous - Artificial",
+          "Miscellaneous - Bisphenol",
+          "Miscellaneous - Commonly",
+          "Miscellaneous - Denisovan",
+          "Miscellaneous - Direct",
+          "Miscellaneous - Other",
+          "Miscellaneous - Preparation",
+          "Miscellaneous - Railways",
+          "Miscellaneous - Solar",
+          "Miscellaneous - Spraying",
+          "Miscellaneous - Terms",
+          "Miscellaneous - They",
+          "Miscellaneous - Triclosan"
+        ]
+      },
+      {
+        "name": "Physics",
+        "total_questions": 7,
+        "subtopics": [
+          "Physics",
+          "Physics - Area",
+          "Physics - Ball",
+          "Physics - Rainbow",
+          "Physics - Size",
+          "Physics - Sodium"
+        ]
+      },
+      {
+        "name": "Space Science",
+        "total_questions": 14,
+        "subtopics": [
+          "Space Science",
+          "Space Science - Activated",
+          "Space Science - Aided",
+          "Space Science - Axiom",
+          "Space Science - Chlorophyll",
+          "Space Science - Earth",
+          "Space Science - Fractional",
+          "Space Science - Giant",
+          "Space Science - Light",
+          "Space Science - Mobile",
+          "Space Science - Objects",
+          "Space Science - Recently",
+          "Space Science - Regional",
+          "Space Science - Spacecraft"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "Modern History",
+    "total_questions": 87,
+    "topics": [
+      {
+        "name": "Development of Press, Education and Civil Services",
+        "total_questions": 4,
+        "subtopics": [
+          "Development of Press, Education and Civil Services - English",
+          "Development of Press, Education and Civil Services - Institution",
+          "Development of Press, Education and Civil Services - Regarding",
+          "Development of Press, Education and Civil Services - Secretary"
+        ]
+      },
+      {
+        "name": "Early Uprising Against the British and Revolt of 1857",
+        "total_questions": 4,
+        "subtopics": [
+          "Early Uprising Against the British and Revolt of 1857 - After",
+          "Early Uprising Against the British and Revolt of 1857 - Indigo",
+          "Early Uprising Against the British and Revolt of 1857 - Queen",
+          "Early Uprising Against the British and Revolt of 1857 - Ulgulan"
+        ]
+      },
+      {
+        "name": "Independence to Partition",
+        "total_questions": 6,
+        "subtopics": [
+          "Independence to Partition - Cripps",
+          "Independence to Partition - History",
+          "Independence to Partition - National",
+          "Independence to Partition - Provisional",
+          "Independence to Partition - Radcliffe",
+          "Independence to Partition - State"
+        ]
+      },
+      {
+        "name": "India in the 18th Century",
+        "total_questions": 15,
+        "subtopics": [
+          "India in the 18th Century - Acts",
+          "India in the 18th Century - Aurang",
+          "India in the 18th Century - Charter",
+          "India in the 18th Century - Cornwallis",
+          "India in the 18th Century - Dutch",
+          "India in the 18th Century - English",
+          "India in the 18th Century - Gujarat",
+          "India in the 18th Century - History",
+          "India in the 18th Century - Industrial",
+          "India in the 18th Century - Papaya",
+          "India in the 18th Century - Ryotwari",
+          "India in the 18th Century - Subsidiary",
+          "India in the 18th Century - Wellesley",
+          "India in the 18th Century - World"
+        ]
+      },
+      {
+        "name": "Indian Renaissance and Reform Movements",
+        "total_questions": 10,
+        "subtopics": [
+          "Indian Renaissance and Reform Movements",
+          "Indian Renaissance and Reform Movements - Annie",
+          "Indian Renaissance and Reform Movements - Calcutta",
+          "Indian Renaissance and Reform Movements - Madanapalle",
+          "Indian Renaissance and Reform Movements - Movement",
+          "Indian Renaissance and Reform Movements - Raja",
+          "Indian Renaissance and Reform Movements - Rakhmabai",
+          "Indian Renaissance and Reform Movements - Satya",
+          "Indian Renaissance and Reform Movements - Self",
+          "Indian Renaissance and Reform Movements - Vital"
+        ]
+      },
+      {
+        "name": "Phases of Revolutionary Nationalism",
+        "total_questions": 2,
+        "subtopics": [
+          "Phases of Revolutionary Nationalism - Barindra",
+          "Phases of Revolutionary Nationalism - Ghadr"
+        ]
+      },
+      {
+        "name": "Rise of Indian National Movement: Moderate and Extremists Phase",
+        "total_questions": 12,
+        "subtopics": [
+          "Rise of Indian National Movement: Moderate and Extremists Phase - Dadabhai",
+          "Rise of Indian National Movement: Moderate and Extremists Phase - Desher",
+          "Rise of Indian National Movement: Moderate and Extremists Phase - Economically",
+          "Rise of Indian National Movement: Moderate and Extremists Phase - Factories",
+          "Rise of Indian National Movement: Moderate and Extremists Phase - Ilbert",
+          "Rise of Indian National Movement: Moderate and Extremists Phase - Mazzini",
+          "Rise of Indian National Movement: Moderate and Extremists Phase - National",
+          "Rise of Indian National Movement: Moderate and Extremists Phase - Partition",
+          "Rise of Indian National Movement: Moderate and Extremists Phase - President",
+          "Rise of Indian National Movement: Moderate and Extremists Phase - Radhakanta",
+          "Rise of Indian National Movement: Moderate and Extremists Phase - Swadeshi"
+        ]
+      },
+      {
+        "name": "The Beginning of Gandhian Era",
+        "total_questions": 24,
+        "subtopics": [
+          "The Beginning of Gandhian Era - British",
+          "The Beginning of Gandhian Era - Butler",
+          "The Beginning of Gandhian Era - Champaran",
+          "The Beginning of Gandhian Era - Chauri",
+          "The Beginning of Gandhian Era - Congress",
+          "The Beginning of Gandhian Era - Cooperation",
+          "The Beginning of Gandhian Era - Dyarchy",
+          "The Beginning of Gandhian Era - Gandhi",
+          "The Beginning of Gandhian Era - Government",
+          "The Beginning of Gandhian Era - Montagu",
+          "The Beginning of Gandhian Era - Montague",
+          "The Beginning of Gandhian Era - Rowlatt",
+          "The Beginning of Gandhian Era - Sedition",
+          "The Beginning of Gandhian Era - Session",
+          "The Beginning of Gandhian Era - Simon",
+          "The Beginning of Gandhian Era - Songs",
+          "The Beginning of Gandhian Era - Subsequent",
+          "The Beginning of Gandhian Era - Swadeshi",
+          "The Beginning of Gandhian Era - Swarajya",
+          "The Beginning of Gandhian Era - Tanjore",
+          "The Beginning of Gandhian Era - Trade"
+        ]
+      },
+      {
+        "name": "The National Movement in the 1940s",
+        "total_questions": 10,
+        "subtopics": [
+          "The National Movement in the 1940s - August",
+          "The National Movement in the 1940s - Cabinet",
+          "The National Movement in the 1940s - Colonial",
+          "The National Movement in the 1940s - Government",
+          "The National Movement in the 1940s - Hind",
+          "The National Movement in the 1940s - Mutiny",
+          "The National Movement in the 1940s - Party",
+          "The National Movement in the 1940s - Quit",
+          "The National Movement in the 1940s - Stafford",
+          "The National Movement in the 1940s - Tebhaga"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "Current Affairs & Misc",
+    "total_questions": 85,
+    "topics": [
+      {
+        "name": "Current Affairs: India",
+        "total_questions": 38,
+        "subtopics": [
+          "Current Affairs: India - Aadhaar",
+          "Current Affairs: India - According",
+          "Current Affairs: India - Anaemia",
+          "Current Affairs: India - Ayushman",
+          "Current Affairs: India - Bureau",
+          "Current Affairs: India - Chess",
+          "Current Affairs: India - Food",
+          "Current Affairs: India - General",
+          "Current Affairs: India - Government",
+          "Current Affairs: India - Gujarat",
+          "Current Affairs: India - Industrial",
+          "Current Affairs: India - Initiative",
+          "Current Affairs: India - Janani",
+          "Current Affairs: India - Jury",
+          "Current Affairs: India - Major",
+          "Current Affairs: India - Many",
+          "Current Affairs: India - Maternity",
+          "Current Affairs: India - National",
+          "Current Affairs: India - Particularly",
+          "Current Affairs: India - Pradhan",
+          "Current Affairs: India - Quality",
+          "Current Affairs: India - Recently",
+          "Current Affairs: India - Regarding",
+          "Current Affairs: India - Reserve",
+          "Current Affairs: India - Scheme",
+          "Current Affairs: India - Small",
+          "Current Affairs: India - Soil",
+          "Current Affairs: India - Standard",
+          "Current Affairs: India - State",
+          "Current Affairs: India - Unified",
+          "Current Affairs: India - United"
+        ]
+      },
+      {
+        "name": "Current Affairs: World",
+        "total_questions": 23,
+        "subtopics": [
+          "Current Affairs: World",
+          "Current Affairs: World - Amnesty",
+          "Current Affairs: World - Coalition",
+          "Current Affairs: World - Community",
+          "Current Affairs: World - European",
+          "Current Affairs: World - Forest",
+          "Current Affairs: World - Fund",
+          "Current Affairs: World - Global",
+          "Current Affairs: World - International",
+          "Current Affairs: World - Mekong",
+          "Current Affairs: World - Organisation",
+          "Current Affairs: World - Recently",
+          "Current Affairs: World - Regional",
+          "Current Affairs: World - Rule",
+          "Current Affairs: World - Solution",
+          "Current Affairs: World - Terminal",
+          "Current Affairs: World - Vietnam",
+          "Current Affairs: World - Word",
+          "Current Affairs: World - World"
+        ]
+      },
+      {
+        "name": "GK/Persons in News",
+        "total_questions": 8,
+        "subtopics": [
+          "GK/Persons in News",
+          "GK/Persons in News - August",
+          "GK/Persons in News - Bharat",
+          "GK/Persons in News - Chess",
+          "GK/Persons in News - Indira",
+          "GK/Persons in News - Knew",
+          "GK/Persons in News - National"
+        ]
+      },
+      {
+        "name": "Miscellaneous",
+        "total_questions": 16,
+        "subtopics": [
+          "Miscellaneous - Astradharini",
+          "Miscellaneous - Carbon",
+          "Miscellaneous - Chief",
+          "Miscellaneous - Defence",
+          "Miscellaneous - Detection",
+          "Miscellaneous - Event",
+          "Miscellaneous - Greased",
+          "Miscellaneous - Home",
+          "Miscellaneous - Laser",
+          "Miscellaneous - Operations",
+          "Miscellaneous - Project",
+          "Miscellaneous - Recently",
+          "Miscellaneous - Wanna",
+          "Miscellaneous - West",
+          "Miscellaneous - Wolbachia",
+          "Miscellaneous - Zika"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "Ancient History",
+    "total_questions": 47,
+    "topics": [
+      {
+        "name": "Gupta and Post- Gupta Age",
+        "total_questions": 10,
+        "subtopics": [
+          "Gupta and Post- Gupta Age",
+          "Gupta and Post- Gupta Age - Chinese",
+          "Gupta and Post- Gupta Age - Faxian",
+          "Gupta and Post- Gupta Age - From",
+          "Gupta and Post- Gupta Age - Gupta",
+          "Gupta and Post- Gupta Age - Hoysala",
+          "Gupta and Post- Gupta Age - Hundi",
+          "Gupta and Post- Gupta Age - Mitakshara",
+          "Gupta and Post- Gupta Age - Panini",
+          "Gupta and Post- Gupta Age - Vishti"
+        ]
+      },
+      {
+        "name": "Mauryan and Post-Mauryan Age",
+        "total_questions": 24,
+        "subtopics": [
+          "Mauryan and Post-Mauryan Age",
+          "Mauryan and Post-Mauryan Age - According",
+          "Mauryan and Post-Mauryan Age - Ashokan",
+          "Mauryan and Post-Mauryan Age - Bhasa",
+          "Mauryan and Post-Mauryan Age - Bodhisattva",
+          "Mauryan and Post-Mauryan Age - Buddha",
+          "Mauryan and Post-Mauryan Age - Deification",
+          "Mauryan and Post-Mauryan Age - Dhanyakataka",
+          "Mauryan and Post-Mauryan Age - Emperor",
+          "Mauryan and Post-Mauryan Age - Gautama",
+          "Mauryan and Post-Mauryan Age - Jain",
+          "Mauryan and Post-Mauryan Age - Kingdoms",
+          "Mauryan and Post-Mauryan Age - Nirvana",
+          "Mauryan and Post-Mauryan Age - Ranyo",
+          "Mauryan and Post-Mauryan Age - Sautrantika",
+          "Mauryan and Post-Mauryan Age - Site",
+          "Mauryan and Post-Mauryan Age - Souls",
+          "Mauryan and Post-Mauryan Age - Sthanakvasi",
+          "Mauryan and Post-Mauryan Age - Sthaviravadins",
+          "Mauryan and Post-Mauryan Age - Stupa",
+          "Mauryan and Post-Mauryan Age - Territorial",
+          "Mauryan and Post-Mauryan Age - Whosoever"
+        ]
+      },
+      {
+        "name": "Prehistoric Period and Indus Valley Civilisation",
+        "total_questions": 4,
+        "subtopics": [
+          "Prehistoric Period and Indus Valley Civilisation",
+          "Prehistoric Period and Indus Valley Civilisation - Archaeological",
+          "Prehistoric Period and Indus Valley Civilisation - Harappan",
+          "Prehistoric Period and Indus Valley Civilisation - Indus"
+        ]
+      },
+      {
+        "name": "Sangam Age",
+        "total_questions": 6,
+        "subtopics": [
+          "Sangam Age - Mattavilasa",
+          "Sangam Age - Rise",
+          "Sangam Age - Sangam",
+          "Sangam Age - South",
+          "Sangam Age - Term",
+          "Sangam Age - Vattakirutal"
+        ]
+      },
+      {
+        "name": "Vedic and Later Vedic Age",
+        "total_questions": 3,
+        "subtopics": [
+          "Vedic and Later Vedic Age",
+          "Vedic and Later Vedic Age - Rigvedic",
+          "Vedic and Later Vedic Age - There"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "Indian Geography",
+    "total_questions": 45,
+    "topics": [
+      {
+        "name": "Agriculture in India",
+        "total_questions": 5,
+        "subtopics": [
+          "Agriculture in India - Desert",
+          "Agriculture in India - Kharif",
+          "Agriculture in India - Kinnaur",
+          "Agriculture in India - There",
+          "Agriculture in India - Tripura"
+        ]
+      },
+      {
+        "name": "Drainage System of India",
+        "total_questions": 9,
+        "subtopics": [
+          "Drainage System of India - Bara",
+          "Drainage System of India - Barak",
+          "Drainage System of India - Brahmani",
+          "Drainage System of India - Gandikota",
+          "Drainage System of India - Integrated",
+          "Drainage System of India - Pandharpur",
+          "Drainage System of India - Reservoirs",
+          "Drainage System of India - River",
+          "Drainage System of India - Vamsadhara"
+        ]
+      },
+      {
+        "name": "Indian Climate",
+        "total_questions": 1,
+        "subtopics": [
+          "Indian Climate - North"
+        ]
+      },
+      {
+        "name": "Indian Map",
+        "total_questions": 11,
+        "subtopics": [
+          "Indian Map - Barren",
+          "Indian Map - Bhadrachalam",
+          "Indian Map - Dampa",
+          "Indian Map - National",
+          "Indian Map - Nokrek",
+          "Indian Map - Sasthamkotta",
+          "Indian Map - Srisailam",
+          "Indian Map - They",
+          "Indian Map - Tribe",
+          "Indian Map - Visakhapatnam"
+        ]
+      },
+      {
+        "name": "Mineral and Industries",
+        "total_questions": 6,
+        "subtopics": [
+          "Mineral and Industries - Andhra",
+          "Mineral and Industries - Bentonite",
+          "Mineral and Industries - Government",
+          "Mineral and Industries - Krishna",
+          "Mineral and Industries - Mineral",
+          "Mineral and Industries - Sand"
+        ]
+      },
+      {
+        "name": "Natural Vegetation in India",
+        "total_questions": 3,
+        "subtopics": [
+          "Natural Vegetation in India - Gulf",
+          "Natural Vegetation in India - Rhododendron",
+          "Natural Vegetation in India - Seshachalam"
+        ]
+      },
+      {
+        "name": "Physiography of India",
+        "total_questions": 5,
+        "subtopics": [
+          "Physiography of India - Cardamom",
+          "Physiography of India - Himalayas",
+          "Physiography of India - Nokrek",
+          "Physiography of India - Protected",
+          "Physiography of India - Vindhyas"
+        ]
+      },
+      {
+        "name": "Soils",
+        "total_questions": 5,
+        "subtopics": [
+          "Soils",
+          "Soils - Contour",
+          "Soils - Terrace",
+          "Soils - They"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "Art & Culture",
+    "total_questions": 39,
+    "topics": [
+      {
+        "name": "Architecture and Sculpture",
+        "total_questions": 14,
+        "subtopics": [
+          "Architecture and Sculpture",
+          "Architecture and Sculpture - Ajanta",
+          "Architecture and Sculpture - Arasavalli",
+          "Architecture and Sculpture - Architecture",
+          "Architecture and Sculpture - Badami",
+          "Architecture and Sculpture - Building",
+          "Architecture and Sculpture - Chausath",
+          "Architecture and Sculpture - Dancing",
+          "Architecture and Sculpture - Panchayatan",
+          "Architecture and Sculpture - Prime",
+          "Architecture and Sculpture - Some",
+          "Architecture and Sculpture - White",
+          "Architecture and Sculpture - World"
+        ]
+      },
+      {
+        "name": "Indian Philosophy and Bhakti & Sufi Movements",
+        "total_questions": 3,
+        "subtopics": [
+          "Indian Philosophy and Bhakti & Sufi Movements - Dadu",
+          "Indian Philosophy and Bhakti & Sufi Movements - Nathamuni",
+          "Indian Philosophy and Bhakti & Sufi Movements - Sankhya"
+        ]
+      },
+      {
+        "name": "Indian Traditions, Festivals, and Calendars",
+        "total_questions": 8,
+        "subtopics": [
+          "Indian Traditions, Festivals, and Calendars - Buddhist",
+          "Indian Traditions, Festivals, and Calendars - Chaitra",
+          "Indian Traditions, Festivals, and Calendars - Every",
+          "Indian Traditions, Festivals, and Calendars - Francis",
+          "Indian Traditions, Festivals, and Calendars - Kalaripayattu",
+          "Indian Traditions, Festivals, and Calendars - Manganiyars",
+          "Indian Traditions, Festivals, and Calendars - Tradition",
+          "Indian Traditions, Festivals, and Calendars - Traditions"
+        ]
+      },
+      {
+        "name": "Literature: Religious and Scientific",
+        "total_questions": 2,
+        "subtopics": [
+          "Literature: Religious and Scientific - Bijak",
+          "Literature: Religious and Scientific - History"
+        ]
+      },
+      {
+        "name": "Miscellaneous",
+        "total_questions": 5,
+        "subtopics": [
+          "Miscellaneous - Famous",
+          "Miscellaneous - February",
+          "Miscellaneous - Khajuraho",
+          "Miscellaneous - Puthukkuli",
+          "Miscellaneous - Telugu"
+        ]
+      },
+      {
+        "name": "Performing Arts: Dance, Theatre and Music",
+        "total_questions": 4,
+        "subtopics": [
+          "Performing Arts: Dance, Theatre and Music - Garba",
+          "Performing Arts: Dance, Theatre and Music - Manipuri",
+          "Performing Arts: Dance, Theatre and Music - Most",
+          "Performing Arts: Dance, Theatre and Music - Vaishnavites"
+        ]
+      },
+      {
+        "name": "Visual Arts: Painting, ceramics and drawing",
+        "total_questions": 3,
+        "subtopics": [
+          "Visual Arts: Painting, ceramics and drawing - Ajanta",
+          "Visual Arts: Painting, ceramics and drawing - Bodhisattva",
+          "Visual Arts: Painting, ceramics and drawing - Kalamkari"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "World Geography",
+    "total_questions": 37,
+    "topics": [
+      {
+        "name": "Climatology",
+        "total_questions": 4,
+        "subtopics": [
+          "Climatology",
+          "Climatology - Heavy",
+          "Climatology - January",
+          "Climatology - Precipitation"
+        ]
+      },
+      {
+        "name": "Geomorphology",
+        "total_questions": 4,
+        "subtopics": [
+          "Geomorphology",
+          "Geomorphology - Nitrogen",
+          "Geomorphology - Plate",
+          "Geomorphology - Scientific"
+        ]
+      },
+      {
+        "name": "Human and Economic Geography",
+        "total_questions": 1,
+        "subtopics": [
+          "Human and Economic Geography - Country"
+        ]
+      },
+      {
+        "name": "Oceanography",
+        "total_questions": 4,
+        "subtopics": [
+          "Oceanography - Aral",
+          "Oceanography - Gravitational",
+          "Oceanography - Most",
+          "Oceanography - Ocean"
+        ]
+      },
+      {
+        "name": "The Earth and the Universe",
+        "total_questions": 7,
+        "subtopics": [
+          "The Earth and the Universe - Continental",
+          "The Earth and the Universe - Earth",
+          "The Earth and the Universe - June",
+          "The Earth and the Universe - Thames",
+          "The Earth and the Universe - Thickness",
+          "The Earth and the Universe - Tsunamis",
+          "The Earth and the Universe - Variations"
+        ]
+      },
+      {
+        "name": "World Climatic Regions",
+        "total_questions": 4,
+        "subtopics": [
+          "World Climatic Regions - Coexistence",
+          "World Climatic Regions - Each",
+          "World Climatic Regions - Hard",
+          "World Climatic Regions - States"
+        ]
+      },
+      {
+        "name": "World Map",
+        "total_questions": 13,
+        "subtopics": [
+          "World Map",
+          "World Map - Amhara",
+          "World Map - Bulgaria",
+          "World Map - Congo",
+          "World Map - Finland",
+          "World Map - Geographical",
+          "World Map - Mediterranean",
+          "World Map - Regions",
+          "World Map - South",
+          "World Map - Tajikistan",
+          "World Map - Towns",
+          "World Map - Turkey"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "International Relations",
+    "total_questions": 37,
+    "topics": [
+      {
+        "name": "India & Its Neighbors",
+        "total_questions": 2,
+        "subtopics": [
+          "India & Its Neighbors - Chabahar",
+          "India & Its Neighbors - Recently"
+        ]
+      },
+      {
+        "name": "India’s Foreign Policy",
+        "total_questions": 1,
+        "subtopics": [
+          "India’s Foreign Policy - China"
+        ]
+      },
+      {
+        "name": "International Groups and Political Organizations",
+        "total_questions": 25,
+        "subtopics": [
+          "International Groups and Political Organizations",
+          "International Groups and Political Organizations - Additional",
+          "International Groups and Political Organizations - Asia",
+          "International Groups and Political Organizations - Asian",
+          "International Groups and Political Organizations - Australia",
+          "International Groups and Political Organizations - Austria",
+          "International Groups and Political Organizations - Common",
+          "International Groups and Political Organizations - Denmark",
+          "International Groups and Political Organizations - Finance",
+          "International Groups and Political Organizations - First",
+          "International Groups and Political Organizations - Inaugural",
+          "International Groups and Political Organizations - International",
+          "International Groups and Political Organizations - Nature",
+          "International Groups and Political Organizations - Nuclear",
+          "International Groups and Political Organizations - Ocean",
+          "International Groups and Political Organizations - States",
+          "International Groups and Political Organizations - Summit",
+          "International Groups and Political Organizations - Trade",
+          "International Groups and Political Organizations - United",
+          "International Groups and Political Organizations - World"
+        ]
+      },
+      {
+        "name": "Places in news",
+        "total_questions": 9,
+        "subtopics": [
+          "Places in news - Country",
+          "Places in news - Italy",
+          "Places in news - Nagorno",
+          "Places in news - Polar",
+          "Places in news - Region",
+          "Places in news - Senkaku",
+          "Places in news - Tigray",
+          "Places in news - Uzbekistan"
+        ]
+      }
+    ]
+  },
+  {
+    "subject": "Medieval History",
+    "total_questions": 23,
+    "topics": [
+      {
+        "name": "Delhi Sultanate (1206 AD to 1526 AD)",
+        "total_questions": 8,
+        "subtopics": [
+          "Delhi Sultanate (1206 AD to 1526 AD) - Araghatta",
+          "Delhi Sultanate (1206 AD to 1526 AD) - Banjaras",
+          "Delhi Sultanate (1206 AD to 1526 AD) - Creation",
+          "Delhi Sultanate (1206 AD to 1526 AD) - Delhi",
+          "Delhi Sultanate (1206 AD to 1526 AD) - Iltutmish",
+          "Delhi Sultanate (1206 AD to 1526 AD) - Mongol",
+          "Delhi Sultanate (1206 AD to 1526 AD) - Vijayanagara"
+        ]
+      },
+      {
+        "name": "Mughal Empire (1526 AD to 1761 AD)",
+        "total_questions": 7,
+        "subtopics": [
+          "Mughal Empire (1526 AD to 1761 AD)",
+          "Mughal Empire (1526 AD to 1761 AD) - Babur",
+          "Mughal Empire (1526 AD to 1761 AD) - Ibadat",
+          "Mughal Empire (1526 AD to 1761 AD) - Mian",
+          "Mughal Empire (1526 AD to 1761 AD) - Mughal",
+          "Mughal Empire (1526 AD to 1761 AD) - Persian"
+        ]
+      },
+      {
+        "name": "Provincial Kingdoms in Medieval India",
+        "total_questions": 5,
+        "subtopics": [
+          "Provincial Kingdoms in Medieval India - Durgara",
+          "Provincial Kingdoms in Medieval India - Fanam",
+          "Provincial Kingdoms in Medieval India - King",
+          "Provincial Kingdoms in Medieval India - Nizamat",
+          "Provincial Kingdoms in Medieval India - Private"
+        ]
+      },
+      {
+        "name": "Religious movement during medieval period",
+        "total_questions": 3,
+        "subtopics": [
+          "Religious movement during medieval period - According",
+          "Religious movement during medieval period - Saint",
+          "Religious movement during medieval period - Siddhas"
+        ]
+      }
+    ]
+  }
+]

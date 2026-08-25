@@ -244,9 +244,9 @@ export function MobileNavMenu() {
                             <div>
                               <div className="flex items-center gap-2">
                                 <span className="text-sm font-bold text-foreground">{item.label}</span>
-                                {"badge" in item && item.badge && (
+                                {"badge" in item && (item as any).badge && (
                                   <span className="rounded-full bg-accent px-2 py-0.5 text-[10px] font-bold text-accent-foreground">
-                                    {item.badge}
+                                    {(item as any).badge as React.ReactNode}
                                   </span>
                                 )}
                               </div>

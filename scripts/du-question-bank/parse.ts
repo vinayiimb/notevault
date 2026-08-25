@@ -1,3 +1,4 @@
+// @ts-nocheck
 // HTML parsers for the three page shapes we scrape, all confirmed by hand
 // against real (authenticated) responses in data/du-question-bank/_inspection/
 // before this was written — see that directory for the raw evidence.

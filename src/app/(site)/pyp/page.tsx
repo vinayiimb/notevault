@@ -13,10 +13,10 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
-export default function DuPypPage() {
-  const programmes = getAllDuPypProgrammes();
-  const groupedProgrammes = getGroupedDuPypProgrammes();
-  const totalCount = getTotalDuPypCount();
+export default async function DuPypPage() {
+  const programmes = await getAllDuPypProgrammes();
+  const groupedProgrammes = await getGroupedDuPypProgrammes();
+  const totalCount = await getTotalDuPypCount();
 
   const breadcrumbs = [
     { name: "Home", url: "/" },

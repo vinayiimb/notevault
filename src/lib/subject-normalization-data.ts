@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import type { Prisma, SuggestionStatus } from "@/generated/prisma";
+import type { Prisma, SuggestionStatus } from "@prisma/client";
 
 // Read-side queries for the Subject Normalization Centre admin page —
 // mirrors the shape of src/lib/data.ts's other admin data-fetching helpers.

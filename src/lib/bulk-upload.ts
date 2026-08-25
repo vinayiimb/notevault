@@ -5,7 +5,7 @@
 // curated Program/Term/Subject taxonomy (see src/lib/course-match.ts for
 // that other, unrelated matching flow used elsewhere in admin).
 import { createHash } from "node:crypto";
-import type { BulkUploadRowStatus } from "@/generated/prisma";
+import type { BulkUploadRowStatus } from "@prisma/client";
 
 export type ClassifiedRow = {
   rowNumber: number;

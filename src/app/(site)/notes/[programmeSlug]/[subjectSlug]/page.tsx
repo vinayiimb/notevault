@@ -55,16 +55,13 @@ export default async function CanonicalSubjectNotePage({
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <VisibleBreadcrumb items={breadcrumbs} />
-      <p className="text-sm text-muted">{note.programmeName}</p>
-      <h1 className="mt-1 text-3xl font-semibold tracking-tight">{note.subjectName}</h1>
-      <p className="mt-2 text-sm text-muted">
-        Compiled from actual DU previous year question papers — key concepts, definitions, and exam
-        patterns.
-      </p>
 
-      <section className="mt-8">
-        <NotesSection content={note.content} theme={note.theme} subjectName={note.subjectName} />
-      </section>
+      <NotesSection 
+        content={note.content} 
+        theme={note.theme} 
+        subjectName={note.subjectName}
+        programmeName={note.programmeName}
+      />
     </div>
   );
 }

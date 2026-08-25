@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient, QuestionDifficulty } from "@/generated/prisma";
+import { PrismaClient, QuestionDifficulty } from "@prisma/client";
 import Groq from "groq-sdk";
 import { z } from "zod";
 

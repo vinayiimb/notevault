@@ -1,9 +1,5 @@
 import "server-only";
-import { readFileSync, readdirSync } from "node:fs";
-import path from "node:path";
-import matter from "gray-matter";
-
-const BLOG_CONTENT_DIR = path.join(process.cwd(), "src", "content", "blog");
+import blogManifest from "@/data/blog-manifest.json";
 
 export type BlogPostFrontmatter = {
   title: string;
@@ -22,29 +18,8 @@ export type BlogPost = BlogPostFrontmatter & {
   readingTimeMinutes: number;
 };
 
-function readingTimeFor(content: string): number {
-  const words = content.trim().split(/\s+/).filter(Boolean).length;
-  return Math.max(1, Math.round(words / 200));
-}
-
-function loadPost(fileName: string): BlogPost {
-  const raw = readFileSync(path.join(BLOG_CONTENT_DIR, fileName), "utf8");
-  const { data, content } = matter(raw);
-  const frontmatter = data as BlogPostFrontmatter;
-  return {
-    ...frontmatter,
-    content,
-    readingTimeMinutes: readingTimeFor(content),
-  };
-}
-
-// Reads every Markdown file once per request; the archive has a handful of
-// posts today, so there's no need for build-time caching yet.
 export function getAllBlogPosts(): BlogPost[] {
-  const files = readdirSync(BLOG_CONTENT_DIR).filter((file) => file.endsWith(".md"));
-  return files
-    .map(loadPost)
-    .sort((a, b) => new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime());
+  return blogManifest as BlogPost[];
 }
 
 export function getBlogPostBySlug(slug: string): BlogPost | null {

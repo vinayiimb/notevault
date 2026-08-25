@@ -1,4 +1,4 @@
-import JSZip from "jszip";
+// JSZip removed for Cloudflare bundle size
 import { extractPdfTextFromUrl } from "@/lib/pdf-server";
 import { putBytes } from "@/lib/storage";
 import { detectSourceKind, type SourceKind } from "@/lib/source-kind";
@@ -19,9 +19,7 @@ export { detectSourceKind, type SourceKind };
 // instead of re-extracted server-side.
 
 export async function extractDocxText(bytes: Buffer): Promise<string> {
-  const mammoth = await import("mammoth");
-  const result = await mammoth.extractRawText({ buffer: bytes });
-  return result.value.trim();
+  throw new Error("Docx extraction disabled for Cloudflare Workers due to size limits");
 }
 
 // A .pptx is a zip of XML slide parts (ppt/slides/slide1.xml, slide2.xml, ...).
@@ -29,22 +27,7 @@ export async function extractDocxText(bytes: Buffer): Promise<string> {
 // out with a small regex per slide, in slide order, is enough to get a
 // clean read-through of the deck without a heavier XML-parsing dependency.
 export async function extractPptxText(bytes: Buffer): Promise<string> {
-  const zip = await JSZip.loadAsync(bytes);
-  const slideFiles = Object.keys(zip.files)
-    .filter((name) => /^ppt\/slides\/slide\d+\.xml$/.test(name))
-    .sort((a, b) => {
-      const na = Number(a.match(/slide(\d+)\.xml$/)?.[1] ?? 0);
-      const nb = Number(b.match(/slide(\d+)\.xml$/)?.[1] ?? 0);
-      return na - nb;
-    });
-
-  const slideTexts: string[] = [];
-  for (const name of slideFiles) {
-    const xml = await zip.files[name].async("text");
-    const runs = [...xml.matchAll(/<a:t>([^<]*)<\/a:t>/g)].map((m) => m[1]);
-    if (runs.length > 0) slideTexts.push(runs.join(" "));
-  }
-  return slideTexts.map((text, i) => `Slide ${i + 1}: ${text}`).join("\n\n").trim();
+  throw new Error("Pptx extraction disabled for Cloudflare Workers due to size limits");
 }
 
 /** Extracts plain text from an already-uploaded file's storage URL, for the

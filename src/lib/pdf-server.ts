@@ -7,27 +7,5 @@ import { readBytesFromUrl } from "@/lib/storage";
 // whatever Resource.fileUrl holds — a local "/uploads/..." path or a Vercel
 // Blob https URL — readBytesFromUrl handles both.
 export async function extractPdfTextFromUrl(fileUrl: string): Promise<string> {
-  const pdfjsLib = await import("pdfjs-dist/legacy/build/pdf.mjs");
-  pdfjsLib.GlobalWorkerOptions.workerSrc = path.join(
-    process.cwd(),
-    "node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs"
-  );
-
-  const data = await readBytesFromUrl(fileUrl);
-  const pdf = await pdfjsLib.getDocument({
-    data,
-    standardFontDataUrl: path.join(process.cwd(), "node_modules/pdfjs-dist/standard_fonts") + "/",
-  }).promise;
-
-  let text = "";
-  for (let i = 1; i <= pdf.numPages; i++) {
-    const page = await pdf.getPage(i);
-    const content = await page.getTextContent();
-    const pageText = content.items
-      .map((item) => ("str" in item ? item.str : ""))
-      .join(" ");
-    text += pageText + "\n\n";
-  }
-
-  return text.replace(/[ \t]+/g, " ").trim();
+  throw new Error("PDF extraction disabled for Cloudflare Workers due to size limits");
 }

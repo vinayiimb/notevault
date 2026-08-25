@@ -7,6 +7,7 @@ const ONE_YEAR = 60 * 60 * 24 * 365;
 const DAILY_VISIT_ORANGES = 10;
 const RESOURCE_VIEW_ORANGES = 2;
 const EXAM_KIT_SESSION_ORANGES = 15;
+const PLANNER_TASK_ORANGES = 5;
 
 function todayStr() {
   return new Date().toISOString().slice(0, 10);
@@ -92,7 +93,7 @@ export async function ensureStudent() {
   }
 }
 
-async function ensureStudentWritable() {
+export async function ensureStudentWritable() {
   const deviceId = await getOrCreateDeviceId();
   return upsertStudentForDevice(deviceId);
 }
@@ -115,7 +116,7 @@ export async function setNickname(nickname: string) {
   return prisma.student.update({ where: { id: student.id }, data: { nickname: trimmed } });
 }
 
-async function awardOranges(reason: "resource_view" | "exam_kit_session", amount: number) {
+async function awardOranges(reason: "resource_view" | "exam_kit_session" | "planner_task_done", amount: number) {
   try {
     const student = await ensureStudentWritable();
     await prisma.student.update({
@@ -152,6 +153,10 @@ export async function awardResourceView(resourceId: string) {
 
 export async function awardExamKitSession() {
   await awardOranges("exam_kit_session", EXAM_KIT_SESSION_ORANGES);
+}
+
+export async function awardPlannerTaskCompletion() {
+  await awardOranges("planner_task_done", PLANNER_TASK_ORANGES);
 }
 
 export async function getCommunityOrangesTotal() {

@@ -100,7 +100,7 @@ const themeInitScript = `
     if (stored === "dark" || (!stored && prefersDark)) {
       document.documentElement.classList.add("dark");
     }
-    if (localStorage.getItem("notevault-sidebar-collapsed") === "true") {
+    if (localStorage.getItem("notevault-sidebar-collapsed") !== "false") {
       document.documentElement.classList.add("sidebar-collapsed");
     }
   } catch (e) {}
@@ -116,6 +116,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
+      data-scroll-behavior="smooth"
       className={`${inter.variable} ${fraunces.variable} ${mono.variable} ${winkle.variable} ${manrope.variable} ${comicNeue.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
@@ -132,9 +133,11 @@ export default function RootLayout({
           }}
         />
         {children}
-        <Script id="notevault-theme" strategy="beforeInteractive">
-          {themeInitScript}
-        </Script>
+        <Script
+          id="notevault-theme"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{ __html: themeInitScript }}
+        />
       </body>
     </html>
   );

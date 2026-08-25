@@ -4,7 +4,7 @@
  * matched against the official syllabus catalogue).
  */
 import { getDuQuestionBankRows, type DuQuestionBankRow as RawQuestionBankRow } from "@/lib/du-question-bank-raw-data";
-import rawRamanujan from "@/data/ramanujan-pyq-catalog.json";
+// JSON removed for async loading
 
 export interface DuExamPaper {
   year: string | null;
@@ -102,8 +102,8 @@ interface BuiltSubject extends DuPypPaper {
   _examLinkSeen: Set<string>;
 }
 
-function buildPapers(): DuPypPaper[] {
-  const rows = getDuQuestionBankRows();
+async function buildPapers(): Promise<DuPypPaper[]> {
+  const rows = await getDuQuestionBankRows();
   const bySubject = new Map<string, BuiltSubject>();
 
   for (const row of rows) {
@@ -155,7 +155,17 @@ function buildPapers(): DuPypPaper[] {
   }
 
   // Merge Ramanujan Papers
-  const ramRows = (rawRamanujan as any[]) || [];
+  const ramRows = (await (async () => {
+    const isCloudflare = typeof caches !== 'undefined' || (typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers');
+    if (isCloudflare) {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dupyq.online';
+      return await fetch(baseUrl + '/data/ramanujan-pyq-catalog.json').then(r => r.json());
+    } else {
+      const fsMod = eval("require('fs')");
+      const pathMod = eval("require('path')");
+      return JSON.parse(fsMod.readFileSync(pathMod.join(process.cwd(), 'public/data', 'ramanujan-pyq-catalog.json'), 'utf8'));
+    }
+  })()) || [];
   for (const ram of ramRows) {
     const programme = (ram.course ?? "General / Interdisciplinary").trim();
     const subjectName = (ram.subject ?? "").trim();
@@ -211,22 +221,40 @@ function buildPapers(): DuPypPaper[] {
   return papers;
 }
 
-const allPapers = buildPapers();
+let allPapersCache: DuPypPaper[] | null = null;
+async function getAllPapers(): Promise<DuPypPaper[]> {
+  if (allPapersCache) return allPapersCache;
+  allPapersCache = await buildPapers();
+  return allPapersCache;
+}
 
-export function getTotalDuPypCount(): number {
-  return getDuQuestionBankRows().length + (rawRamanujan as any[]).length;
+export async function getTotalDuPypCount(): Promise<number> {
+  const rows = await getDuQuestionBankRows();
+  const ramRows = (await (async () => {
+    const isCloudflare = typeof caches !== 'undefined' || (typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers');
+    if (isCloudflare) {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dupyq.online';
+      return await fetch(baseUrl + '/data/ramanujan-pyq-catalog.json').then(r => r.json());
+    } else {
+      const fsMod = eval("require('fs')");
+      const pathMod = eval("require('path')");
+      return JSON.parse(fsMod.readFileSync(pathMod.join(process.cwd(), 'public/data', 'ramanujan-pyq-catalog.json'), 'utf8'));
+    }
+  })()) || [];
+  return rows.length + ramRows.length;
 }
 
 // All 118 unique official programme names, sorted and grouped
-export function getAllDuPypProgrammes(): string[] {
+export async function getAllDuPypProgrammes(): Promise<string[]> {
+  const allPapers = await getAllPapers();
   return [...new Set(allPapers.map((p) => p.programme))].sort((a, b) =>
     a.localeCompare(b)
   );
 }
 
 // Group programmes into display categories for the selector UI
-export function getGroupedDuPypProgrammes(): Record<string, string[]> {
-  const all = getAllDuPypProgrammes();
+export async function getGroupedDuPypProgrammes(): Promise<Record<string, string[]>> {
+  const all = await getAllDuPypProgrammes();
   const groups: Record<string, string[]> = {
     "B.A. (Honours)": [],
     "B.A. (Programme)": [],
@@ -281,7 +309,8 @@ export type PapersByGrid = {
 const SEMESTER_ORDER = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "Pool"];
 const PAPER_TYPE_ORDER = ["DSC", "DSE", "GE", "AEC", "SEC", "VAC", "Academic Track", "Community Outreach", "Compulsory"];
 
-export function getDuPypForProgramme(programme: string): PapersByGrid {
+export async function getDuPypForProgramme(programme: string): Promise<PapersByGrid> {
+  const allPapers = await getAllPapers();
   const papers = allPapers.filter((p) => p.programme === programme);
 
   const grid: Record<string, Record<string, DuPypPaper[]>> = {};

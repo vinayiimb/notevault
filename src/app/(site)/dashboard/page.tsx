@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { ensureStudent, getCommunityOrangesTotal, getTodayOranges } from "@/lib/student";
 import { getDailyQuestion, getProgramsByLevel, getRecentResources, getResourceHighlights, getSiteSettings } from "@/lib/data";
-import { EducationLevel } from "@/generated/prisma";
+import { EducationLevel } from "@prisma/client";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import type { ResourceItem } from "@/components/dashboard/recent-resources";
 import type { StudyActivityItem } from "@/components/dashboard/continue-studying";

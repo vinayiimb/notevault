@@ -1,5 +1,4 @@
-import rawCatalog from "@/data/ramanujan-pyq-catalog.json";
-import rawOfficialArchiveMap from "@/data/archive-official-map.json";
+// JSON imports removed for async loading
 import duProgrammeMappings from "@/data/du-programme-mappings.json";
 import { getDuQuestionBankRows } from "@/lib/du-question-bank-raw-data";
 import { geographyDriveCatalog } from "@/data/geography-drive-catalog";
@@ -25,7 +24,7 @@ const EXPECTED_SOURCE_ROWS = 2701;
 const EXPECTED_DUPLICATE_SESSION_GROUPS = 335;
 const LIBRARY_HOST = "library.ramanujancollege.ac.in";
 
-const sourceCatalog = rawCatalog as CatalogPaper[];
+// sourceCatalog is now loaded asynchronously
 
 type ArchiveOfficialMapRow = {
   id: string;
@@ -42,9 +41,37 @@ type ArchiveOfficialMapRow = {
   matchNote: string | null;
 };
 
-const officialArchiveMap = new Map(
-  (rawOfficialArchiveMap as ArchiveOfficialMapRow[]).map((row) => [row.id, row]),
-);
+// Async data loading to bypass Webpack bundling of massive JSON files
+let cachedSourceCatalog: CatalogPaper[] | null = null;
+let cachedOfficialArchiveMap: Map<string, ArchiveOfficialMapRow> | null = null;
+
+export async function loadDataAsset(filename: string) {
+  const isCloudflare = typeof caches !== 'undefined' || (typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers');
+  if (isCloudflare) {
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dupyq.online';
+    const res = await fetch(`${baseUrl}/data/${filename}`);
+    return await res.json();
+  } else {
+    const fsMod = await import("fs");
+    const pathMod = await import("path");
+    return JSON.parse(fsMod.readFileSync(pathMod.join(process.cwd(), 'public/data', filename), 'utf8'));
+  }
+}
+
+export async function getSourceCatalog(): Promise<CatalogPaper[]> {
+  if (!cachedSourceCatalog) {
+    cachedSourceCatalog = await loadDataAsset('ramanujan-pyq-catalog.json') as CatalogPaper[];
+  }
+  return cachedSourceCatalog;
+}
+
+export async function getOfficialArchiveMap(): Promise<Map<string, ArchiveOfficialMapRow>> {
+  if (!cachedOfficialArchiveMap) {
+    const raw = await loadDataAsset('archive-official-map.json') as ArchiveOfficialMapRow[];
+    cachedOfficialArchiveMap = new Map(raw.map((row) => [row.id, row]));
+  }
+  return cachedOfficialArchiveMap;
+}
 
 const ROMAN_SEMESTERS: Record<string, number> = {
   I: 1,
@@ -64,7 +91,8 @@ function singleOfficialSemester(value: string | null) {
   return ROMAN_SEMESTERS[cleaned] ? String(ROMAN_SEMESTERS[cleaned]) : null;
 }
 
-function applyOfficialFileMap(paper: CatalogPaper): CatalogPaper {
+async function applyOfficialFileMap(paper: CatalogPaper): Promise<CatalogPaper> {
+  const officialArchiveMap = await getOfficialArchiveMap();
   const match = officialArchiveMap.get(paper.id);
   if (!match) return { ...paper, matchStatus: "Unmatched", matchConfidence: 0 };
 
@@ -103,7 +131,8 @@ export function sortYearRanges(a: string, b: string) {
   return sessionStart(b) - sessionStart(a) || b.localeCompare(a);
 }
 
-function validateSourceCatalog() {
+async function validateSourceCatalog() {
+  const sourceCatalog = await getSourceCatalog();
   if (sourceCatalog.length !== EXPECTED_SOURCE_ROWS) {
     throw new Error(
       `PYQ catalog integrity failure: expected ${EXPECTED_SOURCE_ROWS} rows, found ${sourceCatalog.length}.`,
@@ -159,27 +188,31 @@ export const catalogIntegrity = {
   duplicateSessionGroups: EXPECTED_DUPLICATE_SESSION_GROUPS,
 } as const;
 
-export function getSourceCatalog() {
-  return sourceCatalog;
-}
-
-export function getCatalogCourses() {
-  const courses = [...new Set(sourceCatalog.map((paper) => paper.course))].sort((a, b) =>
-    a.localeCompare(b),
-  );
-  const entries = courses.map((course) => ({ name: course, slug: slugify(course) }));
-  if (new Set(entries.map((entry) => entry.slug)).size !== entries.length) {
-    throw new Error("PYQ catalog integrity failure: two course names resolve to the same URL slug.");
+export async function getCatalogCourses() {
+  const sourceCatalog = await getSourceCatalog();
+  const courses = Array.from(new Set(sourceCatalog.map((p) => p.course)));
+  
+  const uniqueSlugs = new Set<string>();
+  const result: { name: string; slug: string }[] = [];
+  
+  for (const name of courses.filter(Boolean).sort()) {
+    const slug = slugify(name);
+    if (!uniqueSlugs.has(slug)) {
+      uniqueSlugs.add(slug);
+      result.push({ name, slug });
+    }
   }
-  return entries;
+  return result;
 }
 
-export function getCatalogCourseBySlug(courseSlug: string) {
-  return getCatalogCourses().find((course) => course.slug === courseSlug) ?? null;
+export async function getCatalogCourseBySlug(courseSlug: string) {
+  const courses = await getCatalogCourses();
+  return courses.find((course) => course.slug === courseSlug) ?? null;
 }
 
 export async function getFullPyqCatalog(): Promise<CatalogPaper[]> {
   try {
+    const sourceCatalog = await getSourceCatalog();
     const uploads = await prisma.catalogPaperUpload.findMany({
       orderBy: { createdAt: "asc" },
     });
@@ -206,7 +239,7 @@ export async function getFullPyqCatalog(): Promise<CatalogPaper[]> {
     return enrichPapersWithCanonical(allPapers);
   } catch (err) {
     console.warn("Database unavailable for getFullPyqCatalog, returning sourceCatalog:", err instanceof Error ? err.message : err);
-    return enrichPapersWithCanonical(sourceCatalog);
+    return enrichPapersWithCanonical(await getSourceCatalog());
   }
 }
 
@@ -226,7 +259,7 @@ function duQuestionBankYearRange(session: string | null, year: string | null): s
 
 export async function getDuQuestionBankPapers(): Promise<CatalogPaper[]> {
   try {
-    const rows = getDuQuestionBankRows();
+    const rows = await getDuQuestionBankRows();
     return rows
       .filter((row) => row.questionPaperLink)
       .map((row, idx): CatalogPaper => {
@@ -270,10 +303,21 @@ export async function getDuQuestionBankPapers(): Promise<CatalogPaper[]> {
 
 export async function getCoverageCatalogCourses() {
   const papers = await getFullPyqCatalog();
-  const courses = [...new Set(papers.map((paper) => paper.course))].sort((a, b) =>
+  const courseNames = [...new Set(papers.map((paper) => paper.course))].sort((a, b) =>
     a.localeCompare(b),
   );
-  return courses.map((name) => ({ name, slug: slugify(name) }));
+  
+  const uniqueSlugs = new Set<string>();
+  const courses: { name: string; slug: string }[] = [];
+  
+  for (const name of courseNames) {
+    const slug = slugify(name);
+    if (!uniqueSlugs.has(slug)) {
+      uniqueSlugs.add(slug);
+      courses.push({ name, slug });
+    }
+  }
+  return courses;
 }
 
 // The public Full Archive is the union of:
@@ -325,7 +369,9 @@ const ARCHIVE_COURSE_ALIASES: Record<string, string> = {
 
 function normalizeArchiveCourseName(course: string): string {
   if (!course) return "General / Interdisciplinary";
-  return course.trim();
+  const trimmed = course.trim();
+  const lower = trimmed.toLowerCase();
+  return ARCHIVE_COURSE_ALIASES[lower] ?? trimmed;
 }
 
 export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
@@ -425,37 +471,25 @@ export async function getUnifiedPyqArchive(): Promise<CatalogPaper[]> {
     getRawUnifiedPyqArchive(),
     getOverridesByKey(),
   ]);
-  return papers.map((p) => {
-    const o = applyOverride(applyOfficialFileMap(p), overrides);
-    return {
-      id: o.id,
-      yearRange: o.yearRange,
-      semesterGroup: o.semesterGroup,
-      course: o.course,
-      subject: o.subject,
-      semester: o.semester,
-      pdfUrl: o.pdfUrl,
-      note: o.note,
-      source: o.source,
-      fileName: o.fileName,
-      highlighted: o.highlighted,
-      isShivaji: o.isShivaji,
-      isKalindi: o.isKalindi,
-      isANDC: o.isANDC,
-      college: o.college,
-    };
-  });
+  const result = await Promise.all(papers.map(async (p) => {
+    const o = applyOverride(await applyOfficialFileMap(p), overrides);
+    return o;
+  }));
+  return result;
 }
 
-export function isCatalogCourseSubject(course: string, subject: string) {
+export async function isCatalogCourseSubject(course: string, subject: string) {
+  const sourceCatalog = await getSourceCatalog();
   return sourceCatalog.some((paper) => paper.course === course && paper.subject === subject);
 }
 
-export function getCatalogYearRanges() {
+export async function getCatalogYearRanges() {
+  const sourceCatalog = await getSourceCatalog();
   return [...new Set(sourceCatalog.map((paper) => paper.yearRange))].sort(sortYearRanges);
 }
 
-export function getSemesterGroupsForYear(yearRange: string) {
+export async function getSemesterGroupsForYear(yearRange: string) {
+  const sourceCatalog = await getSourceCatalog();
   return [
     ...new Set(
       sourceCatalog
@@ -472,12 +506,12 @@ export async function getCatalogCourseCoverage(
   const coverageCatalogPapers = allCatalogPapers.filter(
     (paper) => paper.yearRange !== "Study Material",
   );
-  const courseEntry =
-    (await getCoverageCatalogCourses()).find((course) => course.slug === courseSlug) ?? null;
+  const courses = await getCoverageCatalogCourses();
+  const courseEntry = courses.find((course) => course.slug === courseSlug) ?? null;
   if (!courseEntry) return null;
 
   const allPapers = coverageCatalogPapers.filter(
-    (paper) => paper.course === courseEntry.name,
+    (paper) => slugify(paper.course) === courseEntry.slug,
   );
   const yearRanges = [...new Set(coverageCatalogPapers.map((paper) => paper.yearRange))].sort(
     sortYearRanges,

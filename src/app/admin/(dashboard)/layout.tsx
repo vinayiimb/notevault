@@ -38,7 +38,7 @@ export default async function AdminDashboardLayout({
   const session = await getSession();
 
   if (!session) {
-    redirect("/login");
+    redirect("/admin/login");
   }
 
   let unreadFeedbackCount = 0;
@@ -86,6 +86,13 @@ export default async function AdminDashboardLayout({
           >
             <CalendarBlank size={16} />
             Exam sessions
+          </Link>
+          <Link
+            href="/admin/bulk-upload"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Stack size={16} />
+            Bulk Upload
           </Link>
           <Link
             href="/admin/batches"

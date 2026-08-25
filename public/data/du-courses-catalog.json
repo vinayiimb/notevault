@@ -1,0 +1,7190 @@
+[
+  {
+    "title": "Chemistry Lab Operations and Safety Measures",
+    "slug": "chemistry-lab-operations-and-safety-measures",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2176000004"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Basic Analytical Techniques",
+    "slug": "basic-analytical-techniques",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2176000005"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Lab Testing and Quality Assurance",
+    "slug": "lab-testing-and-quality-assurance",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2176000003"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Essential Food Nutrients",
+    "slug": "essential-food-nutrients",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2176000001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Chemistry of Food Flavors and Colourants",
+    "slug": "chemistry-of-food-flavors-and-colourants",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2176000002"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Chemistry of Cosmetics and Hygiene Products",
+    "slug": "chemistry-of-cosmetics-and-hygiene-products",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2176000006"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Green Methods in Chemistry",
+    "slug": "green-methods-in-chemistry",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "32173908"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Forensic Chemistry",
+    "slug": "forensic-chemistry",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2176000008"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "CAD for Fashion",
+    "slug": "cad-for-fashion",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "CAD (Computer aided Jewellery Design - I) Coral Draw",
+    "slug": "cad-computer-aided-jewellery-design---i-coral-draw",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-cad-(computer-a"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "CAD (Computer aided Jewellery Design - II) Coral Draw",
+    "slug": "cad-computer-aided-jewellery-design---ii-coral-draw",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-cad-(computer-a"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "CAD (Computer aided Jewellery Design-I II) RHINO",
+    "slug": "cad-computer-aided-jewellery-design-i-ii-rhino",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-cad-(computer-a"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "CAD (Computer aided Jewellery Design-IV) RHINO",
+    "slug": "cad-computer-aided-jewellery-design-iv-rhino",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-cad-(computer-a"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Programming using Python",
+    "slug": "programming-using-python",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-programming-usi"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Document Preparation & Presentation Software",
+    "slug": "document-preparation-and-presentation-software",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2346000012"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Latex Typesetting for Beginners",
+    "slug": "latex-typesetting-for-beginners",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2356000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Front End Web Design and Development",
+    "slug": "front-end-web-design-and-development",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2346000008",
+      "2346001008"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Back-End Web Development",
+    "slug": "back-end-web-development",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2346001004",
+      "2346000004"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "APP Development using Flutter",
+    "slug": "app-development-using-flutter",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2346001003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Big Data Analytics - I",
+    "slug": "big-data-analytics---i",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2346000013"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Big Data Analytics - II",
+    "slug": "big-data-analytics---ii",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2346005001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Introduction to Blockchain",
+    "slug": "introduction-to-blockchain",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2346000009"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Introduction to Cloud Computing (AWS)",
+    "slug": "introduction-to-cloud-computing-aws",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2346011202"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Network Flows",
+    "slug": "network-flows",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2356000005"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "R-Shiny: Powerful Web Apps for Everyone",
+    "slug": "r-shiny:-powerful-web-apps-for-everyone",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2356000004"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Robotics and Automation",
+    "slug": "robotics-and-automation",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-robotics-and-au"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Introduction of IoT using Arduino",
+    "slug": "introduction-of-iot-using-arduino",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-introduction-of"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Low-code/No-code Development",
+    "slug": "low-code/no-code-development",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-low-code/no-cod"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Beginners Course to Calligraphy",
+    "slug": "beginners-course-to-calligraphy",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2036001001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Introduction to Arabic Calligraphy",
+    "slug": "introduction-to-arabic-calligraphy",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2016001025"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Creative Writing",
+    "slug": "creative-writing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2036001004",
+      "2036000004"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Patkatha Lekhan",
+    "slug": "patkatha-lekhan",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2056000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Rangmanch",
+    "slug": "rangmanch",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2056000002",
+      "2056001002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Rachnatmak Lekhan",
+    "slug": "rachnatmak-lekhan",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2056000003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Anuvad Kala",
+    "slug": "anuvad-kala",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2126000001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Srjnatmak Lekhan",
+    "slug": "srjnatmak-lekhan",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2126000002"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Political Leadership and Communication",
+    "slug": "political-leadership-and-communication",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "3206000002"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Spoken Persian: Elementary level",
+    "slug": "spoken-persian:-elementary-level",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2096000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Communication in Everyday Life",
+    "slug": "communication-in-everyday-life",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2036000002",
+      "2036001002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Communication in Professional Life",
+    "slug": "communication-in-professional-life",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2036000003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Business Communication",
+    "slug": "business-communication",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2416000001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Personality Development and Communication",
+    "slug": "personality-development-and-communication",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2036000005"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Negotiation and Leadership",
+    "slug": "negotiation-and-leadership",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2416000003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Public Speaking in English Language and Leadership",
+    "slug": "public-speaking-in-english-language-and-leadership",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2036001006"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Radio Jockeying",
+    "slug": "radio-jockeying",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "6930000045"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Digital Film Production",
+    "slug": "digital-film-production",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "6956000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "VISUAL COMMUNICATION AND PHOTOGRAPHY",
+    "slug": "visual-communication-and-photography",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Graphics Design & Animation",
+    "slug": "graphics-design-and-animation",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "6956000002",
+      "6956001002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Digital Tools for Interior Designing",
+    "slug": "digital-tools-for-interior-designing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "3205001001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "PCB Designing and Fabrication",
+    "slug": "pcb-designing-and-fabrication",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-pcb-designing-a"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Electronic Product Testing",
+    "slug": "electronic-product-testing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-electronic-prod"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Radiation Safety",
+    "slug": "radiation-safety",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2226000001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Vacuum Technology",
+    "slug": "vacuum-technology",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-vacuum-technolo"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Environmental Impact and Risk Assessment",
+    "slug": "environmental-impact-and-risk-assessment",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2186000004"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Sustainably Reporting",
+    "slug": "sustainably-reporting",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2186000006"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Environmental Auditing",
+    "slug": "environmental-auditing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2186000007"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Prospecting E-waste for Sustainability",
+    "slug": "prospecting-e-waste-for-sustainability",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2186000002",
+      "2186001002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Developing Sustainability Plans for a Business",
+    "slug": "developing-sustainability-plans-for-a-business",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2186000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Design Thinking",
+    "slug": "design-thinking",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "3126000003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Innovation and Entrepreneurship",
+    "slug": "innovation-and-entrepreneurship",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "3126000004"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Finance for Everyone",
+    "slug": "finance-for-everyone",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2416000002",
+      "2416001002"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Personal Financial Planning",
+    "slug": "personal-financial-planning",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2416000004"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Financial Modelling with Excel",
+    "slug": "financial-modelling-with-excel",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2356000003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Basics of Food Science and Nutrition",
+    "slug": "basics-of-food-science-and-nutrition",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2202311102",
+      "2202601202"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Dairy Processing",
+    "slug": "dairy-processing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000012"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Fruits and Vegetable Processing",
+    "slug": "fruits-and-vegetable-processing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000013"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Minimal Food Processing",
+    "slug": "minimal-food-processing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000014"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Food Waste and By-Product Utilisation",
+    "slug": "food-waste-and-by-product-utilisation",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000015"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Cyber Sphere and Security: Global Concerns",
+    "slug": "cyber-sphere-and-security:-global-concerns",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "3206000001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Museum and Museology",
+    "slug": "museum-and-museology",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2316000001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Reading the Archive",
+    "slug": "reading-the-archive",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2316000002"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Healthy and Sustainable Food Choices",
+    "slug": "healthy-and-sustainable-food-choices",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Chocolate Crafts",
+    "slug": "chocolate-crafts",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000004"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Pasta and Patisserie Technology",
+    "slug": "pasta-and-patisserie-technology",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000005"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Frozen Dessert Technology",
+    "slug": "frozen-dessert-technology",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000006"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Eco-Printing on Textile",
+    "slug": "eco-printing-on-textile",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2203100201"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Surface Ornamentation",
+    "slug": "surface-ornamentation",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-surface-ornamen"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Early Child Care and Education Settings",
+    "slug": "early-child-care-and-education-settings",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000007"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Public health, Hygiene, and nutrition",
+    "slug": "public-health,-hygiene,-and-nutrition",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000018"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Image Styling",
+    "slug": "image-styling",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000008"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Content development and Media for Children",
+    "slug": "content-development-and-media-for-children",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000009"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Small Scale Catering",
+    "slug": "small-scale-catering",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000010"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Culinary Science",
+    "slug": "culinary-science",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000011"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Indian Snack Industry",
+    "slug": "indian-snack-industry",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2206000016"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "IT Skills and Data Analysis \u2014 I",
+    "slug": "it-skills-and-data-analysis-\u2014-i",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "3126000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "IT Skills and Data Analysis- II",
+    "slug": "it-skills-and-data-analysis--ii",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "3126005001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Basic IT Tools",
+    "slug": "basic-it-tools",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-basic-it-tools"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Advanced Spreadsheet Tool",
+    "slug": "advanced-spreadsheet-tool",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-advanced-spread"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Statistical Software Package",
+    "slug": "statistical-software-package",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2926000004"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Financial Database and Analysis Software",
+    "slug": "financial-database-and-analysis-software",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2926000003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Statistics with 'R\u2019",
+    "slug": "statistics-with-'r\u2019",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2926000005"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "R Programming for Business Analytics",
+    "slug": "r-programming-for-business-analytics",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-r-programming-f"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Essential of Python",
+    "slug": "essential-of-python",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-essential-of-py"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Analytics with Python",
+    "slug": "analytics-with-python",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-analytics-with-"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Business Intelligence and Data Visulisation",
+    "slug": "business-intelligence-and-data-visulisation",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2926000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Digital Marketing",
+    "slug": "digital-marketing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2926000002",
+      "2926001002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Social Media Marketing",
+    "slug": "social-media-marketing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2416000005"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Biofertilizers",
+    "slug": "biofertilizers",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Bioinoculants for Agriculture and Sustainable Development",
+    "slug": "bioinoculants-for-agriculture-and-sustainable-development",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2536000002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Organic Farming",
+    "slug": "organic-farming",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Horticulture",
+    "slug": "horticulture",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000005"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Floriculture",
+    "slug": "floriculture",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000004"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Hydroponic and Aeroponic Farming",
+    "slug": "hydroponic-and-aeroponic-farming",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Green Belt Development for Smart Cities",
+    "slug": "green-belt-development-for-smart-cities",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000006"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Nursery Gardening and Landscaping",
+    "slug": "nursery-gardening-and-landscaping",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000007"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Viewing and capturing Diversity in Nature",
+    "slug": "viewing-and-capturing-diversity-in-nature",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2186000005"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Mushroom Culture and Technology \u2013 I",
+    "slug": "mushroom-culture-and-technology-\u2013-i",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000008"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Mushroom Culture and Technology \u2013 II",
+    "slug": "mushroom-culture-and-technology-\u2013-ii",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166005001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Plant Aromatics and Perfumery",
+    "slug": "plant-aromatics-and-perfumery",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000010"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Exploring Medicinal Plants: From Cultivation to Applications",
+    "slug": "exploring-medicinal-plants:-from-cultivation-to-applications",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000013"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Plant Tissue Culture",
+    "slug": "plant-tissue-culture",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000011"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Applications of Plant Tissue Culture",
+    "slug": "applications-of-plant-tissue-culture",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000012"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "DNA barcoding of medicinal/Commercially important plants",
+    "slug": "dna-barcoding-of-medicinal/commercially-important-plants",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-dna-barcoding-o"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Apiculture",
+    "slug": "apiculture",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2236000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Formulation of Fish Feed",
+    "slug": "formulation-of-fish-feed",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2236000002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Fish Breeding and Larviculture",
+    "slug": "fish-breeding-and-larviculture",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2236000003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Ornamental Fish Culture: Opportunity and Scope",
+    "slug": "ornamental-fish-culture:-opportunity-and-scope",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2236000004"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Bio-floc Technology",
+    "slug": "bio-floc-technology",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2236000005"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Aquaculture Entrepreneurship",
+    "slug": "aquaculture-entrepreneurship",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2236000006"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Pearl Culture",
+    "slug": "pearl-culture",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2236000007"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Drosophila and Zebra fish model organism in biological studies",
+    "slug": "drosophila-and-zebra-fish-model-organism-in-biological-studies",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "6146000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Sericulture-I: Mulberry Silkworm Rearing",
+    "slug": "sericulture-i:-mulberry-silkworm-rearing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "6016000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Sericulture- II: Eri Silkworm Rearing",
+    "slug": "sericulture--ii:-eri-silkworm-rearing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "6016005001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Sericulture-III: Silk Technology",
+    "slug": "sericulture-iii:-silk-technology",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "6016006001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Sericulture-IV: Application of Sericulture in Therapeutic and Cosmetic Industry",
+    "slug": "sericulture-iv:-application-of-sericulture-in-therapeutic-and-cosmetic-industry",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "6016007004"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Cultivation of Lac: An eco-friendly multiuse wonder product of nature",
+    "slug": "cultivation-of-lac:-an-eco-friendly-multiuse-wonder-product-of-nature",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-cultivation-of-"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Lac Characterization and Processing",
+    "slug": "lac-characterization-and-processing",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-lac-characteriz"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Isolation and characterisation of Plasmid DNA",
+    "slug": "isolation-and-characterisation-of-plasmid-dna",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-isolation-and-c"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Isolation, characterisation, and Quality Check of Genomic DNA",
+    "slug": "isolation,-characterisation,-and-quality-check-of-genomic-dna",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-isolation,-char"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Polymerase chain reaction (PCR) and its applications",
+    "slug": "polymerase-chain-reaction-pcr-and-its-applications",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2496000003"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Basic Forensic science",
+    "slug": "basic-forensic-science",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2156000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Basic Laboratory Techniques",
+    "slug": "basic-laboratory-techniques",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2166000017"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Forensic Analysis of Biological Evidence",
+    "slug": "forensic-analysis-of-biological-evidence",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-forensic-analys"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Forensic Toxicology",
+    "slug": "forensic-toxicology",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-forensic-toxico"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Questioned Document Examination",
+    "slug": "questioned-document-examination",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-questioned-docu"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Injury and Health",
+    "slug": "injury-and-health",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-injury-and-heal"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Medical Diagnostics",
+    "slug": "medical-diagnostics",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "3186000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Methods in Epidemiological Data Collection",
+    "slug": "methods-in-epidemiological-data-collection",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-methods-in-epid"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Methods in Epidemiological Data Analysis",
+    "slug": "methods-in-epidemiological-data-analysis",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "3186000002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Mathematical Modelling with Excel",
+    "slug": "mathematical-modelling-with-excel",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-mathematical-mo"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Harmonium",
+    "slug": "harmonium",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2446000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Yoga in Practice",
+    "slug": "yoga-in-practice",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2136000001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Reading &Writing Skills in Brahmi Scripts",
+    "slug": "reading-andwriting-skills-in-brahmi-scripts",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-reading-&writin"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Acting Skills in Sanskrit Dramaturgy",
+    "slug": "acting-skills-in-sanskrit-dramaturgy",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-acting-skills-i"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Script Writing Skills in Sanskrit Dramaturgy",
+    "slug": "script-writing-skills-in-sanskrit-dramaturgy",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2136000003"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Fundamentals of Indian Manuscriptology",
+    "slug": "fundamentals-of-indian-manuscriptology",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2136000007"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Traditional Indian Gastronomy",
+    "slug": "traditional-indian-gastronomy",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2136000008"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "E-Learning Tools and Techniques in Sanskrit",
+    "slug": "e-learning-tools-and-techniques-in-sanskrit",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-e-learning-tool"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Practices in Horoscopes-I",
+    "slug": "practices-in-horoscopes-i",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2136000006"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Working with People",
+    "slug": "working-with-people",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2336000001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Life Skill Education",
+    "slug": "life-skill-education",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2336000002"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Participatory Learning and Action",
+    "slug": "participatory-learning-and-action",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2336000003"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Programme Media",
+    "slug": "programme-media",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2336000004"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Sustainable Ecotourism and Entrepreneurship",
+    "slug": "sustainable-ecotourism-and-entrepreneurship",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "6136000002",
+      "6136001002"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "E Tourism",
+    "slug": "e-tourism",
+    "courseType": "SEC",
+    "totalCredits": 2,
+    "upcs": [
+      "6136000001",
+      "6136001001"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/skill-enhancement-courses/"
+  },
+  {
+    "title": "Ayurveda and Nutrition",
+    "slug": "ayurveda-and-nutrition",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Constitutional Values and Fundamental Duties",
+    "slug": "constitutional-values-and-fundamental-duties",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000002"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Culture and Communication",
+    "slug": "culture-and-communication",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000003"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Digital Empowerment",
+    "slug": "digital-empowerment",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-digital-empower"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Emotional Intelligence",
+    "slug": "emotional-intelligence",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000005"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Envisaging Viksit Bharat: Perspectives and Challenges",
+    "slug": "envisaging-viksit-bharat:-perspectives-and-challenges",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000033"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Ecology and Literature",
+    "slug": "ecology-and-literature",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000011"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Ethics and Culture",
+    "slug": "ethics-and-culture",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000006"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Ethics and Values in Ancient Indian Traditions",
+    "slug": "ethics-and-values-in-ancient-indian-traditions",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000007"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Financial Literacy",
+    "slug": "financial-literacy",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000008"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Fit India",
+    "slug": "fit-india",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-fit-india"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Gandhi and Education",
+    "slug": "gandhi-and-education",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000010"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Indigenous Sports",
+    "slug": "indigenous-sports",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-indigenous-spor"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Leadership Excellence Through the Gita",
+    "slug": "leadership-excellence-through-the-gita",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000030"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "National Cadet Corps-I",
+    "slug": "national-cadet-corps-i",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967001101"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "National Cadet Corps-II",
+    "slug": "national-cadet-corps-ii",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967001201"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "National Cadet Corps-III",
+    "slug": "national-cadet-corps-iii",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967002301"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "National Cadet Corps-IV",
+    "slug": "national-cadet-corps-iv",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967002401"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Panchkosha: Holistic Development of Personality",
+    "slug": "panchkosha:-holistic-development-of-personality",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000013"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Reading Indian Fiction in English",
+    "slug": "reading-indian-fiction-in-english",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000014"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Science and Society",
+    "slug": "science-and-society",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000015"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Social and Emotional Learning",
+    "slug": "social-and-emotional-learning",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000016"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Sports for Life",
+    "slug": "sports-for-life",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-sports-for-life"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Sports - Diversity and lnclusivity",
+    "slug": "sports---diversity-and-lnclusivity",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-sports---divers"
+    ],
+    "structure": {
+      "theory": 0,
+      "tutorial": 0,
+      "practical": 2
+    },
+    "assessment": {
+      "theoryMarks": 0,
+      "internalAssess": 0,
+      "tutorialCa": 0,
+      "practicalCa": 20,
+      "endTermPractical": 40,
+      "viva": 20,
+      "totalMarks": 80,
+      "theoryDuration": "N/A"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Swachh Bharat",
+    "slug": "swachh-bharat",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000018"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Tribes of India",
+    "slug": "tribes-of-india",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000028"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "The Art of Being Happy",
+    "slug": "the-art-of-being-happy",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000019"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "The Gita for Holistic Life",
+    "slug": "the-gita-for-holistic-life",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000029"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "The Gita for Sustainable Universe",
+    "slug": "the-gita-for-sustainable-universe",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000031"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "The Gita: Navigating Life Challenges",
+    "slug": "the-gita:-navigating-life-challenges",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000032"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "The Science of Happiness",
+    "slug": "the-science-of-happiness",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000034"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Vedic Mathematics-I",
+    "slug": "vedic-mathematics-i",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000020"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Vedic Mathematics-II",
+    "slug": "vedic-mathematics-ii",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967006001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Vedic Mathematics-III",
+    "slug": "vedic-mathematics-iii",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967007001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Vedic Mathematics-IV",
+    "slug": "vedic-mathematics-iv",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967008001"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Yoga: Philosophy and Practice",
+    "slug": "yoga:-philosophy-and-practice",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000021"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "\u092d\u093e\u0930\u0924\u0940\u092f \u092d\u0915\u094d\u0924\u093f \u092a\u0930\u092e\u094d\u092a\u0930\u093e \u0914\u0930 \u092e\u093e\u0928\u0935 \u092e\u0942\u0932\u094d\u092f",
+    "slug": "\u092d\u093e\u0930\u0924\u0940\u092f-\u092d\u0915\u094d\u0924\u093f-\u092a\u0930\u092e\u094d\u092a\u0930\u093e-\u0914\u0930-\u092e\u093e\u0928\u0935-\u092e\u0942\u0932\u094d\u092f",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000022"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "\u0938\u093e\u0939\u093f\u0924\u094d\u092f \u0938\u0902\u0938\u094d\u0915\u0943\u0924\u093f \u0914\u0930 \u0938\u093f\u0928\u0947\u092e\u093e",
+    "slug": "\u0938\u093e\u0939\u093f\u0924\u094d\u092f-\u0938\u0902\u0938\u094d\u0915\u0943\u0924\u093f-\u0914\u0930-\u0938\u093f\u0928\u0947\u092e\u093e",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000023"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "\u0938\u0943\u091c\u0928\u093e\u0924\u094d\u092e\u0915 \u0932\u0947\u0916 \u0915\u0947 \u0906\u092f\u093e\u092e",
+    "slug": "\u0938\u0943\u091c\u0928\u093e\u0924\u094d\u092e\u0915-\u0932\u0947\u0916-\u0915\u0947-\u0906\u092f\u093e\u092e",
+    "courseType": "VAC",
+    "totalCredits": 2,
+    "upcs": [
+      "6967000024"
+    ],
+    "structure": {
+      "theory": 1,
+      "tutorial": 0,
+      "practical": 1
+    },
+    "assessment": {
+      "theoryMarks": 30,
+      "internalAssess": 10,
+      "tutorialCa": 0,
+      "practicalCa": 10,
+      "endTermPractical": 20,
+      "viva": 10,
+      "totalMarks": 80,
+      "theoryDuration": "1 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/value-addition-courses/"
+  },
+  {
+    "title": "Environmental Science: Theory into Practice \u2013 I",
+    "slug": "environmental-science:-theory-into-practice-\u2013-i",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2181001001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Environmental Science: Theory into Practice \u2013 II",
+    "slug": "environmental-science:-theory-into-practice-\u2013-ii",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2181002001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Punjabi Bhasha da Mudhla Padhar(AEC-1)",
+    "slug": "punjabi-bhasha-da-mudhla-padharaec-1",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2121001001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Punjabi Bhasha da Uchera Padhar (AEC-2)",
+    "slug": "punjabi-bhasha-da-uchera-padhar-aec-2",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2121001002"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Punjabi Bhasha da Uchtam Padhar (AEC-3)",
+    "slug": "punjabi-bhasha-da-uchtam-padhar-aec-3",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2121001003"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Punjabi Bhasha Ate Media",
+    "slug": "punjabi-bhasha-ate-media",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2121002001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Punjabi Bhasha Ate Computer",
+    "slug": "punjabi-bhasha-ate-computer",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2121002002"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Punjabi Bhasha ate Anuvad",
+    "slug": "punjabi-bhasha-ate-anuvad",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2121002003"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "\u0939\u093f\u0928\u094d\u0926\u0940 \u092d\u093e\u0937\u093e: \u0938\u092e\u094d\u092a\u094d\u0930\u0947\u0937\u0923 \u0914\u0930 \u0938\u0902\u091a\u093e\u0930 (\u0939\u093f\u0928\u094d\u0926\u0940 \u0915)",
+    "slug": "\u0939\u093f\u0928\u094d\u0926\u0940-\u092d\u093e\u0937\u093e:-\u0938\u092e\u094d\u092a\u094d\u0930\u0947\u0937\u0923-\u0914\u0930-\u0938\u0902\u091a\u093e\u0930-\u0939\u093f\u0928\u094d\u0926\u0940-\u0915",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2051001001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "\u0939\u093f\u0928\u094d\u0926\u0940 \u0914\u092a\u091a\u093e\u0930\u093f\u0915 \u0932\u0947\u0916\u0928 (\u0939\u093f\u0928\u094d\u0926\u0940 \u0916)",
+    "slug": "\u0939\u093f\u0928\u094d\u0926\u0940-\u0914\u092a\u091a\u093e\u0930\u093f\u0915-\u0932\u0947\u0916\u0928-\u0939\u093f\u0928\u094d\u0926\u0940-\u0916",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2051001002"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "\u0938\u094b\u0936\u0932 \u092e\u0940\u0921\u093f\u092f\u093e \u0914\u0930 \u092c\u094d\u0932\u0949\u0917 \u0932\u0947\u0916\u0928 (\u0939\u093f\u0928\u094d\u0926\u0940 \u0917)",
+    "slug": "\u0938\u094b\u0936\u0932-\u092e\u0940\u0921\u093f\u092f\u093e-\u0914\u0930-\u092c\u094d\u0932\u0949\u0917-\u0932\u0947\u0916\u0928-\u0939\u093f\u0928\u094d\u0926\u0940-\u0917",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2051001003"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "\u0935\u094d\u092f\u093e\u0935\u0939\u093e\u0930\u093f\u0915 \u0939\u093f\u0928\u094d\u0926\u0940 (\u0939\u093f\u0928\u094d\u0926\u0940 \u0915)",
+    "slug": "\u0935\u094d\u092f\u093e\u0935\u0939\u093e\u0930\u093f\u0915-\u0939\u093f\u0928\u094d\u0926\u0940-\u0939\u093f\u0928\u094d\u0926\u0940-\u0915",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2051002001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "\u0935\u093f\u0926\u0947\u0936\u0940 \u0935\u093f\u0926\u094d\u092f\u093e\u0930\u094d\u0925\u093f\u092f\u094b\u0902 \u0915\u0947 \u0932\u093f\u090f \u092a\u093e\u0920\u094d\u092f\u0915\u094d\u0930\u092e",
+    "slug": "\u0935\u093f\u0926\u0947\u0936\u0940-\u0935\u093f\u0926\u094d\u092f\u093e\u0930\u094d\u0925\u093f\u092f\u094b\u0902-\u0915\u0947-\u0932\u093f\u090f-\u092a\u093e\u0920\u094d\u092f\u0915\u094d\u0930\u092e",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "TBA-\u0935\u093f\u0926\u0947\u0936\u0940-\u0935\u093f\u0926\u094d\u092f\u093e\u0930\u094d"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "\u091c\u0928\u0938\u0902\u091a\u093e\u0930 \u0914\u0930 \u0930\u091a\u0928\u093e\u0924\u094d\u092e\u0915 \u0932\u0947\u0916\u0928 (\u0939\u093f\u0928\u094d\u0926\u0940 \u0916)",
+    "slug": "\u091c\u0928\u0938\u0902\u091a\u093e\u0930-\u0914\u0930-\u0930\u091a\u0928\u093e\u0924\u094d\u092e\u0915-\u0932\u0947\u0916\u0928-\u0939\u093f\u0928\u094d\u0926\u0940-\u0916",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2051002002"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "\u0939\u093f\u0928\u094d\u0926\u0940 \u092d\u093e\u0937\u093e \u0914\u0930 \u0924\u0915\u0928\u0940\u0915 (\u0939\u093f\u0928\u094d\u0926\u0940 \u0917)",
+    "slug": "\u0939\u093f\u0928\u094d\u0926\u0940-\u092d\u093e\u0937\u093e-\u0914\u0930-\u0924\u0915\u0928\u0940\u0915-\u0939\u093f\u0928\u094d\u0926\u0940-\u0917",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2051002006",
+      "2051002003"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "\u0935\u093f\u0926\u0947\u0936\u0940 \u0935\u093f\u0926\u094d\u092f\u093e\u0930\u094d\u0925\u093f\u092f\u094b\u0902 \u0915\u0947 \u0932\u093f\u090f \u092a\u093e\u0920\u094d\u092f\u0915\u094d\u0930\u092e",
+    "slug": "\u0935\u093f\u0926\u0947\u0936\u0940-\u0935\u093f\u0926\u094d\u092f\u093e\u0930\u094d\u0925\u093f\u092f\u094b\u0902-\u0915\u0947-\u0932\u093f\u090f-\u092a\u093e\u0920\u094d\u092f\u0915\u094d\u0930\u092e",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2051002004"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "\u0905\u0928\u093f\u0935\u093e\u0930\u094d\u092f \u0939\u093f\u0928\u094d\u0926\u0940 \u092a\u093e\u0920\u094d\u092f\u0915\u094d\u0930\u092e \u2013 2",
+    "slug": "\u0905\u0928\u093f\u0935\u093e\u0930\u094d\u092f-\u0939\u093f\u0928\u094d\u0926\u0940-\u092a\u093e\u0920\u094d\u092f\u0915\u094d\u0930\u092e-\u2013-2",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2051002005"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Urud-A",
+    "slug": "urud-a",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2141001001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Urdu-B",
+    "slug": "urdu-b",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2141001002"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Urdu-C",
+    "slug": "urdu-c",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2141001003"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Urdu-A",
+    "slug": "urdu-a",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2141002001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Urdu-B",
+    "slug": "urdu-b",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2141002002"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Urdu-C",
+    "slug": "urdu-c",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2141002003"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Sanskrit A: Advance Neeti Literature in Sanskrit",
+    "slug": "sanskrit-a:-advance-neeti-literature-in-sanskrit",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2131001001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Sanskrit B: Introductory Upanishad and Geeta",
+    "slug": "sanskrit-b:-introductory-upanishad-and-geeta",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2131001002"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Sanskrit C: Introduction to Sanskrit Language",
+    "slug": "sanskrit-c:-introduction-to-sanskrit-language",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2131001003"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Course A: Advance Ancient Indian Economy",
+    "slug": "course-a:-advance-ancient-indian-economy",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2131002004"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Course B: Intermediate Administrative Structure in Kau\u1e6dilya\u2019s Artha\u015b\u0101stra",
+    "slug": "course-b:-intermediate-administrative-structure-in-kau\u1e6dilya\u2019s-artha\u015b\u0101stra",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2131002005"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Course C: (Introductory) Culture and Society",
+    "slug": "course-c:-introductory-culture-and-society",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2131002006"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Bengali",
+    "slug": "translation-and-interpretation-in-bengali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001002"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Bengali",
+    "slug": "basic-bengali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001020"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Bengali",
+    "slug": "journalistic-writing-in-bengali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002002"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Bengali",
+    "slug": "intermediate-bengali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002032"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Assamese",
+    "slug": "translation-and-interpretation-in-assamese",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Assamese",
+    "slug": "basic-assamese",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001019"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Assamese",
+    "slug": "journalistic-writing-in-assamese",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002001"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Assamese",
+    "slug": "intermediate-assamese",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002031"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Bodo",
+    "slug": "translation-and-interpretation-in-bodo",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001003"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Bodo",
+    "slug": "basic-bodo",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001021"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Bodo",
+    "slug": "journalistic-writing-in-bodo",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002003"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Bodo",
+    "slug": "intermediate-bodo",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002033"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Dogri",
+    "slug": "translation-and-interpretation-in-dogri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001004"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Dogri",
+    "slug": "basic-dogri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001022"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Dogri",
+    "slug": "journalistic-writing-in-dogri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002004"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Dogri",
+    "slug": "intermediate-dogri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002034"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Gujarati",
+    "slug": "translation-and-interpretation-in-gujarati",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001005"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Gujarati",
+    "slug": "basic-gujarati",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001023"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Gujarati",
+    "slug": "journalistic-writing-in-gujarati",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002005"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Gujarati",
+    "slug": "intermediate-gujarati",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002035"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Kannada",
+    "slug": "translation-and-interpretation-in-kannada",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001006"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Kannada",
+    "slug": "basic-kannada",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001024"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Kannada",
+    "slug": "journalistic-writing-in-kannada",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002006"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Kannada",
+    "slug": "intermediate-kannada",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002036"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Kashmiri",
+    "slug": "translation-and-interpretation-in-kashmiri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001007"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Kashmiri",
+    "slug": "basic-kashmiri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001025"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Kashmiri",
+    "slug": "journalistic-writing-in-kashmiri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002007"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Kashmiri",
+    "slug": "intermediate-kashmiri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002037"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Konkani",
+    "slug": "translation-and-interpretation-in-konkani",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001008"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Konkani",
+    "slug": "basic-konkani",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001026"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Konkani",
+    "slug": "journalistic-writing-in-konkani",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002008"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Konkani",
+    "slug": "intermediate-konkani",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002038"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Malayalam",
+    "slug": "translation-and-interpretation-in-malayalam",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001009"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Malayalam",
+    "slug": "basic-malayalam",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001027"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Malayalam",
+    "slug": "journalistic-writing-in-malayalam",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002009"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Malayalam",
+    "slug": "intermediate-malayalam",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002039"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Manipuri",
+    "slug": "translation-and-interpretation-in-manipuri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001010"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Manipuri",
+    "slug": "basic-manipuri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001028"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Manipuri",
+    "slug": "journalistic-writing-in-manipuri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002010"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Manipuri",
+    "slug": "intermediate-manipuri",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002040"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Marathi",
+    "slug": "translation-and-interpretation-in-marathi",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001011"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Marathi",
+    "slug": "basic-marathi",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001029"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Marathi",
+    "slug": "journalistic-writing-in-marathi",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002011"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Marathi",
+    "slug": "intermediate-marathi",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002041"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Maithili",
+    "slug": "translation-and-interpretation-in-maithili",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001012"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Maithili",
+    "slug": "basic-maithili",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001030"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Maithili",
+    "slug": "journalistic-writing-in-maithili",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002012"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Maithili",
+    "slug": "intermediate-maithili",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002042"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Nepali",
+    "slug": "translation-and-interpretation-in-nepali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001013"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Nepali",
+    "slug": "basic-nepali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001031"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Nepali",
+    "slug": "journalistic-writing-in-nepali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002013"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Nepali",
+    "slug": "intermediate-nepali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002043"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Santali",
+    "slug": "translation-and-interpretation-in-santali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001015"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Santali",
+    "slug": "basic-santali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001033"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Santali",
+    "slug": "journalistic-writing-in-santali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002015"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Santali",
+    "slug": "intermediate-santali",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002045"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Tamil",
+    "slug": "translation-and-interpretation-in-tamil",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001017"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Tamil",
+    "slug": "basic-tamil",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001035"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Tamil",
+    "slug": "journalistic-writing-in-tamil",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002017"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Tamil",
+    "slug": "intermediate-tamil",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002047"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Translation and Interpretation in Telugu",
+    "slug": "translation-and-interpretation-in-telugu",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001018"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Basic Telugu",
+    "slug": "basic-telugu",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081001036"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Journalistic Writing in Telugu",
+    "slug": "journalistic-writing-in-telugu",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002018"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  },
+  {
+    "title": "Intermediate Telugu",
+    "slug": "intermediate-telugu",
+    "courseType": "AEC",
+    "totalCredits": 2,
+    "upcs": [
+      "2081002048"
+    ],
+    "structure": {
+      "theory": 2,
+      "tutorial": 0,
+      "practical": 0
+    },
+    "assessment": {
+      "theoryMarks": 60,
+      "internalAssess": 20,
+      "tutorialCa": 0,
+      "practicalCa": 0,
+      "endTermPractical": 0,
+      "viva": 0,
+      "totalMarks": 80,
+      "theoryDuration": "2 hr"
+    },
+    "officialSource": "https://academicaffairs.du.ac.in/syllabi/ability-enhancement-courses-aec/"
+  }
+]

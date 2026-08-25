@@ -1,9 +1,18 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
-import type { EducationLevel } from "@/generated/prisma";
-import { MASTER_SYLLABUS_ROWS } from "./content/master-syllabus-data";
+import type { EducationLevel } from "@prisma/client";
+import { loadDataAsset } from "./pyq-catalog";
+export type MasterRow = { id: string; course: string; semester: string; type: string; subjectName: string; courseNumber?: string; upc?: string; credits?: string; };
 import { slugify } from "@/lib/utils";
 import { canonicalSubjectKey } from "@/lib/subject-normalization";
+
+
+let cachedMasterSyllabus: MasterRow[] | null = null;
+async function getMasterSyllabus(): Promise<MasterRow[]> {
+  if (cachedMasterSyllabus) return cachedMasterSyllabus;
+  cachedMasterSyllabus = await loadDataAsset("master-syllabus-data.json");
+  return cachedMasterSyllabus as MasterRow[];
+}
 
 export async function getProgramsByLevel(level: EducationLevel) {
   try {
@@ -71,11 +80,11 @@ function getSemesterOrder(sem: string): number {
   return ROMAN_TO_NUM[cleaned] || 999;
 }
 
-function buildFallbackProgram(slug: string) {
+async function buildFallbackProgram(slug: string) {
   const courseNames = PROGRAM_SLUG_TO_COURSES[slug];
   if (!courseNames) return null;
 
-  const rows = MASTER_SYLLABUS_ROWS.filter(r => courseNames.includes(r.course));
+  const rows = (await getMasterSyllabus()).filter(r => courseNames.includes(r.course));
   
   // Group by semester
   const termsMap = new Map<string, any[]>();
@@ -168,7 +177,7 @@ export async function getTermById(id: string) {
   if (id.startsWith("term-")) {
     const parts = id.split("-");
     const programSlug = parts.slice(1, parts.length - 1).join("-");
-    const program = buildFallbackProgram(programSlug);
+    const program = await buildFallbackProgram(programSlug);
     if (program) {
       const term = program.terms.find(t => t.id === id);
       if (term) {
@@ -224,7 +233,7 @@ export async function getSubjectById(id: string) {
 
   // Parse id: `sub-${subSlug}-${upc_or_id}`
   for (const programSlug of Object.keys(PROGRAM_SLUG_TO_COURSES)) {
-    const program = buildFallbackProgram(programSlug);
+    const program = await buildFallbackProgram(programSlug);
     if (program) {
       for (const term of program.terms) {
         const subject = term.subjects.find(s => s.id === id);
@@ -432,7 +441,7 @@ export async function searchSubjects(query: string) {
     console.warn("Database unavailable for searchSubjects, searching fallback programs:", err instanceof Error ? err.message : err);
     // Build subjects from fallback programs
     for (const programSlug of Object.keys(PROGRAM_SLUG_TO_COURSES)) {
-      const program = buildFallbackProgram(programSlug);
+      const program = await buildFallbackProgram(programSlug);
       if (program) {
         for (const term of program.terms) {
           for (const s of term.subjects) {
@@ -591,7 +600,7 @@ export const getSiteSettings = cache(async () => {
       heroSearchCaption: settings?.heroSearchCaption || "Search a subject, paper title, program, or topic.",
       heroImageUrl: (() => {
         const url = settings?.heroImageUrl?.trim();
-        return (!url || url === "/images/hero-du-colleges.png") ? "/images/hero-du.jpg" : url;
+        return (!url) ? "/images/hero-du-colleges.png" : url;
       })(),
       currencyIconUrl: settings?.currencyIconUrl || null,
     };
@@ -601,7 +610,7 @@ export const getSiteSettings = cache(async () => {
       heroHeadline: "The Best, One Stop,\nStudy Platform",
       heroSubtitle: "Notes, PYQs and answer keys for every DU program — free, no login needed",
       heroSearchCaption: "Search a subject, paper title, program, or topic.",
-      heroImageUrl: "/images/hero-du.jpg",
+      heroImageUrl: "/images/hero-du-colleges.png",
       currencyIconUrl: null,
     };
   }

@@ -45,18 +45,22 @@ interface PracticeClientProps {
     subject: string;
     year: string;
   };
+  // Seeds the topic filter from a `?topic=` deep link (e.g. from a Study
+  // Planner "Solve N Questions" task) — the filter itself is still applied
+  // client-side once questions for a subject/paper have loaded.
+  initialTopic?: string;
 }
 
-export function PracticeClient({ initialCourses, preselectedPaper }: PracticeClientProps) {
+export function PracticeClient({ initialCourses, preselectedPaper, initialTopic }: PracticeClientProps) {
   // --- State for Selection Sidebar ---
   const [selectedCourse, setSelectedCourse] = useState<string>(preselectedPaper?.course || "");
   const [selectedSemester, setSelectedSemester] = useState<string>(preselectedPaper?.semester || "all");
   const [selectedSubject, setSelectedSubject] = useState<string>(preselectedPaper?.subject || "");
   const [selectedYears, setSelectedYears] = useState<string[]>(preselectedPaper?.year ? [preselectedPaper.year] : []);
-  
+
   // Sidebar filters
   const [difficultyFilter, setDifficultyFilter] = useState<string[]>([]);
-  const [topicFilter, setTopicFilter] = useState<string>("all");
+  const [topicFilter, setTopicFilter] = useState<string>(initialTopic || "all");
   
   // --- Active Practice Session State ---
   const [isActive, setIsActive] = useState<boolean>(false);

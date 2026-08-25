@@ -1,7 +1,7 @@
 export const dynamic = "force-static";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Brain } from "@phosphor-icons/react/dist/ssr";
+import { Brain, Calculator } from "@phosphor-icons/react/dist/ssr";
 
 export const metadata: Metadata = {
   title: "Study Tools",
@@ -29,6 +29,20 @@ export default function ToolsPage() {
               Paste your notes and generate flashcards, an MCQ quiz, fill-in-the-blank
               drills, and theory-paper practice: concept maps, essay skeletons, and a
               devil&apos;s advocate debate mode.
+            </p>
+          </div>
+        </Link>
+        <Link
+          href="/tools/marks-calculator"
+          className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-6 transition hover:border-accent"
+        >
+          <span className="flex size-11 items-center justify-center rounded-lg bg-accent-soft text-accent">
+            <Calculator size={22} weight="bold" />
+          </span>
+          <div>
+            <h2 className="text-lg font-medium">Marks & CGPA Calculator</h2>
+            <p className="mt-1 text-sm text-muted">
+              Calculate your internal marks, theory targets, and overall CGPA. Import your marksheet data using AI.
             </p>
           </div>
         </Link>

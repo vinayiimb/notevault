@@ -1,8 +1,4 @@
-import { mkdir, writeFile, rm, readFile } from "fs/promises";
-import { createHash } from "crypto";
-import path from "path";
-
-const PUBLIC_ROOT = path.join(process.cwd(), "public");
+import { createHash } from "node:crypto";
 
 // Vercel's serverless functions have a read-only, ephemeral filesystem — a
 // PDF written to public/uploads during one request is gone by the next
@@ -102,9 +98,12 @@ export async function putBytes(
     return blob.url;
   }
 
+  const fs = await import("fs/promises");
+  const path = await import("path");
+  const PUBLIC_ROOT = path.join(process.cwd(), "public");
   const dest = path.join(PUBLIC_ROOT, key);
-  await mkdir(path.dirname(dest), { recursive: true });
-  await writeFile(dest, bytes);
+  await fs.mkdir(path.dirname(dest), { recursive: true });
+  await fs.writeFile(dest, bytes);
   return `/${key}`;
 }
 
@@ -132,7 +131,10 @@ export async function deleteByUrl(url: string | null | undefined) {
     return;
   }
 
-  await rm(path.join(PUBLIC_ROOT, url), { force: true }).catch(() => {});
+  const fs = await import("fs/promises");
+  const path = await import("path");
+  const PUBLIC_ROOT = path.join(process.cwd(), "public");
+  await fs.rm(path.join(PUBLIC_ROOT, url), { force: true }).catch(() => {});
 }
 
 // Reads back the bytes behind a putBytes URL — fetches over HTTP for a Blob
@@ -143,7 +145,10 @@ export async function readBytesFromUrl(url: string): Promise<Uint8Array> {
     if (!res.ok) throw new Error(`Could not fetch ${url}: ${res.status} ${res.statusText}`);
     return new Uint8Array(await res.arrayBuffer());
   }
-  return new Uint8Array(await readFile(path.join(PUBLIC_ROOT, url)));
+  const fs = await import("fs/promises");
+  const path = await import("path");
+  const PUBLIC_ROOT = path.join(process.cwd(), "public");
+  return new Uint8Array(await fs.readFile(path.join(PUBLIC_ROOT, url)));
 }
 
 export async function saveUploadedFile(

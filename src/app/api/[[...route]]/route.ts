@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { GET as combinedPdfGET } from "../catalog-combined-pdf/_route-impl";
 import { GET as downloadGET } from "../download/[resourceId]/_route-impl";
 import { GET as searchSuggestionsGET } from "../search-suggestions/_route-impl";
 import { GET as subjectDownloadAllGET } from "../subjects/[id]/download-all/_route-impl";
@@ -15,10 +14,6 @@ export async function GET(
 ) {
   const params = await props.params;
   const route = params.route || [];
-
-  if (route[0] === "catalog-combined-pdf") {
-    return combinedPdfGET(request);
-  }
 
   if (route[0] === "download" && route[1]) {
     return downloadGET(request, { params: Promise.resolve({ resourceId: route[1] }) });
@@ -36,6 +31,10 @@ export async function GET(
     return practiceQuestionsGET(request);
   }
 
+  if (route[0] === "subject-quick-search") {
+    return NextResponse.json({ message: "Not Implemented" });
+  }
+
   if (route[0] === "pyp-grid") {
     return pypGridGET(request);
   }
@@ -44,6 +43,5 @@ export async function GET(
     return revalidateGET(request);
   }
 
-  return NextResponse.json({ error: "Not found" }, { status: 404 });
+  return NextResponse.json({ error: "API Route Not Found" }, { status: 404 });
 }
-

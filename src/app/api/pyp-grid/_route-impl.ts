@@ -9,6 +9,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Missing programme parameter" }, { status: 400 });
   }
 
-  const data = getDuPypForProgramme(programme);
+  const data = await getDuPypForProgramme(programme);
   return NextResponse.json(data);
 }

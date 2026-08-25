@@ -19,6 +19,7 @@ export function NotesSection({
   content,
   theme,
   subjectName,
+  programmeName,
   format = "MARKDOWN",
   structuredJson,
   resolvedTheme,
@@ -26,6 +27,7 @@ export function NotesSection({
   content: string;
   theme: string;
   subjectName: string;
+  programmeName?: string;
   format?: "MARKDOWN" | "STRUCTURED";
   structuredJson?: unknown;
   resolvedTheme?: ThemeValues | null;
@@ -76,6 +78,7 @@ export function NotesSection({
         <div className="mt-3">
           <NotesReadingChrome
             title={subjectName}
+            programmeName={programmeName}
             content={preprocessed}
             headings={headings}
             subjectTheme={{ light: subjectTokens, dark: subjectTokensDark }}

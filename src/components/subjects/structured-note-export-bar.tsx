@@ -24,81 +24,8 @@ function flattenNote(note: StructuredNote): string {
 }
 
 function buildPdf(note: StructuredNote) {
-  return import("jspdf").then(({ jsPDF }) => {
-    const doc = new jsPDF({ unit: "pt", format: "a4" });
-    const pageW = doc.internal.pageSize.getWidth();
-    const pageH = doc.internal.pageSize.getHeight();
-    const margin = 56;
-    const contentW = pageW - margin * 2;
-    let y = margin;
-
-    function ensureSpace(lineHeight: number) {
-      if (y + lineHeight > pageH - margin) {
-        doc.addPage();
-        y = margin;
-      }
-    }
-    function heading(text: string, size: number) {
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(size);
-      for (const line of doc.splitTextToSize(text, contentW)) {
-        ensureSpace(size + 6);
-        doc.text(line, margin, y);
-        y += size + 6;
-      }
-      y += 4;
-    }
-    function body(text: string) {
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10.5);
-      for (const line of doc.splitTextToSize(text, contentW)) {
-        ensureSpace(14);
-        doc.text(line, margin, y);
-        y += 14;
-      }
-      y += 4;
-    }
-
-    heading(note.metadata.title, 16);
-    body(note.summary);
-
-    if (note.keyFacts.length > 0) {
-      heading("Key facts", 12);
-      for (const fact of note.keyFacts) body(`•  ${fact}`);
-    }
-
-    for (const section of note.sections) {
-      heading(section.heading, 13);
-      body(section.content);
-      if (section.callout && section.callout.type !== "none") body(`${section.callout.type.toUpperCase()}: ${section.callout.text}`);
-    }
-
-    if (note.definitions.length > 0) {
-      heading("Definitions", 12);
-      for (const d of note.definitions) body(`${d.term} — ${d.definition}`);
-    }
-    if (note.formulas.length > 0) {
-      heading("Formulas", 12);
-      for (const f of note.formulas) body(`${f.name}: ${f.expression}${f.description ? ` (${f.description})` : ""}`);
-    }
-    if (note.examples.length > 0) {
-      heading("Examples", 12);
-      for (const ex of note.examples) body(`${ex.title ? `${ex.title}: ` : ""}${ex.prompt}\n${ex.solution}`);
-    }
-    if (note.commonMistakes.length > 0) {
-      heading("Common mistakes", 12);
-      for (const m of note.commonMistakes) body(`•  ${m}`);
-    }
-
-    heading("Takeaway", 12);
-    body(note.takeaway);
-
-    if (note.sources.length > 0) {
-      heading("Sources", 12);
-      for (const s of note.sources) body(s);
-    }
-
-    doc.save(`${note.metadata.title.replace(/[^\w.-]+/g, "_") || "notes"}.pdf`);
+  return Promise.resolve().then(() => {
+    alert("PDF generation is currently disabled on Cloudflare Workers.");
   });
 }
 

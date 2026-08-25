@@ -26,7 +26,7 @@ export function ContentTocSidebar({ headings }: { headings: ContentHeading[] }) 
   if (headings.length === 0) return null;
 
   return (
-    <aside className="nt-no-print hidden lg:block">
+    <aside className="nt-no-print">
       <nav className="nt-toc" aria-label="Table of contents">
         <p className="mb-2 px-2 text-xs font-semibold tracking-wide uppercase" style={{ color: "var(--nt-text-muted)" }}>
           On this page

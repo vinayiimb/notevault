@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import type { BulkUploadRowStatus, Prisma } from "@/generated/prisma";
+import type { BulkUploadRowStatus, Prisma } from "@prisma/client";
 
 const PAGE_SIZE = 50;
 

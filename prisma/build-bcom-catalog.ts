@@ -1,7 +1,7 @@
 import { readFile, writeFile } from "fs/promises";
 import path from "path";
 import fs from "fs";
-import { MASTER_SYLLABUS_ROWS } from "../src/lib/content/master-syllabus-data";
+import MASTER_SYLLABUS_ROWS from "../public/data/master-syllabus-data.json";
 
 const DRIVE_FILES_JSON = path.join(process.cwd(), "scratch", "bcom_all_drive_pdfs.json");
 const SPLIT_INDEX_JSON = path.join(process.cwd(), "scratch", "split_index.json");

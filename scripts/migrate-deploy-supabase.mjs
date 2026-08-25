@@ -28,6 +28,8 @@
 // DATABASE_URL uses, supports the prepared-statement/multi-statement
 // behavior `prisma migrate deploy` needs.
 import { execSync } from "node:child_process";
+import * as dotenv from "dotenv";
+dotenv.config({ path: ".env.local" });
 
 function deriveSupabaseSessionPoolerUrl(pooledUrl) {
   const u = new URL(pooledUrl);

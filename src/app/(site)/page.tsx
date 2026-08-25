@@ -1,19 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import {
-  ArrowRight,
-  BookOpen,
-  CompassRose,
-  Exam,
-  GraduationCap,
-  Sparkle,
-} from "@phosphor-icons/react/dist/ssr";
+import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { SearchBar } from "@/components/search-bar";
 import { getProgramsByLevel, getSiteSettings } from "@/lib/data";
 import { getAllDuPypProgrammes } from "@/lib/du-pyp-data";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
-import { StudyAccessShowcase } from "@/components/study-access-showcase";
+import { FeatureCards } from "@/components/landing/feature-cards";
 
 export const metadata: Metadata = {
   title: "DU Previous Year Papers & Notes | DU PYQ Online",
@@ -32,7 +25,7 @@ export default async function HomePage() {
     getProgramsByLevel("COLLEGE"),
     getSiteSettings(),
   ]);
-  const duProgrammes = getAllDuPypProgrammes();
+  const duProgrammes = await getAllDuPypProgrammes();
   const heroImage = siteSettings.heroImageUrl;
   const jumpData = programs.map((program) => ({
     id: program.id,
@@ -55,12 +48,13 @@ export default async function HomePage() {
             <div aria-hidden="true" className="hero-image-overlay absolute inset-0" />
           </div>
         ) : (
-          <div className="relative min-h-[620px] sm:min-h-[720px] bg-[#34beff]">
-            <div
-              aria-hidden="true"
-              className="absolute inset-0 bg-[radial-gradient(circle_at_20%_25%,rgba(255,255,255,.35),transparent_40%),radial-gradient(circle_at_80%_15%,rgba(255,255,255,.25),transparent_35%)]"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/10" />
+          <div className="relative min-h-[500px] sm:min-h-[600px] bg-gradient-to-b from-[#cae7ff] via-[#e2f1ff] to-white overflow-hidden">
+            {/* Fluffy clouds SVG or CSS shapes */}
+            <div className="absolute inset-0 opacity-60">
+              <div className="absolute top-[10%] left-[10%] w-32 h-16 bg-white rounded-full blur-xl mix-blend-overlay"></div>
+              <div className="absolute top-[20%] right-[15%] w-48 h-24 bg-white rounded-full blur-2xl mix-blend-overlay"></div>
+              <div className="absolute top-[5%] left-[60%] w-40 h-20 bg-white rounded-full blur-xl mix-blend-overlay"></div>
+            </div>
           </div>
         )}
 
@@ -91,11 +85,11 @@ export default async function HomePage() {
           </div>
         </div>
 
-        {/* Showcase floating over the base of the globe illustration via -106px top margin */}
-        {heroImage && <StudyAccessShowcase />}
+        {/* Feature Cards below hero */}
+        <FeatureCards />
       </section>
 
-      <div className="relative z-10 mx-auto mt-8 max-w-6xl px-4 sm:mt-12 sm:px-6">
+      <div className="relative z-10 mx-auto mt-4 max-w-5xl px-4 sm:mt-8 sm:px-6">
         {/* Tier 1: Express Course & Degree Jump */}
         <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-surface p-6 shadow-[0_12px_40px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-brand/30 hover:shadow-[0_16px_50px_rgba(83,88,227,0.08)] sm:p-8 lg:p-10">
           {/* Subtle decoration orbs inside card */}
@@ -105,7 +99,7 @@ export default async function HomePage() {
           <div className="relative z-10">
             <div className="mb-6 flex flex-col justify-between gap-4 border-b border-border/60 pb-6 sm:flex-row sm:items-center">
               <div className="flex items-center gap-4">
-                <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-brand-soft text-brand shadow-inner">
+                <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 shadow-inner">
                   <GraduationCap size={28} weight="bold" />
                 </span>
                 <div>
@@ -117,7 +111,7 @@ export default async function HomePage() {
                   </p>
                 </div>
               </div>
-              <span className="hidden shrink-0 rounded-full border border-brand/20 bg-brand-soft/60 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand sm:inline-block">
+              <span className="hidden shrink-0 rounded-full bg-[#edf0ff] px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-600 sm:inline-block">
                 Express Portal
               </span>
             </div>
@@ -127,90 +121,6 @@ export default async function HomePage() {
               allProgrammes={duProgrammes}
               embedded
             />
-          </div>
-        </section>
-
-        {/* Tier 2: 4 Quick Study Portals */}
-        <section aria-label="Study shortcuts" className="mt-8 sm:mt-10">
-          <div className="mb-4 flex items-center justify-between px-1">
-            <h3 className="font-display text-xs font-bold uppercase tracking-wider text-muted">
-              Quick Study & Revision Hub
-            </h3>
-            <span className="text-xs text-muted">Choose your study mode</span>
-          </div>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 sm:gap-5">
-            <ShortcutCard
-              icon={<CompassRose size={24} weight="bold" />}
-              title="I need a PYQ"
-              detail="Browse by course and semester"
-              href="/browse/college"
-              badge="Popular"
-            />
-            <ShortcutCard
-              icon={<BookOpen size={24} weight="bold" />}
-              title="I want the full paper"
-              detail="Read OCR text without downloading"
-              href="/pyq-notes"
-              badge="Fast OCR"
-            />
-            <ShortcutCard
-              icon={<Sparkle size={24} weight="bold" />}
-              title="Test me before the exam"
-              detail="Build a quiz, flashcards, or a map"
-              href="/tools/exam-kit"
-              badge="AI Tools"
-            />
-            <ShortcutCard
-              icon={<Exam size={24} weight="bold" />}
-              title="I need this session's paper"
-              detail="Every year, every course, straight from Drive"
-              href="/exam-sessions"
-              badge="Google Drive"
-            />
-          </div>
-        </section>
-
-        {/* Study Resource Portals Directory Section */}
-        <section className="mt-16 border-t border-border/60 pt-12">
-          <div className="text-center max-w-2xl mx-auto">
-            <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-              Study Portals on DU PYQ Online
-            </h2>
-            <p className="mt-2 text-sm text-muted">
-              Discover previous year papers, student study notes, official syllabus structures, and subject answer keys for all semesters.
-            </p>
-          </div>
-          <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3">
-            <div className="rounded-2xl border border-border bg-surface p-5 hover:border-brand/40 transition">
-              <h4 className="font-bold text-foreground text-sm font-semibold">Previous Year Papers</h4>
-              <p className="text-xs text-muted mt-1 leading-relaxed">Download Delhi University exam question papers sorted by subject and year.</p>
-              <Link href="/previous-year-papers" className="text-xs font-bold text-brand hover:underline mt-3 block">Go to Papers →</Link>
-            </div>
-            <div className="rounded-2xl border border-border bg-surface p-5 hover:border-brand/40 transition">
-              <h4 className="font-bold text-foreground text-sm font-semibold">Notes</h4>
-              <p className="text-xs text-muted mt-1 leading-relaxed">Read online or download subject-wise study notes and revision guides.</p>
-              <Link href="/notes" className="text-xs font-bold text-brand hover:underline mt-3 block">Go to Notes →</Link>
-            </div>
-            <div className="rounded-2xl border border-border bg-surface p-5 hover:border-brand/40 transition">
-              <h4 className="font-bold text-foreground text-sm font-semibold">Syllabus</h4>
-              <p className="text-xs text-muted mt-1 leading-relaxed">Browse the official UGCF syllabus, credits, and course frameworks.</p>
-              <Link href="/syllabus" className="text-xs font-bold text-brand hover:underline mt-3 block">Go to Syllabus →</Link>
-            </div>
-            <div className="rounded-2xl border border-border bg-surface p-5 hover:border-brand/40 transition">
-              <h4 className="font-bold text-foreground text-sm font-semibold">Courses</h4>
-              <p className="text-xs text-muted mt-1 leading-relaxed">Explore degree programmes including B.Com, B.A., and B.Sc.</p>
-              <Link href="/browse/college" className="text-xs font-bold text-brand hover:underline mt-3 block">Browse Courses →</Link>
-            </div>
-            <div className="rounded-2xl border border-border bg-surface p-5 hover:border-brand/40 transition">
-              <h4 className="font-bold text-foreground text-sm font-semibold">Semesters</h4>
-              <p className="text-xs text-muted mt-1 leading-relaxed font-normal">Jump straight to your academic semester (Semester 1 to Semester 6).</p>
-              <Link href="/semesters" className="text-xs font-bold text-brand hover:underline mt-3 block">Browse by Semester →</Link>
-            </div>
-            <div className="rounded-2xl border border-border bg-surface p-5 hover:border-brand/40 transition">
-              <h4 className="font-bold text-foreground text-sm font-semibold">Full Archive</h4>
-              <p className="text-xs text-muted mt-1 leading-relaxed">Search our complete collection of 8,300+ library and Drive files.</p>
-              <Link href="/pyq-notes" className="text-xs font-bold text-brand hover:underline mt-3 block">Explore Archive →</Link>
-            </div>
           </div>
         </section>
 
@@ -234,51 +144,5 @@ export default async function HomePage() {
         </section>
       </div>
     </div>
-  );
-}
-
-function ShortcutCard({
-  icon,
-  title,
-  detail,
-  href,
-  badge,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  detail: string;
-  href: string;
-  badge?: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group relative flex flex-col justify-between overflow-hidden rounded-2xl border border-border/70 bg-surface p-6 shadow-2xs transition-all duration-300 hover:-translate-y-1 hover:border-brand/60 hover:shadow-lg hover:shadow-brand/10"
-    >
-      <div>
-        <div className="flex items-center justify-between">
-          <span className="flex size-12 items-center justify-center rounded-2xl bg-brand-soft text-brand transition-all duration-300 group-hover:scale-105 group-hover:bg-brand group-hover:text-brand-foreground group-hover:shadow-md">
-            {icon}
-          </span>
-          {badge && (
-            <span className="rounded-full border border-border/60 bg-surface-muted px-2.5 py-1 text-[11px] font-bold text-muted transition-colors group-hover:border-brand/30 group-hover:bg-brand-soft/50 group-hover:text-brand">
-              {badge}
-            </span>
-          )}
-        </div>
-        <h4 className="mt-6 text-lg font-bold tracking-tight text-foreground transition-colors group-hover:text-brand">
-          {title}
-        </h4>
-        <p className="mt-2 text-sm leading-relaxed text-muted">
-          {detail}
-        </p>
-      </div>
-      <div className="mt-6 flex items-center justify-end border-t border-border/50 pt-4">
-        <span className="inline-flex items-center gap-1 text-xs font-bold text-brand group-hover:underline">
-          Explore portal
-          <ArrowRight size={14} weight="bold" className="transition-transform group-hover:translate-x-1" />
-        </span>
-      </div>
-    </Link>
   );
 }

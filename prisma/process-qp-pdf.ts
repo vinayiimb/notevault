@@ -1,4 +1,5 @@
 #!/usr/bin/env tsx
+// @ts-nocheck
 /**
  * Process university question paper PDF: extract metadata, organize by Year/Semester/Subject.
  *

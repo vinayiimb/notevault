@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { MASTER_SYLLABUS_ROWS, type MasterRow } from "@/lib/content/master-syllabus-data";
+import { useMemo } from "react";
+import { useEffect, useState } from "react";
+type MasterRow = { id: string; course: string; semester: string; type: string; subjectName: string; courseNumber?: string; upc?: string; credits?: string; };
 import {
   CaretLeft,
   CaretRight,
@@ -18,6 +19,8 @@ import {
 
 
 export function MasterSyllabusInspector() {
+  const [MASTER_SYLLABUS_ROWS, setMasterSyllabusRows] = useState<MasterRow[]>([]);
+  useEffect(() => { fetch("/data/master-syllabus-data.json").then(r => r.json()).then(setMasterSyllabusRows); }, []);
   const [masterRows] = useState<MasterRow[]>(MASTER_SYLLABUS_ROWS);
   const [selectedCourseFilter, setSelectedCourseFilter] = useState<string>("All");
   const [selectedSemesterFilter, setSelectedSemesterFilter] = useState<string>("All");

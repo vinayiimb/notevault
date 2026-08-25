@@ -57,7 +57,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
     e.preventDefault();
     if (!value.trim()) return;
     setOpen(false);
-    router.push(`/pyq-notes?q=${encodeURIComponent(value.trim())}`);
+    router.push(`/papers?view=reader&q=${encodeURIComponent(value.trim())}`);
   }
 
   return (
@@ -111,7 +111,7 @@ export function SearchBar({ compact = false }: { compact?: boolean }) {
                     onClick={() => {
                       setOpen(false);
                       setValue(s.name);
-                      router.push(`/subjects/${s.id}`);
+                      router.push(`/papers?view=reader&q=${encodeURIComponent(s.name)}`);
                     }}
                     className="flex w-full items-center gap-3 p-3 text-left transition hover:bg-surface-muted"
                   >
