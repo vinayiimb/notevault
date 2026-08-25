@@ -21,16 +21,14 @@ let canonicalMappingData: CanonicalData | null = null;
 const mappingIndex = new Map<string, CanonicalMapping[]>();
 const canonicalProgrammes = new Set<string>();
 
+import canonicalRaw from "../../../public/data/du-canonical-mapping.json";
+
 async function buildMappingIndex() {
   if (mappingIndex.size > 0) return; // Already built
 
   if (!canonicalMappingData) {
     try {
-      const fs = require("fs");
-      const path = require("path");
-      const filePath = path.join(process.cwd(), "public", "data", "du-canonical-mapping.json");
-      const data = fs.readFileSync(filePath, "utf-8");
-      canonicalMappingData = JSON.parse(data) as CanonicalData;
+      canonicalMappingData = canonicalRaw as CanonicalData;
     } catch (err) {
       console.warn("Failed to load canonical mapping JSON:", err);
       canonicalMappingData = { mappings: [], summary: { programmes: 0, subjects: 0, categories: 0, categories_list: [] } };

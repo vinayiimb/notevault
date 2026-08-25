@@ -6,14 +6,11 @@ type CanonicalProgrammeRaw = { name: string; subjects: string[] };
 
 let cachedProgrammes: Record<string, CanonicalProgrammeRaw> | null = null;
 
+import raw from "../../../public/data/canonical-programmes.json";
+
 async function loadProgrammes(): Promise<Record<string, CanonicalProgrammeRaw>> {
   if (cachedProgrammes) return cachedProgrammes;
   try {
-    const fs = require("fs");
-    const path = require("path");
-    const filePath = path.join(process.cwd(), "public", "data", "canonical-programmes.json");
-    const data = fs.readFileSync(filePath, "utf-8");
-    const raw = JSON.parse(data);
     cachedProgrammes = raw as Record<string, CanonicalProgrammeRaw>;
   } catch (err) {
     console.warn("Failed to load canonical mapping JSON:", err);
