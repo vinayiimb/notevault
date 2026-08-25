@@ -11,10 +11,10 @@ async function loadProgrammes(): Promise<Record<string, CanonicalProgrammeRaw>> 
   try {
     const fs = require("fs");
     const path = require("path");
-    const filePath = path.join(process.cwd(), "public", "data", "du-canonical-mapping.json");
+    const filePath = path.join(process.cwd(), "public", "data", "canonical-programmes.json");
     const data = fs.readFileSync(filePath, "utf-8");
     const raw = JSON.parse(data);
-    cachedProgrammes = raw.programmes as Record<string, CanonicalProgrammeRaw>;
+    cachedProgrammes = raw as Record<string, CanonicalProgrammeRaw>;
   } catch (err) {
     console.warn("Failed to load canonical mapping JSON:", err);
     cachedProgrammes = {};

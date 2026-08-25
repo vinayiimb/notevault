@@ -34,6 +34,7 @@ const nextConfig: NextConfig = {
       "./node_modules/pdfjs-dist/standard_fonts/**/*",
       // Include the mapping JSON so fs.readFileSync works in Netlify serverless functions
       "./public/data/du-canonical-mapping.json",
+      "./public/data/canonical-programmes.json",
     ],
   },
   experimental: {

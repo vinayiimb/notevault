@@ -1,6 +1,4 @@
 import "server-only";
-import { readFileSync } from "node:fs";
-import path from "node:path";
 
 export interface DuQuestionBankRow {
   officialProgramme: string;
@@ -36,9 +34,17 @@ let cached: DuQuestionBankRow[] | null = null;
 // re-parsing the same 18MB three times per cold start. See the matching
 // outputFileTracingIncludes entry in next.config.ts, which is what makes
 // the file actually present on disk for readFileSync to find at runtime.
-export function getDuQuestionBankRows(): DuQuestionBankRow[] {
+export async function getDuQuestionBankRows(): Promise<DuQuestionBankRow[]> {
   if (cached) return cached;
-  const filePath = path.join(process.cwd(), "src/data/du-question-bank-full-mapped.json");
-  cached = JSON.parse(readFileSync(filePath, "utf-8")) as DuQuestionBankRow[];
+  try {
+    const fs = require("fs");
+    const path = require("path");
+    const filePath = path.join(process.cwd(), "public", "data", "du-question-bank-full-mapped.json");
+    const data = fs.readFileSync(filePath, "utf-8");
+    cached = JSON.parse(data) as DuQuestionBankRow[];
+  } catch (err) {
+    console.warn("Failed to load DU Question Bank JSON:", err);
+    cached = [];
+  }
   return cached;
 }
