@@ -9,6 +9,8 @@ import {
   ArticleNyTimes,
   BookOpenText,
   Calendar,
+  CalendarCheck,
+  CaretDown,
   CaretRight,
   ChatCircleText,
   Compass,
@@ -28,25 +30,36 @@ const NAVIGATION_SECTIONS = [
   {
     title: "Study Portals",
     items: [
-      { href: "/pyq-notes", label: "PYQ", desc: "Complete 8,300+ file search catalog", icon: FileArchive, badge: "8.3k+" },
-      { href: "/papers", label: "Browse Papers", desc: "Filter by course & subject, preview instantly", icon: BookOpenText, badge: "New" },
-      { href: "/pyp", label: "PYP", desc: "DU PYQ Search & Course Archives", icon: SealCheck },
-      { href: "/practice", label: "Practice Mode", desc: "Interactive PYQ practice & mock solving", icon: NotePencil, badge: "Live" },
+      { href: "/papers", label: "Papers", desc: "Interactive PDF viewer and PYQ archive", icon: BookOpenText },
       { href: "/notes", label: "Notes", desc: "Access study notes and summaries", icon: NotePencil },
-      { href: "/previous-year-papers", label: "Previous Year Papers", desc: "Download past exams and solution keys", icon: Files },
-      { href: "/syllabus", label: "Syllabus", desc: "Browse official DU UGCF syllabus", icon: Scroll },
-      { href: "/browse/college", label: "Courses", desc: "Browse Delhi University courses", icon: GraduationCap },
-      { href: "/semesters", label: "Semesters", desc: "Find study material from Sem 1 to 6", icon: Calendar },
     ],
   },
   {
-    title: "Tools & Utilities",
+    title: "Student Utilities",
     items: [
-      { href: "/tools", label: "Study Tools & Quiz Lab", desc: "Flashcards, revision & exam kits", icon: Wrench },
-      { href: "/blog", label: "Blog", desc: "Exam prep guides & articles", icon: ArticleNyTimes },
-      { href: "/resources", label: "Resources", desc: "Every free resource in one place", icon: Compass },
-      { href: "/feedback", label: "Feedback & Requests", desc: "Report issues or request papers", icon: ChatCircleText },
-      { href: "https://wa.me/919376180015", label: "WhatsApp Support", desc: "Direct DU student helpdesk", icon: Question, external: true },
+      { href: "/tools/action-engine", label: "Action Engine", desc: "Prioritized DU alerts", icon: CalendarCheck },
+      { href: "/tools/result-doctor", label: "Result Doctor", desc: "Diagnose marksheet issues", icon: FileArchive },
+      { href: "/tools/migration-radar", label: "Migration Radar", desc: "Track college vacancies", icon: Compass },
+      { href: "/tools/money-finder", label: "Money Finder", desc: "Master Scholarship Database", icon: Files },
+      { href: "/tools/degree-planner", label: "Degree & 4th-Year Planner", desc: "Plan your course credits", icon: GraduationCap },
+      { href: "/tools/er-decoder", label: "ER & Improvement Decoder", desc: "Decode ER status", icon: Scroll },
+      { href: "/tools/revaluation", label: "Revaluation Hub", desc: "Track Reval dates", icon: SealCheck },
+    ],
+  },
+  {
+    title: "Finders & Blogs",
+    items: [
+      { href: "/tools/du-paper-code-finder", label: "Paper Code Finder", desc: "Find exact UPCs", icon: ArticleNyTimes },
+      { href: "/tools/elective-finder", label: "Elective Finder", desc: "Discover SEC/VAC options", icon: List },
+      { href: "/blog", label: "Blog", desc: "Latest DU updates", icon: NotePencil },
+    ],
+  },
+  {
+    title: "Tools & Support",
+    items: [
+      { href: "/tools/exam-kit", label: "Exam Kit", desc: "Generate practice questions", icon: Wrench },
+      { href: "/feedback", label: "Feedback", desc: "Report issues or request papers", icon: ChatCircleText },
+      { href: "https://wa.me/919376180015", label: "Help", desc: "Direct DU student helpdesk", icon: Question, external: true },
     ],
   },
 ] as const;
@@ -55,11 +68,24 @@ export function SiteNavigation() {
   const pathname = usePathname();
 
   const links = [
-    { href: "/pyq-notes", label: "PYQ" },
     { href: "/papers", label: "Papers" },
     { href: "/notes", label: "Notes" },
   ];
 
+  const others = [
+    { href: "/tools/action-engine", label: "Action Engine" },
+    { href: "/tools/migration-radar", label: "Migration Radar" },
+    { href: "/tools/result-doctor", label: "Result Doctor" },
+    { href: "/tools/money-finder", label: "Money Finder" },
+    { href: "/tools/du-paper-code-finder", label: "Paper Code Finder" },
+    { href: "/tools/elective-finder", label: "Elective Finder" },
+    { href: "/tools/degree-planner", label: "Degree & 4th-Year Planner" },
+    { href: "/tools/er-decoder", label: "ER & Improvement Decoder" },
+    { href: "/tools/revaluation", label: "Revaluation Hub" },
+    { href: "/blog", label: "Blog" },
+  ];
+
+  const isOthersActive = others.some(item => pathname.startsWith(item.href));
 
   return (
     <nav className="hidden items-center gap-0.5 text-xs lg:text-sm font-medium md:flex" aria-label="Main navigation">
@@ -94,6 +120,32 @@ export function SiteNavigation() {
           </Link>
         );
       })}
+
+      <div className="relative group">
+        <button className={`flex min-h-9 items-center gap-1 rounded-xl px-2.5 py-1.5 transition-colors ${
+          isOthersActive ? "bg-brand-soft text-brand font-semibold" : "text-muted hover:bg-surface-muted hover:text-foreground"
+        }`}>
+          Others
+          <CaretDown size={14} weight="bold" className="transition-transform group-hover:rotate-180" />
+        </button>
+        {/* Dropdown Menu */}
+        <div className="absolute top-full right-0 mt-1 hidden w-48 flex-col rounded-xl border border-border bg-surface p-1.5 shadow-md group-hover:flex">
+          {others.map((item) => {
+            const isActive = pathname.startsWith(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`flex items-center rounded-lg px-3 py-2 text-sm transition-colors ${
+                  isActive ? "bg-brand-soft text-brand font-semibold" : "text-muted hover:bg-surface-muted hover:text-foreground"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+        </div>
+      </div>
     </nav>
   );
 }
@@ -158,33 +210,6 @@ export function MobileNavMenu() {
 
             {/* Quick Action Navigation Grid */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
-              {/* Quick Hero Cards */}
-              <div className="grid grid-cols-2 gap-3">
-                <Link
-                  href="/dashboard"
-                  onClick={() => setOpen(false)}
-                  className="flex flex-col justify-between rounded-2xl border border-brand/30 bg-brand-soft/40 p-4 text-brand shadow-2xs active:scale-98 transition"
-                >
-                  <GraduationCap size={24} weight="bold" />
-                  <div className="mt-3">
-                    <p className="text-xs font-bold uppercase tracking-wider text-brand/80">Student</p>
-                    <p className="text-sm font-bold text-foreground">Dashboard</p>
-                  </div>
-                </Link>
-
-                <Link
-                  href="/pyq-notes"
-                  onClick={() => setOpen(false)}
-                  className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-4 text-foreground shadow-2xs active:scale-98 transition"
-                >
-                  <FileArchive size={24} weight="bold" className="text-accent" />
-                  <div className="mt-3">
-                    <p className="text-xs font-bold uppercase tracking-wider text-muted">8,350+ Files</p>
-                    <p className="text-sm font-bold text-foreground">PYQ</p>
-                  </div>
-                </Link>
-              </div>
-
               {/* Menu Links by Section */}
               {NAVIGATION_SECTIONS.map((section) => (
                 <div key={section.title} className="space-y-2">
@@ -237,18 +262,7 @@ export function MobileNavMenu() {
               ))}
             </div>
 
-            {/* Mobile Footer Quick Action */}
-            <div className="border-t border-border bg-surface p-4 text-center">
-              <Link
-                href="/pyq-notes"
-                onClick={() => setOpen(false)}
-                className="flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-bold text-brand-foreground shadow-sm active:scale-98 transition"
-              >
-                <FileArchive size={18} weight="bold" />
-                <span>Explore PYQ</span>
-              </Link>
-            </div>
-          </div>,
+            </div>,
           document.body
         )}
     </div>
