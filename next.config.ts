@@ -32,9 +32,12 @@ const nextConfig: NextConfig = {
     "/*": [
       "./node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs",
       "./node_modules/pdfjs-dist/standard_fonts/**/*",
-      // Include the mapping JSON so fs.readFileSync works in Netlify serverless functions
+      // Include all JSONs so fs.readFileSync works in Netlify serverless functions
       "./public/data/du-canonical-mapping.json",
       "./public/data/canonical-programmes.json",
+      "./public/data/du-question-bank-full-mapped.json",
+      "./public/data/ramanujan-pyq-catalog.json",
+      "./public/data/papers-catalog.json",
     ],
   },
   experimental: {
@@ -44,6 +47,10 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "25mb",
     },
+    // Restrict the number of worker threads to prevent OOM errors during
+    // static generation of hundreds of pages that load massive 100MB+ JSON catalogs
+    cpus: 1,
+    workerThreads: false,
   },
 };
 
