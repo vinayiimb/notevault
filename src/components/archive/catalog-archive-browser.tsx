@@ -220,13 +220,30 @@ export function CatalogArchiveBrowser({ papers: initialPapers = [] }: { papers?:
     }
 
     let isMounted = true;
-    fetch("/data/papers-catalog.json")
-      .then((res) => res.json())
-      .then((data: CatalogPaper[]) => {
-        if (isMounted) {
-          setPapers(data);
-          setLoading(false);
+    Promise.all([
+      fetch("/data/papers-catalog.json").then((res) => res.json()),
+      fetch("/api/catalog-overrides").then((res) => res.json()).catch(() => []),
+    ])
+      .then(([papersData, overridesData]: [CatalogPaper[], any[]]) => {
+        if (!isMounted) return;
+        const overrideByKey = new Map<string, any>();
+        for (const o of overridesData) {
+          overrideByKey.set(`${o.course}\u0000${o.subjectKey}`, o);
         }
+        const unified = papersData.map((p) => {
+          const override = overrideByKey.get(`${p.course}\u0000${canonicalSubjectKey(p.subject)}`);
+          if (override) {
+            return {
+              ...p,
+              originalSubject: p.subject,
+              subject: override.displayName || p.subject,
+              semester: override.semesterOverride != null ? String(override.semesterOverride) : p.semester,
+            };
+          }
+          return p;
+        });
+        setPapers(unified);
+        setLoading(false);
       })
       .catch((err) => {
         console.error("Failed to fetch catalog:", err);
@@ -724,6 +741,7 @@ function SubjectList({
 
             {isOpen && (
               <div className="divide-y divide-border border-t border-border bg-surface-muted/40">
+                {/* Combinable download disabled for Cloudflare Workers migration 
                 {group.combinableCount > 1 && (
                   <div className="flex flex-wrap items-center justify-between gap-3 px-5 py-3 sm:px-6">
                     <p className="text-xs text-muted">
@@ -740,6 +758,7 @@ function SubjectList({
                     </a>
                   </div>
                 )}
+                */}
                 {group.sessions.map((sessionGroup) => (
                   <div
                     key={sessionGroup.key}

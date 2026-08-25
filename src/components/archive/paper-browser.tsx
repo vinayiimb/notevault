@@ -75,9 +75,12 @@ function toggle(set: Set<string>, value: string): Set<string> {
 
 type Tab = "course" | "semester" | "subject";
 
-export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogPaper[] }) {
+const EMPTY_ARRAY: CatalogPaper[] = [];
+
+export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?: CatalogPaper[] }) {
   const searchParams = useSearchParams();
   const requestedCourse = searchParams.get("course");
+  const requestedQuery = searchParams.get("q");
 
   const [papers, setPapers] = useState<CatalogPaper[]>(initialPapers);
   const [loading, setLoading] = useState(initialPapers.length === 0);
@@ -98,13 +101,30 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
     }
 
     let isMounted = true;
-    fetch("/data/papers-catalog.json")
-      .then((res) => res.json())
-      .then((data: CatalogPaper[]) => {
-        if (isMounted) {
-          setPapers(data);
-          setLoading(false);
+    Promise.all([
+      fetch("/data/papers-catalog.json").then((res) => res.json()),
+      fetch("/api/catalog-overrides").then((res) => res.json()).catch(() => []),
+    ])
+      .then(([papersData, overridesData]: [CatalogPaper[], any[]]) => {
+        if (!isMounted) return;
+        const overrideByKey = new Map<string, any>();
+        for (const o of overridesData) {
+          overrideByKey.set(`${o.course}\u0000${o.subjectKey}`, o);
         }
+        const unified = papersData.map((p) => {
+          const override = overrideByKey.get(`${p.course}\u0000${canonicalSubjectKey(p.subject)}`);
+          if (override) {
+            return {
+              ...p,
+              originalSubject: p.subject,
+              subject: override.displayName || p.subject,
+              semester: override.semesterOverride != null ? String(override.semesterOverride) : p.semester,
+            };
+          }
+          return p;
+        });
+        setPapers(unified);
+        setLoading(false);
       })
       .catch((err) => {
         console.error("Failed to fetch papers catalog:", err);
@@ -133,6 +153,15 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
       }
     }
   }, [requestedCourse, papers]);
+
+  // Sync free-text search from query parameter (e.g. from the header/hero
+  // search bar) into the Subject tab's search box, and jump straight there.
+  useEffect(() => {
+    if (requestedQuery) {
+      setSubjectSearch(requestedQuery);
+      setActiveTab("subject");
+    }
+  }, [requestedQuery]);
 
   const courses = useMemo(() => {
     const counts = new Map<string, number>();
@@ -275,7 +304,8 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
 
         <div className="flex rounded-xl border border-border/80 bg-surface-muted/80 p-1 text-sm shadow-2xs">
           <TabButton active={activeTab === "course"} onClick={() => setActiveTab("course")} label="Course" count={selectedCourses.size} />
-          <TabButton active={activeTab === "semester"} onClick={() => setActiveTab("semester")} label="Semester" count={selectedSemesters.size} />
+          {/* Semester option hidden per user request */}
+          {/* <TabButton active={activeTab === "semester"} onClick={() => setActiveTab("semester")} label="Semester" count={selectedSemesters.size} /> */}
           <TabButton active={activeTab === "subject"} onClick={() => setActiveTab("subject")} label="Subject" count={selectedSubjectKeys.size} />
         </div>
 
@@ -300,7 +330,8 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
             </FilterList>
           )}
 
-          {activeTab === "semester" && (
+          {/* Semester filter hidden */}
+          {/* {activeTab === "semester" && (
             <FilterList total={semesters.length} empty={semesters.length === 0}>
               {semesters.map((s) => (
                 <FilterCheckbox
@@ -312,7 +343,7 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
                 />
               ))}
             </FilterList>
-          )}
+          )} */}
 
           {activeTab === "subject" && (
             <FilterList
@@ -431,6 +462,23 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
                       const isKal = p.isKalindi || p.college === "Kalindi";
                       const isAnd = p.isANDC || p.college === "ANDC";
                       const isRam = p.isRamanujan || p.college === "Ramanujan";
+                      
+                      let cleanNoteStr = p.note ?? `Paper ${i + 1}`;
+                      // Remove college labels from the note to save space
+                      cleanNoteStr = cleanNoteStr
+                        .replace(/\[S\]\s*Shivaji\s*\|?\s*/gi, "")
+                        .replace(/\[K\]\s*Kalindi\s*\|?\s*/gi, "")
+                        .replace(/\[A\]\s*ANDC\s*\|?\s*/gi, "")
+                        .replace(/\[R\]\s*Ramanujan\s*\|?\s*/gi, "")
+                        .replace(/\[S\]\s*Shivaji/gi, "")
+                        .replace(/\[K\]\s*Kalindi/gi, "")
+                        .replace(/\[A\]\s*ANDC/gi, "")
+                        .replace(/\[R\]\s*Ramanujan/gi, "")
+                        .replace(/^\|\s*/, "") // Clean leading pipes
+                        .trim();
+                        
+                      if (!cleanNoteStr) cleanNoteStr = `Paper ${i + 1}`;
+
                       return (
                         <button
                           key={p.id}
@@ -442,7 +490,7 @@ export function PaperBrowser({ papers: initialPapers = [] }: { papers?: CatalogP
                               : "border-border bg-surface text-muted hover:border-border/80 hover:text-foreground"
                           }`}
                         >
-                          <span>{p.note ?? `Paper ${i + 1}`}</span>
+                          <span>{cleanNoteStr}</span>
                           {isShiv && (
                             <span
                               className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-emerald-500 text-emerald-950 uppercase"
