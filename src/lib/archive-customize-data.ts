@@ -22,11 +22,19 @@ export type ArchiveCourseOverview = {
   paperCount: number;
   distinctSubjectCount: number;
   candidateGroupCount: number;
+  mergedSubjectCount: number;
 };
 
 export async function getArchiveCourseOverview(): Promise<ArchiveCourseOverview[]> {
-  const [papers, courses] = await Promise.all([getFullPyqCatalog(), Promise.resolve(getCatalogCourses())]);
+  const [papers, courses, overrides] = await Promise.all([getFullPyqCatalog(), Promise.resolve(getCatalogCourses()), prisma.catalogSubjectOverride.findMany()]);
   const slugByCourse = new Map(courses.map((c) => [c.name, c.slug]));
+
+  const overridesByCourse = new Map<string, Set<string>>();
+  for (const o of overrides) {
+    const set = overridesByCourse.get(o.course) ?? new Set<string>();
+    set.add(o.subjectKey);
+    overridesByCourse.set(o.course, set);
+  }
 
   const byCourse = new Map<string, { paperCount: number; subjectKeys: Map<string, string> }>();
   for (const paper of papers) {
@@ -47,6 +55,7 @@ export async function getArchiveCourseOverview(): Promise<ArchiveCourseOverview[
       paperCount: entry.paperCount,
       distinctSubjectCount: entry.subjectKeys.size,
       candidateGroupCount: exactGroups.length + fuzzyGroups.length,
+      mergedSubjectCount: overridesByCourse.get(course)?.size ?? 0,
     });
   }
 
@@ -203,4 +212,48 @@ export async function searchArchiveSubjectsForManualMerge(filters: ArchiveManual
   return rows
     .sort((a, b) => a.course.localeCompare(b.course) || a.displayName.localeCompare(b.displayName))
     .slice(0, ARCHIVE_MANUAL_MERGE_MAX_ROWS);
+}
+
+export async function getAllMergedSubjects(): Promise<ArchiveManualMergeRow[]> {
+  const [papers, overrides, courses] = await Promise.all([
+    getRawUnifiedPyqArchive(),
+    prisma.catalogSubjectOverride.findMany(),
+    getCatalogCourses(),
+  ]);
+
+  if (overrides.length === 0) return [];
+
+  const slugByCourse = new Map(courses.map((c) => [c.name, c.slug]));
+  const overrideByKey = new Map(overrides.map((o) => [`${o.course}\u0000${o.subjectKey}`, o]));
+
+  const bySubjectKey = new Map<string, { course: string; subjectKey: string; rawVariants: Set<string>; paperCount: number }>();
+  for (const paper of papers) {
+    const key = canonicalSubjectKey(paper.subject);
+    if (!key) continue;
+    const mapKey = `${paper.course}\u0000${key}`;
+    if (!overrideByKey.has(mapKey)) continue; // only process if it has an override
+
+    const entry = bySubjectKey.get(mapKey) ?? { course: paper.course, subjectKey: key, rawVariants: new Set<string>(), paperCount: 0 };
+    entry.rawVariants.add(paper.subject);
+    entry.paperCount += 1;
+    bySubjectKey.set(mapKey, entry);
+  }
+
+  const rows: ArchiveManualMergeRow[] = [...bySubjectKey.values()].map((entry) => {
+    const override = overrideByKey.get(`${entry.course}\u0000${entry.subjectKey}`)!;
+    const variants = [...entry.rawVariants];
+    return {
+      course: entry.course,
+      courseSlug: slugByCourse.get(entry.course) ?? slugify(entry.course),
+      subjectKey: entry.subjectKey,
+      displayName: override.displayName ?? entry.subjectKey,
+      rawVariants: variants,
+      paperCount: entry.paperCount,
+      semesterOverride: override.semesterOverride ?? null,
+      hasOverride: true,
+      overrideId: override.id,
+    };
+  });
+
+  return rows.sort((a, b) => a.course.localeCompare(b.course) || a.displayName.localeCompare(b.displayName));
 }
