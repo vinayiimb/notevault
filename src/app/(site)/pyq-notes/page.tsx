@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { BookOpenText } from "@phosphor-icons/react/dist/ssr";
 import { CanonicalArchiveBrowser } from "@/components/archive/canonical-archive-browser";
-import { getFullPyqCatalog, catalogIntegrity } from "@/lib/pyq-catalog";
+import { getUnifiedPyqArchive, catalogIntegrity } from "@/lib/pyq-catalog";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
@@ -12,10 +12,10 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pyq-notes" },
 };
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 async function PapersContent() {
-  const papers = await getFullPyqCatalog();
+  const papers = await getUnifiedPyqArchive();
   return <CanonicalArchiveBrowser papers={papers} />;
 }
 

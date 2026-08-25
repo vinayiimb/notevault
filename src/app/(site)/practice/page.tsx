@@ -11,11 +11,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/practice" },
 };
 
-export const revalidate = 3600;
+export const dynamic = "force-dynamic";
 
 interface PracticePageProps {
   searchParams: Promise<{
     paperId?: string;
+    topic?: string;
   }>;
 }
 
@@ -121,7 +122,27 @@ export default async function PracticePage(props: PracticePageProps) {
         </p>
       </div>
 
-      <PracticeClient initialCourses={coursesData} preselectedPaper={preselectedPaper} />
+      <div className="mb-6 p-4 rounded-xl border border-blue-200 dark:border-blue-900 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-blue-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500 text-white rounded">NEW</span>
+            <h2 className="text-base font-bold text-slate-900 dark:text-white">IPMAT Indore 2026 – AfterBoards CBT Mock Test</h2>
+          </div>
+          <p className="text-xs text-slate-600 dark:text-slate-300 mt-1">
+            Experience the authentic online CBT exam interface with real-time timers, section switching, scientific calculator & palette navigation.
+          </p>
+        </div>
+        <a
+          href="/mock-test"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-[#007bff] hover:bg-blue-600 rounded-lg shadow-xs transition shrink-0"
+        >
+          Launch Mock Test Console &rarr;
+        </a>
+      </div>
+
+      <PracticeClient initialCourses={coursesData} preselectedPaper={preselectedPaper} initialTopic={searchParams.topic} />
     </div>
   );
 }
