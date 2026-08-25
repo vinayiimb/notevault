@@ -1,15 +1,43 @@
 import "server-only";
-import canonicalMappingData from "@/data/du-canonical-mapping.json";
 import type { CatalogPaper } from "@/lib/pyq-catalog-types";
 
-// Build lookup indexes on first load
-const mappingIndex = new Map<string, typeof canonicalMappingData.mappings[0][]>();
+type CanonicalMapping = {
+  raw_subject: string;
+  upc?: string;
+  canonical_programme: string;
+  canonical_subject: string;
+  category: string;
+  semester: string;
+  match_method: string;
+  status: string;
+};
+
+type CanonicalData = {
+  mappings: CanonicalMapping[];
+  summary: { programmes: number; subjects: number; categories: number; categories_list: string[] };
+};
+
+let canonicalMappingData: CanonicalData | null = null;
+const mappingIndex = new Map<string, CanonicalMapping[]>();
 const canonicalProgrammes = new Set<string>();
 
-function buildMappingIndex() {
+async function buildMappingIndex() {
   if (mappingIndex.size > 0) return; // Already built
 
-  const mappingsByKey = new Map<string, typeof canonicalMappingData.mappings[0][]>();
+  if (!canonicalMappingData) {
+    try {
+      const fs = require("fs");
+      const path = require("path");
+      const filePath = path.join(process.cwd(), "public", "data", "du-canonical-mapping.json");
+      const data = fs.readFileSync(filePath, "utf-8");
+      canonicalMappingData = JSON.parse(data) as CanonicalData;
+    } catch (err) {
+      console.warn("Failed to load canonical mapping JSON:", err);
+      canonicalMappingData = { mappings: [], summary: { programmes: 0, subjects: 0, categories: 0, categories_list: [] } };
+    }
+  }
+
+  const mappingsByKey = new Map<string, CanonicalMapping[]>();
 
   for (const mapping of canonicalMappingData.mappings) {
     // Create multiple lookup keys for flexibility
@@ -44,11 +72,11 @@ function buildMappingIndex() {
  * Find the best canonical mapping for a paper based on subject, course, semester, and UPC.
  * Returns the mapping or null if no match found.
  */
-export function findCanonicalMapping(paper: CatalogPaper) {
-  buildMappingIndex();
+export async function findCanonicalMapping(paper: CatalogPaper) {
+  await buildMappingIndex();
 
   // Try exact UPC match first (most reliable)
-  if (paper.upc) {
+  if (paper.upc && canonicalMappingData) {
     const upCMatches = canonicalMappingData.mappings.filter((m) => m.upc === paper.upc);
     if (upCMatches.length > 0) {
       // Prefer matches that also match the raw subject name
@@ -63,7 +91,7 @@ export function findCanonicalMapping(paper: CatalogPaper) {
 
   // Try matching by normalized subject name (substring match)
   const normalizedSubject = (paper.subject || "").toLowerCase().trim();
-  if (normalizedSubject.length > 3) {
+  if (normalizedSubject.length > 3 && canonicalMappingData) {
     // Find mappings where raw_subject contains significant part of paper.subject
     const matches = canonicalMappingData.mappings.filter((m) => {
       const rawNorm = (m.raw_subject || "").toLowerCase().trim();
@@ -93,8 +121,8 @@ export function findCanonicalMapping(paper: CatalogPaper) {
  * Enrich a paper with canonical mapping information.
  * If no match is found, marks it as UNMATCHED.
  */
-export function enrichPaperWithCanonical(paper: CatalogPaper): CatalogPaper {
-  const mapping = findCanonicalMapping(paper);
+export async function enrichPaperWithCanonical(paper: CatalogPaper): Promise<CatalogPaper> {
+  const mapping = await findCanonicalMapping(paper);
 
   if (!mapping) {
     return {
@@ -118,29 +146,29 @@ export function enrichPaperWithCanonical(paper: CatalogPaper): CatalogPaper {
 /**
  * Enrich multiple papers in batch.
  */
-export function enrichPapersWithCanonical(papers: CatalogPaper[]): CatalogPaper[] {
-  buildMappingIndex(); // Build index once for batch
-  return papers.map(enrichPaperWithCanonical);
+export async function enrichPapersWithCanonical(papers: CatalogPaper[]): Promise<CatalogPaper[]> {
+  await buildMappingIndex(); // Build index once for batch
+  return Promise.all(papers.map(enrichPaperWithCanonical));
 }
 
 /**
  * Get all canonical programmes in sorted order.
  */
-export function getCanonicalProgrammes(): string[] {
-  buildMappingIndex();
+export async function getCanonicalProgrammes(): Promise<string[]> {
+  await buildMappingIndex();
   return Array.from(canonicalProgrammes).sort();
 }
 
 /**
  * Get metadata about the canonical mapping.
  */
-export function getCanonicalMappingMetadata() {
-  buildMappingIndex();
+export async function getCanonicalMappingMetadata() {
+  await buildMappingIndex();
   return {
-    totalMappings: canonicalMappingData.mappings.length,
-    programmes: canonicalMappingData.summary.programmes,
-    subjects: canonicalMappingData.summary.subjects,
-    categories: canonicalMappingData.summary.categories,
-    categories_list: canonicalMappingData.summary.categories,
+    totalMappings: canonicalMappingData?.mappings.length || 0,
+    programmes: canonicalMappingData?.summary.programmes || 0,
+    subjects: canonicalMappingData?.summary.subjects || 0,
+    categories: canonicalMappingData?.summary.categories || 0,
+    categories_list: canonicalMappingData?.summary.categories_list || [],
   };
 }

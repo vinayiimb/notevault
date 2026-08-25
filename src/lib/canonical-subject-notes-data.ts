@@ -1,46 +1,46 @@
 import "server-only";
-import { readFileSync } from "node:fs";
-import path from "node:path";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 
 type CanonicalProgrammeRaw = { name: string; subjects: string[] };
 
-// Read at runtime via fs rather than a static JSON import — this file is
-// 9.5MB, and a static import gets duplicated (inlined as JS) into every
-// separate serverless function that imports this module. The /notes pages
-// are each their own function (unlike /admin's single catch-all route,
-// which only pays this cost once), so a static import here meant 3 extra
-// full copies of the file in the deployment output. See the matching
-// outputFileTracingIncludes entry in next.config.ts, which is what makes
-// the file actually present on disk for readFileSync to find at runtime.
 let cachedProgrammes: Record<string, CanonicalProgrammeRaw> | null = null;
-function loadProgrammes(): Record<string, CanonicalProgrammeRaw> {
+
+async function loadProgrammes(): Promise<Record<string, CanonicalProgrammeRaw>> {
   if (cachedProgrammes) return cachedProgrammes;
-  const filePath = path.join(process.cwd(), "src/data/du-canonical-mapping.json");
-  const raw = JSON.parse(readFileSync(filePath, "utf-8"));
-  cachedProgrammes = raw.programmes as Record<string, CanonicalProgrammeRaw>;
-  return cachedProgrammes;
+  try {
+    const fs = require("fs");
+    const path = require("path");
+    const filePath = path.join(process.cwd(), "public", "data", "du-canonical-mapping.json");
+    const data = fs.readFileSync(filePath, "utf-8");
+    const raw = JSON.parse(data);
+    cachedProgrammes = raw.programmes as Record<string, CanonicalProgrammeRaw>;
+  } catch (err) {
+    console.warn("Failed to load canonical mapping JSON:", err);
+    cachedProgrammes = {};
+  }
+  return cachedProgrammes!;
 }
 
-const PROGRAMMES = loadProgrammes();
-
-function programmeList() {
-  return Object.values(PROGRAMMES)
+async function programmeList() {
+  const programmes = await loadProgrammes();
+  return Object.values(programmes)
     .map((p) => ({ name: p.name, slug: slugify(p.name), subjects: p.subjects }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
 
-export function getAllCanonicalProgrammeSlugs() {
-  return programmeList().map((p) => p.slug);
+export async function getAllCanonicalProgrammeSlugs() {
+  const list = await programmeList();
+  return list.map((p) => p.slug);
 }
 
-export function findCanonicalProgramme(programmeSlug: string) {
-  return programmeList().find((p) => p.slug === programmeSlug) ?? null;
+export async function findCanonicalProgramme(programmeSlug: string) {
+  const list = await programmeList();
+  return list.find((p) => p.slug === programmeSlug) ?? null;
 }
 
-export function findCanonicalSubject(programmeSlug: string, subjectSlug: string) {
-  const programme = findCanonicalProgramme(programmeSlug);
+export async function findCanonicalSubject(programmeSlug: string, subjectSlug: string) {
+  const programme = await findCanonicalProgramme(programmeSlug);
   if (!programme) return null;
   const subject = programme.subjects.find((s) => slugify(s) === subjectSlug);
   if (!subject) return null;
@@ -59,7 +59,8 @@ export async function getProgrammesWithNotesStatus() {
     console.warn("Database unavailable for getProgrammesWithNotesStatus, returning zero counts:", err instanceof Error ? err.message : err);
   }
 
-  return programmeList().map((p) => ({
+  const list = await programmeList();
+  return list.map((p) => ({
     slug: p.slug,
     name: p.name,
     subjectCount: p.subjects.length,
@@ -68,7 +69,7 @@ export async function getProgrammesWithNotesStatus() {
 }
 
 export async function getProgrammeSubjectsWithNotesStatus(programmeSlug: string) {
-  const programme = findCanonicalProgramme(programmeSlug);
+  const programme = await findCanonicalProgramme(programmeSlug);
   if (!programme) return null;
 
   const notes = await prisma.canonicalSubjectNote.findMany({
@@ -86,7 +87,7 @@ export async function getProgrammeSubjectsWithNotesStatus(programmeSlug: string)
 }
 
 export async function getCanonicalNote(programmeSlug: string, subjectSlug: string) {
-  const found = findCanonicalSubject(programmeSlug, subjectSlug);
+  const found = await findCanonicalSubject(programmeSlug, subjectSlug);
   if (!found) return null;
 
   const existing = await prisma.canonicalSubjectNote.findUnique({
