@@ -21,7 +21,7 @@ let canonicalMappingData: CanonicalData | null = null;
 const mappingIndex = new Map<string, CanonicalMapping[]>();
 const canonicalProgrammes = new Set<string>();
 
-import canonicalRaw from "../../../public/data/du-canonical-mapping.json";
+import canonicalRaw from "../../public/data/du-canonical-mapping.json";
 
 async function buildMappingIndex() {
   if (mappingIndex.size > 0) return; // Already built

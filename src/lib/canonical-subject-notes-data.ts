@@ -6,7 +6,7 @@ type CanonicalProgrammeRaw = { name: string; subjects: string[] };
 
 let cachedProgrammes: Record<string, CanonicalProgrammeRaw> | null = null;
 
-import raw from "../../../public/data/canonical-programmes.json";
+import raw from "../../public/data/canonical-programmes.json";
 
 async function loadProgrammes(): Promise<Record<string, CanonicalProgrammeRaw>> {
   if (cachedProgrammes) return cachedProgrammes;
