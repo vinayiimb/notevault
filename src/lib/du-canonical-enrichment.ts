@@ -28,7 +28,7 @@ async function buildMappingIndex() {
 
   if (!canonicalMappingData) {
     try {
-      canonicalMappingData = canonicalRaw as CanonicalData;
+      canonicalMappingData = canonicalRaw as unknown as CanonicalData;
     } catch (err) {
       console.warn("Failed to load canonical mapping JSON:", err);
       canonicalMappingData = { mappings: [], summary: { programmes: 0, subjects: 0, categories: 0, categories_list: [] } };
