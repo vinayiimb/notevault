@@ -80,6 +80,7 @@ const EMPTY_ARRAY: CatalogPaper[] = [];
 export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?: CatalogPaper[] }) {
   const searchParams = useSearchParams();
   const requestedCourse = searchParams.get("course");
+  const requestedSubject = searchParams.get("subject");
   const requestedQuery = searchParams.get("q");
 
   const [papers, setPapers] = useState<CatalogPaper[]>(initialPapers);
@@ -136,11 +137,12 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
     };
   }, [initialPapers]);
 
-  // Sync course from query parameter if provided
+  // Sync course and subject from query parameters if provided
   useEffect(() => {
-    if (requestedCourse && papers.length > 0) {
+    if (papers.length === 0) return;
+
+    if (requestedCourse) {
       const q = requestedCourse.trim().toLowerCase();
-      // Look for direct match or substring match in papers
       const match = papers.find(
         (p) => (p.course || "").toLowerCase() === q ||
                (p.course || "").toLowerCase().includes(q) ||
@@ -152,7 +154,47 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
         setSelectedCourses(new Set([requestedCourse]));
       }
     }
-  }, [requestedCourse, papers]);
+
+    if (requestedSubject) {
+      // Match by exact canonical key first, then fallback
+      const match = papers.find(p => canonicalSubjectKey(p.subject) === requestedSubject);
+      if (match) {
+        setSelectedSubjectKeys(new Set([canonicalSubjectKey(match.subject)]));
+      } else {
+        setSelectedSubjectKeys(new Set([requestedSubject]));
+      }
+      setActiveTab("subject"); // Automatically open subject tab if they were deep-linked here
+    }
+  }, [requestedCourse, requestedSubject, papers]);
+
+  // Sync state back to the URL so the address bar (and Copy Link button) always has a shareable link
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    let changed = false;
+
+    const currentCourse = Array.from(selectedCourses)[0];
+    if (currentCourse && url.searchParams.get("course") !== currentCourse) {
+      url.searchParams.set("course", currentCourse);
+      changed = true;
+    } else if (!currentCourse && url.searchParams.has("course")) {
+      url.searchParams.delete("course");
+      changed = true;
+    }
+
+    const currentSubject = Array.from(selectedSubjectKeys)[0];
+    if (currentSubject && url.searchParams.get("subject") !== currentSubject) {
+      url.searchParams.set("subject", currentSubject);
+      changed = true;
+    } else if (!currentSubject && url.searchParams.has("subject")) {
+      url.searchParams.delete("subject");
+      changed = true;
+    }
+
+    if (changed) {
+      window.history.replaceState(null, "", url.toString());
+    }
+  }, [selectedCourses, selectedSubjectKeys]);
 
   // Sync free-text search from query parameter (e.g. from the header/hero
   // search bar) into the Subject tab's search box, and jump straight there.
