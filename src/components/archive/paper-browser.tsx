@@ -95,6 +95,7 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
   const [selectedSubjectKeys, setSelectedSubjectKeys] = useState<Set<string>>(new Set());
   const [yearRange, setYearRange] = useState<string | null>(null);
   const [paperIndex, setPaperIndex] = useState(0);
+  const [isUrlInitialized, setIsUrlInitialized] = useState(false);
 
   useEffect(() => {
     if (initialPapers.length > 0) {
@@ -167,10 +168,14 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
       }
       setActiveTab("subject"); // Automatically open subject tab if they were deep-linked here
     }
+    
+    setIsUrlInitialized(true);
   }, [requestedCourse, requestedSubject, papers]);
 
   // Sync state back to the URL using Next.js router so the address bar (and Copy Link button) always has a shareable link
   useEffect(() => {
+    if (!isUrlInitialized) return;
+    
     const currentCourse = Array.from(selectedCourses)[0];
     const currentSubject = Array.from(selectedSubjectKeys)[0];
     
