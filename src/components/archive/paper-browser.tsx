@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { ArrowSquareOut, DownloadSimple, MagnifyingGlass } from "@phosphor-icons/react";
 import { CopyButton } from "@/components/pyq/copy-button";
 import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
@@ -78,6 +78,8 @@ type Tab = "course" | "semester" | "subject";
 const EMPTY_ARRAY: CatalogPaper[] = [];
 
 export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?: CatalogPaper[] }) {
+  const router = useRouter();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const requestedCourse = searchParams.get("course");
   const requestedSubject = searchParams.get("subject");
@@ -167,34 +169,34 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
     }
   }, [requestedCourse, requestedSubject, papers]);
 
-  // Sync state back to the URL so the address bar (and Copy Link button) always has a shareable link
+  // Sync state back to the URL using Next.js router so the address bar (and Copy Link button) always has a shareable link
   useEffect(() => {
-    if (typeof window === "undefined") return;
-    const url = new URL(window.location.href);
+    const currentCourse = Array.from(selectedCourses)[0];
+    const currentSubject = Array.from(selectedSubjectKeys)[0];
+    
+    const params = new URLSearchParams(searchParams.toString());
     let changed = false;
 
-    const currentCourse = Array.from(selectedCourses)[0];
-    if (currentCourse && url.searchParams.get("course") !== currentCourse) {
-      url.searchParams.set("course", currentCourse);
+    if (currentCourse && params.get("course") !== currentCourse) {
+      params.set("course", currentCourse);
       changed = true;
-    } else if (!currentCourse && url.searchParams.has("course")) {
-      url.searchParams.delete("course");
+    } else if (!currentCourse && params.has("course")) {
+      params.delete("course");
       changed = true;
     }
 
-    const currentSubject = Array.from(selectedSubjectKeys)[0];
-    if (currentSubject && url.searchParams.get("subject") !== currentSubject) {
-      url.searchParams.set("subject", currentSubject);
+    if (currentSubject && params.get("subject") !== currentSubject) {
+      params.set("subject", currentSubject);
       changed = true;
-    } else if (!currentSubject && url.searchParams.has("subject")) {
-      url.searchParams.delete("subject");
+    } else if (!currentSubject && params.has("subject")) {
+      params.delete("subject");
       changed = true;
     }
 
     if (changed) {
-      window.history.replaceState(null, "", url.toString());
+      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
     }
-  }, [selectedCourses, selectedSubjectKeys]);
+  }, [selectedCourses, selectedSubjectKeys, pathname, router, searchParams]);
 
   // Sync free-text search from query parameter (e.g. from the header/hero
   // search bar) into the Subject tab's search box, and jump straight there.
@@ -451,7 +453,11 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
                 </p>
               </div>
               <div className="flex items-center gap-2 shrink-0">
-                <CopyButtonClient />
+                <CopyButton
+                  text={typeof window === "undefined" ? "" : window.location.href}
+                  label="Copy link"
+                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted transition hover:border-accent hover:text-accent shadow-2xs"
+                />
                 <a
                   href={selectedPaper.pdfUrl}
                   target="_blank"
@@ -689,17 +695,7 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
   );
 }
 
-// Isolated so `window.location.href` is only ever read client-side, inside
-// the click handler CopyButton already guards — never during render.
-function CopyButtonClient() {
-  return (
-    <CopyButton
-      text={typeof window === "undefined" ? "" : window.location.href}
-      label="Copy link"
-      className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted transition hover:border-accent hover:text-accent shadow-2xs"
-    />
-  );
-}
+
 
 function TabButton({ active, label, count, onClick }: { active: boolean; label: string; count: number; onClick: () => void }) {
   return (
