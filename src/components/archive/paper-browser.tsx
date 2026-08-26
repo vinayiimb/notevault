@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { ArrowSquareOut, DownloadSimple, MagnifyingGlass } from "@phosphor-icons/react";
+import { ArrowSquareOut, DownloadSimple, MagnifyingGlass, Funnel, X } from "@phosphor-icons/react";
 import { CopyButton } from "@/components/pyq/copy-button";
 import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import { canonicalCourseName, canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
@@ -96,6 +96,7 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
   const [yearRange, setYearRange] = useState<string | null>(null);
   const [paperIndex, setPaperIndex] = useState(0);
   const [isUrlInitialized, setIsUrlInitialized] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
 
   useEffect(() => {
     if (initialPapers.length > 0) {
@@ -337,18 +338,48 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[290px_1fr] xl:grid-cols-[330px_1fr]">
-      <aside className="flex flex-col lg:sticky lg:top-24 lg:h-[calc(100vh-7.5rem)]">
-        <div className="mb-2.5 flex items-center justify-between">
-          <h2 className="text-sm font-bold tracking-tight text-foreground">Filters</h2>
+      {/* Mobile Filter Button */}
+      <div className="lg:hidden">
+        <button
+          type="button"
+          onClick={() => setIsMobileFilterOpen(true)}
+          className="flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3.5 text-sm font-semibold text-foreground shadow-sm transition hover:bg-surface-muted"
+        >
+          <Funnel size={18} weight="bold" className="text-muted" />
+          Filter Papers
           {totalFiltersActive > 0 && (
+            <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white">
+              {totalFiltersActive}
+            </span>
+          )}
+        </button>
+      </div>
+
+      <aside
+        className={`fixed inset-0 z-50 flex-col bg-background p-4 sm:p-6 lg:static lg:z-auto lg:flex lg:h-[calc(100vh-7.5rem)] lg:bg-transparent lg:p-0 ${
+          isMobileFilterOpen ? "flex" : "hidden"
+        }`}
+      >
+        <div className="mb-4 lg:mb-2.5 flex items-center justify-between">
+          <h2 className="text-lg lg:text-sm font-bold tracking-tight text-foreground">Filters</h2>
+          <div className="flex items-center gap-4">
+            {totalFiltersActive > 0 && (
+              <button
+                type="button"
+                onClick={clearAllFilters}
+                className="text-xs font-semibold text-accent hover:underline hover:text-accent-hover transition"
+              >
+                Clear all ({totalFiltersActive})
+              </button>
+            )}
             <button
               type="button"
-              onClick={clearAllFilters}
-              className="text-xs font-semibold text-accent hover:underline hover:text-accent-hover transition"
+              onClick={() => setIsMobileFilterOpen(false)}
+              className="flex items-center justify-center rounded-full bg-surface-muted p-1.5 text-foreground lg:hidden"
             >
-              Clear all ({totalFiltersActive})
+              <X size={16} weight="bold" />
             </button>
-          )}
+          </div>
         </div>
 
         <div className="flex rounded-xl border border-border/80 bg-surface-muted/80 p-1 text-sm shadow-2xs">
@@ -413,6 +444,17 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
               ))}
             </FilterList>
           )}
+        </div>
+
+        {/* Mobile Apply Button */}
+        <div className="mt-4 shrink-0 lg:hidden">
+          <button
+            type="button"
+            onClick={() => setIsMobileFilterOpen(false)}
+            className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-accent-hover"
+          >
+            Show {matchingPapers.length.toLocaleString()} Papers
+          </button>
         </div>
       </aside>
 
