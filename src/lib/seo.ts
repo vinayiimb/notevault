@@ -124,6 +124,107 @@ export function generateSubjectMetadata(subjectName: string, program: string, se
   }
 }
 
+/* ------------------------------------------------------------------ */
+/* DU PYP SEO hierarchy — /papers/[prog], /papers/[prog]/[subj],       */
+/* /paper-code/[code], /paper/[slug]. Titles kept natural (no keyword  */
+/* stuffing); the root layout appends " | DU PYQ Online".              */
+/* ------------------------------------------------------------------ */
+
+export function programmePapersMetadata(name: string, slug: string, paperCount: number, subjectCount: number) {
+  const title = `${name} Previous Year Question Papers`;
+  const description =
+    `Delhi University ${name} previous year question papers — ${paperCount.toLocaleString("en-IN")} papers across ${subjectCount} subjects, organised by semester and paper type. View or download the original PDFs.`;
+  const canonical = `/papers/${slug}`;
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: absoluteUrl(canonical), type: "website" as const },
+  };
+}
+
+export function subjectPapersMetadata(
+  subjectName: string,
+  programmeName: string,
+  slugPath: string,
+  opts: { semesters?: string[]; years?: string[]; paperCode?: string | null; paperCount: number },
+) {
+  const semPart = opts.semesters && opts.semesters.length === 1 ? ` (Semester ${opts.semesters[0]})` : "";
+  const title = `${subjectName} DU Previous Year Question Papers | ${programmeName}`;
+  const yearSpan =
+    opts.years && opts.years.length > 1 ? `${opts.years[opts.years.length - 1]}–${opts.years[0]}` : opts.years?.[0];
+  const description =
+    `${subjectName}${semPart} previous year question papers for Delhi University ${programmeName}. ` +
+    `${opts.paperCount} paper${opts.paperCount === 1 ? "" : "s"}${yearSpan ? ` from ${yearSpan}` : ""}` +
+    `${opts.paperCode ? `, paper code ${opts.paperCode}` : ""}. Original PDFs, no login.`;
+  const canonical = `/papers/${slugPath}`;
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: absoluteUrl(canonical), type: "website" as const },
+  };
+}
+
+export function paperCodeMetadata(code: string, subjectNames: string[], paperCount: number, years: string[]) {
+  const primary = subjectNames[0] ?? "DU course";
+  const title = `${code} ${primary} DU Previous Year Papers`;
+  const yearSpan = years.length > 1 ? `${years[years.length - 1]}–${years[0]}` : years[0];
+  const description =
+    `Unique Paper Code ${code} — ${primary}${subjectNames.length > 1 ? ` (and ${subjectNames.length - 1} related title${subjectNames.length > 2 ? "s" : ""})` : ""}. ` +
+    `${paperCount} Delhi University question paper${paperCount === 1 ? "" : "s"}${yearSpan ? ` from ${yearSpan}` : ""}, with links to each subject page.`;
+  const canonical = `/paper-code/${code}`;
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: absoluteUrl(canonical), type: "website" as const },
+  };
+}
+
+export function individualPaperMetadata(p: {
+  subjectName: string;
+  programmeName: string;
+  year: string | null;
+  session: string | null;
+  slug: string;
+}) {
+  const when = [p.session, p.year].filter(Boolean).join(" ");
+  const title =
+    `${p.subjectName} Question Paper${p.year ? ` ${p.year}` : ""} | ${p.programmeName} DU`;
+  const description =
+    `Delhi University ${p.programmeName} — ${p.subjectName} previous year question paper${when ? ` (${when})` : ""}. ` +
+    `View the original PDF, download it, or browse other years for the same subject.`;
+  const canonical = `/paper/${p.slug}`;
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: absoluteUrl(canonical), type: "article" as const },
+  };
+}
+
+/** Minimal CollectionPage node — reflects the visible list of papers. */
+export function collectionPageJsonLd(opts: { name: string; description: string; url: string; itemUrls: string[] }) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "CollectionPage",
+    name: opts.name,
+    description: opts.description,
+    url: opts.url.startsWith("http") ? opts.url : absoluteUrl(opts.url),
+    isPartOf: { "@id": `${SITE_URL}/#website` },
+    mainEntity: {
+      "@type": "ItemList",
+      numberOfItems: opts.itemUrls.length,
+      itemListElement: opts.itemUrls.slice(0, 100).map((u, i) => ({
+        "@type": "ListItem",
+        position: i + 1,
+        url: u.startsWith("http") ? u : absoluteUrl(u),
+      })),
+    },
+  };
+}
+
 export function educationalCourseJsonLd(courseName: string, description: string, url: string) {
   return {
     "@context": "https://schema.org",
