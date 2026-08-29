@@ -6,20 +6,26 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Calendar, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { getProgramsByLevel, getExamSessions } from "@/lib/data";
+import { getSeoProgrammes, isProgrammeIndexable } from "@/lib/du-pyp-seo";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 export const metadata: Metadata = {
-  title: "DU Previous Year Question Papers | DU PYQ Online",
-  description: "Download Delhi University previous year question papers by course, subject, semester and year. Access DU PYQs online for free with no login required.",
+  title: "DU Previous Year Question Papers",
+  description: "Delhi University previous year question papers by programme, subject, paper code and year. Browse every DU course, view or download the original PDFs, no login required.",
   alternates: { canonical: "/previous-year-papers" },
 };
 
 export default async function PreviousYearPapersPage() {
-  const [programs, sessions] = await Promise.all([
-    getProgramsByLevel("COLLEGE"),
-    getExamSessions(),
+  const [programs, sessions, seoProgrammes] = await Promise.all([
+    getProgramsByLevel("COLLEGE").catch(() => []),
+    getExamSessions().catch(() => []),
+    getSeoProgrammes(),
   ]);
+
+  const indexableProgrammes = seoProgrammes
+    .filter(isProgrammeIndexable)
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
@@ -41,14 +47,43 @@ export default async function PreviousYearPapersPage() {
         </p>
       </div>
 
-      {/* Grid of Courses */}
+      {/* All DU programmes — crawlable index into the /papers/[programme] hierarchy */}
       <section className="mt-12">
+        <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
+          <GraduationCap size={22} className="text-accent" />
+          All Delhi University Programmes
+        </h2>
+        <p className="text-sm text-muted mt-1">
+          {indexableProgrammes.length} programmes with previous year question papers. Open one to
+          browse its subjects by semester.
+        </p>
+
+        <ul className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {indexableProgrammes.map((p) => (
+            <li key={p.slug}>
+              <Link
+                href={`/papers/${p.slug}`}
+                className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 text-sm transition hover:border-accent"
+              >
+                <span className="min-w-0 truncate font-medium text-foreground">{p.name}</span>
+                <span className="ml-2 shrink-0 text-xs text-muted">
+                  {p.totalPapers.toLocaleString("en-IN")}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      {/* Grid of Courses (database-backed programme pages, when populated) */}
+      {programs.length > 0 && (
+      <section className="mt-16 border-t border-border/60 pt-12">
         <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
           <GraduationCap size={22} className="text-accent" />
           Browse by Course
         </h2>
         <p className="text-sm text-muted mt-1">Select your Delhi University programme to view semesters and subjects.</p>
-        
+
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {programs.map((program) => (
             <div
@@ -80,8 +115,10 @@ export default async function PreviousYearPapersPage() {
           ))}
         </div>
       </section>
+      )}
 
       {/* Browse by Exam Session */}
+      {sessions.length > 0 && (
       <section className="mt-16 border-t border-border/60 pt-12">
         <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
           <Calendar size={22} className="text-accent" />
@@ -105,6 +142,7 @@ export default async function PreviousYearPapersPage() {
           ))}
         </div>
       </section>
+      )}
     </div>
   );
 }

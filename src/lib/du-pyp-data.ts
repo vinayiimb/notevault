@@ -228,6 +228,15 @@ async function getAllPapers(): Promise<DuPypPaper[]> {
   return allPapersCache;
 }
 
+/**
+ * Every deduped subject-node (programme + subject + courseNumber + upc +
+ * paperType) with its attached exam papers. Shared, module-level cached.
+ * Consumed by the SEO page/sitemap layer in `du-pyp-seo.ts`.
+ */
+export async function getAllDuPypPapers(): Promise<DuPypPaper[]> {
+  return getAllPapers();
+}
+
 export async function getTotalDuPypCount(): Promise<number> {
   const rows = await getDuQuestionBankRows();
   const ramRows = (await (async () => {
