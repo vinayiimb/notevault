@@ -113,16 +113,16 @@ No schema changes. No routes removed. `/papers`, `/pyp`, `/programs`, `/subjects
 
 ## 5. Sitemap architecture
 
-`/sitemap.xml` is now a **sitemap index** (Next `generateSitemaps`) pointing at:
+`/sitemap.xml` is a hand-rolled **sitemap index** (`app/sitemap.xml/route.ts`) pointing at `/sitemaps/<shard>.xml` (`app/sitemaps/[shard]/route.ts`). Hand-rolled rather than Next's `generateSitemaps` because this Next version does not serve an index document at `/sitemap.xml` when `generateSitemaps` is used — only the shards — and `robots.txt` must point at a working `/sitemap.xml`.
 
 | Shard | Contents | Priority | changefreq |
 | --- | --- | --- | --- |
-| `/sitemap/static.xml` | homepage, main nav, indexable tools, blog index (16) | 0.4–1.0 | daily–monthly |
-| `/sitemap/blog.xml` | 21 posts | 0.5 | monthly |
-| `/sitemap/programmes.xml` | indexable programme pages | 0.8 | weekly |
-| `/sitemap/subjects-{0..N}.xml` | indexable subject pages, 20k/shard | 0.7 | monthly |
-| `/sitemap/paper-codes-{0..N}.xml` | indexable UPC pages, 20k/shard | 0.6 | monthly |
-| `/sitemap/papers-{0..N}.xml` | individual paper pages, 20k/shard | 0.5 | yearly |
+| `/sitemaps/static.xml` | homepage, main nav, indexable tools, blog index (16) | 0.4–1.0 | daily–monthly |
+| `/sitemaps/blog.xml` | 21 posts | 0.5 | monthly |
+| `/sitemaps/programmes.xml` | indexable programme pages | 0.8 | weekly |
+| `/sitemaps/subjects-{0..N}.xml` | indexable subject pages, 20k/shard | 0.7 | monthly |
+| `/sitemaps/paper-codes-{0..N}.xml` | indexable UPC pages, 20k/shard | 0.6 | monthly |
+| `/sitemaps/papers-{0..N}.xml` | individual paper pages, 20k/shard | 0.5 | yearly |
 
 - No DB call — the sitemap can never silently collapse again.
 - `lastModified` = the data file's real mtime for JSON URLs, real post date for blog, omitted for static.
@@ -168,7 +168,7 @@ Sample generated URLs:
 - Crawlable `<Link>` / `<a href>` throughout; no JS-only navigation for core paths.
 - External PDF links carry `rel="nofollow noopener"`; no separate view/download/preview URLs.
 - ISR (`revalidate = 86400`) — pages stay static (no function-count blowup), refresh daily.
-- `generateStaticParams` pre-builds only the largest slice of each level (60 programmes, subjects of the top 25, first 500 codes, first 1000 papers); the long tail is ISR-on-demand and cached on first hit — bounded build time and memory.
+- `generateStaticParams` pre-builds only the largest slice of each level (40 programmes, subjects of the top 10 programmes ≈ 850 pages, first 200 codes, first 300 papers); the long tail is ISR-on-demand and cached on first hit — bounded build time and memory.
 
 ---
 
@@ -180,7 +180,37 @@ None. The architecture is entirely on the versioned JSON catalog. If the Prisma 
 
 ## 9. Tests performed
 
-_(see §11 and `SEO_VALIDATION.md`)_
+**Build (`next build`, run 3×):**
+- ✓ Compiled successfully.
+- ✓ TypeScript — no errors (whole project).
+- ✓ Static generation — 1,484 pages, **0 prerender errors**. Includes 40 `/papers/[programmeSlug]`, ~850 `/papers/[programmeSlug]/[subjectSlug]`, 200 `/paper-code/[code]`, 300 `/paper/[slug]`, and all sitemap shards (`/sitemaps/static.xml`, `/sitemaps/blog.xml`, `/sitemaps/programmes.xml`, `/sitemaps/subjects-0.xml`, …) + `/sitemap.xml` index + `/robots.txt`.
+- DB-unreachable errors during the build are **expected and handled** — existing pages have fallbacks; the new pages and sitemap make no DB call.
+
+**Data validation (`scripts/seo-validate.mjs`):**
+- 176 programme / 6,551 subject / 4,380 paper-code / 20,689 paper URLs eligible.
+- **0** duplicate paths at every level.
+- Slug determinism confirmed — same input → same slug; paper slugs anchored on the stable PDF id.
+- 10 random subject pages spot-checked (`SEO_VALIDATION.md`) — each carries distinct name / programme / semester / paper-code / year-span / paper count. Not "identical but for the title".
+
+**Local HTTP smoke test (`next start`):** blocked in this environment by repeated `next dev`/port collisions trampling `.next`; the three green production builds cover route resolution, metadata, `notFound()` wiring and prerender. Recommended before/after deploy:
+
+```
+# valid — expect 200 + correct <title>/<link rel=canonical>
+curl -sI localhost:3000/papers/bcom-hons
+curl -s  localhost:3000/papers/bcom-hons/business-laws | grep -E 'canonical|<title>'
+curl -sI localhost:3000/paper-code/2412081102
+curl -sI localhost:3000/paper/<a-real-slug-from-SEO_VALIDATION.md>
+# invalid — expect 404
+curl -sI localhost:3000/papers/fake-program
+curl -sI localhost:3000/papers/bcom-hons/not-a-subject
+curl -sI localhost:3000/papers/ba-hons-economics/business-laws   # subject under wrong programme
+curl -sI localhost:3000/paper-code/9999999999
+curl -sI localhost:3000/paper/not-a-real-paper
+# sitemap
+curl -s localhost:3000/sitemap.xml | head          # index
+curl -s localhost:3000/sitemaps/programmes.xml | grep -c '<loc>'
+curl -s localhost:3000/robots.txt
+```
 
 ---
 
@@ -196,7 +226,7 @@ _(see §11 and `SEO_VALIDATION.md`)_
 
 ## 11. Exact next steps in Google Search Console
 
-1. **Deploy** the branch to production (Vercel). Verify `https://www.dupyq.online/sitemap.xml` returns the index and `/sitemap/programmes.xml` etc. resolve with 200.
+1. **Deploy** the branch to production (Vercel). Verify `https://www.dupyq.online/sitemap.xml` returns the index and `/sitemaps/programmes.xml` etc. resolve with 200.
 2. GSC → **Sitemaps** → remove the old `sitemap.xml` entry if present, re-add `https://www.dupyq.online/sitemap.xml`. Google follows the index to all shards automatically.
 3. GSC → **URL Inspection** on 3–4 representative new URLs (one per level). Confirm "URL is on Google" eligibility, correct canonical, no "Discovered – not indexed". Use **Request Indexing** for a handful of high-value programme pages (`/papers/bcom-hons`, `/papers/ba-hons-economics`, …).
 4. GSC → **Pages** report — watch "Crawled – currently not indexed" and "Discovered – currently not indexed" over 2–4 weeks. Some tail pages will sit there; that's expected. If *programme* or *subject* pages pile up there, they may read as thin — tighten the indexability threshold.
