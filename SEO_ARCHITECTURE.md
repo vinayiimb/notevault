@@ -1,7 +1,7 @@
 # DU PYQ Online — Scalable SEO Page Architecture
 
-Branch: `seo/scalable-page-architecture` (off `origin/main` @ `7bc1485`)
-Status: implemented, local build + URL tests pending your review. **Not deployed** (per your local-first rule).
+Branch: `seo/scalable-page-architecture` (off `origin/main` @ `7bc1485`; commits `3183171`, `b50463c`)
+Status: **implemented, `next build` green, local HTTP smoke tests pass.** Not deployed (per your local-first rule) — ready for `vercel deploy` from this branch.
 
 ---
 
@@ -192,25 +192,28 @@ None. The architecture is entirely on the versioned JSON catalog. If the Prisma 
 - Slug determinism confirmed — same input → same slug; paper slugs anchored on the stable PDF id.
 - 10 random subject pages spot-checked (`SEO_VALIDATION.md`) — each carries distinct name / programme / semester / paper-code / year-span / paper count. Not "identical but for the title".
 
-**Local HTTP smoke test (`next start`):** blocked in this environment by repeated `next dev`/port collisions trampling `.next`; the three green production builds cover route resolution, metadata, `notFound()` wiring and prerender. Recommended before/after deploy:
+**Local HTTP smoke test (`next start`, all passed):**
 
-```
-# valid — expect 200 + correct <title>/<link rel=canonical>
-curl -sI localhost:3000/papers/bcom-hons
-curl -s  localhost:3000/papers/bcom-hons/business-laws | grep -E 'canonical|<title>'
-curl -sI localhost:3000/paper-code/2412081102
-curl -sI localhost:3000/paper/<a-real-slug-from-SEO_VALIDATION.md>
-# invalid — expect 404
-curl -sI localhost:3000/papers/fake-program
-curl -sI localhost:3000/papers/bcom-hons/not-a-subject
-curl -sI localhost:3000/papers/ba-hons-economics/business-laws   # subject under wrong programme
-curl -sI localhost:3000/paper-code/9999999999
-curl -sI localhost:3000/paper/not-a-real-paper
-# sitemap
-curl -s localhost:3000/sitemap.xml | head          # index
-curl -s localhost:3000/sitemaps/programmes.xml | grep -c '<loc>'
-curl -s localhost:3000/robots.txt
-```
+| URL | Expected | Got |
+| --- | --- | --- |
+| `/papers/bcom-hons` | 200, self-canonical, natural title | ✓ `B.Com. (Hons.) Previous Year Question Papers \| DU PYQ Online` |
+| `/papers/bcom-hons/business-laws` | 200 + BreadcrumbList + CollectionPage JSON-LD, `robots: index,follow` | ✓ canonical + `og:url` correct, no `null`/`undefined` in HTML |
+| `/paper-code/2412081102` | 200 | ✓ |
+| `/paper/an-invitation-to-sociology-…-2302201101-1778057936` | 200, links to real qb.exam.du.ac.in PDF | ✓ |
+| `/papers/fake-program` | 404 | ✓ |
+| `/papers/bcom-hons/not-a-subject` | 404 | ✓ |
+| `/papers/ba-hons-economics/business-laws` (subject under wrong programme) | 404 | ✓ |
+| `/paper-code/9999999999` | 404 | ✓ |
+| `/paper/not-a-real-paper` | 404 | ✓ |
+| `/papers/aec` (non-programme bucket) | 200 + `robots: noindex,follow`, **not in sitemap** | ✓ |
+| `/papers/aec/aec-environmental-science-theory-into-practice` (subject under noindex programme) | 200 + `noindex,follow` + self-canonical | ✓ |
+| `/robots.txt` | 200, `Sitemap: …/sitemap.xml`, `/paper*` crawlable | ✓ |
+| `/sitemap.xml` | 200, `<sitemapindex>` with 7 shards | ✓ |
+| `/sitemaps/programmes.xml` | 200, 176 `<loc>` | ✓ |
+| `/sitemaps/subjects-0.xml` | 200, 6,551 `<loc>` | ✓ |
+| `/sitemaps/paper-codes-0.xml` | 200, 4,380 `<loc>` | ✓ |
+| `/sitemaps/papers-0.xml` / `papers-1.xml` | 200, 20,000 / 689 `<loc>` | ✓ |
+| `/sitemaps/bogus-99.xml` | 404 | ✓ |
 
 ---
 
