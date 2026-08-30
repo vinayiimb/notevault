@@ -143,6 +143,28 @@ export function programmePapersMetadata(name: string, slug: string, paperCount: 
   };
 }
 
+export function programmeSemesterMetadata(
+  name: string,
+  slug: string,
+  semester: number,
+  opts: { subjectCount: number; paperCount: number; years: string[] },
+) {
+  const title = `${name} Semester ${semester} Previous Year Question Papers | DU`;
+  const yearSpan =
+    opts.years.length > 1 ? `${opts.years[opts.years.length - 1]}–${opts.years[0]}` : opts.years[0];
+  const description =
+    `Delhi University ${name} Semester ${semester} previous year question papers — ` +
+    `${opts.subjectCount} subjects, ${opts.paperCount} papers${yearSpan ? ` (${yearSpan})` : ""}. ` +
+    `Every subject with its DSC/DSE/GE/SEC papers, view or download the original PDFs.`;
+  const canonical = `/papers/${slug}/semester-${semester}`;
+  return {
+    title,
+    description,
+    alternates: { canonical },
+    openGraph: { title, description, url: absoluteUrl(canonical), type: "website" as const },
+  };
+}
+
 export function subjectPapersMetadata(
   subjectName: string,
   programmeName: string,

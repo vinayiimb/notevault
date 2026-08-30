@@ -27,8 +27,9 @@ const stats = await seo.getSeoCoverageStats();
 const programmes = await seo.getSeoProgrammes();
 const indexableProgrammes = programmes.filter(seo.isProgrammeIndexable);
 
-const [progUrls, subjUrls, codeUrls, paperUrls] = await Promise.all([
+const [progUrls, semUrls, subjUrls, codeUrls, paperUrls] = await Promise.all([
   seo.getIndexableProgrammeUrls(),
+  seo.getIndexableProgrammeSemesterUrls(),
   seo.getIndexableSubjectUrls(),
   seo.getIndexablePaperCodeUrls(),
   seo.getIndexablePaperUrls(),
@@ -63,7 +64,7 @@ const blogCount = (() => {
 })();
 
 const totalSitemap =
-  staticCount + blogCount + progUrls.length + subjUrls.length + codeUrls.length + paperUrls.length;
+  staticCount + blogCount + progUrls.length + semUrls.length + subjUrls.length + codeUrls.length + paperUrls.length;
 
 const lines = [];
 const p = (s = "") => lines.push(s);
@@ -79,6 +80,7 @@ p("| --- | --- | --- | --- |");
 p(`| Static | ${staticCount} | ${staticCount} | — |`);
 p(`| Blog | ${blogCount} | ${blogCount} | — |`);
 p(`| Programmes | ${stats.programmes.total} | ${stats.programmes.indexable} | ${stats.programmes.total - stats.programmes.indexable} (non-programme buckets / < 3 subjects) |`);
+p(`| Programme × semester | — | ${semUrls.length} | thin sems (< 3 subjects / < 3 papers) are noindex |`);
 p(`| Subjects | ${stats.subjects.total} | ${stats.subjects.inSitemap} | ${stats.subjects.skippedEmptySlug} empty-slug + ${stats.subjects.skippedNoPapers} no-papers + ${stats.subjects.indexable - stats.subjects.inSitemap} under noindex programmes |`);
 p(`| Paper codes | ${stats.paperCodes.total} | ${stats.paperCodes.indexable} | ${stats.paperCodes.total - stats.paperCodes.indexable} (no papers) |`);
 p(`| Individual papers | ${stats.papers.total} | ${stats.papers.inSitemap} | ${stats.papers.total - stats.papers.inSitemap} (under noindex programme/subject) |`);
@@ -87,6 +89,7 @@ p();
 p("## Duplicates (should all be 0)");
 p();
 p(`- programme paths: ${dupes(progUrls)}`);
+p(`- programme-semester paths: ${dupes(semUrls)}`);
 p(`- subject paths: ${dupes(subjUrls)}`);
 p(`- paper-code paths: ${dupes(codeUrls)}`);
 p(`- paper paths: ${dupes(paperUrls)}`);
@@ -95,6 +98,9 @@ p("## Sample URLs");
 p();
 p("### Programmes");
 p(sampleRandom(progUrls).map((u) => `- \`${u}\``).join("\n"));
+p();
+p("### Programme × semester");
+p(sampleRandom(semUrls).map((u) => `- \`${u}\``).join("\n"));
 p();
 p("### Subjects");
 p(sampleRandom(subjUrls).map((u) => `- \`${u}\``).join("\n"));

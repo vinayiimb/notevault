@@ -56,6 +56,10 @@ export async function generateMetadata({
   return meta;
 }
 
+const ROMAN_TO_NUM: Record<string, number> = {
+  I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8,
+};
+
 function SemesterGroup({
   programmeSlug,
   semester,
@@ -65,9 +69,21 @@ function SemesterGroup({
   semester: string;
   subjects: SeoSubject[];
 }) {
+  const semNum = ROMAN_TO_NUM[semester];
   return (
     <section>
-      <h2 className="mb-3 text-lg font-bold text-foreground">Semester {semester}</h2>
+      <h2 className="mb-3 text-lg font-bold text-foreground">
+        {semNum ? (
+          <Link
+            href={`/papers/${programmeSlug}/semester-${semNum}`}
+            className="hover:text-accent hover:underline"
+          >
+            Semester {semester}
+          </Link>
+        ) : (
+          <>Semester {semester}</>
+        )}
+      </h2>
       <ul className="grid gap-2 sm:grid-cols-2">
         {subjects.map((s) => (
           <li key={s.slug}>

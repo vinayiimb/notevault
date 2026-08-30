@@ -8,18 +8,34 @@ import {
   getRelatedSubjects,
   isProgrammeIndexable,
   isSubjectIndexable,
+  getSeoProgrammeSemester,
+  getProgrammeSemesterNumbers,
+  isProgrammeSemesterIndexable,
 } from "@/lib/du-pyp-seo";
 import {
   subjectPapersMetadata,
+  programmeSemesterMetadata,
   collectionPageJsonLd,
   absoluteUrl,
 } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PaperCard } from "@/components/seo/paper-card";
+import { ProgrammeSemesterView } from "@/components/seo/programme-semester-view";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
+
+/**
+ * `/papers/[programmeSlug]/[subjectSlug]` also serves the programme-semester
+ * page at `/papers/[programmeSlug]/semester-N` (N = 1–8). Kept in this one
+ * route because Next App Router can't have two dynamic segments at the same
+ * level, and no real subject slug ever matches `^semester-[1-8]$`.
+ */
+function parseSemesterSegment(seg: string): number | null {
+  const m = seg.match(/^semester-([1-8])$/);
+  return m ? Number(m[1]) : null;
+}
 
 export async function generateStaticParams() {
   const progs = await getSeoProgrammes();
@@ -34,6 +50,11 @@ export async function generateStaticParams() {
     for (const s of p.subjects) {
       if (isSubjectIndexable(s)) params.push({ programmeSlug: p.slug, subjectSlug: s.slug });
     }
+    // Also pre-build this programme's semester pages — small in number,
+    // high SEO value ("du <course> sem <n> pyq").
+    for (const n of await getProgrammeSemesterNumbers(p.slug)) {
+      params.push({ programmeSlug: p.slug, subjectSlug: `semester-${n}` });
+    }
   }
   return params;
 }
@@ -44,6 +65,19 @@ export async function generateMetadata({
   params: Promise<{ programmeSlug: string; subjectSlug: string }>;
 }): Promise<Metadata> {
   const { programmeSlug, subjectSlug } = await params;
+
+  const semNum = parseSemesterSegment(subjectSlug);
+  if (semNum !== null) {
+    const ps = await getSeoProgrammeSemester(programmeSlug, semNum);
+    if (!ps) return { title: "Not found", robots: { index: false, follow: false } };
+    const meta = programmeSemesterMetadata(ps.programme.name, ps.programme.slug, ps.semester, {
+      subjectCount: ps.subjects.length,
+      paperCount: ps.totalPapers,
+      years: ps.years,
+    });
+    return isProgrammeSemesterIndexable(ps) ? meta : { ...meta, robots: { index: false, follow: true } };
+  }
+
   const found = await getSeoSubject(programmeSlug, subjectSlug);
   if (!found) return { title: "Subject not found", robots: { index: false, follow: false } };
 
@@ -66,6 +100,18 @@ export default async function SubjectPapersPage({
   params: Promise<{ programmeSlug: string; subjectSlug: string }>;
 }) {
   const { programmeSlug, subjectSlug } = await params;
+
+  // Programme-semester page?
+  const semNum = parseSemesterSegment(subjectSlug);
+  if (semNum !== null) {
+    const ps = await getSeoProgrammeSemester(programmeSlug, semNum);
+    if (!ps || ps.subjects.length === 0) notFound();
+    const allSems = await getProgrammeSemesterNumbers(programmeSlug);
+    return (
+      <ProgrammeSemesterView data={ps} otherSemesters={allSems.filter((n) => n !== semNum)} />
+    );
+  }
+
   const found = await getSeoSubject(programmeSlug, subjectSlug);
   if (!found) notFound();
   const { programme, subject } = found;

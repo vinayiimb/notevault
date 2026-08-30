@@ -5,6 +5,7 @@ import { absoluteUrl } from "@/lib/seo";
 import { getAllBlogPosts } from "@/lib/blog";
 import {
   getIndexableProgrammeUrls,
+  getIndexableProgrammeSemesterUrls,
   getIndexableSubjectUrls,
   getIndexablePaperCodeUrls,
   getIndexablePaperUrls,
@@ -84,7 +85,7 @@ export async function listShardNames(): Promise<string[]> {
     getIndexablePaperCodeUrls(),
     getIndexablePaperUrls(),
   ]);
-  const names = ["static", "blog", "programmes"];
+  const names = ["static", "blog", "programmes", "programme-semesters"];
   for (let i = 0; i < chunkCount(subjectUrls.length); i++) names.push(`subjects-${i}`);
   for (let i = 0; i < chunkCount(paperCodeUrls.length); i++) names.push(`paper-codes-${i}`);
   for (let i = 0; i < chunkCount(paperUrls.length); i++) names.push(`papers-${i}`);
@@ -124,6 +125,16 @@ export async function getShardEntries(shard: string): Promise<SitemapEntry[] | n
       lastmod: (u.lastModified ?? new Date(dataMtime)).toISOString?.() ?? dataMtime,
       changefreq: "weekly",
       priority: 0.8,
+    }));
+  }
+
+  if (shard === "programme-semesters") {
+    const urls = await getIndexableProgrammeSemesterUrls();
+    return urls.map((u) => ({
+      loc: absoluteUrl(u.path),
+      lastmod: dataMtime,
+      changefreq: "weekly",
+      priority: 0.75,
     }));
   }
 

@@ -1,6 +1,6 @@
 # SEO Validation — DU PYQ Online
 
-Generated 2026-08-29T15:11:35.936Z from `public/data/du-question-bank-full-mapped.json` + Ramanujan catalog.
+Generated 2026-08-30T07:59:29.931Z from `public/data/du-question-bank-full-mapped.json` + Ramanujan catalog.
 
 ## URL counts
 
@@ -9,14 +9,16 @@ Generated 2026-08-29T15:11:35.936Z from `public/data/du-question-bank-full-mappe
 | Static | 16 | 16 | — |
 | Blog | 21 | 21 | — |
 | Programmes | 237 | 176 | 61 (non-programme buckets / < 3 subjects) |
+| Programme × semester | — | 758 | thin sems (< 3 subjects / < 3 papers) are noindex |
 | Subjects | 9597 | 6551 | 2 empty-slug + 1619 no-papers + 1425 under noindex programmes |
 | Paper codes | 5471 | 4380 | 1091 (no papers) |
 | Individual papers | 23452 | 20689 | 2763 (under noindex programme/subject) |
-| **Total sitemap URLs** | | **31,833** | |
+| **Total sitemap URLs** | | **32,591** | |
 
 ## Duplicates (should all be 0)
 
 - programme paths: 0
+- programme-semester paths: 0
 - subject paths: 0
 - paper-code paths: 0
 - paper paths: 0
@@ -30,6 +32,14 @@ Generated 2026-08-29T15:11:35.936Z from `public/data/du-question-bank-full-mappe
 - `/papers/bsc-hons-botany`
 - `/papers/bsch-physics`
 - `/papers/history`
+
+### Programme × semester
+- `/papers/applied-psychology/semester-1`
+- `/papers/b-voc/semester-5`
+- `/papers/ba-hons-social-work/semester-7`
+- `/papers/ba-prog-with-political-science-as-major-discipline/semester-7`
+- `/papers/bsc-hons-computer-science/semester-3`
+- `/papers/ba-hons-multi-media-and-mass-communication/semester-7`
 
 ### Subjects
 - `/papers/applied-psychology/abnormal-psychology`

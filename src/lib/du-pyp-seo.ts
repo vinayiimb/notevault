@@ -559,6 +559,87 @@ export async function getSeoPaperCode(code: string): Promise<SeoPaperCode | null
   return (await graph()).paperCodeByCode.get(code) ?? null;
 }
 
+/* ------------------------------------------------------------------ */
+/* Programme × semester (Level 1.5) — /papers/[prog]/semester-[n]      */
+/* Targets the "du [course] sem [n] pyq" query shape.                  */
+/* ------------------------------------------------------------------ */
+
+/** Semester numbers 1–8 map to the Roman-numeral tags used in the data. */
+const SEM_NUM_TO_ROMAN: Record<number, string> = {
+  1: "I", 2: "II", 3: "III", 4: "IV", 5: "V", 6: "VI", 7: "VII", 8: "VIII",
+};
+
+export interface SeoProgrammeSemester {
+  programme: SeoProgramme;
+  /** 1–8 */
+  semester: number;
+  roman: string;
+  /** Indexable subjects taught in this semester of this programme. */
+  subjects: SeoSubject[];
+  paperTypes: string[];
+  totalPapers: number;
+  years: string[];
+  /** Mean indexable-subject count across this programme's semesters 1–6. */
+  programmeAvgSemesterSize: number;
+}
+
+/**
+ * A programme-semester page is indexable when:
+ *   - its parent programme is indexable,
+ *   - it has >= 3 indexable subjects and >= 5 real papers, AND
+ *   - it isn't a data-noise straggler: its subject count is at least ~30% of
+ *     the programme's typical semester size. This is what separates a real
+ *     4-year-programme Semester 7/8 (a dozen subjects, like sems 1–6) from a
+ *     handful of mislabelled rows leaking a plausible-but-fake page.
+ */
+export function isProgrammeSemesterIndexable(s: SeoProgrammeSemester): boolean {
+  if (!isProgrammeIndexable(s.programme)) return false;
+  if (s.subjects.length < 3 || s.totalPapers < 5) return false;
+  const floor = Math.max(3, s.programmeAvgSemesterSize * 0.3);
+  return s.subjects.length >= floor;
+}
+
+export async function getSeoProgrammeSemester(
+  programmeSlug: string,
+  semester: number,
+): Promise<SeoProgrammeSemester | null> {
+  const roman = SEM_NUM_TO_ROMAN[semester];
+  if (!roman) return null;
+  const programme = (await graph()).programmeBySlug.get(programmeSlug);
+  if (!programme) return null;
+
+  const subjectsInRoman = (r: string) =>
+    programme.subjects.filter((s) => isSubjectIndexable(s) && s.semesters.includes(r));
+
+  const subjects = subjectsInRoman(roman).sort((a, b) => a.name.localeCompare(b.name));
+
+  // Baseline = mean indexable-subject count over sems I–VI (the part every
+  // DU UG programme has).
+  const baseCounts = ["I", "II", "III", "IV", "V", "VI"].map((r) => subjectsInRoman(r).length);
+  const nonEmpty = baseCounts.filter((n) => n > 0);
+  const programmeAvgSemesterSize =
+    nonEmpty.length > 0 ? nonEmpty.reduce((a, b) => a + b, 0) / nonEmpty.length : subjects.length;
+
+  const paperTypes = uniqSorted(subjects.flatMap((s) => s.paperTypes));
+  const totalPapers = subjects.reduce((n, s) => n + s.papers.length, 0);
+  const years = uniqSorted(subjects.flatMap((s) => s.years)).sort(YEAR_DESC);
+
+  return { programme, semester, roman, subjects, paperTypes, totalPapers, years, programmeAvgSemesterSize };
+}
+
+/** Which semester numbers this programme actually has indexable content for. */
+export async function getProgrammeSemesterNumbers(programmeSlug: string): Promise<number[]> {
+  const programme = (await graph()).programmeBySlug.get(programmeSlug);
+  if (!programme) return [];
+  const romans = new Set(
+    programme.subjects.filter(isSubjectIndexable).flatMap((s) => s.semesters),
+  );
+  return Object.entries(SEM_NUM_TO_ROMAN)
+    .filter(([, roman]) => romans.has(roman))
+    .map(([n]) => Number(n))
+    .sort((a, b) => a - b);
+}
+
 export async function getSeoPaper(slug: string): Promise<SeoPaper | null> {
   return (await graph()).paperBySlug.get(slug) ?? null;
 }
@@ -643,6 +724,21 @@ export async function getIndexablePaperCodeUrls(): Promise<SitemapUrl[]> {
   return urls;
 }
 
+export async function getIndexableProgrammeSemesterUrls(): Promise<SitemapUrl[]> {
+  const progs = await getSeoProgrammes();
+  const urls: SitemapUrl[] = [];
+  for (const p of progs) {
+    if (!isProgrammeIndexable(p)) continue;
+    for (const n of await getProgrammeSemesterNumbers(p.slug)) {
+      const ps = await getSeoProgrammeSemester(p.slug, n);
+      if (ps && isProgrammeSemesterIndexable(ps)) {
+        urls.push({ path: `/papers/${p.slug}/semester-${n}` });
+      }
+    }
+  }
+  return urls;
+}
+
 /**
  * A paper page is indexable iff the subject it belongs to is — i.e. it sits
  * under a real programme with a non-empty subject slug. That keeps the paper
@@ -685,10 +781,14 @@ export async function getSeoCoverageStats() {
     p.subjects.filter(isSubjectIndexable),
   ).length;
   const indexablePapers = [...g.paperBySlug.values()].filter((p) => isPaperIndexable(g, p)).length;
+  const programmeSemesterUrls = await getIndexableProgrammeSemesterUrls();
   return {
     programmes: {
       total: programmes.length,
       indexable: indexableProgrammes.length,
+    },
+    programmeSemesters: {
+      inSitemap: programmeSemesterUrls.length,
     },
     subjects: {
       total: allSubjects.length,
@@ -707,8 +807,9 @@ export async function getSeoCoverageStats() {
     },
     sitemapTotal:
       indexableProgrammes.length +
-      indexableSubjects.length +
+      programmeSemesterUrls.length +
+      subjectsInIndexableProgrammes +
       paperCodes.filter(isPaperCodeIndexable).length +
-      g.paperBySlug.size,
+      indexablePapers,
   };
 }
