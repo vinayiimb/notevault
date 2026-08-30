@@ -13,7 +13,7 @@ export function FeatureCards() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span className="text-xl">📚</span>
-              <h3 className="font-bold text-lg text-gray-900 tracking-tight">ALL PYQ</h3>
+              <h2 className="font-bold text-lg text-gray-900 tracking-tight">ALL PYQ</h2>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed mb-6">
               Browse 29,000+ Delhi University question papers across all 118 programmes in interactive PDF.
@@ -32,7 +32,7 @@ export function FeatureCards() {
           <div>
             <div className="flex items-center gap-2 mb-4">
               <span className="text-xl">🎀</span>
-              <h3 className="font-bold text-lg text-gray-900 tracking-tight">Free Subject Notes</h3>
+              <h2 className="font-bold text-lg text-gray-900 tracking-tight">Free Subject Notes</h2>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed mb-6">
               Request high-yield notes for your subject. We make notes according to student demand!
@@ -50,7 +50,7 @@ export function FeatureCards() {
         <div className="flex flex-col justify-between rounded-3xl bg-white p-6 sm:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all h-full">
           <div>
             <div className="flex items-center gap-2 mb-4">
-              <h3 className="font-bold text-xl text-gray-900 tracking-tight">Paid Notes</h3>
+              <h2 className="font-bold text-xl text-gray-900 tracking-tight">Paid Notes</h2>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed mb-6">
               Complete notes for every subject, organised and ready to study.

@@ -39,10 +39,21 @@ export default async function HomePage() {
       <section className={`relative -mt-[92px] ${heroImage ? "" : "bg-[#34beff]"}`}>
         {heroImage ? (
           <div className="relative w-full overflow-hidden">
+            {/*
+              This is the LCP element. Kept as a plain <img> (not next/image)
+              because the src is admin-configurable and may be an external URL;
+              the default is an optimised ~96KB WebP. Eager + high priority so
+              the browser fetches it immediately instead of after hydration.
+            */}
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={heroImage}
               alt="DU PYQ Online – Delhi University Colleges & Archive"
+              width={1402}
+              height={1122}
+              fetchPriority="high"
+              loading="eager"
+              decoding="async"
               className="hero-image-fade block h-[620px] w-full object-cover object-top sm:h-auto sm:max-h-none sm:object-contain"
             />
             <div aria-hidden="true" className="hero-image-overlay absolute inset-0" />

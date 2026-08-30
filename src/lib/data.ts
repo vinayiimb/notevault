@@ -589,6 +589,9 @@ export async function getDailyQuestion() {
   }
 }
 
+/** Optimised default hero (WebP, ~96KB vs the 1.7MB PNG original). */
+export const DEFAULT_HERO_IMAGE = "/images/hero-du-colleges.webp";
+
 export const getSiteSettings = cache(async () => {
   try {
     const settings = await prisma.siteSettings.findUnique({ where: { id: "singleton" } });
@@ -600,7 +603,9 @@ export const getSiteSettings = cache(async () => {
       heroSearchCaption: settings?.heroSearchCaption || "Search a subject, paper title, program, or topic.",
       heroImageUrl: (() => {
         const url = settings?.heroImageUrl?.trim();
-        return (!url) ? "/images/hero-du-colleges.png" : url;
+        // Default hero: serve the 96KB WebP instead of the 1.7MB PNG (LCP fix).
+        // A custom admin-set URL is used as-is.
+        return !url ? DEFAULT_HERO_IMAGE : url;
       })(),
       currencyIconUrl: settings?.currencyIconUrl || null,
     };
@@ -610,7 +615,7 @@ export const getSiteSettings = cache(async () => {
       heroHeadline: "The Best, One Stop,\nStudy Platform",
       heroSubtitle: "Notes, PYQs and answer keys for every DU program — free, no login needed",
       heroSearchCaption: "Search a subject, paper title, program, or topic.",
-      heroImageUrl: "/images/hero-du-colleges.png",
+      heroImageUrl: DEFAULT_HERO_IMAGE,
       currencyIconUrl: null,
     };
   }

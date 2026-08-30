@@ -51,11 +51,16 @@ export function CourseSemesterJump({
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
         <div className="flex w-full flex-col gap-2">
-          <label className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-gray-500">
+          <label
+            htmlFor="course-degree-select"
+            className="flex items-center gap-1.5 text-[11px] font-bold tracking-wider uppercase text-gray-500"
+          >
             <span>Select Course / Degree Program</span>
           </label>
           <div className="relative">
             <select
+              id="course-degree-select"
+              aria-label="Select your DU degree or programme"
               value={selectedCourse}
               onChange={(e) => {
                 const val = e.target.value;
