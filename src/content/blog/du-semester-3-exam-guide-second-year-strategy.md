@@ -81,4 +81,4 @@ If you have Essential Repeat papers from Semester 1:
 
 ## Get Past Papers
 
-Search for your course's Semester 3 papers in the [full DU PYQ archive](https://www.dupyq.online/pyq-notes), or use the [exam session browser](https://www.dupyq.online/exam-sessions) to find papers organized by year.
+Search for your course's Semester 3 papers in the [full DU PYQ archive](https://www.dupyq.online/pyq-notes), or use the [exam session browser](https://www.dupyq.online/exam-sessions) to find papers organized by year. You can also browse [DU papers by semester](https://www.dupyq.online/semesters) to jump straight to your course's Semester 3 subject list.

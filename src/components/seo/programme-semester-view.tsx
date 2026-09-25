@@ -1,9 +1,50 @@
 import Link from "next/link";
-import { CalendarBlank } from "@phosphor-icons/react/dist/ssr";
+import { CalendarBlank, Calculator, Notebook, BookOpenText } from "@phosphor-icons/react/dist/ssr";
 import type { SeoProgrammeSemester } from "@/lib/du-pyp-seo";
 import { collectionPageJsonLd, absoluteUrl } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
+
+// Human-readable label for a paper-type code, reused by the auto-generated
+// subject-mix summary below (SEO copy) and the grouped section headings.
+function typeLabel(type: string): string {
+  switch (type) {
+    case "DSC":
+      return "core (DSC)";
+    case "DSE":
+      return "discipline elective (DSE)";
+    case "GE":
+      return "generic elective (GE)";
+    case "AEC":
+      return "ability enhancement (AEC)";
+    case "SEC":
+      return "skill enhancement (SEC)";
+    case "VAC":
+      return "value addition (VAC)";
+    default:
+      return type;
+  }
+}
+
+/**
+ * Turns this semester's actual subject/paper-type counts into one sentence
+ * of genuinely page-specific copy — not template filler — so every
+ * semester hub says something only true of that semester. Built entirely
+ * from `data`, never invented.
+ */
+function buildSubjectMixSummary(subjects: SeoProgrammeSemester["subjects"]): string {
+  const counts = new Map<string, number>();
+  for (const s of subjects) {
+    const t = s.paperTypes[0] ?? "Other";
+    counts.set(t, (counts.get(t) ?? 0) + 1);
+  }
+  const parts = [...counts.entries()]
+    .sort((a, b) => b[1] - a[1])
+    .map(([type, n]) => `${n} ${typeLabel(type)} subject${n === 1 ? "" : "s"}`);
+  if (parts.length === 0) return "";
+  if (parts.length === 1) return parts[0];
+  return `${parts.slice(0, -1).join(", ")} and ${parts[parts.length - 1]}`;
+}
 
 /**
  * /papers/[programmeSlug]/semester-[n] — one semester of one DU programme.
@@ -13,9 +54,12 @@ import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 export function ProgrammeSemesterView({
   data,
   otherSemesters,
+  guidePost,
 }: {
   data: SeoProgrammeSemester;
   otherSemesters: number[];
+  /** The blog post that specifically covers this semester's exam prep, if one exists. */
+  guidePost?: { slug: string; title: string; description: string } | null;
 }) {
   const { programme, semester, subjects, paperTypes, totalPapers, years } = data;
 
@@ -40,6 +84,7 @@ export function ProgrammeSemesterView({
   ];
 
   const yearSpan = years.length > 1 ? `${years[years.length - 1]}–${years[0]}` : years[0];
+  const subjectMixSummary = buildSubjectMixSummary(subjects);
 
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
@@ -83,6 +128,13 @@ export function ProgrammeSemesterView({
             Paper types this semester: {paperTypes.join(", ")}.
           </p>
         )}
+        {subjectMixSummary && (
+          <p className="mt-4 text-sm text-muted">
+            This semester carries {subjectMixSummary}. Each subject below links to its own page
+            with every available previous year paper — filter by year, then open or download the
+            PDF directly.
+          </p>
+        )}
       </header>
 
       <div className="space-y-8">
@@ -119,6 +171,56 @@ export function ProgrammeSemesterView({
           </section>
         ))}
       </div>
+
+      <section className="mt-14 border-t border-border pt-8">
+        <h2 className="mb-4 text-xl font-bold text-foreground">
+          Tools for Semester {semester}
+        </h2>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          <li>
+            <Link
+              href="/tools/sgpa-calculator"
+              className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50"
+            >
+              <Calculator size={18} className="shrink-0 text-accent" weight="bold" />
+              <span>
+                <span className="font-medium text-foreground">SGPA Calculator</span>
+                <span className="block text-xs text-muted">
+                  Work out this semester&apos;s SGPA from your marks
+                </span>
+              </span>
+            </Link>
+          </li>
+          <li>
+            <Link
+              href="/tools/exam-kit"
+              className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50"
+            >
+              <Notebook size={18} className="shrink-0 text-accent" weight="bold" />
+              <span>
+                <span className="font-medium text-foreground">Exam Kit</span>
+                <span className="block text-xs text-muted">
+                  Plan revision across all {subjects.length} subjects this semester
+                </span>
+              </span>
+            </Link>
+          </li>
+          {guidePost && (
+            <li>
+              <Link
+                href={`/blog/${guidePost.slug}`}
+                className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50 sm:col-span-2"
+              >
+                <BookOpenText size={18} className="shrink-0 text-accent" weight="bold" />
+                <span>
+                  <span className="font-medium text-foreground">{guidePost.title}</span>
+                  <span className="block text-xs text-muted">{guidePost.description}</span>
+                </span>
+              </Link>
+            </li>
+          )}
+        </ul>
+      </section>
 
       {otherSemesters.length > 0 && (
         <nav className="mt-14 border-t border-border pt-8" aria-label="Other semesters">

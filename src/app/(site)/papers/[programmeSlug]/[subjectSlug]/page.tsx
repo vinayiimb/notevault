@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { BookOpenText } from "@phosphor-icons/react/dist/ssr";
+import { BookOpenText, Calculator, Notebook } from "@phosphor-icons/react/dist/ssr";
 import {
   getSeoSubject,
   getSeoProgrammes,
@@ -11,6 +11,7 @@ import {
   getSeoProgrammeSemester,
   getProgrammeSemesterNumbers,
   isProgrammeSemesterIndexable,
+  type SeoSubject,
 } from "@/lib/du-pyp-seo";
 import {
   subjectPapersMetadata,
@@ -22,6 +23,32 @@ import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PaperCard } from "@/components/seo/paper-card";
 import { ProgrammeSemesterView } from "@/components/seo/programme-semester-view";
+import { getSemesterGuidePost, getPyqUsageGuidePost } from "@/lib/blog";
+
+/**
+ * One sentence of genuinely subject-specific coverage detail, built only
+ * from fields already on `subject` — never invented. Deliberately narrow:
+ * `session`/`set` come straight from scraped source data with no
+ * normalization (the same subject can carry both "NOV-DEC-2025" and
+ * "Nov-Dec" for the same exam), so they're not reliable enough to phrase
+ * confidently. `marks` and `courseNumbers` are clean, structured fields —
+ * stick to those.
+ */
+function buildCoverageNote(subject: SeoSubject): string | null {
+  if (subject.papers.length === 0) return null;
+  const marks = [...new Set(subject.papers.map((p) => p.marks).filter(Boolean))] as string[];
+  const sets = [...new Set(subject.papers.map((p) => p.set).filter(Boolean))] as string[];
+
+  const bits: string[] = [];
+  if (marks.length === 1) {
+    bits.push(`each paper carries ${marks[0]} marks`);
+  }
+  if (sets.length > 1) {
+    bits.push(`multiple question sets are available for some years`);
+  }
+  if (bits.length === 0) return null;
+  return `${bits.join("; ")[0].toUpperCase()}${bits.join("; ").slice(1)}.`;
+}
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -108,7 +135,11 @@ export default async function SubjectPapersPage({
     if (!ps || ps.subjects.length === 0) notFound();
     const allSems = await getProgrammeSemesterNumbers(programmeSlug);
     return (
-      <ProgrammeSemesterView data={ps} otherSemesters={allSems.filter((n) => n !== semNum)} />
+      <ProgrammeSemesterView
+        data={ps}
+        otherSemesters={allSems.filter((n) => n !== semNum)}
+        guidePost={getSemesterGuidePost(semNum)}
+      />
     );
   }
 
@@ -120,6 +151,7 @@ export default async function SubjectPapersPage({
   // genuine catalog entry) — but it must not be a soft-200 indexable page.
   const hasContent = subject.papers.length > 0;
   const related = await getRelatedSubjects(programme.slug, subject.slug);
+  const pyqUsageGuide = getPyqUsageGuidePost();
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
@@ -226,6 +258,9 @@ export default async function SubjectPapersPage({
               } for ${subject.name} at Delhi University (${programme.name}). View or download each original PDF below.`
             : `${subject.name} is part of the Delhi University ${programme.name} syllabus. No previous year question papers have been catalogued for it yet — check back later.`}
         </p>
+        {hasContent && buildCoverageNote(subject) && (
+          <p className="mt-2 text-sm text-muted">{buildCoverageNote(subject)}</p>
+        )}
 
         {subject.syllabusUrl && (
           <p className="mt-2 text-sm">
@@ -256,6 +291,56 @@ export default async function SubjectPapersPage({
             </section>
           ))}
         </div>
+      )}
+
+      {hasContent && subject.semesters.length > 0 && (
+        <section className="mt-14 border-t border-border pt-8">
+          <h2 className="mb-4 text-xl font-bold text-foreground">Tools for this subject</h2>
+          <ul className="grid gap-2 sm:grid-cols-2">
+            <li>
+              <Link
+                href="/tools/internal-marks-calculator"
+                className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50"
+              >
+                <Calculator size={18} className="shrink-0 text-accent" weight="bold" />
+                <span>
+                  <span className="font-medium text-foreground">Internal Marks Calculator</span>
+                  <span className="block text-xs text-muted">
+                    Check where you stand before the {subject.name} exam
+                  </span>
+                </span>
+              </Link>
+            </li>
+            <li>
+              <Link
+                href="/tools/exam-kit"
+                className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50"
+              >
+                <Notebook size={18} className="shrink-0 text-accent" weight="bold" />
+                <span>
+                  <span className="font-medium text-foreground">Exam Kit</span>
+                  <span className="block text-xs text-muted">Build a revision plan around this paper</span>
+                </span>
+              </Link>
+            </li>
+            {pyqUsageGuide && (
+              <li>
+                <Link
+                  href={`/blog/${pyqUsageGuide.slug}`}
+                  className="flex items-center gap-3 rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50 sm:col-span-2"
+                >
+                  <BookOpenText size={18} className="shrink-0 text-accent" weight="bold" />
+                  <span>
+                    <span className="font-medium text-foreground">{pyqUsageGuide.title}</span>
+                    <span className="block text-xs text-muted">
+                      How to turn these papers into an actual revision strategy
+                    </span>
+                  </span>
+                </Link>
+              </li>
+            )}
+          </ul>
+        </section>
       )}
 
       {related.length > 0 && (

@@ -91,4 +91,4 @@ If you have Essential Repeat papers from Semester 3, they must be re-attempted d
 
 Semester 5 is your last odd-semester exam (in a 3-year degree). Your performance here directly impacts your final CGPA and your eligibility for honours distinctions, merit scholarships, and postgraduate admissions.
 
-Start by downloading your Semester 5 papers from the [DU PYQ archive](https://www.dupyq.online/pyq-notes) and building your topic-frequency table. Use the [exam kit tools](https://www.dupyq.online/tools/exam-kit) for quick revision drills alongside your career preparation.
+Start by downloading your Semester 5 papers from the [DU PYQ archive](https://www.dupyq.online/pyq-notes) — or browse [DU papers by semester](https://www.dupyq.online/semesters) to go straight to your course's Semester 5 subject list — and build your topic-frequency table. Use the [exam kit tools](https://www.dupyq.online/tools/exam-kit) for quick revision drills alongside your career preparation.

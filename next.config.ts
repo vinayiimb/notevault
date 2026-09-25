@@ -2,6 +2,14 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Railway runs `next start` (or the standalone server.js) as a
+  // long-lived Node process, not Vercel's per-route serverless functions.
+  // "standalone" makes `next build` emit a minimal, self-contained
+  // .next/standalone/ (traced node_modules + server.js) instead of
+  // requiring the full repo + node_modules tree in the runtime image —
+  // the same oversized-deploy problem this file's tracing options above
+  // were already written to avoid on Netlify.
+  output: "standalone",
   // Prisma's generated client (src/generated/prisma) resolves its query
   // engine binary via a dynamic path Next's file tracer can't follow
   // statically ("Encountered unexpected file in NFT list... indicates the
