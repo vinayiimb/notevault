@@ -9,6 +9,7 @@ import {
   ArticleNyTimes,
   BookOpenText,
   Calendar,
+  CalendarBlank,
   CalendarCheck,
   CaretDown,
   CaretRight,
@@ -37,6 +38,7 @@ const NAVIGATION_SECTIONS = [
   {
     title: "Student Utilities",
     items: [
+      { href: "/exam-help/datesheet", label: "Datesheet", desc: "Official DU exam datesheet, by course", icon: CalendarBlank },
       { href: "/tools/action-engine", label: "Action Engine", desc: "Prioritized DU alerts", icon: CalendarCheck },
       { href: "/tools/result-doctor", label: "Result Doctor", desc: "Diagnose marksheet issues", icon: FileArchive },
       { href: "/tools/migration-radar", label: "Migration Radar", desc: "Track college vacancies", icon: Compass },
@@ -73,6 +75,7 @@ export function SiteNavigation() {
   ];
 
   const others = [
+    { href: "/exam-help/datesheet", label: "Datesheet" },
     { href: "/tools/action-engine", label: "Action Engine" },
     { href: "/tools/migration-radar", label: "Migration Radar" },
     { href: "/tools/result-doctor", label: "Result Doctor" },

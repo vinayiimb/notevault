@@ -29,6 +29,11 @@ export function SiteFooter() {
                   Syllabus
                 </Link>
               </li>
+              <li>
+                <Link href="/exam-help/datesheet" className="text-muted hover:text-accent transition">
+                  Datesheet
+                </Link>
+              </li>
             </ul>
           </div>
           <div>
