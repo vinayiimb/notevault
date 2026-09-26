@@ -1,20 +1,27 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { CalendarBlank, MagnifyingGlass, Trash, FilePdf, CheckCircle } from "@phosphor-icons/react/dist/ssr";
+import { CalendarBlank, MagnifyingGlass, Trash, FilePdf, CheckCircle, CircleNotch } from "@phosphor-icons/react/dist/ssr";
 import type { DatesheetEntry, DatesheetProgramme } from "@/lib/datesheet-types";
 import { CATEGORY_LABELS } from "@/lib/datesheet-types";
+import { fetchProgrammeEntries } from "@/lib/datesheet-fetch-client";
 
 type Props = {
   programmes: DatesheetProgramme[];
-  entriesByProgramme: Record<string, DatesheetEntry[]>;
   examSession: string;
 };
 
 const ALL_CATEGORIES = "all";
 const ALL_SEMESTERS = "all";
 const ALL_COURSES = "all";
+
+// Every elective category (AEC, GE, SEC, SBC, VAC, DSE) lives almost
+// entirely in its own standalone file — see scripts/datesheet/extract.py.
+// Fetching just these 6 (instead of all 19 programme files, 6.7MB) keeps
+// Step 2's combined pool small (~1.5MB) while still covering the elective
+// papers students actually search for.
+const ELECTIVE_POOL_SLUGS = ["aec", "dse", "ge", "sbc", "sec", "vac"];
 
 function formatDate(iso: string, day: string) {
   const [y, m, d] = iso.split("-").map(Number);
@@ -27,7 +34,7 @@ function rowKey(e: DatesheetEntry) {
   return e.paperCode;
 }
 
-export function CustomDatesheetBuilder({ programmes, entriesByProgramme, examSession }: Props) {
+export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
   // Step 1: Programme + Course + Semester — this scopes which DSC (Core)
   // papers get auto-selected, since Core papers are compulsory, not a
   // choice, and are course-specific (e.g. within B.Sc. (Hons), Zoology's
@@ -37,25 +44,72 @@ export function CustomDatesheetBuilder({ programmes, entriesByProgramme, examSes
   const [programmeSlug, setProgrammeSlug] = useState(programmes[0]?.slug ?? "");
   const [selectedCourse, setSelectedCourse] = useState<string>(ALL_COURSES);
   const [courseSemester, setCourseSemester] = useState<string>(ALL_SEMESTERS);
+  const [entries, setEntries] = useState<DatesheetEntry[]>([]);
+  // Derived, not a synchronously-set flag — see the matching comment in
+  // datesheet-browser.tsx for why.
+  const [loadedProgrammeSlug, setLoadedProgrammeSlug] = useState<string | null>(null);
+  const entriesLoading = loadedProgrammeSlug !== programmeSlug;
 
   // Step 2: manual pool (GE, DSE, SEC, VAC, AEC, SBC…) — these are
-  // electives. Most categories each live in their OWN standalone PDF/file
-  // (AEC papers are only in aec.json, GE only in ge.json, etc — see
-  // scripts/datesheet/extract.py's FILES list), not spread across every
-  // programme file. So the elective picker searches across ALL programme
-  // files at once rather than being pinned to one "Datesheet file" — a
-  // student clicking the AEC pill would otherwise see an empty list
-  // whenever the currently-selected file wasn't aec.json.
+  // electives, fetched once from their own standalone files (see
+  // ELECTIVE_POOL_SLUGS above) rather than from all 19 programme files —
+  // a student clicking the AEC pill would otherwise see an empty list
+  // whenever the currently-selected file wasn't aec.json, and shipping
+  // all 19 files up front was the actual cause of the page timing out on
+  // mobile data (6.7MB on load).
   const [semester, setSemester] = useState<string>(ALL_SEMESTERS);
   const [category, setCategory] = useState<string>(ALL_CATEGORIES);
   const [electiveCourse, setElectiveCourse] = useState<string>(ALL_COURSES);
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState<Record<string, DatesheetEntry>>({});
+  const [electivePool, setElectivePool] = useState<(DatesheetEntry & { sourceProgrammeSlug: string })[] | null>(null);
+  const electivePoolLoading = electivePool === null;
 
-  const entries = useMemo(
-    () => entriesByProgramme[programmeSlug] ?? [],
-    [entriesByProgramme, programmeSlug]
-  );
+  useEffect(() => {
+    if (!programmeSlug) return;
+    let cancelled = false;
+    fetchProgrammeEntries(programmeSlug)
+      .then((data) => {
+        if (cancelled) return;
+        setEntries(data);
+        setLoadedProgrammeSlug(programmeSlug);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setEntries([]);
+        setLoadedProgrammeSlug(programmeSlug);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [programmeSlug]);
+
+  useEffect(() => {
+    let cancelled = false;
+    Promise.all(
+      ELECTIVE_POOL_SLUGS.map((slug) =>
+        fetchProgrammeEntries(slug)
+          .then((data) => data.map((e) => ({ ...e, sourceProgrammeSlug: slug })))
+          .catch(() => [])
+      )
+    )
+      .then((results) => {
+        if (cancelled) return;
+        const byCode = new Map<string, DatesheetEntry & { sourceProgrammeSlug: string }>();
+        for (const list of results) {
+          for (const e of list) {
+            if (!byCode.has(e.paperCode)) byCode.set(e.paperCode, e);
+          }
+        }
+        setElectivePool(Array.from(byCode.values()));
+      })
+      .catch(() => {
+        if (!cancelled) setElectivePool([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const courseOptions = useMemo(() => {
     const set = new Set<string>();
@@ -75,10 +129,9 @@ export function CustomDatesheetBuilder({ programmes, entriesByProgramme, examSes
   // not a choice, so this runs as a direct response to each selection
   // (not a useEffect — there's no external system to sync with, just a
   // derived update to make right when the user acts).
-  function applyDscAutoSelect(nextProgrammeSlug: string, nextCourse: string, nextSemester: string) {
+  function applyDscAutoSelect(nextEntries: DatesheetEntry[], nextCourse: string, nextSemester: string) {
     if (nextSemester === ALL_SEMESTERS) return;
-    const pool = entriesByProgramme[nextProgrammeSlug] ?? [];
-    const dscMatches = pool.filter(
+    const dscMatches = nextEntries.filter(
       (e) =>
         e.category === "DSC" &&
         e.semester === nextSemester &&
@@ -92,21 +145,7 @@ export function CustomDatesheetBuilder({ programmes, entriesByProgramme, examSes
     });
   }
 
-  // Every programme file's rows, deduplicated by paper code — a paper
-  // like a GE course can legitimately appear in more than one file (a
-  // programme's own file AND the standalone GE file), and we only want
-  // one checkbox for it.
-  const allEntries = useMemo(() => {
-    const byCode = new Map<string, DatesheetEntry & { sourceProgrammeSlug: string }>();
-    for (const p of programmes) {
-      for (const e of entriesByProgramme[p.slug] ?? []) {
-        if (!byCode.has(e.paperCode)) {
-          byCode.set(e.paperCode, { ...e, sourceProgrammeSlug: p.slug });
-        }
-      }
-    }
-    return Array.from(byCode.values());
-  }, [programmes, entriesByProgramme]);
+  const allEntries = useMemo(() => electivePool ?? [], [electivePool]);
 
   const semesters = useMemo(() => {
     const set = new Set<string>();
@@ -268,7 +307,7 @@ export function CustomDatesheetBuilder({ programmes, entriesByProgramme, examSes
               onChange={(e) => {
                 const nextSemester = e.target.value;
                 setCourseSemester(nextSemester);
-                applyDscAutoSelect(programmeSlug, selectedCourse, nextSemester);
+                applyDscAutoSelect(entries, selectedCourse, nextSemester);
               }}
               className="mt-1.5 min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             >
@@ -282,11 +321,18 @@ export function CustomDatesheetBuilder({ programmes, entriesByProgramme, examSes
           </label>
         </div>
 
-        {dscSelectedCount > 0 && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl bg-accent-soft px-3.5 py-2.5 text-sm font-semibold text-accent">
-            <CheckCircle size={18} weight="fill" />
-            {dscSelectedCount} Core (DSC) paper{dscSelectedCount === 1 ? "" : "s"} added automatically
+        {entriesLoading ? (
+          <div className="mt-4 flex items-center gap-2 text-sm text-muted">
+            <CircleNotch size={16} className="animate-spin" />
+            Loading {programmes.find((p) => p.slug === programmeSlug)?.label}…
           </div>
+        ) : (
+          dscSelectedCount > 0 && (
+            <div className="mt-4 flex items-center gap-2 rounded-xl bg-accent-soft px-3.5 py-2.5 text-sm font-semibold text-accent">
+              <CheckCircle size={18} weight="fill" />
+              {dscSelectedCount} Core (DSC) paper{dscSelectedCount === 1 ? "" : "s"} added automatically
+            </div>
+          )
         )}
 
         <a
@@ -395,7 +441,12 @@ export function CustomDatesheetBuilder({ programmes, entriesByProgramme, examSes
           </label>
 
           <div className="mt-4 max-h-[520px] overflow-y-auto rounded-xl border border-border">
-            {availablePapers.length === 0 ? (
+            {electivePoolLoading ? (
+              <div className="flex items-center justify-center gap-2 p-8 text-sm text-muted">
+                <CircleNotch size={16} className="animate-spin" />
+                Loading electives…
+              </div>
+            ) : availablePapers.length === 0 ? (
               <div className="p-6 text-center text-sm text-muted">No papers match these filters.</div>
             ) : (
               <ul className="divide-y divide-border">

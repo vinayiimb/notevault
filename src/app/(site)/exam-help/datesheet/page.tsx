@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { getDatesheetManifest, getProgrammeEntries, type DatesheetEntry } from "@/lib/datesheet-data";
+import { getDatesheetManifest } from "@/lib/datesheet-data";
 import { DatesheetBrowser } from "@/components/datesheet/datesheet-browser";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
@@ -13,11 +13,12 @@ export const metadata: Metadata = {
 };
 
 export default function DatesheetPage() {
+  // Only the manifest (programme list, a few KB) is loaded server-side.
+  // Each programme's actual rows (up to ~780KB for the largest file) are
+  // fetched client-side on demand by DatesheetBrowser — shipping all 19
+  // files' 7,000+ rows (6.7MB) on every page load was slow enough on
+  // mobile data to look like the page had crashed.
   const manifest = getDatesheetManifest();
-  const entriesByProgramme: Record<string, DatesheetEntry[]> = {};
-  for (const p of manifest.programmes) {
-    entriesByProgramme[p.slug] = getProgrammeEntries(p.slug);
-  }
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
@@ -52,11 +53,7 @@ export default function DatesheetPage() {
       </div>
 
       <div className="mt-8">
-        <DatesheetBrowser
-          programmes={manifest.programmes}
-          entriesByProgramme={entriesByProgramme}
-          examSession={manifest.examSession}
-        />
+        <DatesheetBrowser programmes={manifest.programmes} examSession={manifest.examSession} />
       </div>
     </div>
   );

@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import { CalendarBlank, FilePdf } from "@phosphor-icons/react/dist/ssr";
+import { useEffect, useMemo, useState } from "react";
+import { CalendarBlank, FilePdf, CircleNotch } from "@phosphor-icons/react/dist/ssr";
 import type { DatesheetEntry, DatesheetProgramme } from "@/lib/datesheet-types";
+import { fetchProgrammeEntries } from "@/lib/datesheet-fetch-client";
 
 type Props = {
   programmes: DatesheetProgramme[];
-  entriesByProgramme: Record<string, DatesheetEntry[]>;
   examSession: string;
 };
 
@@ -20,15 +20,41 @@ function formatDate(iso: string, day: string) {
   return `${d} ${monthLabel} ${y} (${day})`;
 }
 
-export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }: Props) {
+export function DatesheetBrowser({ programmes, examSession }: Props) {
   const [programmeSlug, setProgrammeSlug] = useState(programmes[0]?.slug ?? "");
   const [course, setCourse] = useState<string>(ALL_COURSES);
   const [semester, setSemester] = useState<string>(ALL_SEMESTERS);
+  const [entries, setEntries] = useState<DatesheetEntry[]>([]);
+  // Tracks which programme the current `entries` actually belong to, so
+  // "loading" is a derived comparison (loadedSlug !== programmeSlug)
+  // rather than a setState called synchronously inside the effect body —
+  // the effect only ever calls setState from its async .then()/.finally(),
+  // which is the pattern react-hooks/set-state-in-effect wants.
+  const [loadedSlug, setLoadedSlug] = useState<string | null>(null);
+  const loading = loadedSlug !== programmeSlug;
 
-  const entries = useMemo(
-    () => entriesByProgramme[programmeSlug] ?? [],
-    [entriesByProgramme, programmeSlug]
-  );
+  // Each programme's rows are fetched on demand (from the static JSON at
+  // /data/datesheet/<slug>.json) instead of the server shipping all 19
+  // files (6.7MB combined) up front — that was slow enough on mobile data
+  // to look like the page had crashed.
+  useEffect(() => {
+    if (!programmeSlug) return;
+    let cancelled = false;
+    fetchProgrammeEntries(programmeSlug)
+      .then((data) => {
+        if (cancelled) return;
+        setEntries(data);
+        setLoadedSlug(programmeSlug);
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setEntries([]);
+        setLoadedSlug(programmeSlug);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [programmeSlug]);
 
   // Many source PDFs (B.A. Hons, B.Sc. Hons, DSE, GE…) bundle dozens of
   // distinct honours courses into one file — e.g. B.Sc. (Hons) alone
@@ -127,7 +153,7 @@ export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }
         <div className="mt-4 flex flex-wrap items-center gap-3 text-sm text-muted">
           <span className="inline-flex items-center gap-1.5">
             <CalendarBlank size={16} weight="bold" />
-            {examSession} &middot; {filtered.length} paper{filtered.length === 1 ? "" : "s"}
+            {examSession} &middot; {loading ? "loading…" : `${filtered.length} paper${filtered.length === 1 ? "" : "s"}`}
           </span>
           <a
             href={sourcePdfHref}
@@ -143,7 +169,12 @@ export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }
 
       {/* Table */}
       <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-surface">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <div className="flex items-center justify-center gap-2 p-10 text-sm text-muted">
+            <CircleNotch size={18} className="animate-spin" />
+            Loading datesheet…
+          </div>
+        ) : filtered.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted">
             No datesheet rows found for {currentProgramme?.label}
             {course !== ALL_COURSES ? ` — ${course}` : ""}
