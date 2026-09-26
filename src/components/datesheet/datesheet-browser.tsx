@@ -11,6 +11,7 @@ type Props = {
 };
 
 const ALL_SEMESTERS = "all";
+const ALL_SUBJECTS = "all";
 
 function formatDate(iso: string, day: string) {
   const [y, m, d] = iso.split("-").map(Number);
@@ -21,6 +22,7 @@ function formatDate(iso: string, day: string) {
 
 export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }: Props) {
   const [programmeSlug, setProgrammeSlug] = useState(programmes[0]?.slug ?? "");
+  const [subject, setSubject] = useState<string>(ALL_SUBJECTS);
   const [semester, setSemester] = useState<string>(ALL_SEMESTERS);
 
   const entries = useMemo(
@@ -28,19 +30,34 @@ export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }
     [entriesByProgramme, programmeSlug]
   );
 
-  const semesters = useMemo(() => {
+  // Many source PDFs (B.A. Hons, B.Sc. Hons, DSE, GE…) bundle dozens of
+  // distinct honours subjects into one file — e.g. B.Sc. (Hons) alone
+  // covers Zoology, Botany, Chemistry, Physics… each with its own Core
+  // papers. Surface a subject picker whenever a programme actually has
+  // more than one named subject, so students aren't stuck scanning a
+  // combined table for their one subject.
+  const subjects = useMemo(() => {
     const set = new Set<string>();
-    for (const e of entries) if (e.semester) set.add(e.semester);
-    return Array.from(set).sort((a, b) => Number(a) - Number(b));
+    for (const e of entries) if (e.subject) set.add(e.subject);
+    return Array.from(set).sort();
   }, [entries]);
 
+  const semesters = useMemo(() => {
+    const pool = subject === ALL_SUBJECTS ? entries : entries.filter((e) => e.subject === subject);
+    const set = new Set<string>();
+    for (const e of pool) if (e.semester) set.add(e.semester);
+    return Array.from(set).sort((a, b) => Number(a) - Number(b));
+  }, [entries, subject]);
+
   const filtered = useMemo(() => {
-    const rows = semester === ALL_SEMESTERS ? entries : entries.filter((e) => e.semester === semester);
+    let rows = entries;
+    if (subject !== ALL_SUBJECTS) rows = rows.filter((e) => e.subject === subject);
+    if (semester !== ALL_SEMESTERS) rows = rows.filter((e) => e.semester === semester);
     return [...rows].sort((a, b) => {
       if (a.date !== b.date) return a.date.localeCompare(b.date);
       return a.startTime.localeCompare(b.startTime);
     });
-  }, [entries, semester]);
+  }, [entries, subject, semester]);
 
   const currentProgramme = programmes.find((p) => p.slug === programmeSlug);
   const sourcePdfHref = `/data/datesheet/source-pdfs/${programmeSlug}.pdf`;
@@ -49,13 +66,14 @@ export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }
     <div>
       {/* Programme + semester pickers */}
       <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <label className="block">
             <span className="text-sm font-semibold text-foreground">Programme / Course</span>
             <select
               value={programmeSlug}
               onChange={(e) => {
                 setProgrammeSlug(e.target.value);
+                setSubject(ALL_SUBJECTS);
                 setSemester(ALL_SEMESTERS);
               }}
               className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
@@ -67,6 +85,27 @@ export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }
               ))}
             </select>
           </label>
+
+          {subjects.length > 1 && (
+            <label className="block">
+              <span className="text-sm font-semibold text-foreground">Subject</span>
+              <select
+                value={subject}
+                onChange={(e) => {
+                  setSubject(e.target.value);
+                  setSemester(ALL_SEMESTERS);
+                }}
+                className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
+              >
+                <option value={ALL_SUBJECTS}>All subjects</option>
+                {subjects.map((s) => (
+                  <option key={s} value={s}>
+                    {s}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
 
           <label className="block">
             <span className="text-sm font-semibold text-foreground">Semester</span>
@@ -107,6 +146,7 @@ export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }
         {filtered.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted">
             No datesheet rows found for {currentProgramme?.label}
+            {subject !== ALL_SUBJECTS ? ` — ${subject}` : ""}
             {semester !== ALL_SEMESTERS ? `, Semester ${semester}` : ""}. Check the source PDF above.
           </div>
         ) : (
