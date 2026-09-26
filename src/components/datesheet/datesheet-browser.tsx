@@ -11,7 +11,7 @@ type Props = {
 };
 
 const ALL_SEMESTERS = "all";
-const ALL_SUBJECTS = "all";
+const ALL_COURSES = "all";
 
 function formatDate(iso: string, day: string) {
   const [y, m, d] = iso.split("-").map(Number);
@@ -22,7 +22,7 @@ function formatDate(iso: string, day: string) {
 
 export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }: Props) {
   const [programmeSlug, setProgrammeSlug] = useState(programmes[0]?.slug ?? "");
-  const [subject, setSubject] = useState<string>(ALL_SUBJECTS);
+  const [course, setCourse] = useState<string>(ALL_COURSES);
   const [semester, setSemester] = useState<string>(ALL_SEMESTERS);
 
   const entries = useMemo(
@@ -31,49 +31,49 @@ export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }
   );
 
   // Many source PDFs (B.A. Hons, B.Sc. Hons, DSE, GE…) bundle dozens of
-  // distinct honours subjects into one file — e.g. B.Sc. (Hons) alone
+  // distinct honours courses into one file — e.g. B.Sc. (Hons) alone
   // covers Zoology, Botany, Chemistry, Physics… each with its own Core
-  // papers. Surface a subject picker whenever a programme actually has
-  // more than one named subject, so students aren't stuck scanning a
-  // combined table for their one subject.
-  const subjects = useMemo(() => {
+  // papers, same as B.A. (Hons) covers Political Science, History,
+  // English… Surface a Course picker whenever a programme actually has
+  // more than one, so students aren't stuck scanning a combined table.
+  const courses = useMemo(() => {
     const set = new Set<string>();
     for (const e of entries) if (e.subject) set.add(e.subject);
     return Array.from(set).sort();
   }, [entries]);
 
   const semesters = useMemo(() => {
-    const pool = subject === ALL_SUBJECTS ? entries : entries.filter((e) => e.subject === subject);
+    const pool = course === ALL_COURSES ? entries : entries.filter((e) => e.subject === course);
     const set = new Set<string>();
     for (const e of pool) if (e.semester) set.add(e.semester);
     return Array.from(set).sort((a, b) => Number(a) - Number(b));
-  }, [entries, subject]);
+  }, [entries, course]);
 
   const filtered = useMemo(() => {
     let rows = entries;
-    if (subject !== ALL_SUBJECTS) rows = rows.filter((e) => e.subject === subject);
+    if (course !== ALL_COURSES) rows = rows.filter((e) => e.subject === course);
     if (semester !== ALL_SEMESTERS) rows = rows.filter((e) => e.semester === semester);
     return [...rows].sort((a, b) => {
       if (a.date !== b.date) return a.date.localeCompare(b.date);
       return a.startTime.localeCompare(b.startTime);
     });
-  }, [entries, subject, semester]);
+  }, [entries, course, semester]);
 
   const currentProgramme = programmes.find((p) => p.slug === programmeSlug);
   const sourcePdfHref = `/data/datesheet/source-pdfs/${programmeSlug}.pdf`;
 
   return (
     <div>
-      {/* Programme + semester pickers */}
+      {/* Programme + course + semester pickers */}
       <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <label className="block">
-            <span className="text-sm font-semibold text-foreground">Programme / Course</span>
+            <span className="text-sm font-semibold text-foreground">Programme</span>
             <select
               value={programmeSlug}
               onChange={(e) => {
                 setProgrammeSlug(e.target.value);
-                setSubject(ALL_SUBJECTS);
+                setCourse(ALL_COURSES);
                 setSemester(ALL_SEMESTERS);
               }}
               className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
@@ -86,21 +86,21 @@ export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }
             </select>
           </label>
 
-          {subjects.length > 1 && (
+          {courses.length > 1 && (
             <label className="block">
-              <span className="text-sm font-semibold text-foreground">Subject</span>
+              <span className="text-sm font-semibold text-foreground">Course</span>
               <select
-                value={subject}
+                value={course}
                 onChange={(e) => {
-                  setSubject(e.target.value);
+                  setCourse(e.target.value);
                   setSemester(ALL_SEMESTERS);
                 }}
                 className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
               >
-                <option value={ALL_SUBJECTS}>All subjects</option>
-                {subjects.map((s) => (
-                  <option key={s} value={s}>
-                    {s}
+                <option value={ALL_COURSES}>All courses</option>
+                {courses.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
                   </option>
                 ))}
               </select>
@@ -146,7 +146,7 @@ export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }
         {filtered.length === 0 ? (
           <div className="p-8 text-center text-sm text-muted">
             No datesheet rows found for {currentProgramme?.label}
-            {subject !== ALL_SUBJECTS ? ` — ${subject}` : ""}
+            {course !== ALL_COURSES ? ` — ${course}` : ""}
             {semester !== ALL_SEMESTERS ? `, Semester ${semester}` : ""}. Check the source PDF above.
           </div>
         ) : (
@@ -155,7 +155,7 @@ export function DatesheetBrowser({ programmes, entriesByProgramme, examSession }
               <tr className="border-b border-border bg-surface-muted text-left text-xs font-semibold uppercase tracking-wide text-muted">
                 <th className="px-4 py-3">Date</th>
                 <th className="px-4 py-3">Time</th>
-                <th className="px-4 py-3">Paper / Subject</th>
+                <th className="px-4 py-3">Paper / Course</th>
                 <th className="px-4 py-3">Paper Code</th>
                 <th className="px-4 py-3">Sem</th>
                 <th className="px-4 py-3">Category</th>
