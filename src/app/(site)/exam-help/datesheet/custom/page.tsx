@@ -1,18 +1,17 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { getDatesheetManifest, getProgrammeEntries, type DatesheetEntry } from "@/lib/datesheet-data";
-import { DatesheetBrowser } from "@/components/datesheet/datesheet-browser";
+import { CustomDatesheetBuilder } from "@/components/datesheet/custom-datesheet-builder";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 export const metadata: Metadata = {
-  title: "DU Datesheet December 2026",
+  title: "Build Your Custom DU Datesheet",
   description:
-    "Official Delhi University semester exam datesheet for B.A., B.Com, B.Sc. and all NEP-UGCF programmes. Search by course and semester, with source PDFs linked.",
-  alternates: { canonical: "/exam-help/datesheet" },
+    "Select your Core, Elective, GE, SEC, VAC and AEC papers to generate a personal chronological DU exam datesheet for December 2026.",
+  alternates: { canonical: "/exam-help/datesheet/custom" },
 };
 
-export default function DatesheetPage() {
+export default function CustomDatesheetPage() {
   const manifest = getDatesheetManifest();
   const entriesByProgramme: Record<string, DatesheetEntry[]> = {};
   for (const p of manifest.programmes) {
@@ -23,6 +22,7 @@ export default function DatesheetPage() {
     { name: "Home", url: "/" },
     { name: "Exam Help", url: "/exam-help" },
     { name: "Datesheet", url: "/exam-help/datesheet" },
+    { name: "Custom Datesheet", url: "/exam-help/datesheet/custom" },
   ];
 
   return (
@@ -32,27 +32,17 @@ export default function DatesheetPage() {
 
       <div className="max-w-3xl">
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          DU Datesheet — {manifest.examSession}
+          Build Your Custom Datesheet
         </h1>
         <p className="mt-3 text-base text-muted">
-          Official University of Delhi semester exam datesheet, extracted from the Controller of
-          Examinations&apos; notifications. Pick your programme and semester to see your full exam schedule.
-        </p>
-      </div>
-
-      <div className="mt-6 rounded-2xl border border-[#0284c7]/20 bg-sky-soft/40 p-5 sm:p-6">
-        <p className="text-sm text-foreground">
-          Only picking a few specific papers?{" "}
-          <Link href="/exam-help/datesheet/custom" className="font-bold text-sky-dark hover:underline">
-            Build your custom datesheet →
-          </Link>{" "}
-          — select just your Core, Elective, GE, SEC, VAC or AEC papers and get a personal
-          chronological schedule.
+          Every student takes a different mix of Core, Elective, GE, SEC, VAC and AEC papers. Pick
+          exactly the papers you&apos;re appearing for and get a single chronological schedule — no
+          scrolling through papers that aren&apos;t yours.
         </p>
       </div>
 
       <div className="mt-8">
-        <DatesheetBrowser
+        <CustomDatesheetBuilder
           programmes={manifest.programmes}
           entriesByProgramme={entriesByProgramme}
           examSession={manifest.examSession}

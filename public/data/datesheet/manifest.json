@@ -1,0 +1,120 @@
+{
+  "generatedAt": "2026-09-26",
+  "examSession": "December 2026",
+  "programmes": [
+    {
+      "slug": "aec",
+      "label": "Ability Enhancement Course (AEC)",
+      "sourceFile": "Ability Enhancement Course (AEC) · December 2026.pdf",
+      "entryCount": 141
+    },
+    {
+      "slug": "ba-hons",
+      "label": "B.A. (Hons)",
+      "sourceFile": "B.A. (Hons) · December 2026.pdf",
+      "entryCount": 536
+    },
+    {
+      "slug": "ba-prog",
+      "label": "B.A. (Prog)",
+      "sourceFile": "B.A. (Prog) · December 2026.pdf",
+      "entryCount": 534
+    },
+    {
+      "slug": "ba-prog-sol",
+      "label": "B.A. (Prog) - SOL",
+      "sourceFile": "B.A. (Prog)-SOL · December_January 2026–27.pdf",
+      "entryCount": 541
+    },
+    {
+      "slug": "ba-vocational",
+      "label": "B.A. (Vocational Studies)",
+      "sourceFile": "B.A. (Vocational Studies) · December 2026.pdf",
+      "entryCount": 87
+    },
+    {
+      "slug": "bcom-hons",
+      "label": "B.Com (Hons)",
+      "sourceFile": "B.Com (Hons) · December 2026.pdf",
+      "entryCount": 23
+    },
+    {
+      "slug": "bcom-hons-sol",
+      "label": "B.Com (Hons) - SOL",
+      "sourceFile": "B.Com (Hons)-SOL · December_January 2026–27.pdf",
+      "entryCount": 137
+    },
+    {
+      "slug": "bcom-prog",
+      "label": "B.Com (Prog)",
+      "sourceFile": "B.Com (Prog) · December 2026.pdf",
+      "entryCount": 19
+    },
+    {
+      "slug": "bsc-hons",
+      "label": "B.Sc. (Hons)",
+      "sourceFile": "B.Sc. (Hons) · December 2026.pdf",
+      "entryCount": 379
+    },
+    {
+      "slug": "bsc-home-science",
+      "label": "B.Sc. (Pass) Home Science",
+      "sourceFile": "B.Sc. (Pass) Home Science · December 2026.pdf",
+      "entryCount": 25
+    },
+    {
+      "slug": "bsc-prog",
+      "label": "B.Sc. (Prog)",
+      "sourceFile": "B.Sc. (Prog) · December 2026.pdf",
+      "entryCount": 165
+    },
+    {
+      "slug": "bsc-pehes",
+      "label": "B.Sc. Physical Education, Health Education & Sports",
+      "sourceFile": "B.Sc. Physical Education, Health Education & Sports · December 2026.pdf",
+      "entryCount": 67
+    },
+    {
+      "slug": "bvoc",
+      "label": "Bachelor of Vocation (B.Voc)",
+      "sourceFile": "Bachelor of Vocation (B.Voc) Banking, Financial Services & Insurance _Health Care Management_Retail Management and IT_Software Development_Web Designing · December 2026.pdf",
+      "entryCount": 72
+    },
+    {
+      "slug": "dse",
+      "label": "Discipline Specific Elective (DSE)",
+      "sourceFile": "DISCIPLINE SPECIFIC ELECTIVE · December 2026.pdf",
+      "entryCount": 2643
+    },
+    {
+      "slug": "journalism-5yr",
+      "label": "Five Year Integrated Programme in Journalism",
+      "sourceFile": "Five Year Integrated Programme in Journalism · December 2026.pdf",
+      "entryCount": 18
+    },
+    {
+      "slug": "ge",
+      "label": "Generic Elective (GE)",
+      "sourceFile": "Generic Elective (GE) · December 2026.pdf",
+      "entryCount": 1403
+    },
+    {
+      "slug": "sbc",
+      "label": "Skill Based Course for Programme Course",
+      "sourceFile": "SKILL BASED COURSE FOR PROGRAMME COURSE · December 2026.pdf",
+      "entryCount": 72
+    },
+    {
+      "slug": "sec",
+      "label": "Skill Enhancement Course (SEC)",
+      "sourceFile": "Skill Enhancement (SEC) · December 2026.pdf",
+      "entryCount": 114
+    },
+    {
+      "slug": "vac",
+      "label": "Value Addition Course (VAC)",
+      "sourceFile": "Value Addition (VAC) · December 2026.pdf",
+      "entryCount": 71
+    }
+  ]
+}

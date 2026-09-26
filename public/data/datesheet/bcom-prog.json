@@ -1,0 +1,211 @@
+[
+  {
+    "date": "2026-12-04",
+    "day": "Friday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2412093501",
+    "description": "INCOME TAX LAW AND PRACTICE",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-13",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-05",
+    "day": "Saturday",
+    "startTime": "09:30 AM",
+    "subject": "COMMERCE",
+    "semester": "7",
+    "paperCode": "2412094701",
+    "description": "BUSINESS AND MACROECONOMIC POLICY",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-05",
+    "day": "Saturday",
+    "startTime": "09:30 AM",
+    "subject": "COMMERCE",
+    "semester": "7",
+    "paperCode": "2412094702",
+    "description": "BANKING AND INSURANCE",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-07",
+    "day": "Monday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "1",
+    "paperCode": "2412091101",
+    "description": "BUSINESS ORGANISATION AND MANAGEMENT",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-1",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-08",
+    "day": "Tuesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "3",
+    "paperCode": "2412092301",
+    "description": "BUSINESS STATISTICS",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-7",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-09",
+    "day": "Wednesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2412093502",
+    "description": "BUSEINESS ECONOMICS",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-14",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-10",
+    "day": "Thursday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "3",
+    "paperCode": "2412092302",
+    "description": "FINANCIAL MANAGEMENT",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-8",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-11",
+    "day": "Friday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "1",
+    "paperCode": "2412091102",
+    "description": "BUSINESS LAWS",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-2",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-12",
+    "day": "Saturday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2412093503",
+    "description": "MANAGEMENT IN ACCOUNTING",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-15",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-14",
+    "day": "Monday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "1",
+    "paperCode": "2412091103",
+    "description": "FINANCIAL ACCOUNTING",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-3",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-15",
+    "day": "Tuesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "3",
+    "paperCode": "2412092303",
+    "description": "PRINCIPLES OF MARKETING",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-9",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2413090001",
+    "description": "ORGANISATIONAL BEHAVIOUR",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2413090002",
+    "description": "FINANCIAL MARKETS AND INSTITUTIONS",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2413090003",
+    "description": "SUSTAINABILITY MARKETING",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2413090004",
+    "description": "BUSINESS MATHEMATICS",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2413090005",
+    "description": "ACCOUNTING FOR MERGERS AND ACQUISITIONS AND VALIDATION",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2413090006",
+    "description": "AUTIDING",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2413090007",
+    "description": "BUSINESS TAX PROCEDURE AND MANAGEMENT",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "02:30 PM",
+    "subject": "COMMERCE",
+    "semester": "5",
+    "paperCode": "2413090008",
+    "description": "INTERNATIONAL MONETARY AND FINANCIAL ENVIRONMENT",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  }
+]

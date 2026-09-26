@@ -1,0 +1,200 @@
+[
+  {
+    "date": "2026-12-04",
+    "day": "Friday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "5",
+    "paperCode": "3162703501",
+    "description": "RADIO JOURNALISM AND PRODUCTION",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-13",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-05",
+    "day": "Saturday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE-YEAR INTEGRATED PROGRAMME IN JOURNALISM",
+    "semester": "7",
+    "paperCode": "3162704701",
+    "description": "CONVERGENT MEDIA",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-07",
+    "day": "Monday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "1",
+    "paperCode": "3162701101",
+    "description": "MEDIA AND COMMUNICATION",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-1",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-07",
+    "day": "Monday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "1",
+    "paperCode": "3162701104",
+    "description": "KNOWLDEGE AND SCIENCE OF HUMAN COMMUNICATION",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-1",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-08",
+    "day": "Tuesday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "3",
+    "paperCode": "3162702301",
+    "description": "PRINT JOURNALISM & PRODUCTION",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-7",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-09",
+    "day": "Wednesday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "5",
+    "paperCode": "3162703502",
+    "description": "DEVELOPMENT COMMUNICATION",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-14",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-10",
+    "day": "Thursday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "3",
+    "paperCode": "3162702302",
+    "description": "DESIGN LAYOUT & SOFTWARE",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-8",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-11",
+    "day": "Friday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "1",
+    "paperCode": "3162701102",
+    "description": "REPORTING AND EDITING",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-2",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-11",
+    "day": "Friday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "1",
+    "paperCode": "3162701105",
+    "description": "DIFFERENT FORMS OF JOURNALISM",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-2",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-12",
+    "day": "Saturday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "5",
+    "paperCode": "3162703503",
+    "description": "INDIAN CINEMA",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-15",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-14",
+    "day": "Monday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "1",
+    "paperCode": "3162701103",
+    "description": "HISTORY OF MEDIA",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-3",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-14",
+    "day": "Monday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "1",
+    "paperCode": "3162701106",
+    "description": "DIFFERENT FORMS OF ENTERTAINMENT IN MEDIA",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-3",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-15",
+    "day": "Tuesday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "3",
+    "paperCode": "3162702303",
+    "description": "INTRODUCTION TO BROADCAST MEDIA",
+    "typeLabel": "DISCIPLINE SPECIFIC CORE-9",
+    "category": "DSC"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "5",
+    "paperCode": "3163700005",
+    "description": "MEDIA INDUSTRY AND GOVERNANCE",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "5",
+    "paperCode": "3163700006",
+    "description": "MEDIA AND HUMAN RIGHTS",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-16",
+    "day": "Wednesday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "5",
+    "paperCode": "3163700007",
+    "description": "MEDIA AND CULTURAL STUDIES",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-18",
+    "day": "Friday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "3",
+    "paperCode": "3163702001",
+    "description": "MEDIA & ECONOMICS",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE / GENERIC",
+    "category": "DSE"
+  },
+  {
+    "date": "2026-12-18",
+    "day": "Friday",
+    "startTime": "09:30 AM",
+    "subject": "FIVE YEAR INTEGRATED IN JOURNALISM",
+    "semester": "3",
+    "paperCode": "3163702002",
+    "description": "MEDIA & INTERNATIONAL RELATIONS",
+    "typeLabel": "DISCIPLINE SPECIFIC ELECTIVE / GENERIC",
+    "category": "DSE"
+  }
+]
