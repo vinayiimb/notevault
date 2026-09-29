@@ -5,6 +5,12 @@ import { NotesSection } from "@/components/subjects/notes-section";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
+// Forces this page to render per-request instead of being statically
+// generated at build time. It queries the database on every load (a random
+// subject each time), and DATABASE_URL is only available at runtime on
+// Railway, not inside the Docker build container.
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Notes Preview | DU PYQ Online",
   description: "See a sample of the compiled study notes available on DU PYQ Online — picked at random from a real subject.",
