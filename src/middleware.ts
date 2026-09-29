@@ -12,15 +12,6 @@ export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/admin")) {
-    // Admin is staging-only for now — the header Login button is already
-    // hidden on production (NEXT_PUBLIC_SHOW_ADMIN_LOGIN=false there), but
-    // that only hides the link; someone could still browse straight to
-    // /admin. Block the routes themselves here so production genuinely
-    // has no admin surface, while staging (RAILWAY_ENVIRONMENT_NAME=
-    // "staging") keeps working exactly as before.
-    if (process.env.RAILWAY_ENVIRONMENT_NAME === "production") {
-      return NextResponse.redirect(new URL("/", request.url));
-    }
     if (pathname === "/admin/login") return NextResponse.next();
     const hasSession = request.cookies.has(SESSION_COOKIE_NAME);
     if (!hasSession) {
