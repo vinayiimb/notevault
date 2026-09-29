@@ -24,13 +24,100 @@ function looksLikeHeadingText(text: string): boolean {
   return true;
 }
 
+// Bare bullet markers ("•", "◦", "‣", or "-"/"*" used as a plain-text
+// bullet rather than markdown syntax) from content pasted out of an AI
+// chat or Word/Docs, which the source never wrote as a real markdown list.
+const BULLET_LINE = /^[•◦‣]\s+(.+)$/;
+
+// A short, unpunctuated, title-case-ish line immediately followed by a run
+// of bullets is almost always an implicit section header ("Core
+// Objectives" right before a block of "• ..." lines) — the same shape as
+// looksLikeHeadingText, just without the source ever bolding it.
+function looksLikeImplicitHeading(line: string): boolean {
+  const trimmed = line.trim();
+  if (!trimmed || trimmed.length > 60) return false;
+  if (/[.!?:]$/.test(trimmed)) return false;
+  if (BULLET_LINE.test(trimmed)) return false;
+  if (trimmed.split(/\s+/).length > 6) return false;
+  return true;
+}
+
+// Lines that must stay adjacent to their neighbors of the same kind — a
+// table's rows, or fence markers — because inserting a blank line between
+// them breaks the block (splits one table into several, or ends up inside
+// a fence). Headings and list items are NOT included here: a blank line
+// after either is always safe (markdown ignores extra blank lines) and is
+// often necessary (ending a list before the next prose paragraph).
+function breaksIfSeparated(trimmed: string): boolean {
+  return trimmed === "" || trimmed.startsWith("|") || /^```/.test(trimmed);
+}
+
+// AI-chat and pasted-from-Docs text uses single newlines to separate what
+// are structurally distinct paragraphs/headings/bullets — markdown only
+// treats a blank line as a block boundary, so without this the whole thing
+// collapses into one unbroken paragraph (the actual bug: bullets render as
+// literal "•" characters inline, headings never separate from body text).
+// This only touches plain prose lines; markdown that already uses real
+// block syntax (headings, "- "/"* " lists, tables, code fences, blank-line
+// paragraphs) is structurally unaffected — isStructuralLine exempts both
+// the current and the previous line from getting a break forced in.
+function insertParagraphBreaks(lines: string[]): string[] {
+  const out: string[] = [];
+  let inCodeFence = false;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+    const enteringOrLeavingFence = /^```/.test(trimmed);
+
+    if (!inCodeFence && !enteringOrLeavingFence) {
+      const bulletMatch = trimmed.match(BULLET_LINE);
+      if (bulletMatch) {
+        // Ensure a blank line *before* the first bullet in a run so the
+        // preceding line (heading or intro sentence) doesn't get pulled
+        // into the same paragraph as the list.
+        if (out.length > 0 && out[out.length - 1].trim() !== "") out.push("");
+        out.push(`- ${bulletMatch[1]}`);
+        continue;
+      }
+      if (looksLikeImplicitHeading(trimmed) && lines[i + 1]?.trim().match(BULLET_LINE)) {
+        if (out.length > 0 && out[out.length - 1].trim() !== "") out.push("");
+        out.push(`### ${trimmed}`);
+        out.push("");
+        continue;
+      }
+
+      // A non-blank prose line following another non-blank prose line is
+      // two separate paragraphs in the source's intent — insert the blank
+      // line markdown needs to actually break them apart — unless either
+      // line must stay glued to its neighbor (a table row, or a fence
+      // marker), in which case forcing a blank line would break it apart.
+      const prev = out[out.length - 1];
+      if (
+        trimmed !== "" &&
+        prev !== undefined &&
+        prev.trim() !== "" &&
+        !breaksIfSeparated(prev.trim()) &&
+        !breaksIfSeparated(trimmed)
+      ) {
+        out.push("");
+      }
+    }
+
+    out.push(line);
+    if (enteringOrLeavingFence) inCodeFence = !inCodeFence;
+  }
+
+  return out;
+}
+
 export function preprocessNotesMarkdown(raw: string): string {
   // AI-generated content (and some pasted-from-Word/Docs text) comes back
   // with \r\n or bare \r line endings. Every regex below anchors on `$`,
   // which only matches end-of-string/before \n — a trailing \r left in
   // means "line" text like "## Heading\r" silently fails to match at all.
   const normalized = raw.replace(/\r\n?/g, "\n");
-  return normalized
+  const headingsPass = normalized
     .split("\n")
     .map((line) => {
       const trimmed = line.trim();
@@ -39,8 +126,9 @@ export function preprocessNotesMarkdown(raw: string): string {
       const numbered = trimmed.match(NUMBERED_HEADING);
       if (numbered && looksLikeHeadingText(numbered[1])) return `### ${numbered[1]}`;
       return line;
-    })
-    .join("\n");
+    });
+
+  return insertParagraphBreaks(headingsPass).join("\n");
 }
 
 export function slugify(text: string) {

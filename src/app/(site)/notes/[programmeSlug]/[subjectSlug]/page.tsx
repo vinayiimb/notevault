@@ -46,8 +46,8 @@ export default async function CanonicalSubjectNotePage({
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
-    { name: "Papers", url: "/papers" },
-    { name: note.programmeName, url: `/admin/subject-notes/program/${programmeSlug}` },
+    { name: "Notes", url: "/notes" },
+    { name: note.programmeName, url: `/notes/${programmeSlug}` },
     { name: note.subjectName, url: `/notes/${programmeSlug}/${subjectSlug}` },
   ];
 
