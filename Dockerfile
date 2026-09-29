@@ -42,6 +42,17 @@ RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+# The build step already raises V8's heap limit for `next build`
+# (package.json's NODE_OPTIONS), but that flag doesn't carry over to the
+# running server — CMD below is a separate `node` process with Node's
+# default heap ceiling (~2GB), regardless of how much RAM the container
+# actually has (Railway gives this service 8GB). Loading this app's large
+# JSON data files (a couple 10-20MB files, parsed and cached in memory per
+# warm instance) repeatedly hit that default ceiling and crashed the
+# process with "JavaScript heap out of memory", taking the whole site down
+# — not just the request that triggered it. Raising it here lets the
+# runtime actually use the container's real memory.
+ENV NODE_OPTIONS=--max-old-space-size=6144
 
 RUN groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nextjs
