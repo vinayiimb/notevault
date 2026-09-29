@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { CalendarBlank, MagnifyingGlass, Trash, FilePdf, CheckCircle, CircleNotch } from "@phosphor-icons/react/dist/ssr";
+import { CalendarBlank, MagnifyingGlass, Trash, CheckCircle, CircleNotch } from "@phosphor-icons/react/dist/ssr";
 import type { DatesheetEntry, DatesheetProgramme } from "@/lib/datesheet-types";
 import { CATEGORY_LABELS } from "@/lib/datesheet-types";
 import { fetchProgrammeEntries } from "@/lib/datesheet-fetch-client";
@@ -206,7 +206,6 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
     setSelected({});
   }
 
-  const coursePdfHref = `/data/datesheet/source-pdfs/${programmeSlug}.pdf`;
   const dscSelectedCount = selectedList.filter((e) => e.category === "DSC").length;
 
   return (
@@ -341,15 +340,6 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
           )
         )}
 
-        <a
-          href={coursePdfHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
-        >
-          <FilePdf size={14} weight="bold" />
-          View official source PDF for {programmes.find((p) => p.slug === programmeSlug)?.label}
-        </a>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
@@ -459,7 +449,6 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
                 {availablePapers.map((e) => {
                   const key = rowKey(e);
                   const isChecked = Boolean(selected[key]);
-                  const rowPdfHref = `/data/datesheet/source-pdfs/${e.sourceProgrammeSlug}.pdf`;
                   return (
                     <li key={key}>
                       <label className="flex cursor-pointer items-start gap-3 px-4 py-3 hover:bg-accent-soft/40">
@@ -479,16 +468,6 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
                             <span className="font-mono">{e.paperCode}</span>
                             <span>{formatDate(e.date, e.day)}</span>
                             <span>{e.startTime}</span>
-                            <a
-                              href={rowPdfHref}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(evt) => evt.stopPropagation()}
-                              className="inline-flex items-center gap-1 font-semibold text-accent hover:underline"
-                            >
-                              <FilePdf size={12} weight="bold" />
-                              Source
-                            </a>
                           </span>
                         </span>
                         <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">

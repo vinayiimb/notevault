@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarBlank, FilePdf, CircleNotch } from "@phosphor-icons/react/dist/ssr";
+import { CalendarBlank, CircleNotch } from "@phosphor-icons/react/dist/ssr";
 import type { DatesheetEntry, DatesheetProgramme } from "@/lib/datesheet-types";
 import { fetchProgrammeEntries } from "@/lib/datesheet-fetch-client";
 
@@ -86,7 +86,6 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
   }, [entries, course, semester]);
 
   const currentProgramme = programmes.find((p) => p.slug === programmeSlug);
-  const sourcePdfHref = `/data/datesheet/source-pdfs/${programmeSlug}.pdf`;
 
   return (
     <div>
@@ -155,15 +154,6 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
             <CalendarBlank size={16} weight="bold" />
             {examSession} &middot; {loading ? "loading…" : `${filtered.length} paper${filtered.length === 1 ? "" : "s"}`}
           </span>
-          <a
-            href={sourcePdfHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 font-semibold text-accent hover:underline"
-          >
-            <FilePdf size={16} weight="bold" />
-            View official source PDF
-          </a>
         </div>
       </div>
 
