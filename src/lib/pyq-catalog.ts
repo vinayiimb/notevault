@@ -65,6 +65,53 @@ export async function getSourceCatalog(): Promise<CatalogPaper[]> {
   return cachedSourceCatalog;
 }
 
+// Server-side, module-cached load of the pre-built papers catalog (13MB)
+// consumed by PaperBrowser (/papers). Previously PaperBrowser fetched this
+// file client-side on every page load — blank page until the download and
+// JSON parse finished. Loading it here and passing it down as `initialPapers`
+// lets it render on the first server response instead.
+let cachedPapersCatalog: CatalogPaper[] | null = null;
+export async function getPapersCatalog(): Promise<CatalogPaper[]> {
+  if (!cachedPapersCatalog) {
+    cachedPapersCatalog = await loadDataAsset('papers-catalog.json') as CatalogPaper[];
+  }
+  return cachedPapersCatalog;
+}
+
+// Same subject/semester override merge PaperBrowser previously did
+// client-side after fetching /api/catalog-overrides — done server-side so
+// the page can render pre-merged instead of waiting on a second round trip.
+export async function getPapersCatalogWithOverrides(): Promise<CatalogPaper[]> {
+  const { canonicalSubjectKey } = await import("@/lib/subject-normalization");
+  const { prisma } = await import("@/lib/prisma");
+
+  const [papers, overrides] = await Promise.all([
+    getPapersCatalog(),
+    prisma.catalogSubjectOverride
+      .findMany({
+        select: { course: true, subjectKey: true, displayName: true, semesterOverride: true },
+      })
+      .catch(() => []),
+  ]);
+
+  if (overrides.length === 0) return papers;
+
+  const overrideByKey = new Map(
+    overrides.map((o) => [`${o.course}\u0000${o.subjectKey}`, o])
+  );
+
+  return papers.map((p) => {
+    const override = overrideByKey.get(`${p.course}\u0000${canonicalSubjectKey(p.subject)}`);
+    if (!override) return p;
+    return {
+      ...p,
+      originalSubject: p.subject,
+      subject: override.displayName || p.subject,
+      semester: override.semesterOverride != null ? String(override.semesterOverride) : p.semester,
+    };
+  });
+}
+
 export async function getOfficialArchiveMap(): Promise<Map<string, ArchiveOfficialMapRow>> {
   if (!cachedOfficialArchiveMap) {
     const raw = await loadDataAsset('archive-official-map.json') as ArchiveOfficialMapRow[];

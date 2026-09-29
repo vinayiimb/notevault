@@ -20,7 +20,7 @@ export function FeatureCards() {
             </p>
           </div>
           <Link
-            href="/previous-year-papers"
+            href="/papers"
             className="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-50/80 px-4 py-3 text-sm font-semibold text-blue-600 hover:bg-blue-100 transition-colors w-max"
           >
             Open All PYQs <ArrowRight size={16} weight="bold" />

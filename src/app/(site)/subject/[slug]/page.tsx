@@ -6,23 +6,35 @@ import { ArrowRight, FileText, PenTool, Target } from "lucide-react";
 import { generateSubjectMetadata } from "@/lib/seo";
 import { Metadata } from "next";
 
+// Both queries below use an explicit `select` rather than `findFirst`/
+// `include` with no field list: the live database is missing a column
+// (Subject.parentSubjectId) that's in schema.prisma but was never migrated
+// in, which makes any query that implicitly selects the full Subject model
+// fail (P2022). Selecting only the fields this page actually uses sidesteps
+// it — same underlying issue documented in practice-questions/_route-impl.ts
+// and scripts/import-questions-csv.ts.
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const subject = await prisma.subject.findFirst({
     where: { slug },
-    include: { term: { include: { program: true } } }
+    select: {
+      name: true,
+      term: { select: { order: true, program: { select: { name: true } } } },
+    },
   });
   if (!subject) return { title: 'Not Found' };
-  
+
   return generateSubjectMetadata(subject.name, subject.term.program.name, subject.term.order.toString(), 'home');
 }
 
 export default async function SubjectOverviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  
+
   const subject = await prisma.subject.findFirst({
     where: { slug },
-    include: {
+    select: {
+      name: true,
+      description: true,
       _count: {
         select: {
           resources: true,

@@ -2526,6 +2526,184 @@ export async function updateQuestionAction(formData: FormData) {
   revalidatePath(`/subjects/${subjectId}`);
 }
 
+// ---------- Question bank bulk CSV upload ----------
+// Deliberately separate from the paper-catalog bulk-upload system
+// (src/lib/bulk-upload.ts, /admin/bulk-upload) — different row shape,
+// different target table (Question, not CatalogPaperUpload/Resource), and
+// keeping them apart avoids the confusion of one bulk-upload UI trying to
+// serve two unrelated import jobs. Fixed 6-column format:
+//   SubjectId (required, exact — no fuzzy name matching: see the
+//     removed AI/Groq path in api/practice-questions, which used to
+//     auto-create Program/Term/Subject rows from typed course names and
+//     is exactly the failure mode this avoids), Question, Answer
+//     (both required), Marks, Years, RepeatCount (all optional).
+
+export type QuestionCsvRowResult = {
+  rowNumber: number; // 1-indexed, matches the row's position in the sheet (header excluded)
+  subjectId: string;
+  questionPreview: string;
+  status: "valid" | "error";
+  error?: string;
+  subjectLabel?: string; // "Programme · Subject", filled in once the subject is confirmed to exist
+};
+
+async function readQuestionCsvRows(file: File) {
+  const { parseSpreadsheetRows } = await import("@/lib/spreadsheet");
+  return parseSpreadsheetRows(file);
+}
+
+// Validate-only pass: checks every row's shape and that its SubjectId
+// resolves to a real Subject, but writes nothing. Lets the admin see
+// exactly what will happen before committing, same shape as the paper
+// bulk-upload's validate step.
+export async function validateQuestionCsvAction(
+  formData: FormData,
+): Promise<{ results: QuestionCsvRowResult[] }> {
+  await requireAdmin();
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("No file uploaded.");
+  }
+
+  const rows = await readQuestionCsvRows(file);
+  if (rows.length === 0) {
+    throw new Error("The file has no data rows — check it has a header row plus at least one question.");
+  }
+
+  const subjectIds = [...new Set(rows.map((r) => r.subjectid?.trim()).filter(Boolean))] as string[];
+  const subjects = await prisma.subject.findMany({
+    where: { id: { in: subjectIds } },
+    include: { term: { include: { program: true } } },
+  });
+  const subjectById = new Map(subjects.map((s) => [s.id, s]));
+
+  const results: QuestionCsvRowResult[] = rows.map((row, idx) => {
+    const rowNumber = idx + 1;
+    const subjectId = row.subjectid?.trim() ?? "";
+    const questionText = row.question?.trim() ?? "";
+    const answerText = row.answer?.trim() ?? "";
+    const questionPreview = questionText.slice(0, 80) || "(empty)";
+
+    if (!subjectId) {
+      return { rowNumber, subjectId, questionPreview, status: "error", error: "Missing SubjectId." };
+    }
+    if (!questionText) {
+      return { rowNumber, subjectId, questionPreview, status: "error", error: "Missing Question." };
+    }
+    if (!answerText) {
+      return { rowNumber, subjectId, questionPreview, status: "error", error: "Missing Answer." };
+    }
+    const subject = subjectById.get(subjectId);
+    if (!subject) {
+      return {
+        rowNumber,
+        subjectId,
+        questionPreview,
+        status: "error",
+        error: "SubjectId does not match any existing subject.",
+      };
+    }
+    const marksRaw = row.marks?.trim();
+    if (marksRaw && Number.isNaN(Number(marksRaw))) {
+      return { rowNumber, subjectId, questionPreview, status: "error", error: `Marks "${marksRaw}" is not a number.` };
+    }
+    const repeatRaw = row.repeatcount?.trim();
+    if (repeatRaw && Number.isNaN(Number(repeatRaw))) {
+      return {
+        rowNumber,
+        subjectId,
+        questionPreview,
+        status: "error",
+        error: `RepeatCount "${repeatRaw}" is not a number.`,
+      };
+    }
+
+    return {
+      rowNumber,
+      subjectId,
+      questionPreview,
+      status: "valid",
+      subjectLabel: `${subject.term.program.name} · ${subject.name}`,
+    };
+  });
+
+  return { results };
+}
+
+// Commit pass: re-parses and re-validates the same file (never trusts
+// client-held state for what actually gets written) and inserts every
+// valid row in one transaction. Rows that fail validation are skipped and
+// reported — a partially-bad sheet still imports its good rows rather
+// than failing the whole batch.
+export async function commitQuestionCsvAction(
+  formData: FormData,
+): Promise<{ inserted: number; skipped: number; results: QuestionCsvRowResult[] }> {
+  await requireAdmin();
+  const file = formData.get("file");
+  if (!(file instanceof File) || file.size === 0) {
+    throw new Error("No file uploaded.");
+  }
+
+  const rows = await readQuestionCsvRows(file);
+  const subjectIds = [...new Set(rows.map((r) => r.subjectid?.trim()).filter(Boolean))] as string[];
+  const subjects = await prisma.subject.findMany({ where: { id: { in: subjectIds } } });
+  const subjectIdSet = new Set(subjects.map((s) => s.id));
+
+  const toInsert: Prisma.QuestionCreateManyInput[] = [];
+  const results: QuestionCsvRowResult[] = [];
+
+  rows.forEach((row, idx) => {
+    const rowNumber = idx + 1;
+    const subjectId = row.subjectid?.trim() ?? "";
+    const questionText = row.question?.trim() ?? "";
+    const answerText = row.answer?.trim() ?? "";
+    const questionPreview = questionText.slice(0, 80) || "(empty)";
+
+    if (!subjectId || !questionText || !answerText || !subjectIdSet.has(subjectId)) {
+      results.push({
+        rowNumber,
+        subjectId,
+        questionPreview,
+        status: "error",
+        error: !subjectIdSet.has(subjectId) ? "SubjectId does not match any existing subject." : "Missing a required field.",
+      });
+      return;
+    }
+
+    const marksRaw = row.marks?.trim();
+    const marks = marksRaw && !Number.isNaN(Number(marksRaw)) ? Number(marksRaw) : null;
+    const years = row.years?.trim() || null;
+    const repeatRaw = row.repeatcount?.trim();
+    const repeatCount = repeatRaw && !Number.isNaN(Number(repeatRaw)) ? Number(repeatRaw) : 1;
+
+    toInsert.push({
+      subjectId,
+      questionText,
+      answerText,
+      marks,
+      years,
+      isRepeated: repeatCount > 1,
+      repeatCount,
+    });
+    results.push({ rowNumber, subjectId, questionPreview, status: "valid" });
+  });
+
+  if (toInsert.length > 0) {
+    await prisma.question.createMany({ data: toInsert });
+    const touchedSubjectIds = new Set(toInsert.map((q) => q.subjectId));
+    for (const id of touchedSubjectIds) {
+      revalidatePath(`/admin/subjects/${id}`);
+      revalidatePath(`/subjects/${id}`);
+    }
+  }
+
+  return {
+    inserted: toInsert.length,
+    skipped: results.length - toInsert.length,
+    results,
+  };
+}
+
 // ---------- Content Blocks library ----------
 // Reusable StudyContentBlocks (src/lib/content/content-block-schema.ts) an
 // admin builds once and inserts by reference into any question's
@@ -2670,12 +2848,14 @@ export async function updateSiteSettingsAction(formData: FormData) {
   const heroHeadline = String(formData.get("heroHeadline") ?? "").trim();
   const heroSubtitle = String(formData.get("heroSubtitle") ?? "").trim();
   const heroSearchCaption = String(formData.get("heroSearchCaption") ?? "").trim();
+  const notesFeaturedProgrammes = String(formData.get("notesFeaturedProgrammes") ?? "").trim();
 
   const data = {
     heroEyebrow: heroEyebrow || null,
     heroHeadline: heroHeadline || null,
     heroSubtitle: heroSubtitle || null,
     heroSearchCaption: heroSearchCaption || null,
+    notesFeaturedProgrammes: notesFeaturedProgrammes || null,
   };
   await prisma.siteSettings.upsert({
     where: { id: "singleton" },
@@ -2684,6 +2864,7 @@ export async function updateSiteSettingsAction(formData: FormData) {
   });
 
   revalidatePath("/");
+  revalidatePath("/notes");
   revalidatePath("/admin/settings");
 }
 

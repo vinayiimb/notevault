@@ -14,6 +14,8 @@ import {
   ArrowSquareOut
 } from "@phosphor-icons/react";
 import ReactMarkdown from "react-markdown";
+import { StudyContentRenderer } from "@/components/content/study-content-renderer";
+import type { StudyContentBlock } from "@/lib/content/content-block-schema";
 
 type CourseData = {
   name: string;
@@ -35,6 +37,7 @@ type Question = {
   difficulty: "EASY" | "MEDIUM" | "HARD";
   topics: string[];
   solution: string;
+  contentBlocks: StudyContentBlock[];
 };
 
 interface PracticeClientProps {
@@ -66,10 +69,11 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
   const [isActive, setIsActive] = useState<boolean>(false);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [activeIndex, setActiveIndex] = useState<number>(0);
+  const [syllabusMap, setSyllabusMap] = useState<string | null>(null);
+  const [showSyllabusMap, setShowSyllabusMap] = useState<boolean>(false);
   
-  // User answers per question id
-  const [userAnswers, setUserAnswers] = useState<Record<string, string>>({});
   // Bookmarks per question id
   const [bookmarks, setBookmarks] = useState<Record<string, boolean>>({});
   // Solution revealed status per question id
@@ -102,12 +106,19 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
     return filtered;
   }, [currentCourseData, selectedSemester]);
 
+  // selectedSubject holds the real Subject.id (see the <select> below) — not
+  // a display name — so lookups by identity use it directly, but any UI
+  // copy needs this separately derived label instead.
+  const selectedSubjectLabel = useMemo(() => {
+    return currentCourseData?.subjects.find(s => s.slug === selectedSubject)?.name ?? "";
+  }, [currentCourseData, selectedSubject]);
+
   const years = useMemo(() => {
     if (!currentCourseData) return [];
     const yrs = new Set<string>();
     let filtered = currentCourseData.subjects;
     if (selectedSubject) {
-      filtered = filtered.filter(s => s.name === selectedSubject);
+      filtered = filtered.filter(s => s.slug === selectedSubject);
     }
     filtered.forEach(s => {
       s.years.forEach(y => {
@@ -116,6 +127,21 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
     });
     return Array.from(yrs).sort().reverse();
   }, [currentCourseData, selectedSubject]);
+
+  // Fetch just the syllabus map (if one exists for this subject) as soon as
+  // a course+subject is picked — before "Start Practice" is clicked, so it
+  // can be shown on the initial screen as a preview of what's covered.
+  useEffect(() => {
+    setSyllabusMap(null);
+    setShowSyllabusMap(false);
+    if (!selectedCourse || !selectedSubject) return;
+    const controller = new AbortController();
+    fetch(`/api/practice-questions?subject=${encodeURIComponent(selectedSubject)}`, { signal: controller.signal })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => setSyllabusMap(data?.syllabusMap ?? null))
+      .catch(() => {}); // best-effort preview only — silent on failure
+    return () => controller.abort();
+  }, [selectedCourse, selectedSubject]);
 
   // Available topics for active session questions
   const availableTopics = useMemo(() => {
@@ -189,21 +215,19 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
     if (!selectedCourse || !selectedSubject) return;
     setLoading(true);
     try {
-      const yearStr = selectedYears.join(",");
-      const res = await fetch(
-        `/api/practice-questions?course=${encodeURIComponent(selectedCourse)}&semester=${encodeURIComponent(selectedSemester === "all" ? "" : selectedSemester)}&subject=${encodeURIComponent(selectedSubject)}&year=${encodeURIComponent(yearStr)}`
-      );
+      const res = await fetch(`/api/practice-questions?subject=${encodeURIComponent(selectedSubject)}`);
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
       const data = await res.json();
-      if (data.questions && data.questions.length > 0) {
-        setQuestions(data.questions);
-        setActiveIndex(0);
-        setIsActive(true);
-      } else {
-        alert("Could not load practice questions for this subject.");
-      }
+      // Set questions (possibly empty) and activate either way — an empty
+      // result is a legitimate "nothing catalogued yet" state, handled by
+      // the empty-state panel below, not a failure needing a browser alert.
+      setQuestions(data.questions ?? []);
+      setActiveIndex(0);
+      setIsActive(true);
+      setLoadError(null);
     } catch (e) {
       console.error(e);
-      alert("Error starting practice session.");
+      setLoadError("Couldn't load questions for this subject — try again in a moment.");
     } finally {
       setLoading(false);
     }
@@ -216,9 +240,9 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
   };
 
   return (
-    <div className="flex min-h-[calc(100vh-140px)] flex-col gap-6 lg:flex-row">
+    <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
       {/* ================= LEFT SIDEBAR ================= */}
-      <aside className="w-full shrink-0 rounded-2xl border border-border bg-surface p-6 shadow-sm lg:w-80">
+      <aside className="w-full shrink-0 rounded-2xl border border-border bg-surface p-6 shadow-sm lg:sticky lg:top-24 lg:w-80">
         <h2 className="flex items-center gap-2 text-lg font-semibold text-foreground">
           <FunnelSimple size={20} weight="bold" /> Practice Filters
         </h2>
@@ -286,7 +310,7 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
                 >
                   <option value="">Select subject...</option>
                   {subjects.map((sub) => (
-                    <option key={sub.slug} value={sub.name}>{sub.name}</option>
+                    <option key={sub.slug} value={sub.slug}>{sub.name}</option>
                   ))}
                 </select>
                 <CaretDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-muted" />
@@ -384,33 +408,66 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
       <main className="flex-1 rounded-2xl border border-border bg-surface p-6 shadow-sm">
         {!isActive ? (
           /* Initial Screen - Selection Prompt */
-          <div className="flex h-full min-h-[350px] flex-col items-center justify-center text-center p-8">
+          <div className="flex flex-col items-center justify-center gap-1 px-8 py-16 text-center">
             <div className="rounded-full bg-accent-soft p-4 text-accent">
-              <Lightbulb size={36} weight="duotone" />
+              <Lightbulb size={32} weight="duotone" />
             </div>
-            <h3 className="mt-4 text-xl font-semibold text-foreground">Interactive Practice Sandbox</h3>
-            <p className="mt-2 max-w-md text-sm text-muted">
-              Choose the exams and filter on the basis of topic, subtopic and difficulty! We will fetch real or AI-generated practice drills immediately.
+            <h3 className="mt-4 text-lg font-semibold text-foreground">
+              {selectedSubjectLabel ? `Ready to practice ${selectedSubjectLabel}` : "Pick a course and subject to begin"}
+            </h3>
+            <p className="mt-2 max-w-sm text-sm text-muted">
+              {selectedSubject
+                ? "Questions are pulled from the catalogued question bank for this subject — no login, no timer pressure until you start."
+                : "Choose a course and subject in the panel on the left, then start a session to see catalogued previous-year questions for it."}
             </p>
+            {loadError && <p className="mt-3 text-sm text-red-600 dark:text-red-400">{loadError}</p>}
+
+            {syllabusMap && (
+              <button
+                onClick={() => setShowSyllabusMap((v) => !v)}
+                className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-accent hover:underline"
+              >
+                <CaretDown
+                  size={14}
+                  weight="bold"
+                  className={`transition-transform ${showSyllabusMap ? "rotate-180" : ""}`}
+                />
+                {showSyllabusMap ? "Hide topic map" : "See what this subject covers"}
+              </button>
+            )}
+            {syllabusMap && showSyllabusMap && (
+              <div className="mt-4 w-full max-w-3xl rounded-xl border border-border bg-surface-muted/40 p-2 text-left">
+                <StudyContentRenderer
+                  blocks={[{ id: "syllabus-map", type: "mermaid", chart: syllabusMap }]}
+                />
+              </div>
+            )}
+
             {selectedCourse && selectedSubject && (
               <button
                 onClick={handleStartPractice}
-                className="mt-6 rounded-lg bg-accent px-6 py-2.5 text-sm font-semibold text-accent-foreground shadow transition hover:bg-accent-hover"
+                disabled={loading}
+                className="mt-6 rounded-lg bg-accent px-6 py-2.5 text-sm font-semibold text-accent-foreground shadow transition hover:bg-accent-hover disabled:opacity-50"
               >
-                Start Practice Now
+                {loading ? "Loading…" : "Start Practice Now"}
               </button>
             )}
           </div>
         ) : filteredQuestions.length === 0 ? (
           /* No Questions Found for Active Filter Screen */
-          <div className="flex h-full min-h-[350px] flex-col items-center justify-center text-center p-8">
+          <div className="flex flex-col items-center justify-center gap-1 px-8 py-16 text-center">
             <div className="rounded-full bg-surface-muted p-4 text-muted">
-              <WarningCircle size={36} weight="duotone" />
+              <WarningCircle size={32} weight="duotone" />
             </div>
-            <h3 className="mt-4 text-lg font-semibold text-foreground">No Questions Match Filters</h3>
-            <p className="mt-2 text-sm text-muted">
-              Try adjusting the difficulty or topic checkmarks in the sidebar to view available questions.
+            <h3 className="mt-4 text-lg font-semibold text-foreground">
+              {questions.length === 0 ? "No questions catalogued yet" : "No Questions Match Filters"}
+            </h3>
+            <p className="mt-2 max-w-sm text-sm text-muted">
+              {questions.length === 0
+                ? "This subject doesn't have any practice questions in the catalog yet — check back once they've been added."
+                : "Try adjusting the difficulty or topic checkmarks in the sidebar to view available questions."}
             </p>
+            {questions.length > 0 && (
             <button
               onClick={() => {
                 setDifficultyFilter([]);
@@ -421,6 +478,7 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
             >
               Clear Filters
             </button>
+            )}
           </div>
         ) : (
           /* Active Question Solver Pane */
@@ -431,7 +489,7 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
               <div className="flex flex-wrap gap-2">
                 {filteredQuestions.map((q, idx) => {
                   const isCurrent = idx === activeIndex;
-                  const isAnswered = !!userAnswers[q.id];
+                  const isRevealed = !!revealedSolutions[q.id];
                   return (
                     <button
                       key={q.id}
@@ -440,7 +498,7 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
                       className={`h-9 w-9 rounded-full text-sm font-semibold flex items-center justify-center transition border ${
                         isCurrent
                           ? "border-accent bg-accent-soft text-accent ring-2 ring-accent/20"
-                          : isAnswered
+                          : isRevealed
                           ? "border-green bg-green-soft text-green"
                           : "border-border bg-surface text-muted hover:border-accent/40"
                       }`}
@@ -513,24 +571,8 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
                   </div>
                 </div>
 
-                {/* RIGHT COLUMN: Answer Input & Solution */}
+                {/* RIGHT COLUMN: Solution */}
                 <div className="flex flex-col gap-5 lg:pl-6">
-                  {/* Answer Input Box */}
-                  <div className="rounded-2xl border border-border bg-surface-muted p-5">
-                    <label className="block text-sm font-semibold text-foreground">
-                      Entered answer:
-                    </label>
-                    <input
-                      type="text"
-                      value={userAnswers[activeQuestion.id] || ""}
-                      onChange={(e) => {
-                        setUserAnswers(prev => ({ ...prev, [activeQuestion.id]: e.target.value }));
-                      }}
-                      placeholder="Type your final answer..."
-                      className="mt-2 w-full rounded-lg border border-border bg-surface px-4 py-2.5 text-sm focus:border-accent focus:outline-none"
-                    />
-                  </div>
-
                   {/* Reveal Solution Button */}
                   {!revealedSolutions[activeQuestion.id] ? (
                     <button
@@ -548,8 +590,14 @@ export function PracticeClient({ initialCourses, preselectedPaper, initialTopic 
                         <div className="flex items-center gap-2 text-accent font-semibold text-sm">
                           <CheckCircle size={18} weight="bold" /> Correct Answer: {activeQuestion.answerText}
                         </div>
-                        <div className="mt-3 prose prose-sm dark:prose-invert text-sm text-foreground border-t border-border pt-3">
-                          <ReactMarkdown>{activeQuestion.solution}</ReactMarkdown>
+                        <div className="mt-3 border-t border-border pt-3">
+                          {activeQuestion.contentBlocks?.length > 0 ? (
+                            <StudyContentRenderer blocks={activeQuestion.contentBlocks} />
+                          ) : (
+                            <div className="prose prose-sm dark:prose-invert text-sm text-foreground">
+                              <ReactMarkdown>{activeQuestion.solution}</ReactMarkdown>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>

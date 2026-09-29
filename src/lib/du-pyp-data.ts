@@ -102,6 +102,39 @@ interface BuiltSubject extends DuPypPaper {
   _examLinkSeen: Set<string>;
 }
 
+interface RamanujanRow {
+  course?: string;
+  subject?: string;
+  pdfUrl?: string;
+  semester?: string | null;
+  yearRange?: string;
+}
+
+let ramanujanRowsCache: RamanujanRow[] | null = null;
+
+// Cached the same way as getDuQuestionBankRows: this 1.2MB file was
+// previously re-read + re-parsed from disk (or re-fetched over HTTP on
+// Cloudflare) on every call to buildPapers() and getTotalDuPypCount(),
+// which made /papers noticeably slow under concurrent requests.
+async function getRamanujanRows(): Promise<RamanujanRow[]> {
+  if (ramanujanRowsCache) return ramanujanRowsCache;
+  const isCloudflare = typeof caches !== 'undefined' || (typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers');
+  try {
+    if (isCloudflare) {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dupyq.online';
+      ramanujanRowsCache = await fetch(baseUrl + '/data/ramanujan-pyq-catalog.json').then(r => r.json());
+    } else {
+      const fsMod = eval("require('fs')");
+      const pathMod = eval("require('path')");
+      ramanujanRowsCache = JSON.parse(fsMod.readFileSync(pathMod.join(process.cwd(), 'public/data', 'ramanujan-pyq-catalog.json'), 'utf8'));
+    }
+  } catch (err) {
+    console.warn("Failed to load Ramanujan PYQ catalog JSON:", err);
+    ramanujanRowsCache = [];
+  }
+  return ramanujanRowsCache ?? [];
+}
+
 async function buildPapers(): Promise<DuPypPaper[]> {
   const rows = await getDuQuestionBankRows();
   const bySubject = new Map<string, BuiltSubject>();
@@ -155,17 +188,7 @@ async function buildPapers(): Promise<DuPypPaper[]> {
   }
 
   // Merge Ramanujan Papers
-  const ramRows = (await (async () => {
-    const isCloudflare = typeof caches !== 'undefined' || (typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers');
-    if (isCloudflare) {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dupyq.online';
-      return await fetch(baseUrl + '/data/ramanujan-pyq-catalog.json').then(r => r.json());
-    } else {
-      const fsMod = eval("require('fs')");
-      const pathMod = eval("require('path')");
-      return JSON.parse(fsMod.readFileSync(pathMod.join(process.cwd(), 'public/data', 'ramanujan-pyq-catalog.json'), 'utf8'));
-    }
-  })()) || [];
+  const ramRows = await getRamanujanRows();
   for (const ram of ramRows) {
     const programme = (ram.course ?? "General / Interdisciplinary").trim();
     const subjectName = (ram.subject ?? "").trim();
@@ -239,17 +262,7 @@ export async function getAllDuPypPapers(): Promise<DuPypPaper[]> {
 
 export async function getTotalDuPypCount(): Promise<number> {
   const rows = await getDuQuestionBankRows();
-  const ramRows = (await (async () => {
-    const isCloudflare = typeof caches !== 'undefined' || (typeof navigator !== 'undefined' && navigator.userAgent === 'Cloudflare-Workers');
-    if (isCloudflare) {
-      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://dupyq.online';
-      return await fetch(baseUrl + '/data/ramanujan-pyq-catalog.json').then(r => r.json());
-    } else {
-      const fsMod = eval("require('fs')");
-      const pathMod = eval("require('path')");
-      return JSON.parse(fsMod.readFileSync(pathMod.join(process.cwd(), 'public/data', 'ramanujan-pyq-catalog.json'), 'utf8'));
-    }
-  })()) || [];
+  const ramRows = await getRamanujanRows();
   return rows.length + ramRows.length;
 }
 

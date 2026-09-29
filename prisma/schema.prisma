@@ -734,14 +734,17 @@ model ContentBlock {
 // Singleton row (id is always "singleton") for the small set of homepage
 // text fields an admin can safely edit without any risk of breaking a page.
 model SiteSettings {
-  id                String   @id @default("singleton")
-  heroEyebrow       String?
-  heroHeadline      String?
-  heroSubtitle      String?
-  heroSearchCaption String?
-  heroImageUrl      String?
-  currencyIconUrl   String?
-  updatedAt         DateTime @updatedAt
+  id                       String   @id @default("singleton")
+  heroEyebrow              String?
+  heroHeadline             String?
+  heroSubtitle             String?
+  heroSearchCaption        String?
+  heroImageUrl             String?
+  currencyIconUrl          String?
+  // Comma-separated canonical programme slugs shown on /notes. Empty/null
+  // means show all programmes (the historical default).
+  notesFeaturedProgrammes  String?
+  updatedAt                DateTime @updatedAt
 }
 
 model Admin {

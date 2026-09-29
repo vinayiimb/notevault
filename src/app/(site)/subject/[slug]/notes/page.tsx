@@ -8,23 +8,38 @@ import { Metadata } from "next";
 import Link from "next/link";
 import { PenTool, Download, Eye, BookOpen, ArrowRight } from "lucide-react";
 
+// Explicit select, not `include`/bare findFirst: the live database is
+// missing a column (Subject.parentSubjectId) that's in schema.prisma but
+// was never migrated in, which makes any query implicitly selecting the
+// full Subject model fail (P2022) — same issue documented in
+// subject/[slug]/layout.tsx and practice-questions/_route-impl.ts. The
+// `notes` relation was previously included but never actually read below,
+// so it's dropped rather than reselected narrowly.
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const subject = await prisma.subject.findFirst({
     where: { slug },
-    include: { term: { include: { program: true } } }
+    select: {
+      name: true,
+      term: { select: { order: true, program: { select: { name: true } } } },
+    },
   });
   if (!subject) return { title: 'Not Found' };
-  
+
   return generateSubjectMetadata(subject.name, subject.term.program.name, subject.term.order.toString(), 'notes');
 }
 
 export default async function SubjectNotesPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  
+
   const subject = await prisma.subject.findFirst({
     where: { slug },
-    include: { notes: true, term: { include: { program: true } } }
+    select: {
+      id: true,
+      name: true,
+      slug: true,
+      term: { select: { program: { select: { name: true } } } },
+    },
   });
 
   if (!subject) notFound();

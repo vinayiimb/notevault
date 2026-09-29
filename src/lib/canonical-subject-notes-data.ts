@@ -44,7 +44,7 @@ export async function findCanonicalSubject(programmeSlug: string, subjectSlug: s
   return { programme, subject };
 }
 
-export async function getProgrammesWithNotesStatus() {
+export async function getProgrammesWithNotesStatus(featuredSlugs?: string[]) {
   let countMap = new Map<string, number>();
   try {
     const counts = await prisma.canonicalSubjectNote.groupBy({
@@ -56,7 +56,12 @@ export async function getProgrammesWithNotesStatus() {
     console.warn("Database unavailable for getProgrammesWithNotesStatus, returning zero counts:", err instanceof Error ? err.message : err);
   }
 
-  const list = await programmeList();
+  let list = await programmeList();
+  if (featuredSlugs && featuredSlugs.length > 0) {
+    const allowed = new Set(featuredSlugs);
+    list = list.filter((p) => allowed.has(p.slug));
+  }
+
   return list.map((p) => ({
     slug: p.slug,
     name: p.name,

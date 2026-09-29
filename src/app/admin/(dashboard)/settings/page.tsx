@@ -78,6 +78,29 @@ export default async function AdminSettingsPage() {
       </section>
 
       <section className="mt-6 max-w-2xl rounded-xl border border-border bg-surface p-6">
+        <h2 className="font-medium">Notes page — featured programmes</h2>
+        <p className="mt-1 text-sm text-muted">
+          Comma-separated programme slugs shown on the public /notes page (e.g.{" "}
+          <code className="rounded bg-surface-muted px-1 py-0.5 text-xs">bcom-p,bcom-hons</code>). Leave
+          blank to show all 118 programmes.
+        </p>
+        <form action={updateSiteSettingsAction} className="mt-4 flex flex-col gap-4">
+          <input
+            name="notesFeaturedProgrammes"
+            defaultValue={siteSettings.notesFeaturedProgrammes ?? ""}
+            placeholder="bcom-p,bcom-hons"
+            className="rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none"
+          />
+          <button
+            type="submit"
+            className="self-start rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90"
+          >
+            Save
+          </button>
+        </form>
+      </section>
+
+      <section className="mt-6 max-w-2xl rounded-xl border border-border bg-surface p-6">
         <h2 className="font-medium">Homepage hero illustration</h2>
         <p className="mt-1 text-sm text-muted">
           Shown at the bottom of the homepage&apos;s hero section, over the sky-blue gradient.

@@ -603,6 +603,7 @@ export const getSiteSettings = cache(async () => {
         return (!url) ? "/images/hero-du-colleges.png" : url;
       })(),
       currencyIconUrl: settings?.currencyIconUrl || null,
+      notesFeaturedProgrammes: settings?.notesFeaturedProgrammes || null,
     };
   } catch {
     return {
@@ -612,6 +613,7 @@ export const getSiteSettings = cache(async () => {
       heroSearchCaption: "Search a subject, paper title, program, or topic.",
       heroImageUrl: "/images/hero-du-colleges.png",
       currencyIconUrl: null,
+      notesFeaturedProgrammes: null,
     };
   }
 });

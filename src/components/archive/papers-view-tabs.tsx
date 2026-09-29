@@ -1,14 +1,13 @@
 "use client";
 
-import { FilePdf } from "@phosphor-icons/react";
 import { PaperBrowser } from "@/components/archive/paper-browser";
+import type { CatalogPaper } from "@/lib/pyq-catalog-types";
 
 interface Props {
-  programmes: string[];
-  groupedProgrammes: Record<string, string[]>;
+  papers: CatalogPaper[];
   totalCount: number;
 }
 
-export function PapersViewTabs({ totalCount }: Props) {
-  return <PaperBrowser />;
+export function PapersViewTabs({ papers }: Props) {
+  return <PaperBrowser papers={papers} />;
 }

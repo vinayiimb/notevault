@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getAllDuPypProgrammes, getGroupedDuPypProgrammes, getTotalDuPypCount } from "@/lib/du-pyp-data";
+import { getTotalDuPypCount } from "@/lib/du-pyp-data";
+import { getPapersCatalogWithOverrides } from "@/lib/pyq-catalog";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PapersViewTabs } from "@/components/archive/papers-view-tabs";
@@ -15,9 +16,10 @@ export const metadata: Metadata = {
 export const revalidate = 3600;
 
 export default async function PapersPage() {
-  const programmes = await getAllDuPypProgrammes();
-  const groupedProgrammes = await getGroupedDuPypProgrammes();
-  const totalCount = await getTotalDuPypCount();
+  const [papers, totalCount] = await Promise.all([
+    getPapersCatalogWithOverrides(),
+    getTotalDuPypCount(),
+  ]);
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
@@ -30,11 +32,7 @@ export default async function PapersPage() {
       <VisibleBreadcrumb items={breadcrumbs} />
 
       <Suspense fallback={<div className="h-96 rounded-2xl bg-surface/50 animate-pulse" />}>
-        <PapersViewTabs
-          programmes={programmes}
-          groupedProgrammes={groupedProgrammes}
-          totalCount={totalCount}
-        />
+        <PapersViewTabs papers={papers} totalCount={totalCount} />
       </Suspense>
     </div>
   );

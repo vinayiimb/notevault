@@ -7,6 +7,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpenText, FileText, Sparkle } from "@phosphor-icons/react/dist/ssr";
 import { getProgrammesWithNotesStatus } from "@/lib/canonical-subject-notes-data";
+import { getSiteSettings } from "@/lib/data";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
@@ -17,7 +18,12 @@ export const metadata: Metadata = {
 };
 
 export default async function NotesPage() {
-  const programmes = await getProgrammesWithNotesStatus();
+  const siteSettings = await getSiteSettings();
+  const featuredSlugs = siteSettings.notesFeaturedProgrammes
+    ?.split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  const programmes = await getProgrammesWithNotesStatus(featuredSlugs);
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
@@ -85,8 +91,10 @@ export default async function NotesPage() {
           Compiled Notes by Programme
         </h2>
         <p className="text-sm text-muted mt-1">
-          All {programmes.length} official DU programmes. Pick yours to see which subjects have compiled
-          notes ready to read.
+          {featuredSlugs && featuredSlugs.length > 0
+            ? `${programmes.length} programme${programmes.length === 1 ? "" : "s"} with notes available now.`
+            : `All ${programmes.length} official DU programmes.`}{" "}
+          Pick yours to see which subjects have compiled notes ready to read.
         </p>
 
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">

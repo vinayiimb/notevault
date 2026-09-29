@@ -13,13 +13,20 @@ export default async function SubjectLayout({
 }) {
   const { slug } = await params;
   
+  // Explicit select, not `include`: the live database is missing a column
+  // (Subject.parentSubjectId) that's in schema.prisma but was never
+  // migrated in, which makes any query implicitly selecting the full
+  // Subject model fail (P2022) — same issue documented in
+  // subject/[slug]/page.tsx and practice-questions/_route-impl.ts.
   const subject = await prisma.subject.findFirst({
     where: { slug },
-    include: {
+    select: {
+      name: true,
+      upc: true,
       term: {
-        include: { program: true }
-      }
-    }
+        select: { order: true, program: { select: { name: true } } },
+      },
+    },
   });
 
   if (!subject) notFound();
