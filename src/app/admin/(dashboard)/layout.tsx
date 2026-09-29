@@ -1,31 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import {
-  BookOpenText,
-  CalendarBlank,
-  CaretDown,
-  ChatCircleText,
-  ClockCounterClockwise,
-  CubeFocus,
-  Files,
-  Gear,
-  GraduationCap,
-  GridFour,
-  House,
-  MagnifyingGlass,
-  NotePencil,
-  PaintBrush,
-  Question,
-  SealCheck,
-  ShieldCheck,
-  Shuffle,
-  Sparkle,
-  SignOut,
-  Stack,
-  Table,
-  WarningCircle,
-} from "@phosphor-icons/react/dist/ssr";
-import { prisma } from "@/lib/prisma";
+import { Gear, GraduationCap, NotePencil, SignOut } from "@phosphor-icons/react/dist/ssr";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 
@@ -42,73 +17,21 @@ export default async function AdminDashboardLayout({
     redirect("/admin/login");
   }
 
-  let unreadFeedbackCount = 0;
-  try {
-    unreadFeedbackCount = await prisma.feedback.count({ where: { read: false } });
-  } catch (err) {
-    console.warn("Database check in admin layout:", err instanceof Error ? err.message : err);
-  }
-
   return (
     <div className="flex min-h-[100dvh]">
       <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-surface p-4">
-        <Link href="/admin" className="flex items-center gap-2 px-2 font-semibold">
+        <Link href="/admin/subject-notes" className="flex items-center gap-2 px-2 font-semibold">
           <span className="flex size-7 items-center justify-center rounded-lg bg-accent text-accent-foreground">
             <GraduationCap size={16} weight="bold" />
           </span>
           DU PYQ Online
         </Link>
 
+        {/* Only Subject Notes + Settings are enabled for now — every other
+            admin section is parked (see middleware.ts's ADMIN_ALLOWED_PREFIXES)
+            until it's actually needed again, so the sidebar only shows what
+            actually works instead of dead links that redirect away. */}
         <nav className="mt-8 flex flex-1 flex-col gap-1 text-sm">
-          <Link
-            href="/admin/du-question-bank"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <SealCheck size={16} />
-            DU Question Bank
-          </Link>
-          <Link
-            href="/admin/resources"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <Files size={16} />
-            PDF library
-          </Link>
-          <Link
-            href="/admin/coverage"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <GridFour size={16} />
-            PYQ coverage
-          </Link>
-          <Link
-            href="/admin/course-coverage"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <Table size={16} />
-            Catalog coverage
-          </Link>
-          <Link
-            href="/admin/questions"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <Question size={16} />
-            Question bank
-          </Link>
-          <Link
-            href="/admin/subject-issues"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <MagnifyingGlass size={16} />
-            Subject issues
-          </Link>
-          <Link
-            href="/admin/subject-normalization"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <ShieldCheck size={16} />
-            Subject normalization
-          </Link>
           <Link
             href="/admin/subject-notes"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
@@ -117,110 +40,12 @@ export default async function AdminDashboardLayout({
             Subject Notes
           </Link>
           <Link
-            href="/admin/note-themes"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <PaintBrush size={16} />
-            Note Designer
-          </Link>
-          <Link
-            href="/admin/content-blocks"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <CubeFocus size={16} />
-            Content blocks
-          </Link>
-          <Link
-            href="/admin/feedback"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <ChatCircleText size={16} />
-            Feedback
-            {unreadFeedbackCount > 0 && (
-              <span className="ml-auto rounded-full bg-accent px-1.5 py-0.5 text-[10px] font-bold text-accent-foreground">
-                {unreadFeedbackCount}
-              </span>
-            )}
-          </Link>
-          <Link
             href="/admin/settings"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
           >
             <Gear size={16} />
             Settings
           </Link>
-
-          <details className="group mt-1">
-            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground">
-              <CaretDown size={16} className="transition group-open:rotate-180" />
-              More
-            </summary>
-            <div className="mt-1 flex flex-col gap-1 border-l border-border pl-3">
-              <Link
-                href="/admin"
-                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
-              >
-                <House size={16} />
-                Overview
-              </Link>
-              <Link
-                href="/admin/programs"
-                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
-              >
-                <GraduationCap size={16} />
-                Programs
-              </Link>
-              <Link
-                href="/admin/master-syllabus"
-                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
-              >
-                <BookOpenText size={16} />
-                Master Syllabus
-              </Link>
-              <Link
-                href="/admin/exam-sessions"
-                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
-              >
-                <CalendarBlank size={16} />
-                Exam sessions
-              </Link>
-              <Link
-                href="/admin/bulk-upload"
-                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
-              >
-                <Stack size={16} />
-                Bulk Upload
-              </Link>
-              <Link
-                href="/admin/batches"
-                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
-              >
-                <ClockCounterClockwise size={16} />
-                Upload batches
-              </Link>
-              <Link
-                href="/admin/archive-customize"
-                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
-              >
-                <Sparkle size={16} />
-                Customize Full Archive
-              </Link>
-              <Link
-                href="/admin/unsorted"
-                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
-              >
-                <Shuffle size={16} />
-                Unsorted subjects
-              </Link>
-              <Link
-                href="/admin/failed-uploads"
-                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
-              >
-                <WarningCircle size={16} />
-                Failed uploads
-              </Link>
-            </div>
-          </details>
         </nav>
 
         <div className="mt-auto border-t border-border pt-3">
