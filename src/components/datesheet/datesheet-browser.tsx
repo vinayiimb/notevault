@@ -167,58 +167,87 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="mt-6 overflow-x-auto rounded-2xl border border-border bg-surface">
-        {loading ? (
-          <div className="flex items-center justify-center gap-2 p-10 text-sm text-muted">
-            <CircleNotch size={18} className="animate-spin" />
-            Loading datesheet…
-          </div>
-        ) : filtered.length === 0 ? (
-          <div className="p-8 text-center text-sm text-muted">
-            No datesheet rows found for {currentProgramme?.label}
-            {course !== ALL_COURSES ? ` — ${course}` : ""}
-            {semester !== ALL_SEMESTERS ? `, Semester ${semester}` : ""}. Check the source PDF above.
-          </div>
-        ) : (
-          <table className="w-full min-w-[720px] border-collapse text-sm">
-            <thead>
-              <tr className="border-b border-border bg-surface-muted text-left text-xs font-semibold uppercase tracking-wide text-muted">
-                <th className="px-4 py-3">Date</th>
-                <th className="px-4 py-3">Time</th>
-                <th className="px-4 py-3">Paper / Course</th>
-                <th className="px-4 py-3">Paper Code</th>
-                <th className="px-4 py-3">Sem</th>
-                <th className="px-4 py-3">Category</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filtered.map((e, i) => (
-                <tr
-                  key={`${e.paperCode}-${i}`}
-                  className="border-b border-border last:border-0 hover:bg-accent-soft/40"
-                >
-                  <td className="whitespace-nowrap px-4 py-3 font-medium text-foreground">
-                    {formatDate(e.date, e.day)}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 text-muted">{e.startTime}</td>
-                  <td className="px-4 py-3 text-foreground">
-                    {e.subject ? <span className="text-muted">{e.subject} &middot; </span> : null}
-                    {e.description}
-                  </td>
-                  <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted">{e.paperCode}</td>
-                  <td className="whitespace-nowrap px-4 py-3 text-muted">{e.semester ?? "—"}</td>
-                  <td className="whitespace-nowrap px-4 py-3">
-                    <span className="inline-flex rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
-                      {e.category}
-                    </span>
-                  </td>
+      {/* Results */}
+      {loading ? (
+        <div className="mt-6 flex items-center justify-center gap-2 rounded-2xl border border-border bg-surface p-10 text-sm text-muted">
+          <CircleNotch size={18} className="animate-spin" />
+          Loading datesheet…
+        </div>
+      ) : filtered.length === 0 ? (
+        <div className="mt-6 rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted">
+          No datesheet rows found for {currentProgramme?.label}
+          {course !== ALL_COURSES ? ` — ${course}` : ""}
+          {semester !== ALL_SEMESTERS ? `, Semester ${semester}` : ""}. Check the source PDF above.
+        </div>
+      ) : (
+        <>
+          {/* Mobile: one card per paper — a 6-column table has no room on a
+              phone screen without cutting columns off or truncating text
+              mid-word, so below `sm` we show a stacked card instead. */}
+          <ul className="mt-6 space-y-3 sm:hidden">
+            {filtered.map((e, i) => (
+              <li key={`${e.paperCode}-${i}`} className="rounded-2xl border border-border bg-surface p-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">{formatDate(e.date, e.day)}</p>
+                    <p className="text-xs text-muted">{e.startTime}</p>
+                  </div>
+                  <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
+                    {e.category}
+                  </span>
+                </div>
+                <p className="mt-2 text-sm text-foreground">
+                  {e.subject ? <span className="text-muted">{e.subject} &middot; </span> : null}
+                  {e.description}
+                </p>
+                <p className="mt-1 text-xs text-muted">
+                  Sem {e.semester ?? "—"} &middot; <span className="font-mono">{e.paperCode}</span>
+                </p>
+              </li>
+            ))}
+          </ul>
+
+          {/* Desktop/tablet: full table */}
+          <div className="mt-6 hidden overflow-x-auto rounded-2xl border border-border bg-surface sm:block">
+            <table className="w-full min-w-[720px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-border bg-surface-muted text-left text-xs font-semibold uppercase tracking-wide text-muted">
+                  <th className="px-4 py-3">Date</th>
+                  <th className="px-4 py-3">Time</th>
+                  <th className="px-4 py-3">Paper / Course</th>
+                  <th className="px-4 py-3">Paper Code</th>
+                  <th className="px-4 py-3">Sem</th>
+                  <th className="px-4 py-3">Category</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
+              </thead>
+              <tbody>
+                {filtered.map((e, i) => (
+                  <tr
+                    key={`${e.paperCode}-${i}`}
+                    className="border-b border-border last:border-0 hover:bg-accent-soft/40"
+                  >
+                    <td className="whitespace-nowrap px-4 py-3 font-medium text-foreground">
+                      {formatDate(e.date, e.day)}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 text-muted">{e.startTime}</td>
+                    <td className="px-4 py-3 text-foreground">
+                      {e.subject ? <span className="text-muted">{e.subject} &middot; </span> : null}
+                      {e.description}
+                    </td>
+                    <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted">{e.paperCode}</td>
+                    <td className="whitespace-nowrap px-4 py-3 text-muted">{e.semester ?? "—"}</td>
+                    <td className="whitespace-nowrap px-4 py-3">
+                      <span className="inline-flex rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
+                        {e.category}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
 
       <p className="mt-4 text-xs text-muted">
         Datesheet is tentative and sourced from the official University of Delhi notification (

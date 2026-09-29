@@ -231,10 +231,16 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
             max-width: none !important;
           }
           .datesheet-grid-scroll {
+            display: block !important;
             overflow: visible !important;
             border: none !important;
             border-radius: 0 !important;
           }
+          /* The mobile card list is screen-only — print always shows the
+             table above it (that table is only sm:block on screen, i.e.
+             hidden on a narrow phone, but print isn't a screen width and
+             should always get the table view). */
+          .datesheet-mobile-only { display: none !important; }
           /* Landscape + full page width gives the grid room to breathe
              whether it's 3 rows or 30 — the table just fills whatever
              width the page gives it instead of staying pinned to its
@@ -536,51 +542,87 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
             No papers selected yet. Choose your course above, then add electives above.
           </div>
         ) : (
-          <div className="datesheet-grid-scroll mt-4 overflow-x-auto rounded-xl border border-border">
-            <table className="datesheet-grid-table w-full min-w-[720px] border-collapse text-sm">
-              <thead>
-                <tr className="border-b border-border bg-surface-muted text-left text-xs font-semibold uppercase tracking-wide text-muted">
-                  <th className="px-4 py-3">Date</th>
-                  <th className="px-4 py-3">Time</th>
-                  <th className="px-4 py-3">Paper</th>
-                  <th className="px-4 py-3">Code</th>
-                  <th className="px-4 py-3">Sem</th>
-                  <th className="px-4 py-3">Category</th>
-                  <th className="datesheet-grid-actions px-4 py-3" />
-                </tr>
-              </thead>
-              <tbody>
-                {selectedList.map((e) => (
-                  <tr key={rowKey(e)} className="border-b border-border last:border-0 hover:bg-accent-soft/40">
-                    <td className="whitespace-nowrap px-4 py-3 font-medium text-foreground">
-                      {formatDate(e.date, e.day)}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 text-muted">{e.startTime}</td>
-                    <td className="px-4 py-3 text-foreground">
-                      {e.subject ? <span className="text-muted">{e.subject} &middot; </span> : null}
-                      {e.description}
-                    </td>
-                    <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted">{e.paperCode}</td>
-                    <td className="whitespace-nowrap px-4 py-3 text-muted">{e.semester ?? "—"}</td>
-                    <td className="whitespace-nowrap px-4 py-3">
-                      <span className="inline-flex rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
-                        {e.category}
-                      </span>
-                    </td>
-                    <td className="datesheet-row-action whitespace-nowrap px-4 py-3 text-right">
-                      <button
-                        type="button"
-                        onClick={() => toggle(e)}
-                        className="text-xs font-semibold text-muted hover:text-red-600"
-                      >
-                        Remove
-                      </button>
-                    </td>
+          <>
+            {/* Mobile: one card per paper (screen only — print always uses
+                the table below, at full landscape width, so it stays
+                hidden here via `datesheet-mobile-only`). */}
+            <ul className="datesheet-mobile-only mt-4 space-y-3 sm:hidden">
+              {selectedList.map((e) => (
+                <li key={rowKey(e)} className="rounded-xl border border-border bg-background p-3.5">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="text-sm font-semibold text-foreground">{formatDate(e.date, e.day)}</p>
+                      <p className="text-xs text-muted">{e.startTime}</p>
+                    </div>
+                    <span className="shrink-0 rounded-full bg-accent-soft px-2 py-0.5 text-[10px] font-semibold text-accent">
+                      {e.category}
+                    </span>
+                  </div>
+                  <p className="mt-2 text-sm text-foreground">
+                    {e.subject ? <span className="text-muted">{e.subject} &middot; </span> : null}
+                    {e.description}
+                  </p>
+                  <p className="mt-1 text-xs text-muted">
+                    Sem {e.semester ?? "—"} &middot; <span className="font-mono">{e.paperCode}</span>
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => toggle(e)}
+                    className="datesheet-grid-actions mt-2 text-xs font-semibold text-muted hover:text-red-600"
+                  >
+                    Remove
+                  </button>
+                </li>
+              ))}
+            </ul>
+
+            {/* Desktop/tablet + always for print: full table */}
+            <div className="datesheet-grid-scroll mt-4 hidden overflow-x-auto rounded-xl border border-border sm:block">
+              <table className="datesheet-grid-table w-full min-w-[720px] border-collapse text-sm">
+                <thead>
+                  <tr className="border-b border-border bg-surface-muted text-left text-xs font-semibold uppercase tracking-wide text-muted">
+                    <th className="px-4 py-3">Date</th>
+                    <th className="px-4 py-3">Time</th>
+                    <th className="px-4 py-3">Paper</th>
+                    <th className="px-4 py-3">Code</th>
+                    <th className="px-4 py-3">Sem</th>
+                    <th className="px-4 py-3">Category</th>
+                    <th className="datesheet-grid-actions px-4 py-3" />
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody>
+                  {selectedList.map((e) => (
+                    <tr key={rowKey(e)} className="border-b border-border last:border-0 hover:bg-accent-soft/40">
+                      <td className="whitespace-nowrap px-4 py-3 font-medium text-foreground">
+                        {formatDate(e.date, e.day)}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 text-muted">{e.startTime}</td>
+                      <td className="px-4 py-3 text-foreground">
+                        {e.subject ? <span className="text-muted">{e.subject} &middot; </span> : null}
+                        {e.description}
+                      </td>
+                      <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted">{e.paperCode}</td>
+                      <td className="whitespace-nowrap px-4 py-3 text-muted">{e.semester ?? "—"}</td>
+                      <td className="whitespace-nowrap px-4 py-3">
+                        <span className="inline-flex rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
+                          {e.category}
+                        </span>
+                      </td>
+                      <td className="datesheet-row-action whitespace-nowrap px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => toggle(e)}
+                          className="text-xs font-semibold text-muted hover:text-red-600"
+                        >
+                          Remove
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
 
         {selectedList.length > 0 && (

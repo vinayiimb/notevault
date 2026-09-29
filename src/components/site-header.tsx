@@ -53,14 +53,20 @@ export function SiteHeader() {
             </Suspense>
           </div>
           <ThemeToggle />
-          <Link
-            href="/login"
-            aria-label="Log in"
-            className="flex h-8 sm:h-auto items-center justify-center rounded-full bg-brand px-4.5 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-brand-foreground shadow-md transition hover:bg-brand-hover hover:shadow-lg active:scale-95"
-          >
-            <SignIn size={15} weight="bold" className="sm:hidden mr-1" />
-            <span>Login</span>
-          </Link>
+          {/* Admin is staging-only for now (see src/middleware.ts) — this
+              button only ever leads to /login -> /admin/login, so it's
+              hidden on production via env var rather than removed, in
+              case it needs to come back later. */}
+          {process.env.NEXT_PUBLIC_SHOW_ADMIN_LOGIN !== "false" && (
+            <Link
+              href="/login"
+              aria-label="Log in"
+              className="flex h-8 sm:h-auto items-center justify-center rounded-full bg-brand px-4.5 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-brand-foreground shadow-md transition hover:bg-brand-hover hover:shadow-lg active:scale-95"
+            >
+              <SignIn size={15} weight="bold" className="sm:hidden mr-1" />
+              <span>Login</span>
+            </Link>
+          )}
           <MobileNavMenu />
         </div>
       </header>
