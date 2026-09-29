@@ -26,12 +26,15 @@ export default async function SubjectNotesProgramPage({
         <p className="mt-1 text-sm text-muted">{programme.subjects.length} subjects in the syllabus file.</p>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-        <table className="w-full text-left text-sm">
+      <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+        <table className="w-full min-w-[560px] text-left text-sm">
           <tbody>
             {programme.subjects.map((s) => (
               <tr key={s.slug} className="border-b border-border/60 last:border-0 hover:bg-surface-muted">
                 <td className="px-4 py-3 font-medium text-foreground">{s.name}</td>
+                <td className="px-4 py-3 text-xs text-muted">
+                  {s.semester ? `Sem ${s.semester}` : "—"}
+                </td>
                 <td className="px-4 py-3">
                   {s.hasNotes ? (
                     <span className="rounded-full bg-success-soft px-2 py-0.5 text-xs font-bold text-success">

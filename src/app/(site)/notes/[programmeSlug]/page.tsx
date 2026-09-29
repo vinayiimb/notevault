@@ -53,6 +53,21 @@ export default async function ProgrammeNotesPage({
   const withNotes = programme.subjects.filter((s) => s.hasNotes);
   const withoutNotes = programme.subjects.filter((s) => !s.hasNotes);
 
+  // Semester is admin-set per note (canonical-programmes.json has no
+  // semester field), so some notes may not have one yet — those land in
+  // "Other" rather than being dropped from the list.
+  const bySemester = new Map<number | "other", typeof withNotes>();
+  for (const s of withNotes) {
+    const key = s.semester ?? "other";
+    if (!bySemester.has(key)) bySemester.set(key, []);
+    bySemester.get(key)!.push(s);
+  }
+  const semesterGroups = [...bySemester.entries()].sort((a, b) => {
+    if (a[0] === "other") return 1;
+    if (b[0] === "other") return -1;
+    return a[0] - b[0];
+  });
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <BreadcrumbJsonLd items={breadcrumbs} />
@@ -71,28 +86,34 @@ export default async function ProgrammeNotesPage({
         {programme.subjects.length} subjects · {withNotes.length} with compiled notes
       </p>
 
-      {withNotes.length > 0 && (
-        <section className="mt-8">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">Notes available</h2>
-          <div className="mt-3 overflow-hidden rounded-2xl border border-border bg-surface">
-            <table className="w-full text-left text-sm">
-              <tbody>
-                {withNotes.map((s) => (
-                  <tr key={s.slug} className="border-b border-border/60 last:border-0 hover:bg-surface-muted">
-                    <td className="px-4 py-3 font-medium text-foreground">{s.name}</td>
-                    <td className="px-4 py-3 text-right">
-                      <Link
-                        href={`/notes/${programmeSlug}/${s.slug}`}
-                        className="text-xs font-bold text-accent hover:underline"
-                      >
-                        Read notes →
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+      {semesterGroups.length > 0 && (
+        <section className="mt-8 space-y-8">
+          {semesterGroups.map(([semester, subjects]) => (
+            <div key={semester}>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-muted">
+                {semester === "other" ? "Notes available" : `Semester ${semester}`}
+              </h2>
+              <div className="mt-3 overflow-x-auto rounded-2xl border border-border bg-surface">
+                <table className="w-full min-w-[420px] text-left text-sm">
+                  <tbody>
+                    {subjects.map((s) => (
+                      <tr key={s.slug} className="border-b border-border/60 last:border-0 hover:bg-surface-muted">
+                        <td className="px-4 py-3 font-medium text-foreground">{s.name}</td>
+                        <td className="px-4 py-3 text-right">
+                          <Link
+                            href={`/notes/${programmeSlug}/${s.slug}`}
+                            className="text-xs font-bold text-accent hover:underline"
+                          >
+                            Read notes →
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))}
         </section>
       )}
 

@@ -276,6 +276,10 @@ model CanonicalSubjectNote {
   subject       String
   content       String
   theme         String   @default("sky")
+  // Admin-set, not derived — canonical-programmes.json has no semester
+  // field, so this is the only source of truth for grouping /notes/[slug]
+  // by semester. Null means "not set yet" (shown ungrouped).
+  semester      Int?
   updatedAt     DateTime @updatedAt
   createdAt     DateTime @default(now())
 

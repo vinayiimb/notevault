@@ -923,6 +923,9 @@ export async function updateCanonicalSubjectNoteAction(formData: FormData) {
   )
     ? themeRaw
     : "sky";
+  const semesterRaw = String(formData.get("semester") ?? "").trim();
+  const semesterNum = Number(semesterRaw);
+  const semester = semesterRaw && Number.isInteger(semesterNum) && semesterNum >= 1 && semesterNum <= 8 ? semesterNum : null;
   if (!programmeSlug || !subjectSlug) throw new Error("Programme and subject are required.");
 
   if (!content) {
@@ -930,14 +933,16 @@ export async function updateCanonicalSubjectNoteAction(formData: FormData) {
   } else {
     await prisma.canonicalSubjectNote.upsert({
       where: { programmeSlug_subjectSlug: { programmeSlug, subjectSlug } },
-      create: { programmeSlug, programme, subjectSlug, subject, content, theme },
-      update: { programme, subject, content, theme },
+      create: { programmeSlug, programme, subjectSlug, subject, content, theme, semester },
+      update: { programme, subject, content, theme, semester },
     });
   }
 
   revalidatePath(`/admin/subject-notes/subject/${programmeSlug}/${subjectSlug}`);
   revalidatePath(`/admin/subject-notes/program/${programmeSlug}`);
   revalidatePath(`/admin/subject-notes`);
+  revalidatePath(`/notes/${programmeSlug}`);
+  revalidatePath(`/notes/${programmeSlug}/${subjectSlug}`);
 }
 
 // Shared by moveSubjectsToTermAction (UI-driven) and

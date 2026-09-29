@@ -76,13 +76,14 @@ export async function getProgrammeSubjectsWithNotesStatus(programmeSlug: string)
 
   const notes = await prisma.canonicalSubjectNote.findMany({
     where: { programmeSlug },
-    select: { subjectSlug: true, updatedAt: true },
+    select: { subjectSlug: true, updatedAt: true, semester: true },
   });
-  const noteMap = new Map(notes.map((n) => [n.subjectSlug, n.updatedAt]));
+  const noteMap = new Map(notes.map((n) => [n.subjectSlug, n]));
 
   const subjects = programme.subjects.map((name) => {
     const slug = slugify(name);
-    return { name, slug, hasNotes: noteMap.has(slug), updatedAt: noteMap.get(slug) ?? null };
+    const note = noteMap.get(slug);
+    return { name, slug, hasNotes: !!note, updatedAt: note?.updatedAt ?? null, semester: note?.semester ?? null };
   });
 
   return { name: programme.name, slug: programme.slug, subjects };
@@ -101,6 +102,7 @@ export async function getCanonicalNote(programmeSlug: string, subjectSlug: strin
     subjectName: found.subject,
     content: existing?.content ?? "",
     theme: existing?.theme ?? "sky",
+    semester: existing?.semester ?? null,
     updatedAt: existing?.updatedAt ?? null,
   };
 }
