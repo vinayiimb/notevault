@@ -2,9 +2,20 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { NotePencil } from "@phosphor-icons/react/dist/ssr";
 import { getProgrammesWithNotesStatus } from "@/lib/canonical-subject-notes-data";
+import { getSiteSettings } from "@/lib/data";
+import { updateNotesFeaturedProgrammesFromCheckboxesAction } from "@/lib/actions";
 
 export default async function SubjectNotesOverviewPage() {
-  const programmes = await getProgrammesWithNotesStatus();
+  const [programmes, siteSettings] = await Promise.all([
+    getProgrammesWithNotesStatus(),
+    getSiteSettings(),
+  ]);
+  const featuredSlugs = new Set(
+    siteSettings.notesFeaturedProgrammes
+      ?.split(",")
+      .map((s) => s.trim())
+      .filter(Boolean) ?? []
+  );
 
   return (
     <div className="space-y-8 p-6 sm:p-8">
@@ -22,8 +33,46 @@ export default async function SubjectNotesOverviewPage() {
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface">
-        <table className="w-full text-left text-sm">
+      <div className="rounded-2xl border border-border bg-surface p-6">
+        <h2 className="font-medium">Shown on the public /notes page</h2>
+        <p className="mt-1 text-sm text-muted">
+          Check the programmes ready for students to browse. Unchecked programmes still exist here for you
+          to keep building notes, but stay hidden from the public site.
+        </p>
+        <form action={updateNotesFeaturedProgrammesFromCheckboxesAction} className="mt-4">
+          <div className="max-h-80 overflow-y-auto rounded-xl border border-border">
+            <div className="grid grid-cols-1 divide-y divide-border/60 sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+              {programmes.map((p) => (
+                <label
+                  key={p.slug}
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm hover:bg-surface-muted"
+                >
+                  <input
+                    type="checkbox"
+                    name="programmeSlug"
+                    value={p.slug}
+                    defaultChecked={featuredSlugs.has(p.slug)}
+                    className="size-4 rounded border-border accent-accent"
+                  />
+                  <span className="truncate text-foreground">{p.name}</span>
+                  {p.notesCount > 0 && (
+                    <span className="ml-auto shrink-0 text-xs text-muted">{p.notesCount} notes</span>
+                  )}
+                </label>
+              ))}
+            </div>
+          </div>
+          <button
+            type="submit"
+            className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground transition hover:opacity-90"
+          >
+            Save visible programmes
+          </button>
+        </form>
+      </div>
+
+      <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
+        <table className="w-full min-w-[560px] text-left text-sm">
           <thead className="border-b border-border bg-surface-muted text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="px-4 py-3">Programme</th>

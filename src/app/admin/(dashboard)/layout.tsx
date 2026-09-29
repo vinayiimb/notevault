@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import {
   BookOpenText,
   CalendarBlank,
+  CaretDown,
   ChatCircleText,
   ClockCounterClockwise,
   CubeFocus,
@@ -60,48 +61,6 @@ export default async function AdminDashboardLayout({
 
         <nav className="mt-8 flex flex-1 flex-col gap-1 text-sm">
           <Link
-            href="/admin"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <House size={16} />
-            Overview
-          </Link>
-          <Link
-            href="/admin/programs"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <GraduationCap size={16} />
-            Programs
-          </Link>
-          <Link
-            href="/admin/master-syllabus"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <BookOpenText size={16} />
-            Master Syllabus
-          </Link>
-          <Link
-            href="/admin/exam-sessions"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <CalendarBlank size={16} />
-            Exam sessions
-          </Link>
-          <Link
-            href="/admin/bulk-upload"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <Stack size={16} />
-            Bulk Upload
-          </Link>
-          <Link
-            href="/admin/batches"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <ClockCounterClockwise size={16} />
-            Upload batches
-          </Link>
-          <Link
             href="/admin/du-question-bank"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
           >
@@ -130,25 +89,11 @@ export default async function AdminDashboardLayout({
             Catalog coverage
           </Link>
           <Link
-            href="/admin/archive-customize"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <Sparkle size={16} />
-            Customize Full Archive
-          </Link>
-          <Link
             href="/admin/questions"
             className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
           >
             <Question size={16} />
             Question bank
-          </Link>
-          <Link
-            href="/admin/unsorted"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <Shuffle size={16} />
-            Unsorted subjects
           </Link>
           <Link
             href="/admin/subject-issues"
@@ -163,13 +108,6 @@ export default async function AdminDashboardLayout({
           >
             <ShieldCheck size={16} />
             Subject normalization
-          </Link>
-          <Link
-            href="/admin/failed-uploads"
-            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
-          >
-            <WarningCircle size={16} />
-            Failed uploads
           </Link>
           <Link
             href="/admin/subject-notes"
@@ -211,6 +149,78 @@ export default async function AdminDashboardLayout({
             <Gear size={16} />
             Settings
           </Link>
+
+          <details className="group mt-1">
+            <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground">
+              <CaretDown size={16} className="transition group-open:rotate-180" />
+              More
+            </summary>
+            <div className="mt-1 flex flex-col gap-1 border-l border-border pl-3">
+              <Link
+                href="/admin"
+                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
+              >
+                <House size={16} />
+                Overview
+              </Link>
+              <Link
+                href="/admin/programs"
+                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
+              >
+                <GraduationCap size={16} />
+                Programs
+              </Link>
+              <Link
+                href="/admin/master-syllabus"
+                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
+              >
+                <BookOpenText size={16} />
+                Master Syllabus
+              </Link>
+              <Link
+                href="/admin/exam-sessions"
+                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
+              >
+                <CalendarBlank size={16} />
+                Exam sessions
+              </Link>
+              <Link
+                href="/admin/bulk-upload"
+                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
+              >
+                <Stack size={16} />
+                Bulk Upload
+              </Link>
+              <Link
+                href="/admin/batches"
+                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
+              >
+                <ClockCounterClockwise size={16} />
+                Upload batches
+              </Link>
+              <Link
+                href="/admin/archive-customize"
+                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
+              >
+                <Sparkle size={16} />
+                Customize Full Archive
+              </Link>
+              <Link
+                href="/admin/unsorted"
+                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
+              >
+                <Shuffle size={16} />
+                Unsorted subjects
+              </Link>
+              <Link
+                href="/admin/failed-uploads"
+                className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/60 transition hover:bg-surface-muted hover:text-foreground"
+              >
+                <WarningCircle size={16} />
+                Failed uploads
+              </Link>
+            </div>
+          </details>
         </nav>
 
         <div className="mt-auto border-t border-border pt-3">
@@ -227,7 +237,7 @@ export default async function AdminDashboardLayout({
         </div>
       </aside>
 
-      <div className="flex-1 bg-background">{children}</div>
+      <div className="min-w-0 flex-1 bg-background">{children}</div>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { getTotalDuPypCount } from "@/lib/du-pyp-data";
-import { getPapersCatalogWithOverrides } from "@/lib/pyq-catalog";
+import { getAllDuPypProgrammes, getGroupedDuPypProgrammes, getTotalDuPypCount } from "@/lib/du-pyp-data";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PapersViewTabs } from "@/components/archive/papers-view-tabs";
@@ -15,9 +14,15 @@ export const metadata: Metadata = {
 
 export const revalidate = 3600;
 
+// Reverted from loading the 13MB papers catalog server-side (2025-09-29):
+// parsing + merging that file in the Next server process OOM-crashed
+// production (Railway's container heap couldn't hold it), taking the whole
+// site down. Back to the client fetching /data/papers-catalog.json itself,
+// which keeps that memory cost in the browser instead of the server.
 export default async function PapersPage() {
-  const [papers, totalCount] = await Promise.all([
-    getPapersCatalogWithOverrides(),
+  const [programmes, groupedProgrammes, totalCount] = await Promise.all([
+    getAllDuPypProgrammes(),
+    getGroupedDuPypProgrammes(),
     getTotalDuPypCount(),
   ]);
 
@@ -32,7 +37,11 @@ export default async function PapersPage() {
       <VisibleBreadcrumb items={breadcrumbs} />
 
       <Suspense fallback={<div className="h-96 rounded-2xl bg-surface/50 animate-pulse" />}>
-        <PapersViewTabs papers={papers} totalCount={totalCount} />
+        <PapersViewTabs
+          programmes={programmes}
+          groupedProgrammes={groupedProgrammes}
+          totalCount={totalCount}
+        />
       </Suspense>
     </div>
   );

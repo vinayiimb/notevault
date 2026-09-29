@@ -2868,6 +2868,25 @@ export async function updateSiteSettingsAction(formData: FormData) {
   revalidatePath("/admin/settings");
 }
 
+// Same SiteSettings.notesFeaturedProgrammes field as updateSiteSettingsAction's
+// text input, driven by checkboxes instead — lets an admin pick programmes
+// from the actual list on /admin/subject-notes rather than typing slugs.
+export async function updateNotesFeaturedProgrammesFromCheckboxesAction(formData: FormData) {
+  await requireAdmin();
+  const selected = formData.getAll("programmeSlug").map(String).filter(Boolean);
+
+  await prisma.siteSettings.upsert({
+    where: { id: "singleton" },
+    create: { id: "singleton", notesFeaturedProgrammes: selected.length > 0 ? selected.join(",") : null },
+    update: { notesFeaturedProgrammes: selected.length > 0 ? selected.join(",") : null },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/notes");
+  revalidatePath("/admin/settings");
+  revalidatePath("/admin/subject-notes");
+}
+
 // ---------- Note Designer: themes ----------
 // A NoteTheme's draftJson/publishedJson holds a ThemeValues object for
 // GLOBAL scope (must be complete — it's every note's ultimate fallback) or
