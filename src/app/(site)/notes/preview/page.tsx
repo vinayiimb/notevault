@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
+// This page picks a fresh random note on every request via a DB call, so
+// static pre-rendering isn't meaningful — and the Docker build environment
+// has no DATABASE_URL, so trying to prerender it there crashes the build
+// worker with PrismaClientInitializationError.
+export const dynamic = "force-dynamic";
+
 // A random real SubjectNotes row on every load, not a fixed demo — so this
 // stays a fair sample of what's actually in the database instead of drifting
 // stale like a hardcoded example would.
