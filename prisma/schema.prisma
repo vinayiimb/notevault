@@ -766,6 +766,14 @@ model SiteSettings {
   updatedAt                DateTime @updatedAt
 }
 
+// One row per public tool/tab whose status an admin changed from its default
+// (defaults live in src/lib/feature-flags.ts). status: "live" | "soon" | "hidden".
+model FeatureFlag {
+  key       String   @id
+  status    String
+  updatedAt DateTime @updatedAt
+}
+
 model Admin {
   id           String   @id @default(cuid())
   email        String   @unique

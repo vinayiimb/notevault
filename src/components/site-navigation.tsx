@@ -26,6 +26,8 @@ import {
   Wrench,
   X,
 } from "@phosphor-icons/react";
+import { FEATURES, featureForPath } from "@/lib/feature-flags";
+import { useFeatureFlags } from "@/components/feature-flags-client";
 
 const NAVIGATION_SECTIONS = [
   {
@@ -40,7 +42,7 @@ const NAVIGATION_SECTIONS = [
     items: [
       { href: "/exam-help/datesheet", label: "Datesheet", desc: "Official DU exam datesheet, by course", icon: CalendarBlank },
       { href: "/tools/action-engine", label: "Action Engine", desc: "Prioritized DU alerts", icon: CalendarCheck },
-      { href: "/tools/result-doctor", label: "Result Doctor", desc: "Diagnose marksheet issues", icon: FileArchive },
+      { href: "/tools/result-doctor", label: "Result Doctor", desc: "Analyse your marksheet", icon: FileArchive },
       { href: "/tools/migration-radar", label: "Migration Radar", desc: "Track college vacancies", icon: Compass },
       { href: "/tools/money-finder", label: "Money Finder", desc: "Master Scholarship Database", icon: Files },
       { href: "/tools/degree-planner", label: "Degree & 4th-Year Planner", desc: "Plan your course credits", icon: GraduationCap },
@@ -66,27 +68,30 @@ const NAVIGATION_SECTIONS = [
   },
 ] as const;
 
+function SoonBadge() {
+  return (
+    <span className="rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted">
+      Soon
+    </span>
+  );
+}
+
 export function SiteNavigation() {
   const pathname = usePathname();
+  const { flags } = useFeatureFlags();
 
   const links = [
     { href: "/papers", label: "Papers" },
     { href: "/notes", label: "Notes" },
   ];
 
-  const others = [
-    { href: "/exam-help/datesheet", label: "Datesheet" },
-    { href: "/tools/action-engine", label: "Action Engine" },
-    { href: "/tools/migration-radar", label: "Migration Radar" },
-    { href: "/tools/result-doctor", label: "Result Doctor" },
-    { href: "/tools/money-finder", label: "Money Finder" },
-    { href: "/tools/du-paper-code-finder", label: "Paper Code Finder" },
-    { href: "/tools/elective-finder", label: "Elective Finder" },
-    { href: "/tools/degree-planner", label: "Degree & 4th-Year Planner" },
-    { href: "/tools/er-decoder", label: "ER & Improvement Decoder" },
-    { href: "/tools/revaluation", label: "Revaluation Hub" },
-    { href: "/blog", label: "Blog" },
-  ];
+  // Contents and order come from src/lib/feature-flags.ts; admins switch
+  // entries between live / coming soon / hidden at /admin/features.
+  const others = FEATURES.filter((f) => f.menu === "others" && flags[f.key] !== "hidden").map((f) => ({
+    href: f.href,
+    label: f.label,
+    soon: flags[f.key] === "soon",
+  }));
 
   const isOthersActive = others.some(item => pathname.startsWith(item.href));
 
@@ -135,6 +140,18 @@ export function SiteNavigation() {
         <div className="absolute top-full right-0 mt-1 hidden w-48 flex-col rounded-xl border border-border bg-surface p-1.5 shadow-md group-hover:flex">
           {others.map((item) => {
             const isActive = pathname.startsWith(item.href);
+            if (item.soon) {
+              return (
+                <span
+                  key={item.href}
+                  aria-disabled="true"
+                  className="flex cursor-default items-center justify-between gap-2 rounded-lg px-3 py-2 text-sm text-muted/60"
+                >
+                  {item.label}
+                  <SoonBadge />
+                </span>
+              );
+            }
             return (
               <Link
                 key={item.href}
@@ -156,6 +173,16 @@ export function SiteNavigation() {
 export function MobileNavMenu() {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { flags } = useFeatureFlags();
+
+  const statusOf = (href: string) => {
+    const feature = featureForPath(href);
+    return feature ? flags[feature.key] : "live";
+  };
+  const sections = NAVIGATION_SECTIONS.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => statusOf(item.href) !== "hidden"),
+  })).filter((section) => section.items.length > 0);
 
   // Prevent background scroll when mobile drawer is open
   useEffect(() => {
@@ -214,7 +241,7 @@ export function MobileNavMenu() {
             {/* Quick Action Navigation Grid */}
             <div className="flex-1 overflow-y-auto p-5 space-y-6">
               {/* Menu Links by Section */}
-              {NAVIGATION_SECTIONS.map((section) => (
+              {sections.map((section) => (
                 <div key={section.title} className="space-y-2">
                   <p className="px-1 text-[11px] font-bold uppercase tracking-wider text-muted">
                     {section.title}
@@ -224,6 +251,27 @@ export function MobileNavMenu() {
                       const isExternal = "external" in item && item.external;
                       const active = !isExternal && (pathname === item.href || pathname.startsWith(`${item.href}/`));
                       const Icon = item.icon;
+
+                      if (statusOf(item.href) === "soon") {
+                        return (
+                          <div
+                            key={item.href}
+                            aria-disabled="true"
+                            className="flex items-center justify-between rounded-2xl border border-border/60 bg-surface p-3.5 opacity-60"
+                          >
+                            <div className="flex items-center gap-3">
+                              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-surface-muted text-muted">
+                                <Icon size={18} weight="bold" />
+                              </span>
+                              <div>
+                                <span className="text-sm font-bold text-foreground">{item.label}</span>
+                                <p className="text-xs text-muted leading-tight">{item.desc}</p>
+                              </div>
+                            </div>
+                            <SoonBadge />
+                          </div>
+                        );
+                      }
 
                       return (
                         <Link

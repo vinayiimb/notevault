@@ -14,6 +14,8 @@ import {
   NotePencil,
 } from "@phosphor-icons/react";
 import { SearchBar } from "@/components/search-bar";
+import { featureForPath } from "@/lib/feature-flags";
+import { useFeatureFlags } from "@/components/feature-flags-client";
 
 const COLLAPSED_KEY = "notevault-sidebar-collapsed";
 
@@ -47,6 +49,12 @@ function toggleCollapsed() {
 // in site-navigation.tsx already covers small screens with the same links.
 export function SiteSidebar() {
   const pathname = usePathname();
+  const { flags } = useFeatureFlags();
+
+  const statusOf = (href: string) => {
+    const feature = featureForPath(href);
+    return feature ? flags[feature.key] : "live";
+  };
 
   function isActive(match: string) {
     return pathname === match || pathname.startsWith(`${match}/`);
@@ -85,6 +93,23 @@ export function SiteSidebar() {
 
           <nav className="flex flex-col gap-1 text-sm font-medium">
             {NAV.map(({ href, label, match, Icon }) => {
+              const status = statusOf(href);
+              if (status === "hidden") return null;
+              if (status === "soon") {
+                return (
+                  <span
+                    key={href}
+                    aria-disabled="true"
+                    className="flex cursor-default items-center gap-2 rounded-lg px-2 py-2 text-muted/60"
+                  >
+                    <Icon size={16} className="shrink-0" />
+                    {label}
+                    <span className="ml-auto rounded-full bg-surface-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted">
+                      Soon
+                    </span>
+                  </span>
+                );
+              }
               const active = isActive(match);
               return (
                 <Link
