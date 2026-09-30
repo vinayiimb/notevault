@@ -27,7 +27,8 @@
     "du:compare": "tsx scripts/du-question-bank/compare.ts",
     "du:report": "tsx scripts/du-question-bank/report.ts",
     "du:download-pdfs": "tsx scripts/du-question-bank/download-pdfs.ts",
-    "prebuild": "node scripts/build-blog.mjs"
+    "prebuild": "node scripts/build-blog.mjs && node scripts/build-papers-split.mjs",
+    "predev": "node scripts/build-papers-split.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.111.0",

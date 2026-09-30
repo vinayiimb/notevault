@@ -1,11 +1,37 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { ArrowSquareOut, DownloadSimple, MagnifyingGlass, Funnel, X } from "@phosphor-icons/react";
+import {
+  ArrowLeft,
+  ArrowSquareOut,
+  CaretDown,
+  DownloadSimple,
+  FilePdf,
+  MagnifyingGlass,
+  X,
+} from "@phosphor-icons/react";
 import { CopyButton } from "@/components/pyq/copy-button";
 import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
-import { canonicalCourseName, canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
+import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
+
+// Data comes from small per-course files built by
+// scripts/build-papers-split.mjs — a visitor downloads only the course they
+// pick (tens of KB) instead of the whole 13MB archive, and a PDF is only
+// loaded once they click a paper.
+type CourseIndexEntry = { course: string; slug: string; count: number };
+type SubjectOverride = {
+  course: string;
+  subjectKey: string;
+  displayName: string | null;
+  semesterOverride: number | null;
+  hidden: boolean;
+  courseOverride: string | null;
+};
+type PaperOverride = { paperId: string; pdfUrl: string | null; hidden: boolean };
+type Overrides = { subjects: Map<string, SubjectOverride>; papers: Map<string, PaperOverride>; list: SubjectOverride[] };
+
+const ALL_SEMESTERS = "all";
 
 function yearStart(value: string) {
   return Number(value.match(/\d{4}/)?.[0] ?? 0);
@@ -31,11 +57,8 @@ function embeddableUrl(url: string): string {
 // Some source sites send `X-Frame-Options: DENY` / a restrictive
 // frame-ancestors CSP, which silently blocks embedding — the browser
 // shows its own "refused to connect" page inside the iframe with no way
-// for our JS to detect it (X-Frame-Options blocks don't fire an error
-// event; the load looks "successful" from the parent's perspective).
-// Since it can't be detected after the fact, known offenders are listed
-// here up front and skip straight to the "open externally" fallback.
-// zhdce.ac.in confirmed via curl -I: `x-frame-options: DENY`.
+// for our JS to detect it. Known offenders skip straight to the "open
+// externally" fallback. zhdce.ac.in confirmed via curl -I: `x-frame-options: DENY`.
 const FRAME_BLOCKED_HOSTS = new Set(["zhdce.ac.in"]);
 
 function isFrameBlocked(url: string): boolean {
@@ -56,14 +79,17 @@ function fileName(paper: CatalogPaper) {
   }
 }
 
-// Falls back to the list's first entry when the candidate (e.g. a
-// previously-picked year) no longer appears once the matching-papers set
-// changes underneath it.
-function resolve<T>(candidateKey: string | null, options: T[], key: (v: T) => string) {
-  if (candidateKey && options.some((o) => key(o) === candidateKey)) {
-    return options.find((o) => key(o) === candidateKey) ?? null;
-  }
-  return options[0] ?? null;
+function cleanNote(p: CatalogPaper) {
+  return (p.note ?? "")
+    .replace(/\[[SKAR]\]\s*(Shivaji|Kalindi|ANDC|Ramanujan)\s*\|?\s*/gi, "")
+    .replace(/^\|\s*/, "")
+    .trim();
+}
+
+// "bcom hons", "B.Com (Hons" and "B.Com. (Hons.)" should all match.
+function looseMatch(haystack: string, needle: string) {
+  const squash = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return squash(haystack).includes(squash(needle));
 }
 
 function toggle(set: Set<string>, value: string): Set<string> {
@@ -73,765 +99,718 @@ function toggle(set: Set<string>, value: string): Set<string> {
   return next;
 }
 
-type Tab = "course" | "semester" | "subject";
+async function fetchJson<T>(url: string, fallback: T): Promise<T> {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return fallback;
+    return (await res.json()) as T;
+  } catch {
+    return fallback;
+  }
+}
 
-const EMPTY_ARRAY: CatalogPaper[] = [];
+// Admin edits from Admin → Papers archive (rename/combine/move/hide a
+// subject, replace or hide a single paper), layered on the static files.
+async function loadOverrides(): Promise<Overrides> {
+  const [subjects, papers] = await Promise.all([
+    fetchJson<SubjectOverride[]>("/api/catalog-overrides", []),
+    fetchJson<PaperOverride[]>("/api/catalog-paper-overrides", []),
+  ]);
+  const list = Array.isArray(subjects) ? subjects : [];
+  return {
+    list,
+    subjects: new Map(list.map((o) => [`${o.course}\u0000${o.subjectKey}`, o])),
+    papers: new Map((Array.isArray(papers) ? papers : []).map((o) => [o.paperId, o])),
+  };
+}
 
-export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?: CatalogPaper[] }) {
+function applyOverrides(raw: CatalogPaper[], overrides: Overrides): CatalogPaper[] {
+  const out: CatalogPaper[] = [];
+  for (const p of raw) {
+    const paperOverride = overrides.papers.get(p.id);
+    if (paperOverride?.hidden) continue;
+    const override = overrides.subjects.get(`${p.course}\u0000${canonicalSubjectKey(p.subject)}`);
+    if (override?.hidden) continue;
+    let paper = paperOverride?.pdfUrl ? { ...p, pdfUrl: paperOverride.pdfUrl } : p;
+    if (override) {
+      paper = {
+        ...paper,
+        originalSubject: p.subject,
+        subject: override.displayName || p.subject,
+        course: override.courseOverride || p.course,
+        semester: override.semesterOverride != null ? String(override.semesterOverride) : p.semester,
+      };
+    }
+    out.push(paper);
+  }
+  return out;
+}
+
+type SearchHit = { course: string; key: string; label: string; count: number };
+
+export function PaperBrowser() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const requestedCourse = searchParams.get("course");
-  const requestedSubject = searchParams.get("subject");
-  const requestedQuery = searchParams.get("q");
 
-  const [papers, setPapers] = useState<CatalogPaper[]>(initialPapers);
-  const [loading, setLoading] = useState(initialPapers.length === 0);
-  const [activeTab, setActiveTab] = useState<Tab>("course");
+  const [index, setIndex] = useState<CourseIndexEntry[] | null>(null);
+  const [overrides, setOverrides] = useState<Overrides | null>(null);
+  const [course, setCourse] = useState<string | null>(null);
+  const [loadedCourses, setLoadedCourses] = useState<Record<string, CatalogPaper[]>>({});
+  const [semester, setSemester] = useState<string | null>(null);
+  const [subjectKeys, setSubjectKeys] = useState<Set<string>>(new Set());
+  const [openPaperId, setOpenPaperId] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
   const [courseSearch, setCourseSearch] = useState("");
   const [subjectSearch, setSubjectSearch] = useState("");
-  const [selectedCourses, setSelectedCourses] = useState<Set<string>>(new Set());
-  const [selectedSemesters, setSelectedSemesters] = useState<Set<string>>(new Set());
-  const [selectedSubjectKeys, setSelectedSubjectKeys] = useState<Set<string>>(new Set());
-  const [yearRange, setYearRange] = useState<string | null>(null);
-  const [paperIndex, setPaperIndex] = useState(0);
-  const [isUrlInitialized, setIsUrlInitialized] = useState(false);
-  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [query, setQuery] = useState("");
+  const [searchRows, setSearchRows] = useState<[string, string, number][] | null>(null);
+  const [initialized, setInitialized] = useState(false);
+  const inFlight = useRef(new Set<string>());
 
+  // 1. Tiny course list + admin overrides — nothing else loads up front.
+  // Then read the URL once (deep links from the homepage, search bar and
+  // shared "Copy link"s).
   useEffect(() => {
-    if (initialPapers.length > 0) {
-      setPapers(initialPapers);
-      setLoading(false);
-      return;
-    }
-
-    let isMounted = true;
-    Promise.all([
-      fetch("/data/papers-catalog.json").then((res) => res.json()),
-      fetch("/api/catalog-overrides").then((res) => res.json()).catch(() => []),
-      fetch("/api/catalog-paper-overrides").then((res) => res.json()).catch(() => []),
-    ])
-      .then(([papersData, overridesData, paperOverridesData]: [CatalogPaper[], any[], any[]]) => {
-        if (!isMounted) return;
-        const overrideByKey = new Map<string, any>();
-        for (const o of overridesData) {
-          overrideByKey.set(`${o.course}\u0000${o.subjectKey}`, o);
+    let alive = true;
+    Promise.all([fetchJson<CourseIndexEntry[]>("/data/papers/index.json", []), loadOverrides()]).then(
+      ([idx, ov]) => {
+        if (!alive) return;
+        setIndex(idx);
+        setOverrides(ov);
+        const requestedCourse = searchParams.get("course");
+        if (requestedCourse) {
+          const q = requestedCourse.trim().toLowerCase();
+          const match =
+            idx.find((c) => c.course.toLowerCase() === q) ??
+            idx.find((c) => c.course.toLowerCase().includes(q) || q.includes(c.course.toLowerCase()));
+          if (match) setCourse(match.course);
         }
-        const paperOverrideById = new Map<string, any>();
-        for (const o of Array.isArray(paperOverridesData) ? paperOverridesData : []) {
-          paperOverrideById.set(o.paperId, o);
+        const sem = searchParams.get("sem");
+        if (sem) setSemester(sem);
+        const subject = searchParams.get("subject");
+        if (subject) {
+          setSubjectKeys(new Set([subject]));
+          setExpanded(new Set([subject]));
         }
-        const unified: CatalogPaper[] = [];
-        for (const p of papersData) {
-          const paperOverride = paperOverrideById.get(p.id);
-          if (paperOverride?.hidden) continue;
-          const override = overrideByKey.get(`${p.course}\u0000${canonicalSubjectKey(p.subject)}`);
-          if (override?.hidden) continue;
-          let paper = paperOverride?.pdfUrl ? { ...p, pdfUrl: paperOverride.pdfUrl } : p;
-          if (override) {
-            paper = {
-              ...paper,
-              originalSubject: p.subject,
-              subject: override.displayName || p.subject,
-              course: override.courseOverride || p.course,
-              semester: override.semesterOverride != null ? String(override.semesterOverride) : p.semester,
-            };
-          }
-          unified.push(paper);
-        }
-        setPapers(unified);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Failed to fetch papers catalog:", err);
-        if (isMounted) setLoading(false);
-      });
-
+        const paper = searchParams.get("paper");
+        if (paper) setOpenPaperId(paper);
+        const q = searchParams.get("q");
+        if (q && !requestedCourse) setQuery(q);
+        setInitialized(true);
+      },
+    );
     return () => {
-      isMounted = false;
+      alive = false;
     };
-  }, [initialPapers]);
-
-  // Sync course and subject from query parameters if provided
-  useEffect(() => {
-    if (papers.length === 0) return;
-
-    if (requestedCourse) {
-      const q = requestedCourse.trim().toLowerCase();
-      const match = papers.find(
-        (p) => (p.course || "").toLowerCase() === q ||
-               (p.course || "").toLowerCase().includes(q) ||
-               q.includes((p.course || "").toLowerCase())
-      );
-      if (match?.course) {
-        setSelectedCourses(new Set([match.course]));
-      } else {
-        setSelectedCourses(new Set([requestedCourse]));
-      }
-    }
-
-    if (requestedSubject) {
-      // Match by exact canonical key first, then fallback
-      const match = papers.find(p => canonicalSubjectKey(p.subject) === requestedSubject);
-      if (match) {
-        setSelectedSubjectKeys(new Set([canonicalSubjectKey(match.subject)]));
-      } else {
-        setSelectedSubjectKeys(new Set([requestedSubject]));
-      }
-      setActiveTab("subject"); // Automatically open subject tab if they were deep-linked here
-    }
-    
-    setIsUrlInitialized(true);
-  }, [requestedCourse, requestedSubject, papers]);
-
-  // Sync state back to the URL using Next.js router so the address bar (and Copy Link button) always has a shareable link
-  useEffect(() => {
-    if (!isUrlInitialized) return;
-    
-    const currentCourse = Array.from(selectedCourses)[0];
-    const currentSubject = Array.from(selectedSubjectKeys)[0];
-    
-    const params = new URLSearchParams(searchParams.toString());
-    let changed = false;
-
-    if (currentCourse && params.get("course") !== currentCourse) {
-      params.set("course", currentCourse);
-      changed = true;
-    } else if (!currentCourse && params.has("course")) {
-      params.delete("course");
-      changed = true;
-    }
-
-    if (currentSubject && params.get("subject") !== currentSubject) {
-      params.set("subject", currentSubject);
-      changed = true;
-    } else if (!currentSubject && params.has("subject")) {
-      params.delete("subject");
-      changed = true;
-    }
-
-    if (changed) {
-      router.replace(`${pathname}?${params.toString()}`, { scroll: false });
-    }
-  }, [selectedCourses, selectedSubjectKeys, pathname, router, searchParams]);
-
-  // Sync free-text search from query parameter (e.g. from the header/hero
-  // search bar) into the Subject tab's search box, and jump straight there.
-  useEffect(() => {
-    if (requestedQuery) {
-      setSubjectSearch(requestedQuery);
-      setActiveTab("subject");
-    }
-  }, [requestedQuery]);
+    // Only on mount: later URL changes are our own router.replace calls.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const courses = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const p of papers) {
-      const name = (p.course || "General / Interdisciplinary").trim();
-      counts.set(name, (counts.get(name) ?? 0) + 1);
-    }
-    let entries = [...counts.entries()];
-    const q = courseSearch.trim().toLowerCase();
-    if (q) entries = entries.filter(([name]) => name.toLowerCase().includes(q));
-    return entries.map(([name, count]) => ({ name, count })).sort((a, b) => a.name.localeCompare(b.name));
-  }, [papers, courseSearch]);
+    if (!index) return [];
+    const counts = new Map(index.map((c) => [c.course, c.count]));
+    return [...counts.entries()]
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [index]);
 
-  // Semester/Subject option lists respect whatever's already picked in the
-  // *other* dimensions, but never their own — that's what makes this a
-  // faceted filter (checking one course narrows the semester list; the
-  // semester list itself isn't filtered by which semesters are checked).
+  // 2. Load only the chosen course (plus any course an admin moved a
+  // subject in from). Each course is fetched once per visit.
+  useEffect(() => {
+    if (!course || !index || !overrides || loadedCourses[course] || inFlight.current.has(course)) return;
+    inFlight.current.add(course);
+    const sources = new Set([course]);
+    for (const o of overrides.list) if (o.courseOverride === course) sources.add(o.course);
+    const slugOf = new Map(index.map((c) => [c.course, c.slug]));
+    Promise.all(
+      [...sources]
+        .filter((c) => slugOf.has(c))
+        .map((c) => fetchJson<CatalogPaper[]>(`/data/papers/courses/${slugOf.get(c)}.json`, [])),
+    ).then((lists) => {
+      inFlight.current.delete(course);
+      const papers = applyOverrides(lists.flat(), overrides).filter((p) => p.course === course);
+      setLoadedCourses((prev) => ({ ...prev, [course]: papers }));
+    });
+  }, [course, index, overrides, loadedCourses]);
+  const coursePapers = course ? loadedCourses[course] ?? null : null;
+
+  // Header search: fetch the subject index only when someone searches.
+  useEffect(() => {
+    if (!query || searchRows) return;
+    fetchJson<[string, string, number][]>("/data/papers/search-index.json", []).then(setSearchRows);
+  }, [query, searchRows]);
+
+  const searchHits = useMemo<SearchHit[]>(() => {
+    const q = query.trim().toLowerCase();
+    if (!q || !searchRows || !overrides) return [];
+    const groups = new Map<string, { course: string; key: string; labels: string[]; count: number }>();
+    for (const [rowCourse, subject, count] of searchRows) {
+      const o = overrides.subjects.get(`${rowCourse}\u0000${canonicalSubjectKey(subject)}`);
+      if (o?.hidden) continue;
+      const label = o?.displayName || subject;
+      const c = o?.courseOverride || rowCourse;
+      const key = canonicalSubjectKey(label);
+      const id = `${c}\u0000${key}`;
+      const g = groups.get(id) ?? { course: c, key, labels: [], count: 0 };
+      g.labels.push(label);
+      g.count += count;
+      groups.set(id, g);
+    }
+    return [...groups.values()]
+      .map((g) => ({ course: g.course, key: g.key, label: preferredSubjectLabel(g.labels), count: g.count }))
+      .filter((h) => looseMatch(h.label, q) || looseMatch(h.course, q))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 80);
+  }, [query, searchRows, overrides]);
+
+  // Keep the address bar shareable.
+  useEffect(() => {
+    if (!initialized) return;
+    const params = new URLSearchParams(searchParams.toString());
+    const set = (k: string, v: string | null) => (v ? params.set(k, v) : params.delete(k));
+    set("course", course);
+    set("sem", semester);
+    set("subject", subjectKeys.size === 1 ? [...subjectKeys][0] : null);
+    set("paper", openPaperId);
+    set("q", course ? null : query || null);
+    const next = params.toString();
+    if (next !== searchParams.toString()) router.replace(`${pathname}?${next}`, { scroll: false });
+  }, [initialized, course, semester, subjectKeys, openPaperId, query, pathname, router, searchParams]);
+
   const semesters = useMemo(() => {
     const counts = new Map<string, number>();
-    for (const p of papers) {
-      const cName = (p.course || "General / Interdisciplinary").trim();
-      if (selectedCourses.size > 0 && !selectedCourses.has(cName)) continue;
+    for (const p of coursePapers ?? []) {
       const label = semesterLabel(p);
       counts.set(label, (counts.get(label) ?? 0) + 1);
     }
     return [...counts.entries()]
       .map(([label, count]) => ({ label, count }))
       .sort((a, b) => semesterSortKey(a.label) - semesterSortKey(b.label));
-  }, [papers, selectedCourses]);
+  }, [coursePapers]);
+
+  const inSemester = useMemo(() => {
+    if (!coursePapers) return [];
+    if (!semester || semester === ALL_SEMESTERS) return coursePapers;
+    return coursePapers.filter((p) => semesterLabel(p) === semester);
+  }, [coursePapers, semester]);
 
   const subjects = useMemo(() => {
-    const map = new Map<string, { labels: string[]; count: number }>();
-    for (const p of papers) {
-      const cName = (p.course || "General / Interdisciplinary").trim();
-      if (selectedCourses.size > 0 && !selectedCourses.has(cName)) continue;
-      if (selectedSemesters.size > 0 && !selectedSemesters.has(semesterLabel(p))) continue;
+    const map = new Map<string, { labels: string[]; papers: CatalogPaper[] }>();
+    for (const p of inSemester) {
       const key = canonicalSubjectKey(p.subject);
-      const entry = map.get(key) ?? { labels: [], count: 0 };
+      const entry = map.get(key) ?? { labels: [], papers: [] };
       entry.labels.push(p.subject);
-      entry.count += 1;
+      entry.papers.push(p);
       map.set(key, entry);
     }
-    let entries = [...map.entries()];
-    const q = subjectSearch.trim().toLowerCase();
-    if (q) entries = entries.filter(([, { labels }]) => preferredSubjectLabel(labels).toLowerCase().includes(q));
-    return entries
-      .map(([key, { labels, count }]) => ({ key, label: preferredSubjectLabel(labels), count }))
+    return [...map.entries()]
+      .map(([key, { labels, papers }]) => ({
+        key,
+        label: preferredSubjectLabel(labels),
+        papers: papers.sort((a, b) => yearStart(b.yearRange) - yearStart(a.yearRange) || cleanNote(a).localeCompare(cleanNote(b))),
+      }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [papers, selectedCourses, selectedSemesters, subjectSearch]);
+  }, [inSemester]);
 
-  const matchingPapers = useMemo(() => {
-    if (selectedCourses.size === 0 && selectedSemesters.size === 0 && selectedSubjectKeys.size === 0) return papers;
-    return papers.filter((p) => {
-      const cName = (p.course || "General / Interdisciplinary").trim();
-      if (selectedCourses.size > 0 && !selectedCourses.has(cName)) return false;
-      if (selectedSemesters.size > 0 && !selectedSemesters.has(semesterLabel(p))) return false;
-      if (selectedSubjectKeys.size > 0 && !selectedSubjectKeys.has(canonicalSubjectKey(p.subject))) return false;
-      return true;
-    });
-  }, [papers, selectedCourses, selectedSemesters, selectedSubjectKeys]);
-
-  const years = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const p of matchingPapers) counts.set(p.yearRange, (counts.get(p.yearRange) ?? 0) + 1);
-    return [...counts.entries()]
-      .map(([yr, count]) => ({ yearRange: yr, count }))
-      .sort((a, b) => yearStart(b.yearRange) - yearStart(a.yearRange));
-  }, [matchingPapers]);
-
-  const effectiveYear = resolve(yearRange, years, (y) => y.yearRange)?.yearRange ?? null;
-
-  const papersForYear = useMemo(() => {
-    if (!effectiveYear) return [];
-    return matchingPapers
-      .filter((p) => p.yearRange === effectiveYear)
-      .sort(
-        (a, b) =>
-          (a.course || "").localeCompare(b.course || "") ||
-          a.subject.localeCompare(b.subject) ||
-          fileName(a).localeCompare(fileName(b)),
-      );
-  }, [matchingPapers, effectiveYear]);
-
-  const effectivePaperIndex = Math.min(paperIndex, Math.max(papersForYear.length - 1, 0));
-  const selectedPaper = papersForYear[effectivePaperIndex] ?? null;
-
-  function selectYear(yr: string) {
-    setYearRange(yr);
-    setPaperIndex(0);
-  }
-  function toggleCourse(name: string) {
-    setSelectedCourses((s) => toggle(s, name));
-    setYearRange(null);
-    setPaperIndex(0);
-  }
-  function toggleSemester(label: string) {
-    setSelectedSemesters((s) => toggle(s, label));
-    setYearRange(null);
-    setPaperIndex(0);
-  }
-  function toggleSubject(key: string) {
-    setSelectedSubjectKeys((s) => toggle(s, key));
-    setYearRange(null);
-    setPaperIndex(0);
-  }
-  function clearAllFilters() {
-    setSelectedCourses(new Set());
-    setSelectedSemesters(new Set());
-    setSelectedSubjectKeys(new Set());
-    setYearRange(null);
-    setPaperIndex(0);
-  }
-
-  const totalFiltersActive = selectedCourses.size + selectedSemesters.size + selectedSubjectKeys.size;
-
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[290px_1fr] xl:grid-cols-[330px_1fr]">
-        <div className="h-[600px] animate-pulse rounded-2xl border border-border bg-surface p-4" />
-        <div className="h-[600px] animate-pulse rounded-2xl border border-border bg-surface p-6" />
-      </div>
+  const visibleSubjects = useMemo(() => {
+    return subjects.filter(
+      (s) => (subjectKeys.size === 0 || subjectKeys.has(s.key)) && looseMatch(s.label, subjectSearch),
     );
+  }, [subjects, subjectKeys, subjectSearch]);
+
+  const openPaper = useMemo(
+    () => (openPaperId ? coursePapers?.find((p) => p.id === openPaperId) ?? null : null),
+    [coursePapers, openPaperId],
+  );
+  const openPaperSiblings = useMemo(() => {
+    if (!openPaper) return [];
+    const key = canonicalSubjectKey(openPaper.subject);
+    return subjects.find((s) => s.key === key)?.papers ?? [];
+  }, [openPaper, subjects]);
+
+  // A subject chosen via search/deep link skips the semester step.
+  const needsSemester = Boolean(course) && !semester && subjectKeys.size === 0;
+
+  function pickCourse(name: string | null) {
+    setCourse(name);
+    setSemester(null);
+    setSubjectKeys(new Set());
+    setOpenPaperId(null);
+    setExpanded(new Set());
+    setSubjectSearch("");
+  }
+  function pickSemester(label: string) {
+    setSemester(label);
+    setSubjectKeys(new Set());
+    setOpenPaperId(null);
+    setExpanded(new Set());
+  }
+  function pickSearchHit(hit: SearchHit) {
+    setQuery("");
+    setCourse(hit.course);
+    setSemester(ALL_SEMESTERS);
+    setSubjectKeys(new Set([hit.key]));
+    setExpanded(new Set([hit.key]));
+    setOpenPaperId(null);
+  }
+  function openPaperView(id: string) {
+    setOpenPaperId(id);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
+
+  const totalPapers = index?.reduce((n, c) => n + c.count, 0) ?? 0;
+
+  if (!index || !overrides) {
+    return <div className="h-72 animate-pulse rounded-2xl border border-border bg-surface" />;
   }
 
   return (
-    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[290px_1fr] xl:grid-cols-[330px_1fr]">
-      {/* Mobile Filter Button */}
-      <div className="lg:hidden">
-        <button
-          type="button"
-          onClick={() => setIsMobileFilterOpen(true)}
-          className="flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3.5 text-sm font-semibold text-foreground shadow-sm transition hover:bg-surface-muted"
-        >
-          <Funnel size={18} weight="bold" className="text-muted" />
-          Filter Papers
-          {totalFiltersActive > 0 && (
-            <span className="ml-auto flex size-5 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white">
-              {totalFiltersActive}
-            </span>
-          )}
-        </button>
-      </div>
+    <div className="mx-auto w-full max-w-5xl space-y-4">
+      <Breadcrumbs
+        course={course}
+        semester={semester}
+        onAllCourses={() => pickCourse(null)}
+        onSemesters={() => {
+          setSemester(null);
+          setSubjectKeys(new Set());
+          setOpenPaperId(null);
+        }}
+      />
 
-      <aside
-        className={`fixed inset-0 z-50 flex-col bg-background p-4 sm:p-6 lg:static lg:z-auto lg:flex lg:h-[calc(100vh-7.5rem)] lg:bg-transparent lg:p-0 ${
-          isMobileFilterOpen ? "flex" : "hidden"
-        }`}
-      >
-        <div className="mb-4 lg:mb-2.5 flex items-center justify-between">
-          <h2 className="text-lg lg:text-sm font-bold tracking-tight text-foreground">Filters</h2>
-          <div className="flex items-center gap-4">
-            {totalFiltersActive > 0 && (
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="text-xs font-semibold text-accent hover:underline hover:text-accent-hover transition"
-              >
-                Clear all ({totalFiltersActive})
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => setIsMobileFilterOpen(false)}
-              className="flex items-center justify-center rounded-full bg-surface-muted p-1.5 text-foreground lg:hidden"
-            >
-              <X size={16} weight="bold" />
-            </button>
-          </div>
-        </div>
+      {/* ── Paper viewer: only mounts after the student clicks a paper ── */}
+      {openPaperId && coursePapers && (
+        openPaper ? (
+          <PaperViewer
+            paper={openPaper}
+            siblings={openPaperSiblings}
+            onSelect={setOpenPaperId}
+            onClose={() => setOpenPaperId(null)}
+          />
+        ) : (
+          <EmptyState title="That paper isn't available any more" action="Back to papers" onAction={() => setOpenPaperId(null)} />
+        )
+      )}
 
-        <div className="flex rounded-xl border border-border/80 bg-surface-muted/80 p-1 text-sm shadow-2xs">
-          <TabButton active={activeTab === "course"} onClick={() => setActiveTab("course")} label="Course" count={selectedCourses.size} />
-          {/* Semester option hidden per user request */}
-          {/* <TabButton active={activeTab === "semester"} onClick={() => setActiveTab("semester")} label="Semester" count={selectedSemesters.size} /> */}
-          <TabButton active={activeTab === "subject"} onClick={() => setActiveTab("subject")} label="Subject" count={selectedSubjectKeys.size} />
-        </div>
-
-        <div className="mt-2.5 flex min-h-0 flex-1 flex-col rounded-2xl border border-border bg-surface p-3 shadow-2xs">
-          {activeTab === "course" && (
-            <FilterList
-              searchPlaceholder="Search course…"
-              search={courseSearch}
-              onSearch={setCourseSearch}
-              total={courses.length}
-              empty={courses.length === 0}
-            >
-              {courses.map((c) => (
-                <FilterCheckbox
-                  key={c.name}
-                  checked={selectedCourses.has(c.name)}
-                  label={c.name}
-                  count={c.count}
-                  onClick={() => toggleCourse(c.name)}
-                />
-              ))}
-            </FilterList>
-          )}
-
-          {/* Semester filter hidden */}
-          {/* {activeTab === "semester" && (
-            <FilterList total={semesters.length} empty={semesters.length === 0}>
-              {semesters.map((s) => (
-                <FilterCheckbox
-                  key={s.label}
-                  checked={selectedSemesters.has(s.label)}
-                  label={s.label}
-                  count={s.count}
-                  onClick={() => toggleSemester(s.label)}
-                />
-              ))}
-            </FilterList>
-          )} */}
-
-          {activeTab === "subject" && (
-            <FilterList
-              searchPlaceholder="Search subject…"
-              search={subjectSearch}
-              onSearch={setSubjectSearch}
-              total={subjects.length}
-              empty={subjects.length === 0}
-            >
-              {subjects.map((s) => (
-                <FilterCheckbox
-                  key={s.key}
-                  checked={selectedSubjectKeys.has(s.key)}
-                  label={s.label}
-                  count={s.count}
-                  onClick={() => toggleSubject(s.key)}
-                />
-              ))}
-            </FilterList>
-          )}
-        </div>
-
-        {/* Mobile Apply Button */}
-        <div className="mt-4 shrink-0 lg:hidden">
+      {!course && query && (
+        <Panel step="Search" title={`Subjects matching “${query}”`}>
           <button
             type="button"
-            onClick={() => setIsMobileFilterOpen(false)}
-            className="w-full rounded-xl bg-accent px-4 py-3.5 text-sm font-bold text-white shadow-sm transition hover:bg-accent-hover"
+            onClick={() => setQuery("")}
+            className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
           >
-            Show {matchingPapers.length.toLocaleString()} Papers
+            <X size={12} weight="bold" /> Clear search and pick a course instead
           </button>
-        </div>
-      </aside>
-
-      <main className="min-w-0">
-        <div className="mb-2.5 flex items-center justify-between">
-          <p className="text-xs font-medium text-muted">
-            <span className="font-semibold text-foreground">{matchingPapers.length.toLocaleString()}</span> of{" "}
-            {papers.length.toLocaleString()} papers match your filters
-          </p>
-          {totalFiltersActive > 0 && (
-            <span className="hidden sm:inline-flex items-center gap-1 text-xs text-muted">
-              Active filters: <strong className="text-foreground">{totalFiltersActive}</strong>
-            </span>
-          )}
-        </div>
-
-        {!selectedPaper ? (
-          <div className="flex h-[450px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface/50 p-6 text-center">
-            <p className="text-sm font-medium text-foreground">No papers match this selection</p>
-            <p className="text-xs text-muted">Try clearing some filters or selecting another course/semester/subject.</p>
-            {totalFiltersActive > 0 && (
-              <button
-                type="button"
-                onClick={clearAllFilters}
-                className="mt-2 rounded-lg bg-brand px-3.5 py-1.5 text-xs font-semibold text-brand-foreground shadow-sm transition hover:bg-brand-hover"
-              >
-                Clear all filters
-              </button>
-            )}
-          </div>
-        ) : (
-          <>
-            <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 sm:p-5 shadow-2xs">
-              <div className="min-w-0 flex-1">
-                <span className="inline-block rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent">
-                  {selectedPaper.course || "General"}
-                </span>
-                <h2 className="mt-1.5 text-lg sm:text-xl font-bold text-foreground leading-snug">
-                  {selectedPaper.subject}
-                </h2>
-                <p className="mt-1 text-xs sm:text-sm text-muted">
-                  {semesterLabel(selectedPaper)} · <span className="font-medium text-foreground">{selectedPaper.yearRange}</span>
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                <CopyButton
-                  text={typeof window === "undefined" ? "" : window.location.href}
-                  label="Copy link"
-                  className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted transition hover:border-accent hover:text-accent shadow-2xs"
-                />
-                <a
-                  href={selectedPaper.pdfUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted transition hover:border-accent hover:text-accent shadow-2xs"
+          {!searchRows ? (
+            <ListSkeleton />
+          ) : searchHits.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted">No subject matches “{query}”.</p>
+          ) : (
+            <div className="divide-y divide-border/60">
+              {searchHits.map((h) => (
+                <button
+                  key={`${h.course}-${h.key}`}
+                  type="button"
+                  onClick={() => pickSearchHit(h)}
+                  className="flex w-full items-center justify-between gap-3 px-1 py-2.5 text-left transition hover:bg-surface-muted"
                 >
-                  <ArrowSquareOut size={14} weight="bold" />
-                  <span className="hidden sm:inline">Open in new tab</span>
-                </a>
-                <a
-                  href={selectedPaper.pdfUrl}
-                  download
-                  className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-bold text-brand-foreground shadow-2xs transition hover:bg-brand-hover"
-                >
-                  <DownloadSimple size={14} weight="bold" />
-                  <span>Download</span>
-                </a>
-              </div>
+                  <span className="min-w-0">
+                    <span className="block truncate text-sm font-semibold text-foreground">{h.label}</span>
+                    <span className="block truncate text-xs text-muted">{h.course}</span>
+                  </span>
+                  <span className="shrink-0 text-xs font-semibold text-muted">{h.count} papers</span>
+                </button>
+              ))}
             </div>
+          )}
+        </Panel>
+      )}
 
-            {/* Year selector pills */}
-            <div className="mt-3.5">
-              <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-                <span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-muted">Years:</span>
-                {years.map((y) => (
+      {/* ── Step 1: course ── */}
+      {!course && !query && (
+        <Panel step="Step 1 of 2" title="Choose your course" subtitle={`${totalPapers.toLocaleString("en-IN")} papers across ${courses.length} DU programmes`}>
+          <SearchInput value={courseSearch} onChange={setCourseSearch} placeholder="Search course, e.g. B.Com (Hons)…" />
+          <div className="mt-3 grid max-h-[60vh] grid-cols-1 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2 [scrollbar-width:thin]">
+            {courses
+              .filter((c) => looseMatch(c.name, courseSearch))
+              .map((c) => (
+                <button
+                  key={c.name}
+                  type="button"
+                  onClick={() => pickCourse(c.name)}
+                  className="flex items-center justify-between gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 text-left text-sm transition hover:border-accent hover:bg-accent-soft"
+                >
+                  <span className="min-w-0 truncate font-medium text-foreground" title={c.name}>
+                    {c.name}
+                  </span>
+                  <span className="shrink-0 text-[11px] text-muted">{c.count}</span>
+                </button>
+              ))}
+          </div>
+        </Panel>
+      )}
+
+      {course && !coursePapers && <ListSkeleton />}
+
+      {/* ── Step 2: semester ── */}
+      {course && coursePapers && needsSemester && (
+        <Panel step="Step 2 of 2" title="Choose semester" subtitle={course}>
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            {semesters.map((s) => (
+              <button
+                key={s.label}
+                type="button"
+                onClick={() => pickSemester(s.label)}
+                className="rounded-xl border border-border bg-surface px-3 py-3 text-left transition hover:border-accent hover:bg-accent-soft"
+              >
+                <span className="block text-sm font-bold text-foreground">{s.label}</span>
+                <span className="text-[11px] text-muted">{s.count} papers</span>
+              </button>
+            ))}
+            <button
+              type="button"
+              onClick={() => pickSemester(ALL_SEMESTERS)}
+              className="rounded-xl border border-dashed border-border px-3 py-3 text-left transition hover:border-accent hover:bg-accent-soft"
+            >
+              <span className="block text-sm font-bold text-foreground">All semesters</span>
+              <span className="text-[11px] text-muted">{coursePapers.length} papers</span>
+            </button>
+          </div>
+        </Panel>
+      )}
+
+      {/* ── Papers list: subjects → papers; nothing loads until clicked ── */}
+      {course && coursePapers && !needsSemester && !openPaperId && (
+        <Panel
+          step={semester === ALL_SEMESTERS || !semester ? "All semesters" : semester}
+          title={subjectKeys.size === 1 ? visibleSubjects[0]?.label ?? "Papers" : "Pick a paper to open"}
+          subtitle={`${course} · ${visibleSubjects.length} subject${visibleSubjects.length === 1 ? "" : "s"}`}
+        >
+          <div className="mb-3 flex flex-wrap items-center gap-2">
+            {semesters.length > 1 && (
+              <div className="flex flex-wrap gap-1.5">
+                {[{ label: ALL_SEMESTERS, count: coursePapers.length }, ...semesters].map((s) => (
                   <button
-                    key={y.yearRange}
+                    key={s.label}
                     type="button"
-                    onClick={() => selectYear(y.yearRange)}
-                    className={`shrink-0 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-                      y.yearRange === effectiveYear
-                        ? "bg-accent text-white shadow-2xs ring-2 ring-accent/20"
-                        : "bg-surface-muted text-muted hover:bg-border/60 hover:text-foreground"
+                    onClick={() => pickSemester(s.label)}
+                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
+                      (semester ?? ALL_SEMESTERS) === s.label
+                        ? "bg-accent text-white"
+                        : "bg-surface-muted text-muted hover:text-foreground"
                     }`}
                   >
-                    {y.yearRange}
-                    <span className="ml-1.5 text-[11px] opacity-75">{y.count}</span>
+                    {s.label === ALL_SEMESTERS ? "All" : s.label.replace("Semester ", "Sem ")}
                   </button>
                 ))}
               </div>
-            </div>
-
-            {/* Multiple papers in same year */}
-            {papersForYear.length > 1 && (
-              <div className="mt-2.5">
-                {papersForYear.length <= 10 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {papersForYear.map((p, i) => {
-                      const isShiv = p.isShivaji || p.college === "Shivaji";
-                      const isKal = p.isKalindi || p.college === "Kalindi";
-                      const isAnd = p.isANDC || p.college === "ANDC";
-                      const isRam = p.isRamanujan || p.college === "Ramanujan";
-                      
-                      let cleanNoteStr = p.note ?? `Paper ${i + 1}`;
-                      // Remove college labels from the note to save space
-                      cleanNoteStr = cleanNoteStr
-                        .replace(/\[S\]\s*Shivaji\s*\|?\s*/gi, "")
-                        .replace(/\[K\]\s*Kalindi\s*\|?\s*/gi, "")
-                        .replace(/\[A\]\s*ANDC\s*\|?\s*/gi, "")
-                        .replace(/\[R\]\s*Ramanujan\s*\|?\s*/gi, "")
-                        .replace(/\[S\]\s*Shivaji/gi, "")
-                        .replace(/\[K\]\s*Kalindi/gi, "")
-                        .replace(/\[A\]\s*ANDC/gi, "")
-                        .replace(/\[R\]\s*Ramanujan/gi, "")
-                        .replace(/^\|\s*/, "") // Clean leading pipes
-                        .trim();
-                        
-                      if (!cleanNoteStr) cleanNoteStr = `Paper ${i + 1}`;
-
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => setPaperIndex(i)}
-                          className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-semibold transition ${
-                            i === effectivePaperIndex
-                              ? "border-accent bg-accent-soft text-accent shadow-2xs"
-                              : "border-border bg-surface text-muted hover:border-border/80 hover:text-foreground"
-                          }`}
-                        >
-                          <span>{cleanNoteStr}</span>
-                          {isShiv && (
-                            <span
-                              className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-emerald-500 text-emerald-950 uppercase"
-                              title="Shivaji College Archive"
-                            >
-                              S
-                            </span>
-                          )}
-                          {isKal && (
-                            <span
-                              className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-rose-500 text-white uppercase"
-                              title="Kalindi College Archive"
-                            >
-                              K
-                            </span>
-                          )}
-                          {isAnd && (
-                            <span
-                              className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-blue-500 text-white uppercase"
-                              title="Acharya Narendra Dev College (ANDC) Archive"
-                            >
-                              A
-                            </span>
-                          )}
-                          {isRam && (
-                            <span
-                              className="px-1 py-px text-[9px] font-black tracking-tight rounded bg-amber-500 text-amber-950 uppercase"
-                              title="Ramanujan College Archive"
-                            >
-                              R
-                            </span>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="max-h-40 space-y-0.5 overflow-y-auto rounded-xl border border-border bg-surface p-1.5 shadow-2xs">
-                    {papersForYear.map((p, i) => {
-                      const isShiv = p.isShivaji || p.college === "Shivaji";
-                      const isKal = p.isKalindi || p.college === "Kalindi";
-                      const isAnd = p.isANDC || p.college === "ANDC";
-                      const isRam = p.isRamanujan || p.college === "Ramanujan";
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => setPaperIndex(i)}
-                          className={`flex w-full items-center justify-between gap-2 rounded-lg px-2.5 py-1.5 text-left text-xs transition ${
-                            i === effectivePaperIndex
-                              ? "bg-accent-soft font-bold text-accent"
-                              : "text-foreground hover:bg-surface-muted"
-                          }`}
-                        >
-                          <span className="truncate flex items-center gap-1.5">
-                            {p.course} · {p.subject}
-                            {isShiv && (
-                              <span
-                                className="shrink-0 px-1 py-px text-[9px] font-black tracking-tight rounded bg-emerald-500 text-emerald-950 uppercase"
-                                title="Shivaji College Archive"
-                              >
-                                S
-                              </span>
-                            )}
-                            {isKal && (
-                              <span
-                                className="shrink-0 px-1 py-px text-[9px] font-black tracking-tight rounded bg-rose-500 text-white uppercase"
-                                title="Kalindi College Archive"
-                              >
-                                K
-                              </span>
-                            )}
-                            {isAnd && (
-                              <span
-                                className="shrink-0 px-1 py-px text-[9px] font-black tracking-tight rounded bg-blue-500 text-white uppercase"
-                                title="Acharya Narendra Dev College (ANDC) Archive"
-                              >
-                                A
-                              </span>
-                            )}
-                            {isRam && (
-                              <span
-                                className="shrink-0 px-1 py-px text-[9px] font-black tracking-tight rounded bg-amber-500 text-amber-950 uppercase"
-                                title="Ramanujan College Archive"
-                              >
-                                R
-                              </span>
-                            )}
-                          </span>
-                          <span className="shrink-0 text-muted">{p.note ?? fileName(p)}</span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
             )}
-
-            {/* Embedded PDF iframe viewer */}
-            <div className="mt-3.5 overflow-hidden rounded-2xl border border-border bg-surface shadow-xs">
-              <div className="flex items-center justify-between border-b border-border bg-surface-muted/60 px-3.5 py-2">
-                <div className="flex items-center gap-2 truncate text-xs text-muted">
-                  <span className="truncate font-medium text-foreground">{fileName(selectedPaper)}</span>
-                  {selectedPaper.note && <span>· {selectedPaper.note}</span>}
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <a
-                    href={selectedPaper.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted transition hover:text-accent shadow-2xs"
-                  >
-                    <ArrowSquareOut size={13} weight="bold" />
-                    Open tab
-                  </a>
-                  <a
-                    href={selectedPaper.pdfUrl}
-                    download
-                    className="flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-medium text-muted transition hover:text-accent shadow-2xs"
-                  >
-                    <DownloadSimple size={13} weight="bold" />
-                    Save
-                  </a>
-                </div>
+          </div>
+          {subjectKeys.size > 0 ? (
+            <button
+              type="button"
+              onClick={() => setSubjectKeys(new Set())}
+              className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
+            >
+              <X size={12} weight="bold" /> Show all subjects in this {semester && semester !== ALL_SEMESTERS ? "semester" : "course"}
+            </button>
+          ) : (
+            subjects.length > 8 && (
+              <div className="mb-3">
+                <SearchInput value={subjectSearch} onChange={setSubjectSearch} placeholder="Search subject…" />
               </div>
-              {isFrameBlocked(selectedPaper.pdfUrl) ? (
-                <div className="flex h-[78vh] min-h-[640px] flex-col items-center justify-center gap-3 bg-surface-muted/50 px-6 text-center">
-                  <p className="text-sm text-muted">
-                    This paper&apos;s source site doesn&apos;t allow inline preview — open it directly instead.
-                  </p>
-                  <a
-                    href={selectedPaper.pdfUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition hover:opacity-90 shadow-sm"
-                  >
-                    <ArrowSquareOut size={14} weight="bold" />
-                    Open PDF
-                  </a>
-                </div>
-              ) : (
-                <iframe
-                  key={selectedPaper.id}
-                  src={embeddableUrl(selectedPaper.pdfUrl)}
-                  title={fileName(selectedPaper)}
-                  className="h-[80vh] min-h-[640px] w-full bg-surface-muted/40"
-                />
-              )}
+            )
+          )}
+
+          {visibleSubjects.length === 0 ? (
+            <p className="py-6 text-center text-sm text-muted">No papers here yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {visibleSubjects.map((s) => {
+                const isOpen = expanded.has(s.key) || visibleSubjects.length === 1;
+                return (
+                  <div key={s.key} className="overflow-hidden rounded-xl border border-border bg-surface">
+                    <button
+                      type="button"
+                      onClick={() => setExpanded((e) => toggle(e, s.key))}
+                      aria-expanded={isOpen}
+                      className="flex w-full items-center justify-between gap-3 px-3.5 py-3 text-left transition hover:bg-surface-muted"
+                    >
+                      <span className="min-w-0 text-sm font-semibold text-foreground">{s.label}</span>
+                      <span className="flex shrink-0 items-center gap-2 text-xs text-muted">
+                        {s.papers.length} paper{s.papers.length === 1 ? "" : "s"}
+                        <CaretDown size={14} weight="bold" className={`transition ${isOpen ? "rotate-180" : ""}`} />
+                      </span>
+                    </button>
+                    {isOpen && (
+                      <ul className="divide-y divide-border/60 border-t border-border">
+                        {s.papers.map((p) => (
+                          <PaperRow key={p.id} paper={p} onOpen={() => openPaperView(p.id)} />
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                );
+              })}
             </div>
-          </>
-        )}
-      </main>
+          )}
+        </Panel>
+      )}
     </div>
   );
 }
 
-
-
-function TabButton({ active, label, count, onClick }: { active: boolean; label: string; count: number; onClick: () => void }) {
+function Breadcrumbs({
+  course,
+  semester,
+  onAllCourses,
+  onSemesters,
+}: {
+  course: string | null;
+  semester: string | null;
+  onAllCourses: () => void;
+  onSemesters: () => void;
+}) {
+  if (!course) return null;
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-bold transition ${
-        active ? "bg-surface text-foreground shadow-xs" : "text-muted hover:text-foreground"
-      }`}
-    >
-      {label}
-      {count > 0 && <span className="ml-1 text-accent">({count})</span>}
-    </button>
+    <nav className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-muted">
+      <button type="button" onClick={onAllCourses} className="inline-flex items-center gap-1 hover:text-accent">
+        <ArrowLeft size={12} weight="bold" /> All courses
+      </button>
+      <span>/</span>
+      <button type="button" onClick={onSemesters} className="max-w-[60vw] truncate hover:text-accent">
+        {course}
+      </button>
+      {semester && (
+        <>
+          <span>/</span>
+          <span className="text-foreground">{semester === ALL_SEMESTERS ? "All semesters" : semester}</span>
+        </>
+      )}
+    </nav>
   );
 }
 
-function FilterList({
-  searchPlaceholder,
-  search,
-  onSearch,
-  total,
-  empty,
+function Panel({
+  step,
+  title,
+  subtitle,
   children,
 }: {
-  searchPlaceholder?: string;
-  search?: string;
-  onSearch?: (v: string) => void;
-  total: number;
-  empty: boolean;
+  step: string;
+  title: string;
+  subtitle?: string;
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      {onSearch && (
-        <div className="relative mb-2 shrink-0">
-          <MagnifyingGlass size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => onSearch(e.target.value)}
-            placeholder={searchPlaceholder}
-            className="w-full rounded-lg border border-border bg-surface py-1.5 pl-8 pr-2 text-xs sm:text-sm text-foreground outline-none focus:border-accent"
-          />
-        </div>
-      )}
-      <p className="mb-1.5 shrink-0 text-[11px] font-semibold uppercase tracking-wider text-muted">{total} total</p>
-      <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1 [scrollbar-color:var(--color-border)_transparent] [scrollbar-width:thin]">
-        {children}
-        {empty && <p className="px-2.5 py-1.5 text-xs text-muted">No matches.</p>}
-      </div>
+    <section className="rounded-2xl border border-border bg-surface p-4 shadow-2xs sm:p-5">
+      <p className="text-[11px] font-bold uppercase tracking-wider text-accent">{step}</p>
+      <h2 className="mt-1 text-lg font-bold leading-snug text-foreground sm:text-xl">{title}</h2>
+      {subtitle && <p className="mt-0.5 text-xs text-muted sm:text-sm">{subtitle}</p>}
+      <div className="mt-4">{children}</div>
+    </section>
+  );
+}
+
+function SearchInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
+  return (
+    <div className="relative">
+      <MagnifyingGlass size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        className="w-full rounded-xl border border-border bg-surface py-2.5 pl-9 pr-3 text-sm text-foreground outline-none focus:border-accent"
+      />
     </div>
   );
 }
 
-function FilterCheckbox({ checked, label, count, onClick }: { checked: boolean; label: string; count: number; onClick: () => void }) {
+function ListSkeleton() {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      title={label}
-      className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs sm:text-sm transition ${
-        checked ? "bg-accent-soft font-semibold text-accent" : "text-foreground hover:bg-surface-muted"
-      }`}
-    >
-      <span
-        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
-          checked ? "border-accent bg-accent text-white" : "border-border"
-        }`}
-        aria-hidden="true"
+    <div className="space-y-2 rounded-2xl border border-border bg-surface p-5">
+      {[0, 1, 2, 3].map((i) => (
+        <div key={i} className="h-11 animate-pulse rounded-xl bg-surface-muted" />
+      ))}
+    </div>
+  );
+}
+
+function EmptyState({ title, action, onAction }: { title: string; action: string; onAction: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border bg-surface/50 p-8 text-center">
+      <p className="text-sm font-medium text-foreground">{title}</p>
+      <button type="button" onClick={onAction} className="text-xs font-semibold text-accent hover:underline">
+        {action}
+      </button>
+    </div>
+  );
+}
+
+const COLLEGE_BADGES = [
+  { test: (p: CatalogPaper) => p.isShivaji || p.college === "Shivaji", letter: "S", title: "Shivaji College Archive", cls: "bg-emerald-500 text-emerald-950" },
+  { test: (p: CatalogPaper) => p.isKalindi || p.college === "Kalindi", letter: "K", title: "Kalindi College Archive", cls: "bg-rose-500 text-white" },
+  { test: (p: CatalogPaper) => p.isANDC || p.college === "ANDC", letter: "A", title: "Acharya Narendra Dev College (ANDC) Archive", cls: "bg-blue-500 text-white" },
+  { test: (p: CatalogPaper) => p.isRamanujan || p.college === "Ramanujan", letter: "R", title: "Ramanujan College Archive", cls: "bg-amber-500 text-amber-950" },
+];
+
+function CollegeBadges({ paper }: { paper: CatalogPaper }) {
+  return (
+    <>
+      {COLLEGE_BADGES.filter((b) => b.test(paper)).map((b) => (
+        <span key={b.letter} title={b.title} className={`shrink-0 rounded px-1 py-px text-[9px] font-black uppercase tracking-tight ${b.cls}`}>
+          {b.letter}
+        </span>
+      ))}
+    </>
+  );
+}
+
+function PaperRow({ paper, onOpen }: { paper: CatalogPaper; onOpen: () => void }) {
+  const note = cleanNote(paper);
+  return (
+    <li className="flex items-center gap-2 px-3.5 py-2.5">
+      <button type="button" onClick={onOpen} className="group flex min-w-0 flex-1 items-center gap-2.5 text-left">
+        <FilePdf size={18} weight="duotone" className="shrink-0 text-accent" />
+        <span className="min-w-0">
+          <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground group-hover:text-accent">
+            {paper.yearRange}
+            <CollegeBadges paper={paper} />
+          </span>
+          <span className="block truncate text-[11px] text-muted">
+            {semesterLabel(paper)}
+            {note && ` · ${note}`}
+          </span>
+        </span>
+      </button>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="shrink-0 rounded-lg bg-accent-soft px-2.5 py-1.5 text-xs font-bold text-accent transition hover:bg-accent hover:text-white"
       >
-        {checked && (
-          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-            <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
+        View
+      </button>
+      <a
+        href={paper.pdfUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open in new tab"
+        className="shrink-0 rounded-lg border border-border p-1.5 text-muted transition hover:border-accent hover:text-accent"
+      >
+        <ArrowSquareOut size={14} weight="bold" />
+      </a>
+    </li>
+  );
+}
+
+function PaperViewer({
+  paper,
+  siblings,
+  onSelect,
+  onClose,
+}: {
+  paper: CatalogPaper;
+  siblings: CatalogPaper[];
+  onSelect: (id: string) => void;
+  onClose: () => void;
+}) {
+  return (
+    <section className="space-y-3">
+      <button
+        type="button"
+        onClick={onClose}
+        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground shadow-2xs transition hover:border-accent hover:text-accent"
+      >
+        <ArrowLeft size={13} weight="bold" /> Back to papers
+      </button>
+
+      <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 shadow-2xs sm:p-5">
+        <div className="min-w-0 flex-1">
+          <span className="inline-block rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent">
+            {paper.course || "General"}
+          </span>
+          <h2 className="mt-1.5 text-lg font-bold leading-snug text-foreground sm:text-xl">{paper.subject}</h2>
+          <p className="mt-1 text-xs text-muted sm:text-sm">
+            {semesterLabel(paper)} · <span className="font-medium text-foreground">{paper.yearRange}</span>
+            {cleanNote(paper) && ` · ${cleanNote(paper)}`}
+          </p>
+        </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <CopyButton
+            text={typeof window === "undefined" ? "" : window.location.href}
+            label="Copy link"
+            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted shadow-2xs transition hover:border-accent hover:text-accent"
+          />
+          <a
+            href={paper.pdfUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted shadow-2xs transition hover:border-accent hover:text-accent"
+          >
+            <ArrowSquareOut size={14} weight="bold" />
+            <span className="hidden sm:inline">Open in new tab</span>
+          </a>
+          <a
+            href={paper.pdfUrl}
+            download
+            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-bold text-brand-foreground shadow-2xs transition hover:bg-brand-hover"
+          >
+            <DownloadSimple size={14} weight="bold" />
+            <span>Download</span>
+          </a>
+        </div>
+      </div>
+
+      {siblings.length > 1 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
+          <span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-muted">Other years:</span>
+          {siblings.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => onSelect(p.id)}
+              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+                p.id === paper.id
+                  ? "bg-accent text-white shadow-2xs ring-2 ring-accent/20"
+                  : "bg-surface-muted text-muted hover:bg-border/60 hover:text-foreground"
+              }`}
+            >
+              {p.yearRange}
+              {cleanNote(p) && <span className="max-w-32 truncate text-[11px] opacity-75">{cleanNote(p)}</span>}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-xs">
+        <div className="flex items-center justify-between border-b border-border bg-surface-muted/60 px-3.5 py-2">
+          <span className="truncate text-xs font-medium text-foreground">{fileName(paper)}</span>
+        </div>
+        {isFrameBlocked(paper.pdfUrl) ? (
+          <div className="flex h-[60vh] flex-col items-center justify-center gap-3 bg-surface-muted/50 px-6 text-center">
+            <p className="text-sm text-muted">
+              This paper&apos;s source site doesn&apos;t allow inline preview — open it directly instead.
+            </p>
+            <a
+              href={paper.pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+            >
+              <ArrowSquareOut size={14} weight="bold" />
+              Open PDF
+            </a>
+          </div>
+        ) : (
+          <iframe
+            key={paper.id}
+            src={embeddableUrl(paper.pdfUrl)}
+            title={fileName(paper)}
+            className="h-[80vh] min-h-[560px] w-full bg-surface-muted/40"
+          />
         )}
-      </span>
-      <span className="min-w-0 flex-1 truncate">{label}</span>
-      <span className="shrink-0 text-[11px] text-muted">{count}</span>
-    </button>
+      </div>
+    </section>
   );
 }
