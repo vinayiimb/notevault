@@ -487,10 +487,25 @@ model CatalogSubjectOverride {
   displayName      String?
   semesterOverride Int?
   highlight        Boolean  @default(false)
+  // Hide every paper of this subject from the public /papers archive.
+  hidden           Boolean  @default(false)
+  // Show this subject under a different programme instead of `course`.
+  courseOverride   String?
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 
   @@unique([course, subjectKey])
+}
+
+// Per-paper edits on top of the static papers-catalog.json (29k papers).
+// The file itself is never modified — deleting a row restores the original.
+model CatalogPaperOverride {
+  id        String   @id @default(cuid())
+  paperId   String   @unique
+  pdfUrl    String?
+  hidden    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // A single combined paper covering every subject for one Program+Semester

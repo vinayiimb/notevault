@@ -20,13 +20,13 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Only Subject Notes (+ Settings, which the notes-featured-programmes
+    // Only Subject Notes, the Papers archive editor (+ Settings, which the notes-featured-programmes
     // picker lives on) work for now — every other admin section (Bulk
     // Upload, Programs, Master Syllabus, the /admin overview itself, etc.)
     // is parked until it's actually needed again, so all of them —
     // including the bare /admin root — send straight to Subject Notes
     // rather than a dashboard full of now-dead links.
-    const ADMIN_ALLOWED_PREFIXES = ["/admin/subject-notes", "/admin/settings"];
+    const ADMIN_ALLOWED_PREFIXES = ["/admin/subject-notes", "/admin/papers-archive", "/admin/settings"];
     const isAllowed = ADMIN_ALLOWED_PREFIXES.some((p) => pathname.startsWith(p));
     if (!isAllowed) {
       return NextResponse.redirect(new URL("/admin/subject-notes", request.url));

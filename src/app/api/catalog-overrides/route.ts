@@ -10,6 +10,8 @@ export async function GET() {
         displayName: true,
         semesterOverride: true,
         highlight: true,
+        hidden: true,
+        courseOverride: true,
       }
     });
     return NextResponse.json(overrides);

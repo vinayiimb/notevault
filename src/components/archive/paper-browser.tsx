@@ -109,25 +109,36 @@ export function PaperBrowser({ papers: initialPapers = EMPTY_ARRAY }: { papers?:
     Promise.all([
       fetch("/data/papers-catalog.json").then((res) => res.json()),
       fetch("/api/catalog-overrides").then((res) => res.json()).catch(() => []),
+      fetch("/api/catalog-paper-overrides").then((res) => res.json()).catch(() => []),
     ])
-      .then(([papersData, overridesData]: [CatalogPaper[], any[]]) => {
+      .then(([papersData, overridesData, paperOverridesData]: [CatalogPaper[], any[], any[]]) => {
         if (!isMounted) return;
         const overrideByKey = new Map<string, any>();
         for (const o of overridesData) {
           overrideByKey.set(`${o.course}\u0000${o.subjectKey}`, o);
         }
-        const unified = papersData.map((p) => {
+        const paperOverrideById = new Map<string, any>();
+        for (const o of Array.isArray(paperOverridesData) ? paperOverridesData : []) {
+          paperOverrideById.set(o.paperId, o);
+        }
+        const unified: CatalogPaper[] = [];
+        for (const p of papersData) {
+          const paperOverride = paperOverrideById.get(p.id);
+          if (paperOverride?.hidden) continue;
           const override = overrideByKey.get(`${p.course}\u0000${canonicalSubjectKey(p.subject)}`);
+          if (override?.hidden) continue;
+          let paper = paperOverride?.pdfUrl ? { ...p, pdfUrl: paperOverride.pdfUrl } : p;
           if (override) {
-            return {
-              ...p,
+            paper = {
+              ...paper,
               originalSubject: p.subject,
               subject: override.displayName || p.subject,
+              course: override.courseOverride || p.course,
               semester: override.semesterOverride != null ? String(override.semesterOverride) : p.semester,
             };
           }
-          return p;
-        });
+          unified.push(paper);
+        }
         setPapers(unified);
         setLoading(false);
       })

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Gear, GraduationCap, NotePencil, SignOut } from "@phosphor-icons/react/dist/ssr";
+import { Files, Gear, GraduationCap, NotePencil, SignOut } from "@phosphor-icons/react/dist/ssr";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 
@@ -27,7 +27,7 @@ export default async function AdminDashboardLayout({
           DU PYQ Online
         </Link>
 
-        {/* Only Subject Notes + Settings are enabled for now — every other
+        {/* Only Subject Notes, Papers archive + Settings are enabled for now — every other
             admin section is parked (see middleware.ts's ADMIN_ALLOWED_PREFIXES)
             until it's actually needed again, so the sidebar only shows what
             actually works instead of dead links that redirect away. */}
@@ -38,6 +38,13 @@ export default async function AdminDashboardLayout({
           >
             <NotePencil size={16} />
             Subject Notes
+          </Link>
+          <Link
+            href="/admin/papers-archive"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <Files size={16} />
+            Papers archive
           </Link>
           <Link
             href="/admin/settings"
