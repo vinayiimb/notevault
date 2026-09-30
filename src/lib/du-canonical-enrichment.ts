@@ -18,13 +18,28 @@ type CanonicalData = {
 };
 
 let canonicalMappingData: CanonicalData | null = null;
-const mappingIndex = new Map<string, CanonicalMapping[]>();
 const canonicalProgrammes = new Set<string>();
 
 import canonicalRaw from "../../public/data/du-canonical-mapping.json";
 
-async function buildMappingIndex() {
-  if (mappingIndex.size > 0) return; // Already built
+// Each mapping's raw_subject normalized ONCE. The previous implementation
+// re-lowercased/trimmed/substring'd every one of the ~23k mappings for every
+// single paper (tens of millions of throwaway strings per archive build),
+// which outran the garbage collector and OOM-killed the whole server — one
+// visit to /pyq-notes was enough.
+type PreparedMapping = { mapping: CanonicalMapping; rawNorm: string; rawPrefix30: string };
+let prepared: PreparedMapping[] = [];
+const byUpc = new Map<string, PreparedMapping[]>();
+let indexBuilt = false;
+
+// The mapping file is static, so a given (subject, semester, upc) always
+// resolves to the same mapping — remembered so each distinct subject is
+// scanned at most once per process instead of once per paper per request.
+const matchMemo = new Map<string, CanonicalMapping | null>();
+
+function buildMappingIndex() {
+  if (indexBuilt) return;
+  indexBuilt = true;
 
   if (!canonicalMappingData) {
     try {
@@ -35,35 +50,57 @@ async function buildMappingIndex() {
     }
   }
 
-  const mappingsByKey = new Map<string, CanonicalMapping[]>();
+  prepared = canonicalMappingData.mappings.map((mapping) => {
+    const rawNorm = (mapping.raw_subject || "").toLowerCase().trim();
+    return { mapping, rawNorm, rawPrefix30: rawNorm.substring(0, 30) };
+  });
 
-  for (const mapping of canonicalMappingData.mappings) {
-    // Create multiple lookup keys for flexibility
-    // Key 1: normalized raw subject + canonical programme (loose matching)
-    const normalizedSubject = (mapping.raw_subject || "").toLowerCase().trim();
-    if (normalizedSubject) {
-      const key1 = `${normalizedSubject.substring(0, 50)}`;
-      const existing = mappingsByKey.get(key1) || [];
-      existing.push(mapping);
-      mappingsByKey.set(key1, existing);
+  for (const p of prepared) {
+    if (p.mapping.upc) {
+      const list = byUpc.get(p.mapping.upc);
+      if (list) list.push(p);
+      else byUpc.set(p.mapping.upc, [p]);
     }
+    canonicalProgrammes.add(p.mapping.canonical_programme);
+  }
+}
 
-    // Key 2: by UPC (most reliable)
-    if (mapping.upc) {
-      const key2 = `upc:${mapping.upc}`;
-      const existing = mappingsByKey.get(key2) || [];
-      existing.push(mapping);
-      mappingsByKey.set(key2, existing);
+// Same matching rules as before (UPC first, then two-way 30-char substring
+// overlap, preferring the same semester) — only the cost changed.
+function findCanonicalMappingSync(paper: CatalogPaper): CanonicalMapping | null {
+  buildMappingIndex();
+
+  const normalizedSubject = (paper.subject || "").toLowerCase().trim();
+  const memoKey = `${paper.upc ?? ""}\u0000${paper.semester ?? ""}\u0000${normalizedSubject}`;
+  const memoized = matchMemo.get(memoKey);
+  if (memoized !== undefined) return memoized;
+
+  let result: CanonicalMapping | null = null;
+
+  const upcMatches = paper.upc ? byUpc.get(paper.upc) : undefined;
+  if (upcMatches && upcMatches.length > 0) {
+    const prefix40 = normalizedSubject.substring(0, 40);
+    const bySubject = upcMatches.find((p) => p.rawNorm.includes(prefix40));
+    result = (bySubject ?? upcMatches[0]).mapping;
+  } else if (normalizedSubject.length > 3) {
+    const subjectPrefix30 = normalizedSubject.substring(0, 30);
+    let firstMatch: CanonicalMapping | null = null;
+    let sameSemester: CanonicalMapping | null = null;
+    for (const p of prepared) {
+      if (Math.min(normalizedSubject.length, p.rawNorm.length) < 5) continue;
+      if (normalizedSubject.includes(p.rawPrefix30) || p.rawNorm.includes(subjectPrefix30)) {
+        if (!firstMatch) firstMatch = p.mapping;
+        if (p.mapping.semester === paper.semester) {
+          sameSemester = p.mapping;
+          break;
+        }
+      }
     }
-
-    // Track canonical programmes
-    canonicalProgrammes.add(mapping.canonical_programme);
+    result = sameSemester ?? firstMatch;
   }
 
-  // Copy to module-level index
-  for (const [key, values] of mappingsByKey) {
-    mappingIndex.set(key, values);
-  }
+  matchMemo.set(memoKey, result);
+  return result;
 }
 
 /**
@@ -71,48 +108,7 @@ async function buildMappingIndex() {
  * Returns the mapping or null if no match found.
  */
 export async function findCanonicalMapping(paper: CatalogPaper) {
-  await buildMappingIndex();
-
-  // Try exact UPC match first (most reliable)
-  if (paper.upc && canonicalMappingData) {
-    const upCMatches = canonicalMappingData.mappings.filter((m) => m.upc === paper.upc);
-    if (upCMatches.length > 0) {
-      // Prefer matches that also match the raw subject name
-      const normalizedRawSubject = (paper.subject || "").toLowerCase().trim();
-      const bySubject = upCMatches.find(
-        (m) =>
-          (m.raw_subject || "").toLowerCase().trim().includes(normalizedRawSubject.substring(0, 40)),
-      );
-      return bySubject || upCMatches[0];
-    }
-  }
-
-  // Try matching by normalized subject name (substring match)
-  const normalizedSubject = (paper.subject || "").toLowerCase().trim();
-  if (normalizedSubject.length > 3 && canonicalMappingData) {
-    // Find mappings where raw_subject contains significant part of paper.subject
-    const matches = canonicalMappingData.mappings.filter((m) => {
-      const rawNorm = (m.raw_subject || "").toLowerCase().trim();
-      // Check if they have significant overlap
-      const minLength = Math.min(normalizedSubject.length, rawNorm.length);
-      if (minLength < 5) return false; // Too short to be reliable
-
-      // Check for substring match (either direction)
-      if (normalizedSubject.includes(rawNorm.substring(0, 30))) return true;
-      if (rawNorm.includes(normalizedSubject.substring(0, 30))) return true;
-
-      return false;
-    });
-
-    if (matches.length > 0) {
-      // Prefer match from same semester if available
-      const sameSemester = matches.find((m) => m.semester === paper.semester);
-      return sameSemester || matches[0];
-    }
-  }
-
-  // No match found
-  return null;
+  return findCanonicalMappingSync(paper);
 }
 
 /**
@@ -120,7 +116,11 @@ export async function findCanonicalMapping(paper: CatalogPaper) {
  * If no match is found, marks it as UNMATCHED.
  */
 export async function enrichPaperWithCanonical(paper: CatalogPaper): Promise<CatalogPaper> {
-  const mapping = await findCanonicalMapping(paper);
+  return enrichPaperSync(paper);
+}
+
+function enrichPaperSync(paper: CatalogPaper): CatalogPaper {
+  const mapping = findCanonicalMappingSync(paper);
 
   if (!mapping) {
     return {
@@ -145,15 +145,14 @@ export async function enrichPaperWithCanonical(paper: CatalogPaper): Promise<Cat
  * Enrich multiple papers in batch.
  */
 export async function enrichPapersWithCanonical(papers: CatalogPaper[]): Promise<CatalogPaper[]> {
-  await buildMappingIndex(); // Build index once for batch
-  return Promise.all(papers.map(enrichPaperWithCanonical));
+  return papers.map(enrichPaperSync);
 }
 
 /**
  * Get all canonical programmes in sorted order.
  */
 export async function getCanonicalProgrammes(): Promise<string[]> {
-  await buildMappingIndex();
+  buildMappingIndex();
   return Array.from(canonicalProgrammes).sort();
 }
 
@@ -161,7 +160,7 @@ export async function getCanonicalProgrammes(): Promise<string[]> {
  * Get metadata about the canonical mapping.
  */
 export async function getCanonicalMappingMetadata() {
-  await buildMappingIndex();
+  buildMappingIndex();
   return {
     totalMappings: canonicalMappingData?.mappings.length || 0,
     programmes: canonicalMappingData?.summary.programmes || 0,

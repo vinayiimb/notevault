@@ -91,8 +91,10 @@ function singleOfficialSemester(value: string | null) {
   return ROMAN_SEMESTERS[cleaned] ? String(ROMAN_SEMESTERS[cleaned]) : null;
 }
 
-async function applyOfficialFileMap(paper: CatalogPaper): Promise<CatalogPaper> {
-  const officialArchiveMap = await getOfficialArchiveMap();
+function applyOfficialFileMap(
+  paper: CatalogPaper,
+  officialArchiveMap: Map<string, ArchiveOfficialMapRow>,
+): CatalogPaper {
   const match = officialArchiveMap.get(paper.id);
   if (!match) return { ...paper, matchStatus: "Unmatched", matchConfidence: 0 };
 
@@ -180,7 +182,12 @@ async function validateSourceCatalog() {
   }
 }
 
-validateSourceCatalog();
+// Fire-and-forget integrity check at module load: must never reject
+// unhandled, because Node treats an unhandled rejection as fatal and would
+// take the whole server down over a data-shape warning.
+validateSourceCatalog().catch((err) => {
+  console.error(err instanceof Error ? err.message : err);
+});
 
 export const catalogIntegrity = {
   sourceRows: EXPECTED_SOURCE_ROWS,
@@ -374,7 +381,7 @@ function normalizeArchiveCourseName(course: string): string {
   return ARCHIVE_COURSE_ALIASES[lower] ?? trimmed;
 }
 
-export async function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
+async function buildRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
   const [catalog, readOnline, driveFiles, duQbPyp] = await Promise.all([
     getFullPyqCatalog(),
     getPyqArchiveIndex(),
@@ -465,17 +472,52 @@ function applyOverride(
   };
 }
 
+// Building the full archive (~30k papers) is the single most expensive thing
+// this server does. Before this cache, every visit to /pyq-notes and every
+// uncached /subjects/[id] rebuilt it from scratch — concurrent visitors each
+// built their own copy at the same time, which is what repeatedly OOM-killed
+// production. Now concurrent callers share one in-flight build, and the
+// result is reused for ARCHIVE_TTL_MS. Admin edits call
+// invalidateArchiveCache() so changes still show up immediately.
+const ARCHIVE_TTL_MS = 5 * 60 * 1000;
+type CacheEntry = { promise: Promise<CatalogPaper[]>; expires: number };
+let rawArchiveCache: CacheEntry | null = null;
+let unifiedArchiveCache: CacheEntry | null = null;
+
+function cached(entry: CacheEntry | null, build: () => Promise<CatalogPaper[]>, set: (e: CacheEntry | null) => void) {
+  if (entry && entry.expires > Date.now()) return entry.promise;
+  const promise = build();
+  const fresh: CacheEntry = { promise, expires: Date.now() + ARCHIVE_TTL_MS };
+  set(fresh);
+  // A failed build must not stay cached as a rejected promise.
+  promise.catch(() => {
+    if (rawArchiveCache === fresh) rawArchiveCache = null;
+    if (unifiedArchiveCache === fresh) unifiedArchiveCache = null;
+  });
+  return promise;
+}
+
+export function invalidateArchiveCache() {
+  rawArchiveCache = null;
+  unifiedArchiveCache = null;
+}
+
+export function getRawUnifiedPyqArchive(): Promise<CatalogPaper[]> {
+  return cached(rawArchiveCache, buildRawUnifiedPyqArchive, (e) => (rawArchiveCache = e));
+}
+
 // The public-facing archive: raw union with admin overrides layered on top.
-export async function getUnifiedPyqArchive(): Promise<CatalogPaper[]> {
-  const [papers, overrides] = await Promise.all([
+export function getUnifiedPyqArchive(): Promise<CatalogPaper[]> {
+  return cached(unifiedArchiveCache, buildUnifiedPyqArchive, (e) => (unifiedArchiveCache = e));
+}
+
+async function buildUnifiedPyqArchive(): Promise<CatalogPaper[]> {
+  const [papers, overrides, officialArchiveMap] = await Promise.all([
     getRawUnifiedPyqArchive(),
     getOverridesByKey(),
+    getOfficialArchiveMap(),
   ]);
-  const result = await Promise.all(papers.map(async (p) => {
-    const o = applyOverride(await applyOfficialFileMap(p), overrides);
-    return o;
-  }));
-  return result;
+  return papers.map((p) => applyOverride(applyOfficialFileMap(p, officialArchiveMap), overrides));
 }
 
 export async function isCatalogCourseSubject(course: string, subject: string) {
