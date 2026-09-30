@@ -60,9 +60,13 @@ export async function findPapersArchiveCourse(slug: string): Promise<string | nu
   return null;
 }
 
+// One row in the admin = one subject heading as students see it on /papers.
+// /papers groups papers by canonicalSubjectKey(displayed name), so subjects
+// combined under the same name collapse into a single group here too, and
+// every edit to the group is applied to all of its member subjects.
 export type PapersArchiveSubject = {
-  subjectKey: string;
-  originalName: string;
+  groupKey: string;
+  members: { subjectKey: string; originalName: string; paperCount: number }[];
   displayName: string;
   paperCount: number;
   editedPapers: number;
@@ -73,42 +77,61 @@ export type PapersArchiveSubject = {
   hasOverride: boolean;
 };
 
-export async function getPapersArchiveSubjects(course: string): Promise<PapersArchiveSubject[]> {
+async function loadCourseSubjects(course: string) {
   const papers = loadCatalog().filter((p) => p.course === course);
-  const [overrides, paperOverrides] = await Promise.all([
-    prisma.catalogSubjectOverride.findMany({ where: { course } }),
-    prisma.catalogPaperOverride.findMany({
-      where: { paperId: { in: papers.map((p) => p.id) } },
-      select: { paperId: true },
-    }),
-  ]);
+  const overrides = await prisma.catalogSubjectOverride.findMany({ where: { course } });
   const overrideByKey = new Map(overrides.map((o) => [o.subjectKey, o]));
+  const groupKeyOf = (p: CatalogPaper) => {
+    const subjectKey = canonicalSubjectKey(p.subject);
+    const name = overrideByKey.get(subjectKey)?.displayName || p.subject;
+    return { subjectKey, groupKey: canonicalSubjectKey(name) };
+  };
+  return { papers, overrideByKey, groupKeyOf };
+}
+
+export async function getPapersArchiveSubjects(course: string): Promise<PapersArchiveSubject[]> {
+  const { papers, overrideByKey, groupKeyOf } = await loadCourseSubjects(course);
+  const paperOverrides = await prisma.catalogPaperOverride.findMany({
+    where: { paperId: { in: papers.map((p) => p.id) } },
+    select: { paperId: true },
+  });
   const editedPaperIds = new Set(paperOverrides.map((o) => o.paperId));
 
-  const bySubject = new Map<string, { name: string; count: number; edited: number; semesters: Set<string> }>();
+  type Group = {
+    members: Map<string, { subjectKey: string; originalName: string; paperCount: number }>;
+    count: number;
+    edited: number;
+    semesters: Set<string>;
+  };
+  const groups = new Map<string, Group>();
   for (const p of papers) {
-    const key = canonicalSubjectKey(p.subject);
-    const entry = bySubject.get(key) ?? { name: p.subject, count: 0, edited: 0, semesters: new Set<string>() };
-    entry.count += 1;
-    if (editedPaperIds.has(p.id)) entry.edited += 1;
-    if (p.semester) entry.semesters.add(String(p.semester));
-    bySubject.set(key, entry);
+    const { subjectKey, groupKey } = groupKeyOf(p);
+    const group = groups.get(groupKey) ?? { members: new Map(), count: 0, edited: 0, semesters: new Set<string>() };
+    const member = group.members.get(subjectKey) ?? { subjectKey, originalName: p.subject, paperCount: 0 };
+    member.paperCount += 1;
+    group.members.set(subjectKey, member);
+    group.count += 1;
+    if (editedPaperIds.has(p.id)) group.edited += 1;
+    if (p.semester) group.semesters.add(String(p.semester));
+    groups.set(groupKey, group);
   }
 
-  return [...bySubject.entries()]
-    .map(([subjectKey, e]) => {
-      const o = overrideByKey.get(subjectKey);
+  return [...groups.entries()]
+    .map(([groupKey, g]) => {
+      const members = [...g.members.values()].sort((a, b) => a.originalName.localeCompare(b.originalName));
+      const memberOverrides = members.map((m) => overrideByKey.get(m.subjectKey));
+      const first = memberOverrides.find(Boolean);
       return {
-        subjectKey,
-        originalName: e.name,
-        displayName: o?.displayName || e.name,
-        paperCount: e.count,
-        editedPapers: e.edited,
-        semesters: [...e.semesters].sort(),
-        semesterOverride: o?.semesterOverride ?? null,
-        courseOverride: o?.courseOverride ?? null,
-        hidden: o?.hidden ?? false,
-        hasOverride: Boolean(o),
+        groupKey,
+        members,
+        displayName: first?.displayName || members[0].originalName,
+        paperCount: g.count,
+        editedPapers: g.edited,
+        semesters: [...g.semesters].sort(),
+        semesterOverride: first?.semesterOverride ?? null,
+        courseOverride: first?.courseOverride ?? null,
+        hidden: memberOverrides.every((o) => o?.hidden),
+        hasOverride: Boolean(first),
       };
     })
     .sort((a, b) => a.displayName.localeCompare(b.displayName));
@@ -122,19 +145,23 @@ export type PapersArchivePaper = {
   pdfUrl: string;
   note: string | null;
   college: string | null;
+  originalSubject: string;
   hidden: boolean;
   edited: boolean;
 };
 
-export async function getPapersArchiveSubjectPapers(course: string, subjectKey: string) {
-  const papers = loadCatalog().filter((p) => p.course === course && canonicalSubjectKey(p.subject) === subjectKey);
+export async function getPapersArchiveSubjectPapers(course: string, groupKey: string) {
+  const { papers: coursePapers, overrideByKey, groupKeyOf } = await loadCourseSubjects(course);
+  const papers = coursePapers.filter((p) => groupKeyOf(p).groupKey === groupKey);
   if (papers.length === 0) return null;
 
-  const [subjectOverride, paperOverrides] = await Promise.all([
-    prisma.catalogSubjectOverride.findUnique({ where: { course_subjectKey: { course, subjectKey } } }),
-    prisma.catalogPaperOverride.findMany({ where: { paperId: { in: papers.map((p) => p.id) } } }),
-  ]);
+  const paperOverrides = await prisma.catalogPaperOverride.findMany({
+    where: { paperId: { in: papers.map((p) => p.id) } },
+  });
   const overrideById = new Map(paperOverrides.map((o) => [o.paperId, o]));
+  const subjectOverrides = [...new Set(papers.map((p) => canonicalSubjectKey(p.subject)))].map((k) =>
+    overrideByKey.get(k),
+  );
 
   const rows: PapersArchivePaper[] = papers
     .map((p) => {
@@ -147,6 +174,7 @@ export async function getPapersArchiveSubjectPapers(course: string, subjectKey: 
         pdfUrl: o?.pdfUrl || p.pdfUrl,
         note: p.note ?? null,
         college: p.college ?? null,
+        originalSubject: p.subject,
         hidden: o?.hidden ?? false,
         edited: Boolean(o),
       };
@@ -154,8 +182,9 @@ export async function getPapersArchiveSubjectPapers(course: string, subjectKey: 
     .sort((a, b) => b.yearRange.localeCompare(a.yearRange));
 
   return {
-    subjectName: subjectOverride?.displayName || papers[0].subject,
-    subjectHidden: subjectOverride?.hidden ?? false,
+    subjectName: subjectOverrides.find(Boolean)?.displayName || papers[0].subject,
+    subjectHidden: subjectOverrides.every((o) => o?.hidden),
+    combined: subjectOverrides.length > 1,
     papers: rows,
   };
 }

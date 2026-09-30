@@ -12,15 +12,16 @@ import {
   resetPapersSubjectAction,
   updatePapersSubjectAction,
 } from "@/lib/papers-archive-actions";
+import { ArchiveFlash } from "@/components/admin/archive-flash";
 
 export default async function PapersArchiveCoursePage({
   params,
   searchParams,
 }: {
   params: Promise<{ courseSlug: string }>;
-  searchParams: Promise<{ q?: string }>;
+  searchParams: Promise<{ q?: string; ok?: string; err?: string }>;
 }) {
-  const [{ courseSlug }, { q = "" }] = await Promise.all([params, searchParams]);
+  const [{ courseSlug }, { q = "", ok, err }] = await Promise.all([params, searchParams]);
   const course = await findPapersArchiveCourse(courseSlug);
   if (!course) notFound();
 
@@ -31,7 +32,9 @@ export default async function PapersArchiveCoursePage({
   const query = q.trim().toLowerCase();
   const subjects = query
     ? allSubjects.filter(
-        (s) => s.displayName.toLowerCase().includes(query) || s.originalName.toLowerCase().includes(query),
+        (s) =>
+          s.displayName.toLowerCase().includes(query) ||
+          s.members.some((m) => m.originalName.toLowerCase().includes(query)),
       )
     : allSubjects;
   const totalPapers = allSubjects.reduce((n, s) => n + s.paperCount, 0);
@@ -51,6 +54,8 @@ export default async function PapersArchiveCoursePage({
         </p>
       </div>
 
+      <ArchiveFlash ok={ok} err={err} />
+
       <datalist id="papers-archive-courses">
         {courseNames.map((name) => (
           <option key={name} value={name} />
@@ -60,8 +65,9 @@ export default async function PapersArchiveCoursePage({
       <section className="rounded-2xl border border-border bg-surface p-5">
         <h2 className="font-medium">Combine subjects</h2>
         <p className="mt-1 text-sm text-muted">
-          Tick two or more subjects in the table below, then give the combined subject a name. Their papers
-          will show together under that name on /papers.
+          Tick two or more subjects in the table below (e.g. the same subject listed under different names),
+          then give the combined subject a name. All their papers will show together under that one heading
+          on /papers, and here as one row. Use Reset on the combined row to split it again.
         </p>
         <form id="merge-form" action={mergePapersSubjectsAction} className="mt-4 flex flex-wrap items-end gap-3">
           <input type="hidden" name="course" value={course} />
@@ -122,14 +128,14 @@ export default async function PapersArchiveCoursePage({
               const formId = `subject-${i}`;
               return (
                 <tr
-                  key={s.subjectKey}
+                  key={s.groupKey}
                   className={`border-b border-border/60 align-top last:border-0 ${s.hidden ? "bg-red-500/5" : ""}`}
                 >
                   <td className="px-3 py-3">
                     <input
                       type="checkbox"
-                      name="subjectKey"
-                      value={s.subjectKey}
+                      name="mergeKeys"
+                      value={s.members.map((m) => m.subjectKey).join("\n")}
                       form="merge-form"
                       aria-label={`Select ${s.displayName} to combine`}
                       className="mt-2 size-4 accent-accent"
@@ -139,8 +145,13 @@ export default async function PapersArchiveCoursePage({
                     <form id={formId} action={updatePapersSubjectAction}>
                       <input type="hidden" name="course" value={course} />
                       <input type="hidden" name="courseSlug" value={courseSlug} />
-                      <input type="hidden" name="subjectKey" value={s.subjectKey} />
-                      <input type="hidden" name="originalName" value={s.originalName} />
+                      <input type="hidden" name="currentName" value={s.displayName} />
+                      {s.members.map((m) => (
+                        <span key={m.subjectKey}>
+                          <input type="hidden" name="subjectKey" value={m.subjectKey} />
+                          <input type="hidden" name="originalName" value={m.originalName} />
+                        </span>
+                      ))}
                     </form>
                     <input
                       name="displayName"
@@ -148,8 +159,23 @@ export default async function PapersArchiveCoursePage({
                       defaultValue={s.displayName}
                       className="w-full min-w-56 rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
                     />
-                    {s.displayName !== s.originalName && (
-                      <p className="mt-1 text-[11px] text-muted">Originally: {s.originalName}</p>
+                    {s.members.length > 1 ? (
+                      <div className="mt-1.5 text-[11px] leading-4 text-muted">
+                        <span className="rounded-full bg-accent-soft px-1.5 py-0.5 font-bold text-accent">
+                          Combined · {s.members.length} subjects
+                        </span>
+                        <ul className="mt-1 list-inside list-disc">
+                          {s.members.map((m) => (
+                            <li key={m.subjectKey}>
+                              {m.originalName} ({m.paperCount})
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    ) : (
+                      s.displayName !== s.members[0].originalName && (
+                        <p className="mt-1 text-[11px] text-muted">Originally: {s.members[0].originalName}</p>
+                      )
                     )}
                   </td>
                   <td className="px-3 py-3">
@@ -187,7 +213,7 @@ export default async function PapersArchiveCoursePage({
                   </td>
                   <td className="px-3 py-3 text-right">
                     <Link
-                      href={`/admin/papers-archive/${courseSlug}/${encodeURIComponent(s.subjectKey)}`}
+                      href={`/admin/papers-archive/${courseSlug}/${encodeURIComponent(s.groupKey)}`}
                       className="mt-1.5 inline-block text-xs font-bold text-accent hover:underline"
                     >
                       {s.paperCount} →
@@ -209,9 +235,11 @@ export default async function PapersArchiveCoursePage({
                         <form action={resetPapersSubjectAction}>
                           <input type="hidden" name="course" value={course} />
                           <input type="hidden" name="courseSlug" value={courseSlug} />
-                          <input type="hidden" name="subjectKey" value={s.subjectKey} />
+                          {s.members.map((m) => (
+                            <input key={m.subjectKey} type="hidden" name="subjectKey" value={m.subjectKey} />
+                          ))}
                           <button type="submit" className="text-xs font-semibold text-red-500 hover:underline">
-                            Reset
+                            {s.members.length > 1 ? "Split" : "Reset"}
                           </button>
                         </form>
                       )}

@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ArrowSquareOut } from "@phosphor-icons/react/dist/ssr";
 import { findPapersArchiveCourse, getPapersArchiveSubjectPapers } from "@/lib/papers-archive-data";
 import { resetPaperAction, updatePaperAction } from "@/lib/papers-archive-actions";
+import { ArchiveFlash } from "@/components/admin/archive-flash";
 
 function decode(value: string) {
   try {
@@ -15,10 +16,12 @@ function decode(value: string) {
 
 export default async function PapersArchiveSubjectPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ courseSlug: string; subjectKey: string }>;
+  searchParams: Promise<{ ok?: string; err?: string }>;
 }) {
-  const { courseSlug, subjectKey: rawKey } = await params;
+  const [{ courseSlug, subjectKey: rawKey }, { ok, err }] = await Promise.all([params, searchParams]);
   const subjectKey = decode(rawKey);
   const course = await findPapersArchiveCourse(courseSlug);
   if (!course) notFound();
@@ -38,9 +41,12 @@ export default async function PapersArchiveSubjectPage({
         <p className="mt-1 text-sm text-muted">
           {data.papers.length} paper{data.papers.length === 1 ? "" : "s"}. Paste a new link to replace a broken
           one, or tick Hide to remove a single paper from /papers.
+          {data.combined && " This heading combines several subjects — the original subject of each paper is shown under its session."}
           {data.subjectHidden && " This whole subject is currently hidden from students."}
         </p>
       </div>
+
+      <ArchiveFlash ok={ok} err={err} />
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
         <table className="w-full min-w-[900px] text-left text-sm">
@@ -63,6 +69,7 @@ export default async function PapersArchiveSubjectPage({
                 >
                   <td className="px-3 py-3">
                     <p className="font-medium text-foreground">{p.yearRange}</p>
+                    {data.combined && <p className="text-[11px] font-semibold text-accent">{p.originalSubject}</p>}
                     {p.college && <p className="text-[11px] text-muted">{p.college}</p>}
                     {p.note && <p className="mt-0.5 max-w-xs text-[11px] leading-4 text-muted">{p.note}</p>}
                   </td>
@@ -71,6 +78,8 @@ export default async function PapersArchiveSubjectPage({
                     <form id={formId} action={updatePaperAction}>
                       <input type="hidden" name="paperId" value={p.id} />
                       <input type="hidden" name="courseSlug" value={courseSlug} />
+                      <input type="hidden" name="groupKey" value={subjectKey} />
+                      <input type="hidden" name="fromPapersPage" value="1" />
                       <input type="hidden" name="originalUrl" value={p.originalUrl} />
                     </form>
                     <div className="flex items-center gap-2">
@@ -120,6 +129,8 @@ export default async function PapersArchiveSubjectPage({
                         <form action={resetPaperAction}>
                           <input type="hidden" name="paperId" value={p.id} />
                           <input type="hidden" name="courseSlug" value={courseSlug} />
+                          <input type="hidden" name="groupKey" value={subjectKey} />
+                          <input type="hidden" name="fromPapersPage" value="1" />
                           <button type="submit" className="text-xs font-semibold text-red-500 hover:underline">
                             Reset
                           </button>
