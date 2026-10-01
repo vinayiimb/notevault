@@ -5,6 +5,7 @@ import Link from "next/link";
 import { DownloadSimple, SpeakerHigh, SpeakerX, Sparkle } from "@phosphor-icons/react/dist/ssr";
 import type { StructuredNote } from "@/lib/note-schema";
 import type { ThemeValues } from "@/lib/note-theme";
+import { downloadElementAsPdf } from "@/lib/notes-pdf";
 
 // Flattens a structured note into one plain-text block, in the same fixed
 // order it renders in — used by both the "Play audio" button and the
@@ -23,10 +24,22 @@ function flattenNote(note: StructuredNote): string {
   return parts.filter(Boolean).join("\n\n");
 }
 
-function buildPdf(note: StructuredNote) {
-  return Promise.resolve().then(() => {
-    alert("PDF generation is currently disabled on Cloudflare Workers.");
-  });
+// Same look-alike PDF as the markdown notes: snapshots the rendered note
+// (the [data-pdf-root] wrapper in notes-section.tsx) block by block.
+async function buildPdf(note: StructuredNote) {
+  const root = document.querySelector<HTMLElement>("[data-pdf-root]");
+  if (!root) return;
+  try {
+    await downloadElementAsPdf({
+      root,
+      blocks: ":scope > div > div > *",
+      filename: note.metadata.title,
+      footer: `${note.metadata.title} · dupyq.online`,
+    });
+  } catch (err) {
+    console.error(err);
+    alert("Couldn't create the PDF. Please try again.");
+  }
 }
 
 export function StructuredNoteExportBar({ note, theme }: { note: StructuredNote; theme: ThemeValues }) {

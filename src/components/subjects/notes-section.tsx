@@ -3,7 +3,6 @@ import { themeValuesToTokens, LEGACY_NOTES_THEME_TO_PRESET } from "@/lib/content
 import { findNotesLabTheme } from "@/lib/content/theme-presets";
 import { NotesReadingChrome } from "@/components/content/notes/reading-chrome";
 import { resolveNotesTheme } from "./notes-renderer";
-import { DownloadNotesButton } from "./download-notes-button";
 import { StructuredNoteRenderer } from "./structured-note-renderer";
 import { StructuredNoteExportBar } from "./structured-note-export-bar";
 import { StructuredNoteSchema } from "@/lib/note-schema";
@@ -46,6 +45,7 @@ export function NotesSection({
               <StructuredNoteExportBar note={parsed.data} theme={resolvedTheme} />
             </div>
             <div
+              data-pdf-root
               className="mt-3 overflow-hidden rounded-2xl border"
               style={{ borderColor: resolvedTheme.colors.border, backgroundColor: resolvedTheme.colors.background }}
             >
@@ -72,9 +72,6 @@ export function NotesSection({
   return (
     <div className="relative mt-4 ml-[50%] w-screen -translate-x-1/2 px-4 sm:px-6">
       <div className="mx-auto w-[95%] max-w-[1900px]">
-        <div className="flex justify-end">
-          <DownloadNotesButton content={content} title={subjectName} />
-        </div>
         <div className="mt-3">
           <NotesReadingChrome
             title={subjectName}

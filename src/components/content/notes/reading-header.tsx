@@ -1,7 +1,7 @@
 "use client";
 
 import { ContentSearch } from "./note-search";
-import { ContentPrintButton } from "./print-button";
+import { ContentDownloadButton } from "./download-button";
 import { ContentThemeSwitcher } from "./theme-switcher";
 import { ContentDarkModeToggle } from "./dark-mode-toggle";
 
@@ -19,7 +19,7 @@ export function ContentReadingHeader({ title, targetId }: { title: string; targe
         <p className="truncate text-sm font-semibold" style={{ color: "var(--nt-text)" }}>{title}</p>
         <div className="flex items-center gap-2">
           <ContentSearch targetId={targetId} />
-          <ContentPrintButton />
+          <ContentDownloadButton title={title} />
           <ContentDarkModeToggle />
           <ContentThemeSwitcher />
         </div>
