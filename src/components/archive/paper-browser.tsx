@@ -2,23 +2,14 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import {
-  ArrowLeft,
-  ArrowSquareOut,
-  CaretDown,
-  DownloadSimple,
-  FilePdf,
-  MagnifyingGlass,
-  X,
-} from "@phosphor-icons/react";
+import { ArrowSquareOut, DownloadSimple, FilePdf, Funnel, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { CopyButton } from "@/components/pyq/copy-button";
-import { NO_SEMESTER, semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
+import { semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
 
 // Data comes from small per-course files built by
 // scripts/build-papers-split.mjs — a visitor downloads only the course they
-// pick (tens of KB) instead of the whole 13MB archive, and a PDF is only
-// loaded once they click a paper.
+// pick (tens of KB) instead of the whole 13MB archive.
 type CourseIndexEntry = { course: string; slug: string; count: number };
 type SubjectOverride = {
   course: string;
@@ -31,15 +22,8 @@ type SubjectOverride = {
 type PaperOverride = { paperId: string; pdfUrl: string | null; hidden: boolean };
 type Overrides = { subjects: Map<string, SubjectOverride>; papers: Map<string, PaperOverride>; list: SubjectOverride[] };
 
-const ALL_SEMESTERS = "all";
-
 function yearStart(value: string) {
   return Number(value.match(/\d{4}/)?.[0] ?? 0);
-}
-
-function semesterSortKey(label: string) {
-  if (label === NO_SEMESTER) return 99;
-  return Number(label.match(/\d+/)?.[0] ?? 99);
 }
 
 // Google Drive's "view" links (what's actually stored on drive-sourced
@@ -92,13 +76,6 @@ function looseMatch(haystack: string, needle: string) {
   return squash(haystack).includes(squash(needle));
 }
 
-function toggle(set: Set<string>, value: string): Set<string> {
-  const next = new Set(set);
-  if (next.has(value)) next.delete(value);
-  else next.add(value);
-  return next;
-}
-
 async function fetchJson<T>(url: string, fallback: T): Promise<T> {
   try {
     const res = await fetch(url);
@@ -148,6 +125,11 @@ function applyOverrides(raw: CatalogPaper[], overrides: Overrides): CatalogPaper
 
 type SearchHit = { course: string; key: string; label: string; count: number };
 
+type Tab = "course" | "subject";
+
+// Layout: course/subject picker on the left (~30%), paper viewer on the
+// right. A PDF is only loaded once the student clicks a year — never
+// automatically.
 export function PaperBrowser() {
   const router = useRouter();
   const pathname = usePathname();
@@ -157,15 +139,14 @@ export function PaperBrowser() {
   const [overrides, setOverrides] = useState<Overrides | null>(null);
   const [course, setCourse] = useState<string | null>(null);
   const [loadedCourses, setLoadedCourses] = useState<Record<string, CatalogPaper[]>>({});
-  const [semester, setSemester] = useState<string | null>(null);
-  const [subjectKeys, setSubjectKeys] = useState<Set<string>>(new Set());
+  const [subjectKey, setSubjectKey] = useState<string | null>(null);
   const [openPaperId, setOpenPaperId] = useState<string | null>(null);
-  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [activeTab, setActiveTab] = useState<Tab>("course");
   const [courseSearch, setCourseSearch] = useState("");
   const [subjectSearch, setSubjectSearch] = useState("");
-  const [query, setQuery] = useState("");
   const [searchRows, setSearchRows] = useState<[string, string, number][] | null>(null);
   const [initialized, setInitialized] = useState(false);
+  const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const inFlight = useRef(new Set<string>());
 
   // 1. Tiny course list + admin overrides — nothing else loads up front.
@@ -179,24 +160,27 @@ export function PaperBrowser() {
         setIndex(idx);
         setOverrides(ov);
         const requestedCourse = searchParams.get("course");
+        let matched: string | null = null;
         if (requestedCourse) {
           const q = requestedCourse.trim().toLowerCase();
           const match =
             idx.find((c) => c.course.toLowerCase() === q) ??
             idx.find((c) => c.course.toLowerCase().includes(q) || q.includes(c.course.toLowerCase()));
-          if (match) setCourse(match.course);
+          if (match) {
+            matched = match.course;
+            setCourse(match.course);
+            setActiveTab("subject");
+          }
         }
-        const sem = searchParams.get("sem");
-        if (sem) setSemester(sem);
         const subject = searchParams.get("subject");
-        if (subject) {
-          setSubjectKeys(new Set([subject]));
-          setExpanded(new Set([subject]));
-        }
+        if (subject && matched) setSubjectKey(subject);
         const paper = searchParams.get("paper");
-        if (paper) setOpenPaperId(paper);
+        if (paper && matched) setOpenPaperId(paper);
         const q = searchParams.get("q");
-        if (q && !requestedCourse) setQuery(q);
+        if (q && !matched) {
+          setSubjectSearch(q);
+          setActiveTab("subject");
+        }
         setInitialized(true);
       },
     );
@@ -206,14 +190,6 @@ export function PaperBrowser() {
     // Only on mount: later URL changes are our own router.replace calls.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  const courses = useMemo(() => {
-    if (!index) return [];
-    const counts = new Map(index.map((c) => [c.course, c.count]));
-    return [...counts.entries()]
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [index]);
 
   // 2. Load only the chosen course (plus any course an admin moved a
   // subject in from). Each course is fetched once per visit.
@@ -235,15 +211,16 @@ export function PaperBrowser() {
   }, [course, index, overrides, loadedCourses]);
   const coursePapers = course ? loadedCourses[course] ?? null : null;
 
-  // Header search: fetch the subject index only when someone searches.
+  // Searching subjects before picking a course searches every course; the
+  // subject index for that is fetched only when someone actually types.
+  const globalSearch = !course && subjectSearch.trim().length >= 2;
   useEffect(() => {
-    if (!query || searchRows) return;
+    if (!globalSearch || searchRows) return;
     fetchJson<[string, string, number][]>("/data/papers/search-index.json", []).then(setSearchRows);
-  }, [query, searchRows]);
+  }, [globalSearch, searchRows]);
 
   const searchHits = useMemo<SearchHit[]>(() => {
-    const q = query.trim().toLowerCase();
-    if (!q || !searchRows || !overrides) return [];
+    if (!globalSearch || !searchRows || !overrides) return [];
     const groups = new Map<string, { course: string; key: string; labels: string[]; count: number }>();
     for (const [rowCourse, subject, count] of searchRows) {
       const o = overrides.subjects.get(`${rowCourse}\u0000${canonicalSubjectKey(subject)}`);
@@ -259,10 +236,10 @@ export function PaperBrowser() {
     }
     return [...groups.values()]
       .map((g) => ({ course: g.course, key: g.key, label: preferredSubjectLabel(g.labels), count: g.count }))
-      .filter((h) => looseMatch(h.label, q) || looseMatch(h.course, q))
+      .filter((h) => looseMatch(h.label, subjectSearch))
       .sort((a, b) => b.count - a.count)
       .slice(0, 80);
-  }, [query, searchRows, overrides]);
+  }, [globalSearch, searchRows, overrides, subjectSearch]);
 
   // Keep the address bar shareable.
   useEffect(() => {
@@ -270,34 +247,22 @@ export function PaperBrowser() {
     const params = new URLSearchParams(searchParams.toString());
     const set = (k: string, v: string | null) => (v ? params.set(k, v) : params.delete(k));
     set("course", course);
-    set("sem", semester);
-    set("subject", subjectKeys.size === 1 ? [...subjectKeys][0] : null);
+    set("subject", subjectKey);
     set("paper", openPaperId);
-    set("q", course ? null : query || null);
+    params.delete("sem");
+    params.delete("q");
     const next = params.toString();
     if (next !== searchParams.toString()) router.replace(`${pathname}?${next}`, { scroll: false });
-  }, [initialized, course, semester, subjectKeys, openPaperId, query, pathname, router, searchParams]);
+  }, [initialized, course, subjectKey, openPaperId, pathname, router, searchParams]);
 
-  const semesters = useMemo(() => {
-    const counts = new Map<string, number>();
-    for (const p of coursePapers ?? []) {
-      const label = semesterLabel(p);
-      counts.set(label, (counts.get(label) ?? 0) + 1);
-    }
-    return [...counts.entries()]
-      .map(([label, count]) => ({ label, count }))
-      .sort((a, b) => semesterSortKey(a.label) - semesterSortKey(b.label));
-  }, [coursePapers]);
-
-  const inSemester = useMemo(() => {
-    if (!coursePapers) return [];
-    if (!semester || semester === ALL_SEMESTERS) return coursePapers;
-    return coursePapers.filter((p) => semesterLabel(p) === semester);
-  }, [coursePapers, semester]);
+  const courses = useMemo(
+    () => (index ?? []).filter((c) => looseMatch(c.course, courseSearch)),
+    [index, courseSearch],
+  );
 
   const subjects = useMemo(() => {
     const map = new Map<string, { labels: string[]; papers: CatalogPaper[] }>();
-    for (const p of inSemester) {
+    for (const p of coursePapers ?? []) {
       const key = canonicalSubjectKey(p.subject);
       const entry = map.get(key) ?? { labels: [], papers: [] };
       entry.labels.push(p.subject);
@@ -308,342 +273,370 @@ export function PaperBrowser() {
       .map(([key, { labels, papers }]) => ({
         key,
         label: preferredSubjectLabel(labels),
-        papers: papers.sort((a, b) => yearStart(b.yearRange) - yearStart(a.yearRange) || cleanNote(a).localeCompare(cleanNote(b))),
+        papers: papers.sort(
+          (a, b) => yearStart(b.yearRange) - yearStart(a.yearRange) || cleanNote(a).localeCompare(cleanNote(b)),
+        ),
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [inSemester]);
+  }, [coursePapers]);
 
-  const visibleSubjects = useMemo(() => {
-    return subjects.filter(
-      (s) => (subjectKeys.size === 0 || subjectKeys.has(s.key)) && looseMatch(s.label, subjectSearch),
-    );
-  }, [subjects, subjectKeys, subjectSearch]);
-
-  const openPaper = useMemo(
-    () => (openPaperId ? coursePapers?.find((p) => p.id === openPaperId) ?? null : null),
-    [coursePapers, openPaperId],
+  const visibleSubjects = useMemo(
+    () => subjects.filter((s) => looseMatch(s.label, subjectSearch)),
+    [subjects, subjectSearch],
   );
-  const openPaperSiblings = useMemo(() => {
-    if (!openPaper) return [];
-    const key = canonicalSubjectKey(openPaper.subject);
-    return subjects.find((s) => s.key === key)?.papers ?? [];
-  }, [openPaper, subjects]);
+  const subject = subjects.find((s) => s.key === subjectKey) ?? null;
+  const openPaper = subject?.papers.find((p) => p.id === openPaperId) ?? null;
 
-  // A subject chosen via search/deep link skips the semester step.
-  const needsSemester = Boolean(course) && !semester && subjectKeys.size === 0;
-
-  function pickCourse(name: string | null) {
-    setCourse(name);
-    setSemester(null);
-    setSubjectKeys(new Set());
+  function pickCourse(name: string) {
+    const next = name === course ? null : name;
+    setCourse(next);
+    setSubjectKey(null);
     setOpenPaperId(null);
-    setExpanded(new Set());
     setSubjectSearch("");
+    if (next) setActiveTab("subject");
   }
-  function pickSemester(label: string) {
-    setSemester(label);
-    setSubjectKeys(new Set());
+  function pickSubject(key: string) {
+    setSubjectKey(key === subjectKey ? null : key);
     setOpenPaperId(null);
-    setExpanded(new Set());
+    setIsMobileFilterOpen(false);
   }
   function pickSearchHit(hit: SearchHit) {
-    setQuery("");
     setCourse(hit.course);
-    setSemester(ALL_SEMESTERS);
-    setSubjectKeys(new Set([hit.key]));
-    setExpanded(new Set([hit.key]));
+    setSubjectKey(hit.key);
     setOpenPaperId(null);
+    setSubjectSearch("");
+    setIsMobileFilterOpen(false);
   }
-  function openPaperView(id: string) {
-    setOpenPaperId(id);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+  function clearAll() {
+    setCourse(null);
+    setSubjectKey(null);
+    setOpenPaperId(null);
+    setSubjectSearch("");
+    setActiveTab("course");
   }
-
-  const totalPapers = index?.reduce((n, c) => n + c.count, 0) ?? 0;
 
   if (!index || !overrides) {
-    return <div className="h-72 animate-pulse rounded-2xl border border-border bg-surface" />;
+    return (
+      <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(280px,30%)_1fr]">
+        <div className="h-[600px] animate-pulse rounded-2xl border border-border bg-surface p-4" />
+        <div className="hidden h-[600px] animate-pulse rounded-2xl border border-border bg-surface p-6 lg:block" />
+      </div>
+    );
   }
 
-  return (
-    <div className="mx-auto w-full max-w-5xl space-y-4">
-      <Breadcrumbs
-        course={course}
-        semester={semester}
-        onAllCourses={() => pickCourse(null)}
-        onSemesters={() => {
-          setSemester(null);
-          setSubjectKeys(new Set());
-          setOpenPaperId(null);
-        }}
-      />
+  const activeCount = (course ? 1 : 0) + (subjectKey ? 1 : 0);
 
-      {/* ── Paper viewer: only mounts after the student clicks a paper ── */}
-      {openPaperId && coursePapers && (
-        openPaper ? (
-          <PaperViewer
-            paper={openPaper}
-            siblings={openPaperSiblings}
-            onSelect={setOpenPaperId}
-            onClose={() => setOpenPaperId(null)}
+  return (
+    <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(280px,30%)_1fr]">
+      {/* Mobile: filters open as a full-screen sheet */}
+      <div className="lg:hidden">
+        <button
+          type="button"
+          onClick={() => setIsMobileFilterOpen(true)}
+          className="flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3.5 text-left text-sm font-semibold text-foreground shadow-sm transition hover:bg-surface-muted"
+        >
+          <Funnel size={18} weight="bold" className="shrink-0 text-muted" />
+          <span className="min-w-0 flex-1 truncate">
+            {course ? (subject ? `${course} · ${subject.label}` : course) : "Choose course & subject"}
+          </span>
+          {activeCount > 0 && (
+            <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white">
+              {activeCount}
+            </span>
+          )}
+        </button>
+      </div>
+
+      <aside
+        className={`fixed inset-0 z-50 flex-col bg-background p-4 sm:p-6 lg:sticky lg:top-4 lg:z-auto lg:self-start lg:flex lg:h-[calc(100vh-7.5rem)] lg:bg-transparent lg:p-0 ${
+          isMobileFilterOpen ? "flex" : "hidden"
+        }`}
+      >
+        <div className="mb-4 flex items-center justify-between lg:mb-2.5">
+          <h2 className="text-lg font-bold tracking-tight text-foreground lg:text-sm">Filters</h2>
+          <div className="flex items-center gap-4">
+            {activeCount > 0 && (
+              <button
+                type="button"
+                onClick={clearAll}
+                className="text-xs font-semibold text-accent transition hover:text-accent-hover hover:underline"
+              >
+                Clear all ({activeCount})
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setIsMobileFilterOpen(false)}
+              aria-label="Close filters"
+              className="flex items-center justify-center rounded-full bg-surface-muted p-1.5 text-foreground lg:hidden"
+            >
+              <X size={16} weight="bold" />
+            </button>
+          </div>
+        </div>
+
+        <div className="flex rounded-xl border border-border/80 bg-surface-muted/80 p-1 text-sm shadow-2xs">
+          <TabButton active={activeTab === "course"} onClick={() => setActiveTab("course")} label="Course" count={course ? 1 : 0} />
+          <TabButton active={activeTab === "subject"} onClick={() => setActiveTab("subject")} label="Subject" count={subjectKey ? 1 : 0} />
+        </div>
+
+        <div className="mt-2.5 flex min-h-0 flex-1 flex-col rounded-2xl border border-border bg-surface p-3 shadow-2xs">
+          {activeTab === "course" && (
+            <FilterList
+              searchPlaceholder="Search course, e.g. bcom hons…"
+              search={courseSearch}
+              onSearch={setCourseSearch}
+              total={courses.length}
+              empty={courses.length === 0}
+            >
+              {courses.map((c) => (
+                <FilterCheckbox
+                  key={c.course}
+                  checked={course === c.course}
+                  label={c.course}
+                  count={c.count}
+                  onClick={() => pickCourse(c.course)}
+                />
+              ))}
+            </FilterList>
+          )}
+
+          {activeTab === "subject" &&
+            (course ? (
+              <FilterList
+                searchPlaceholder="Search subject…"
+                search={subjectSearch}
+                onSearch={setSubjectSearch}
+                total={visibleSubjects.length}
+                empty={Boolean(coursePapers) && visibleSubjects.length === 0}
+              >
+                {!coursePapers ? (
+                  <ListSkeleton />
+                ) : (
+                  visibleSubjects.map((s) => (
+                    <FilterCheckbox
+                      key={s.key}
+                      checked={subjectKey === s.key}
+                      label={s.label}
+                      count={s.papers.length}
+                      onClick={() => pickSubject(s.key)}
+                    />
+                  ))
+                )}
+              </FilterList>
+            ) : (
+              <FilterList
+                searchPlaceholder="Search any subject…"
+                search={subjectSearch}
+                onSearch={setSubjectSearch}
+                total={searchHits.length}
+                empty={globalSearch && Boolean(searchRows) && searchHits.length === 0}
+              >
+                {!globalSearch ? (
+                  <p className="px-2.5 py-1.5 text-xs text-muted">
+                    Pick a course first, or type a subject name to search every course.
+                  </p>
+                ) : !searchRows ? (
+                  <ListSkeleton />
+                ) : (
+                  searchHits.map((h) => (
+                    <button
+                      key={`${h.course}-${h.key}`}
+                      type="button"
+                      onClick={() => pickSearchHit(h)}
+                      className="flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left transition hover:bg-surface-muted"
+                    >
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-xs font-medium text-foreground sm:text-sm">{h.label}</span>
+                        <span className="block truncate text-[11px] text-muted">{h.course}</span>
+                      </span>
+                      <span className="shrink-0 text-[11px] text-muted">{h.count}</span>
+                    </button>
+                  ))
+                )}
+              </FilterList>
+            ))}
+        </div>
+      </aside>
+
+      <main className="min-w-0">
+        {!course ? (
+          <Placeholder
+            title="Select your course"
+            text="Pick a course on the left, then a subject — its question papers will show here."
+            onMobilePick={() => setIsMobileFilterOpen(true)}
+          />
+        ) : !coursePapers ? (
+          <div className="h-[450px] animate-pulse rounded-2xl border border-border bg-surface" />
+        ) : !subject ? (
+          <Placeholder
+            title="Now pick a subject"
+            text={`${course} has ${subjects.length} subjects. Choose one on the left to see its papers.`}
+            onMobilePick={() => {
+              setActiveTab("subject");
+              setIsMobileFilterOpen(true);
+            }}
           />
         ) : (
-          <EmptyState title="That paper isn't available any more" action="Back to papers" onAction={() => setOpenPaperId(null)} />
-        )
-      )}
-
-      {!course && query && (
-        <Panel step="Search" title={`Subjects matching “${query}”`}>
-          <button
-            type="button"
-            onClick={() => setQuery("")}
-            className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
-          >
-            <X size={12} weight="bold" /> Clear search and pick a course instead
-          </button>
-          {!searchRows ? (
-            <ListSkeleton />
-          ) : searchHits.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted">No subject matches “{query}”.</p>
-          ) : (
-            <div className="divide-y divide-border/60">
-              {searchHits.map((h) => (
-                <button
-                  key={`${h.course}-${h.key}`}
-                  type="button"
-                  onClick={() => pickSearchHit(h)}
-                  className="flex w-full items-center justify-between gap-3 px-1 py-2.5 text-left transition hover:bg-surface-muted"
-                >
-                  <span className="min-w-0">
-                    <span className="block truncate text-sm font-semibold text-foreground">{h.label}</span>
-                    <span className="block truncate text-xs text-muted">{h.course}</span>
-                  </span>
-                  <span className="shrink-0 text-xs font-semibold text-muted">{h.count} papers</span>
-                </button>
-              ))}
-            </div>
-          )}
-        </Panel>
-      )}
-
-      {/* ── Step 1: course ── */}
-      {!course && !query && (
-        <Panel step="Step 1 of 2" title="Choose your course" subtitle={`${totalPapers.toLocaleString("en-IN")} papers across ${courses.length} DU programmes`}>
-          <SearchInput value={courseSearch} onChange={setCourseSearch} placeholder="Search course, e.g. B.Com (Hons)…" />
-          <div className="mt-3 grid max-h-[60vh] grid-cols-1 gap-1.5 overflow-y-auto pr-1 sm:grid-cols-2 [scrollbar-width:thin]">
-            {courses
-              .filter((c) => looseMatch(c.name, courseSearch))
-              .map((c) => (
-                <button
-                  key={c.name}
-                  type="button"
-                  onClick={() => pickCourse(c.name)}
-                  className="flex items-center justify-between gap-2 rounded-xl border border-border bg-surface px-3 py-2.5 text-left text-sm transition hover:border-accent hover:bg-accent-soft"
-                >
-                  <span className="min-w-0 truncate font-medium text-foreground" title={c.name}>
-                    {c.name}
-                  </span>
-                  <span className="shrink-0 text-[11px] text-muted">{c.count}</span>
-                </button>
-              ))}
-          </div>
-        </Panel>
-      )}
-
-      {course && !coursePapers && <ListSkeleton />}
-
-      {/* ── Step 2: semester ── */}
-      {course && coursePapers && needsSemester && (
-        <Panel step="Step 2 of 2" title="Choose semester" subtitle={course}>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-            {semesters.map((s) => (
-              <button
-                key={s.label}
-                type="button"
-                onClick={() => pickSemester(s.label)}
-                className="rounded-xl border border-border bg-surface px-3 py-3 text-left transition hover:border-accent hover:bg-accent-soft"
-              >
-                <span className="block text-sm font-bold text-foreground">{s.label}</span>
-                <span className="text-[11px] text-muted">{s.count} papers</span>
-              </button>
-            ))}
-            <button
-              type="button"
-              onClick={() => pickSemester(ALL_SEMESTERS)}
-              className="rounded-xl border border-dashed border-border px-3 py-3 text-left transition hover:border-accent hover:bg-accent-soft"
-            >
-              <span className="block text-sm font-bold text-foreground">All semesters</span>
-              <span className="text-[11px] text-muted">{coursePapers.length} papers</span>
-            </button>
-          </div>
-        </Panel>
-      )}
-
-      {/* ── Papers list: subjects → papers; nothing loads until clicked ── */}
-      {course && coursePapers && !needsSemester && !openPaperId && (
-        <Panel
-          step={semester === ALL_SEMESTERS || !semester ? "All semesters" : semester}
-          title={subjectKeys.size === 1 ? visibleSubjects[0]?.label ?? "Papers" : "Pick a paper to open"}
-          subtitle={`${course} · ${visibleSubjects.length} subject${visibleSubjects.length === 1 ? "" : "s"}`}
-        >
-          <div className="mb-3 flex flex-wrap items-center gap-2">
-            {semesters.length > 1 && (
-              <div className="flex flex-wrap gap-1.5">
-                {[{ label: ALL_SEMESTERS, count: coursePapers.length }, ...semesters].map((s) => (
-                  <button
-                    key={s.label}
-                    type="button"
-                    onClick={() => pickSemester(s.label)}
-                    className={`rounded-full px-3 py-1 text-xs font-semibold transition ${
-                      (semester ?? ALL_SEMESTERS) === s.label
-                        ? "bg-accent text-white"
-                        : "bg-surface-muted text-muted hover:text-foreground"
-                    }`}
-                  >
-                    {s.label === ALL_SEMESTERS ? "All" : s.label.replace("Semester ", "Sem ")}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-          {subjectKeys.size > 0 ? (
-            <button
-              type="button"
-              onClick={() => setSubjectKeys(new Set())}
-              className="mb-3 inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
-            >
-              <X size={12} weight="bold" /> Show all subjects in this {semester && semester !== ALL_SEMESTERS ? "semester" : "course"}
-            </button>
-          ) : (
-            subjects.length > 8 && (
-              <div className="mb-3">
-                <SearchInput value={subjectSearch} onChange={setSubjectSearch} placeholder="Search subject…" />
-              </div>
-            )
-          )}
-
-          {visibleSubjects.length === 0 ? (
-            <p className="py-6 text-center text-sm text-muted">No papers here yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {visibleSubjects.map((s) => {
-                const isOpen = expanded.has(s.key) || visibleSubjects.length === 1;
-                return (
-                  <div key={s.key} className="overflow-hidden rounded-xl border border-border bg-surface">
-                    <button
-                      type="button"
-                      onClick={() => setExpanded((e) => toggle(e, s.key))}
-                      aria-expanded={isOpen}
-                      className="flex w-full items-center justify-between gap-3 px-3.5 py-3 text-left transition hover:bg-surface-muted"
-                    >
-                      <span className="min-w-0 text-sm font-semibold text-foreground">{s.label}</span>
-                      <span className="flex shrink-0 items-center gap-2 text-xs text-muted">
-                        {s.papers.length} paper{s.papers.length === 1 ? "" : "s"}
-                        <CaretDown size={14} weight="bold" className={`transition ${isOpen ? "rotate-180" : ""}`} />
-                      </span>
-                    </button>
-                    {isOpen && (
-                      <ul className="divide-y divide-border/60 border-t border-border">
-                        {s.papers.map((p) => (
-                          <PaperRow key={p.id} paper={p} onOpen={() => openPaperView(p.id)} />
-                        ))}
-                      </ul>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </Panel>
-      )}
+          <PaperPanel
+            course={course}
+            subjectLabel={subject.label}
+            papers={subject.papers}
+            openPaper={openPaper}
+            onOpen={setOpenPaperId}
+          />
+        )}
+      </main>
     </div>
   );
 }
 
-function Breadcrumbs({
+function Placeholder({ title, text, onMobilePick }: { title: string; text: string; onMobilePick: () => void }) {
+  return (
+    <div className="flex h-[450px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface/50 p-6 text-center">
+      <FilePdf size={32} weight="duotone" className="text-accent" />
+      <p className="text-sm font-semibold text-foreground">{title}</p>
+      <p className="max-w-sm text-xs text-muted">{text}</p>
+      <button
+        type="button"
+        onClick={onMobilePick}
+        className="mt-2 rounded-lg bg-accent px-3.5 py-2 text-xs font-bold text-white shadow-sm transition hover:bg-accent-hover lg:hidden"
+      >
+        Choose now
+      </button>
+    </div>
+  );
+}
+
+function PaperPanel({
   course,
-  semester,
-  onAllCourses,
-  onSemesters,
+  subjectLabel,
+  papers,
+  openPaper,
+  onOpen,
 }: {
-  course: string | null;
-  semester: string | null;
-  onAllCourses: () => void;
-  onSemesters: () => void;
-}) {
-  if (!course) return null;
-  return (
-    <nav className="flex flex-wrap items-center gap-1.5 text-xs font-semibold text-muted">
-      <button type="button" onClick={onAllCourses} className="inline-flex items-center gap-1 hover:text-accent">
-        <ArrowLeft size={12} weight="bold" /> All courses
-      </button>
-      <span>/</span>
-      <button type="button" onClick={onSemesters} className="max-w-[60vw] truncate hover:text-accent">
-        {course}
-      </button>
-      {semester && (
-        <>
-          <span>/</span>
-          <span className="text-foreground">{semester === ALL_SEMESTERS ? "All semesters" : semester}</span>
-        </>
-      )}
-    </nav>
-  );
-}
-
-function Panel({
-  step,
-  title,
-  subtitle,
-  children,
-}: {
-  step: string;
-  title: string;
-  subtitle?: string;
-  children: React.ReactNode;
+  course: string;
+  subjectLabel: string;
+  papers: CatalogPaper[];
+  openPaper: CatalogPaper | null;
+  onOpen: (id: string) => void;
 }) {
   return (
-    <section className="rounded-2xl border border-border bg-surface p-4 shadow-2xs sm:p-5">
-      <p className="text-[11px] font-bold uppercase tracking-wider text-accent">{step}</p>
-      <h2 className="mt-1 text-lg font-bold leading-snug text-foreground sm:text-xl">{title}</h2>
-      {subtitle && <p className="mt-0.5 text-xs text-muted sm:text-sm">{subtitle}</p>}
-      <div className="mt-4">{children}</div>
-    </section>
-  );
-}
+    <>
+      <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 shadow-2xs sm:p-5">
+        <div className="min-w-0 flex-1">
+          <span className="inline-block rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent">
+            {course}
+          </span>
+          <h2 className="mt-1.5 text-lg font-bold leading-snug text-foreground sm:text-xl">{subjectLabel}</h2>
+          <p className="mt-1 text-xs text-muted sm:text-sm">
+            {openPaper ? (
+              <>
+                {semesterLabel(openPaper)} · <span className="font-medium text-foreground">{openPaper.yearRange}</span>
+                {cleanNote(openPaper) && ` · ${cleanNote(openPaper)}`}
+              </>
+            ) : (
+              `${papers.length} paper${papers.length === 1 ? "" : "s"} — choose a year below to open one`
+            )}
+          </p>
+        </div>
+        {openPaper && (
+          <div className="flex shrink-0 items-center gap-2">
+            <CopyButton
+              text={typeof window === "undefined" ? "" : window.location.href}
+              label="Copy link"
+              className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted shadow-2xs transition hover:border-accent hover:text-accent"
+            />
+            <a
+              href={openPaper.pdfUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted shadow-2xs transition hover:border-accent hover:text-accent"
+            >
+              <ArrowSquareOut size={14} weight="bold" />
+              <span className="hidden sm:inline">Open in new tab</span>
+            </a>
+            <a
+              href={openPaper.pdfUrl}
+              download
+              className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-bold text-brand-foreground shadow-2xs transition hover:bg-brand-hover"
+            >
+              <DownloadSimple size={14} weight="bold" />
+              <span>Download</span>
+            </a>
+          </div>
+        )}
+      </div>
 
-function SearchInput({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder: string }) {
-  return (
-    <div className="relative">
-      <MagnifyingGlass size={14} className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-muted" />
-      <input
-        type="text"
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={placeholder}
-        className="w-full rounded-xl border border-border bg-surface py-2.5 pl-9 pr-3 text-sm text-foreground outline-none focus:border-accent"
-      />
-    </div>
+      {/* Year buttons — clicking one is what loads a PDF */}
+      <div className="mt-3.5 flex flex-wrap items-center gap-2">
+        <span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-muted">Years:</span>
+        {papers.map((p) => (
+          <button
+            key={p.id}
+            type="button"
+            onClick={() => onOpen(p.id)}
+            className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+              p.id === openPaper?.id
+                ? "bg-accent text-white shadow-2xs ring-2 ring-accent/20"
+                : "bg-surface-muted text-muted hover:bg-border/60 hover:text-foreground"
+            }`}
+          >
+            {p.yearRange}
+            {cleanNote(p) && <span className="max-w-32 truncate text-[11px] opacity-75">{cleanNote(p)}</span>}
+            <CollegeBadges paper={p} />
+          </button>
+        ))}
+      </div>
+
+      <div className="mt-3.5 overflow-hidden rounded-2xl border border-border bg-surface shadow-xs">
+        {!openPaper ? (
+          <div className="flex h-[60vh] min-h-[420px] flex-col items-center justify-center gap-2 bg-surface-muted/40 px-6 text-center">
+            <FilePdf size={36} weight="duotone" className="text-accent" />
+            <p className="text-sm font-semibold text-foreground">Choose a year above to open the paper</p>
+            <p className="text-xs text-muted">The PDF loads only when you pick one.</p>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center justify-between border-b border-border bg-surface-muted/60 px-3.5 py-2">
+              <span className="truncate text-xs font-medium text-foreground">{fileName(openPaper)}</span>
+            </div>
+            {isFrameBlocked(openPaper.pdfUrl) ? (
+              <div className="flex h-[60vh] flex-col items-center justify-center gap-3 bg-surface-muted/50 px-6 text-center">
+                <p className="text-sm text-muted">
+                  This paper&apos;s source site doesn&apos;t allow inline preview — open it directly instead.
+                </p>
+                <a
+                  href={openPaper.pdfUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
+                >
+                  <ArrowSquareOut size={14} weight="bold" />
+                  Open PDF
+                </a>
+              </div>
+            ) : (
+              <iframe
+                key={openPaper.id}
+                src={embeddableUrl(openPaper.pdfUrl)}
+                title={fileName(openPaper)}
+                className="h-[80vh] min-h-[560px] w-full bg-surface-muted/40"
+              />
+            )}
+          </>
+        )}
+      </div>
+    </>
   );
 }
 
 function ListSkeleton() {
   return (
-    <div className="space-y-2 rounded-2xl border border-border bg-surface p-5">
-      {[0, 1, 2, 3].map((i) => (
-        <div key={i} className="h-11 animate-pulse rounded-xl bg-surface-muted" />
+    <div className="space-y-1.5">
+      {[0, 1, 2, 3, 4].map((i) => (
+        <div key={i} className="h-7 animate-pulse rounded-lg bg-surface-muted" />
       ))}
-    </div>
-  );
-}
-
-function EmptyState({ title, action, onAction }: { title: string; action: string; onAction: () => void }) {
-  return (
-    <div className="flex flex-col items-center gap-2 rounded-2xl border border-dashed border-border bg-surface/50 p-8 text-center">
-      <p className="text-sm font-medium text-foreground">{title}</p>
-      <button type="button" onClick={onAction} className="text-xs font-semibold text-accent hover:underline">
-        {action}
-      </button>
     </div>
   );
 }
@@ -667,150 +660,83 @@ function CollegeBadges({ paper }: { paper: CatalogPaper }) {
   );
 }
 
-function PaperRow({ paper, onOpen }: { paper: CatalogPaper; onOpen: () => void }) {
-  const note = cleanNote(paper);
+function TabButton({ active, label, count, onClick }: { active: boolean; label: string; count: number; onClick: () => void }) {
   return (
-    <li className="flex items-center gap-2 px-3.5 py-2.5">
-      <button type="button" onClick={onOpen} className="group flex min-w-0 flex-1 items-center gap-2.5 text-left">
-        <FilePdf size={18} weight="duotone" className="shrink-0 text-accent" />
-        <span className="min-w-0">
-          <span className="flex items-center gap-1.5 text-sm font-semibold text-foreground group-hover:text-accent">
-            {paper.yearRange}
-            <CollegeBadges paper={paper} />
-          </span>
-          <span className="block truncate text-[11px] text-muted">
-            {semesterLabel(paper)}
-            {note && ` · ${note}`}
-          </span>
-        </span>
-      </button>
-      <button
-        type="button"
-        onClick={onOpen}
-        className="shrink-0 rounded-lg bg-accent-soft px-2.5 py-1.5 text-xs font-bold text-accent transition hover:bg-accent hover:text-white"
-      >
-        View
-      </button>
-      <a
-        href={paper.pdfUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        aria-label="Open in new tab"
-        className="shrink-0 rounded-lg border border-border p-1.5 text-muted transition hover:border-accent hover:text-accent"
-      >
-        <ArrowSquareOut size={14} weight="bold" />
-      </a>
-    </li>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex-1 rounded-lg px-2 py-1.5 text-xs font-bold transition ${
+        active ? "bg-surface text-foreground shadow-xs" : "text-muted hover:text-foreground"
+      }`}
+    >
+      {label}
+      {count > 0 && <span className="ml-1 text-accent">({count})</span>}
+    </button>
   );
 }
 
-function PaperViewer({
-  paper,
-  siblings,
-  onSelect,
-  onClose,
+function FilterList({
+  searchPlaceholder,
+  search,
+  onSearch,
+  total,
+  empty,
+  children,
 }: {
-  paper: CatalogPaper;
-  siblings: CatalogPaper[];
-  onSelect: (id: string) => void;
-  onClose: () => void;
+  searchPlaceholder?: string;
+  search?: string;
+  onSearch?: (v: string) => void;
+  total: number;
+  empty: boolean;
+  children: React.ReactNode;
 }) {
   return (
-    <section className="space-y-3">
-      <button
-        type="button"
-        onClick={onClose}
-        className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-foreground shadow-2xs transition hover:border-accent hover:text-accent"
-      >
-        <ArrowLeft size={13} weight="bold" /> Back to papers
-      </button>
-
-      <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 shadow-2xs sm:p-5">
-        <div className="min-w-0 flex-1">
-          <span className="inline-block rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent">
-            {paper.course || "General"}
-          </span>
-          <h2 className="mt-1.5 text-lg font-bold leading-snug text-foreground sm:text-xl">{paper.subject}</h2>
-          <p className="mt-1 text-xs text-muted sm:text-sm">
-            {semesterLabel(paper)} · <span className="font-medium text-foreground">{paper.yearRange}</span>
-            {cleanNote(paper) && ` · ${cleanNote(paper)}`}
-          </p>
-        </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <CopyButton
-            text={typeof window === "undefined" ? "" : window.location.href}
-            label="Copy link"
-            className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted shadow-2xs transition hover:border-accent hover:text-accent"
+    <div className="flex min-h-0 flex-1 flex-col">
+      {onSearch && (
+        <div className="relative mb-2 shrink-0">
+          <MagnifyingGlass size={14} className="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-muted" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => onSearch(e.target.value)}
+            placeholder={searchPlaceholder}
+            className="w-full rounded-lg border border-border bg-surface py-1.5 pl-8 pr-2 text-xs text-foreground outline-none focus:border-accent sm:text-sm"
           />
-          <a
-            href={paper.pdfUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-surface px-2.5 py-1.5 text-xs font-medium text-muted shadow-2xs transition hover:border-accent hover:text-accent"
-          >
-            <ArrowSquareOut size={14} weight="bold" />
-            <span className="hidden sm:inline">Open in new tab</span>
-          </a>
-          <a
-            href={paper.pdfUrl}
-            download
-            className="inline-flex items-center gap-1.5 rounded-lg bg-brand px-3 py-1.5 text-xs font-bold text-brand-foreground shadow-2xs transition hover:bg-brand-hover"
-          >
-            <DownloadSimple size={14} weight="bold" />
-            <span>Download</span>
-          </a>
-        </div>
-      </div>
-
-      {siblings.length > 1 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 [scrollbar-width:none]">
-          <span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-muted">Other years:</span>
-          {siblings.map((p) => (
-            <button
-              key={p.id}
-              type="button"
-              onClick={() => onSelect(p.id)}
-              className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-                p.id === paper.id
-                  ? "bg-accent text-white shadow-2xs ring-2 ring-accent/20"
-                  : "bg-surface-muted text-muted hover:bg-border/60 hover:text-foreground"
-              }`}
-            >
-              {p.yearRange}
-              {cleanNote(p) && <span className="max-w-32 truncate text-[11px] opacity-75">{cleanNote(p)}</span>}
-            </button>
-          ))}
         </div>
       )}
-
-      <div className="overflow-hidden rounded-2xl border border-border bg-surface shadow-xs">
-        <div className="flex items-center justify-between border-b border-border bg-surface-muted/60 px-3.5 py-2">
-          <span className="truncate text-xs font-medium text-foreground">{fileName(paper)}</span>
-        </div>
-        {isFrameBlocked(paper.pdfUrl) ? (
-          <div className="flex h-[60vh] flex-col items-center justify-center gap-3 bg-surface-muted/50 px-6 text-center">
-            <p className="text-sm text-muted">
-              This paper&apos;s source site doesn&apos;t allow inline preview — open it directly instead.
-            </p>
-            <a
-              href={paper.pdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white shadow-sm transition hover:opacity-90"
-            >
-              <ArrowSquareOut size={14} weight="bold" />
-              Open PDF
-            </a>
-          </div>
-        ) : (
-          <iframe
-            key={paper.id}
-            src={embeddableUrl(paper.pdfUrl)}
-            title={fileName(paper)}
-            className="h-[80vh] min-h-[560px] w-full bg-surface-muted/40"
-          />
-        )}
+      <p className="mb-1.5 shrink-0 text-[11px] font-semibold uppercase tracking-wider text-muted">{total} total</p>
+      <div className="min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-1 [scrollbar-color:var(--color-border)_transparent] [scrollbar-width:thin]">
+        {children}
+        {empty && <p className="px-2.5 py-1.5 text-xs text-muted">No matches.</p>}
       </div>
-    </section>
+    </div>
+  );
+}
+
+function FilterCheckbox({ checked, label, count, onClick }: { checked: boolean; label: string; count: number; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      title={label}
+      className={`flex w-full items-center gap-2 rounded-lg px-2 py-1.5 text-left text-xs transition sm:text-sm ${
+        checked ? "bg-accent-soft font-semibold text-accent" : "text-foreground hover:bg-surface-muted"
+      }`}
+    >
+      <span
+        className={`flex h-4 w-4 shrink-0 items-center justify-center rounded border ${
+          checked ? "border-accent bg-accent text-white" : "border-border"
+        }`}
+        aria-hidden="true"
+      >
+        {checked && (
+          <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+            <path d="M1 4L3.5 6.5L9 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        )}
+      </span>
+      <span className="min-w-0 flex-1 truncate">{label}</span>
+      <span className="shrink-0 text-[11px] text-muted">{count}</span>
+    </button>
   );
 }
