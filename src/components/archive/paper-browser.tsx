@@ -296,8 +296,10 @@ export function PaperBrowser() {
     if (next) setActiveTab("subject");
   }
   function pickSubject(key: string) {
-    setSubjectKey(key === subjectKey ? null : key);
-    setOpenPaperId(null);
+    const isSame = key === subjectKey;
+    setSubjectKey(isSame ? null : key);
+    // Open the most recent paper right away — saves the student a click.
+    setOpenPaperId(isSame ? null : (subjects.find((s) => s.key === key)?.papers[0]?.id ?? null));
     setIsMobileFilterOpen(false);
   }
   function pickSearchHit(hit: SearchHit) {
