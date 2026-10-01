@@ -479,6 +479,7 @@ export function PaperBrowser() {
           />
         ) : (
           <PaperPanel
+            key={subject.key}
             course={course}
             subjectLabel={subject.label}
             papers={subject.papers}
@@ -508,6 +509,22 @@ function Placeholder({ title, text, onMobilePick }: { title: string; text: strin
   );
 }
 
+// Display grouping only — the stored yearRange is untouched. "MAY-JUNE-2026
+// 2026", "May-June 2026" and "2026" all fall under 2026; a session range
+// like "2021-2022" goes under its later year.
+// The later year is capped at this year so a "2026-2027" session shows under 2026.
+function examYear(p: CatalogPaper) {
+  const last = p.yearRange.match(/\d{4}/g)?.at(-1);
+  return last ? String(Math.min(Number(last), new Date().getFullYear())) : "Other";
+}
+
+function sessionLabel(p: CatalogPaper) {
+  const m = p.yearRange.match(/(may|nov)\W*(june|dec)/i);
+  if (m) return `${m[1][0].toUpperCase()}${m[1].slice(1).toLowerCase()}-${m[2][0].toUpperCase()}${m[2].slice(1).toLowerCase()}`;
+  const years = p.yearRange.match(/\d{4}/g) ?? [];
+  return years.length > 1 ? p.yearRange : years.length ? "" : p.yearRange;
+}
+
 function PaperPanel({
   course,
   subjectLabel,
@@ -521,6 +538,19 @@ function PaperPanel({
   openPaper: CatalogPaper | null;
   onOpen: (id: string) => void;
 }) {
+  const [pickedYear, setPickedYear] = useState<string | null>(null);
+  const years = [...new Set(papers.map(examYear))].sort((a, b) =>
+    a === "Other" ? 1 : b === "Other" ? -1 : b.localeCompare(a),
+  );
+  const activeYear = pickedYear ?? (openPaper ? examYear(openPaper) : null);
+  const yearPapers = papers.filter((p) => examYear(p) === activeYear);
+
+  function pickYear(year: string) {
+    setPickedYear(year);
+    const inYear = papers.filter((p) => examYear(p) === year);
+    if (inYear.length === 1) onOpen(inYear[0].id);
+  }
+
   return (
     <>
       <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 shadow-2xs sm:p-5">
@@ -568,32 +598,54 @@ function PaperPanel({
         )}
       </div>
 
-      {/* Year buttons — clicking one is what loads a PDF */}
+      {/* Years, then that year's papers — clicking a paper is what loads a PDF */}
       <div className="mt-3.5 flex flex-wrap items-center gap-2">
         <span className="shrink-0 text-xs font-semibold uppercase tracking-wider text-muted">Years:</span>
-        {papers.map((p) => (
+        {years.map((y) => (
           <button
-            key={p.id}
+            key={y}
             type="button"
-            onClick={() => onOpen(p.id)}
+            onClick={() => pickYear(y)}
             className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
-              p.id === openPaper?.id
+              y === activeYear
                 ? "bg-accent text-white shadow-2xs ring-2 ring-accent/20"
                 : "bg-surface-muted text-muted hover:bg-border/60 hover:text-foreground"
             }`}
           >
-            {p.yearRange}
-            {cleanNote(p) && <span className="max-w-32 truncate text-[11px] opacity-75">{cleanNote(p)}</span>}
-            <CollegeBadges paper={p} />
+            {y}
+            <span className="text-[11px] opacity-75">{papers.filter((p) => examYear(p) === y).length}</span>
           </button>
         ))}
       </div>
+      {yearPapers.length > 1 && (
+        <div className="mt-2.5 flex flex-wrap gap-2">
+          {yearPapers.map((p, i) => (
+            <button
+              key={p.id}
+              type="button"
+              onClick={() => onOpen(p.id)}
+              className={`inline-flex items-center gap-1.5 rounded-lg border px-3 py-1 text-xs font-semibold transition ${
+                p.id === openPaper?.id
+                  ? "border-accent bg-accent-soft text-accent shadow-2xs"
+                  : "border-border bg-surface text-muted hover:text-foreground"
+              }`}
+            >
+              <span className="max-w-56 truncate">
+                {[sessionLabel(p), cleanNote(p)].filter(Boolean).join(" · ") || `Paper ${i + 1}`}
+              </span>
+              <CollegeBadges paper={p} />
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="mt-3.5 overflow-hidden rounded-2xl border border-border bg-surface shadow-xs">
         {!openPaper ? (
           <div className="flex h-[60vh] min-h-[420px] flex-col items-center justify-center gap-2 bg-surface-muted/40 px-6 text-center">
             <FilePdf size={36} weight="duotone" className="text-accent" />
-            <p className="text-sm font-semibold text-foreground">Choose a year above to open the paper</p>
+            <p className="text-sm font-semibold text-foreground">
+              {activeYear ? "Choose a paper above to open it" : "Choose a year above"}
+            </p>
             <p className="text-xs text-muted">The PDF loads only when you pick one.</p>
           </div>
         ) : (
