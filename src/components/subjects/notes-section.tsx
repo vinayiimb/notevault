@@ -2,6 +2,7 @@ import { extractContentHeadings, preprocessNotesMarkdown } from "@/lib/content/t
 import { themeValuesToTokens, LEGACY_NOTES_THEME_TO_PRESET } from "@/lib/content/theme-tokens";
 import { findNotesLabTheme } from "@/lib/content/theme-presets";
 import { NotesReadingChrome } from "@/components/content/notes/reading-chrome";
+import { GatedNotes } from "@/components/paid-notes/gated-notes";
 import { resolveNotesTheme } from "./notes-renderer";
 import { StructuredNoteRenderer } from "./structured-note-renderer";
 import { StructuredNoteExportBar } from "./structured-note-export-bar";
@@ -22,6 +23,7 @@ export function NotesSection({
   format = "MARKDOWN",
   structuredJson,
   resolvedTheme,
+  paywall,
 }: {
   content: string;
   theme: string;
@@ -30,6 +32,8 @@ export function NotesSection({
   format?: "MARKDOWN" | "STRUCTURED";
   structuredJson?: unknown;
   resolvedTheme?: ThemeValues | null;
+  // Set when `content` is only the free preview of a paid note.
+  paywall?: { programmeSlug: string; subjectSlug: string };
 }) {
   // format defaults to MARKDOWN and structuredJson stays null for every note
   // created before this feature existed — this branch only ever fires for
@@ -73,13 +77,25 @@ export function NotesSection({
     <div className="relative mt-4 ml-[50%] w-screen -translate-x-1/2 px-4 sm:px-6">
       <div className="mx-auto w-[95%] max-w-[1900px]">
         <div className="mt-3">
-          <NotesReadingChrome
-            title={subjectName}
-            programmeName={programmeName}
-            content={preprocessed}
-            headings={headings}
-            subjectTheme={{ light: subjectTokens, dark: subjectTokensDark }}
-          />
+          {paywall ? (
+            <GatedNotes
+              programmeSlug={paywall.programmeSlug}
+              subjectSlug={paywall.subjectSlug}
+              title={subjectName}
+              programmeName={programmeName}
+              preview={preprocessed}
+              headings={headings}
+              subjectTheme={{ light: subjectTokens, dark: subjectTokensDark }}
+            />
+          ) : (
+            <NotesReadingChrome
+              title={subjectName}
+              programmeName={programmeName}
+              content={preprocessed}
+              headings={headings}
+              subjectTheme={{ light: subjectTokens, dark: subjectTokensDark }}
+            />
+          )}
         </div>
       </div>
     </div>

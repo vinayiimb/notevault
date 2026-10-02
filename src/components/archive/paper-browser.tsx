@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { ArrowSquareOut, DownloadSimple, FilePdf, Funnel, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { CopyButton } from "@/components/pyq/copy-button";
+import { NotesNudge } from "@/components/paid-notes/notes-nudge";
 import { semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
 
@@ -571,6 +572,7 @@ function PaperPanel({
               `${papers.length} paper${papers.length === 1 ? "" : "s"} — choose a year below to open one`
             )}
           </p>
+          <NotesNudge course={course} subject={subjectLabel} />
         </div>
         {openPaper && (
           <div className="flex shrink-0 items-center gap-2">

@@ -117,8 +117,8 @@ model Subject {
   studyPlanSubjects StudyPlanSubject[]
   plannerTasks      PlannerTask[]
   units             Unit[]
-  notesAI           Note[]            @relation("NoteSubject")
-  quizzes           Quiz[]            @relation("QuizSubject")
+  notesAI           Note[]             @relation("NoteSubject")
+  quizzes           Quiz[]             @relation("QuizSubject")
 
   @@unique([termId, slug])
   @@index([upc])
@@ -753,17 +753,58 @@ model ContentBlock {
 // Singleton row (id is always "singleton") for the small set of homepage
 // text fields an admin can safely edit without any risk of breaking a page.
 model SiteSettings {
-  id                       String   @id @default("singleton")
-  heroEyebrow              String?
-  heroHeadline             String?
-  heroSubtitle             String?
-  heroSearchCaption        String?
-  heroImageUrl             String?
-  currencyIconUrl          String?
+  id                      String   @id @default("singleton")
+  heroEyebrow             String?
+  heroHeadline            String?
+  heroSubtitle            String?
+  heroSearchCaption       String?
+  heroImageUrl            String?
+  currencyIconUrl         String?
   // Comma-separated canonical programme slugs shown on /notes. Empty/null
   // means show all programmes (the historical default).
-  notesFeaturedProgrammes  String?
-  updatedAt                DateTime @updatedAt
+  notesFeaturedProgrammes String?
+  // Paid notes (UPI, manually verified) — see src/lib/paid-notes.ts.
+  // The paywall only switches on when an admin enables it AND has set a
+  // UPI ID or QR, so deploying this never locks notes by itself.
+  paywallEnabled          Boolean  @default(false)
+  upiId                   String?
+  upiPayeeName            String?
+  upiQrUrl                String?
+  updatedAt               DateTime @updatedAt
+}
+
+enum PurchaseStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+// One UPI payment a student submitted (email + UTR) for one or more
+// subjects' notes. Approving it unlocks `items` for the NotesAccount with
+// the same email (created on first approval) — see src/lib/paid-notes.ts.
+model Purchase {
+  id         String         @id @default(cuid())
+  email      String
+  phone      String
+  utr        String         @unique
+  amount     Int
+  items      String[] // "programmeSlug/subjectSlug"
+  status     PurchaseStatus @default(PENDING)
+  adminNote  String?
+  createdAt  DateTime       @default(now())
+  reviewedAt DateTime?
+
+  @@index([status, createdAt])
+  @@index([email])
+}
+
+// Student login for paid notes: their Gmail + a password the admin issues
+// on approval (sent to them over WhatsApp). No self-signup.
+model NotesAccount {
+  email        String   @id
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // One row per public tool/tab whose status an admin changed from its default
@@ -1013,8 +1054,8 @@ model Unit {
   order     Int      @default(1)
   createdAt DateTime @default(now())
 
-  topics    Topic[]
-  notes     Note[]
+  topics Topic[]
+  notes  Note[]
 }
 
 model Topic {
@@ -1026,9 +1067,9 @@ model Topic {
   status    String   @default("Not Started") // e.g., "Not Started", "Learning", "Revision Needed", "Completed"
   createdAt DateTime @default(now())
 
-  notes           Note[]
-  topicMasteries  TopicMastery[]
-  syllabusTopics  SyllabusTopic[]
+  notes          Note[]
+  topicMasteries TopicMastery[]
+  syllabusTopics SyllabusTopic[]
 }
 
 model SyllabusTopic {
@@ -1050,7 +1091,7 @@ model Folder {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  notes     Note[]
+  notes Note[]
 }
 
 model Tag {
@@ -1058,31 +1099,31 @@ model Tag {
   name      String   @unique
   createdAt DateTime @default(now())
 
-  notes     NoteTag[]
+  notes NoteTag[]
 }
 
 model Note {
-  id          String   @id @default(cuid())
-  title       String
-  userId      String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  folderId    String?
-  folder      Folder?  @relation(fields: [folderId], references: [id], onDelete: SetNull)
-  
-  subjectId   String?
-  subject     Subject? @relation("NoteSubject", fields: [subjectId], references: [id], onDelete: SetNull)
-  unitId      String?
-  unit        Unit?    @relation(fields: [unitId], references: [id], onDelete: SetNull)
-  topicId     String?
-  topic       Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
-  
-  isFavorite  Boolean  @default(false)
-  isPinned    Boolean  @default(false)
-  isArchived  Boolean  @default(false)
-  isPublic    Boolean  @default(false)
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id       String  @id @default(cuid())
+  title    String
+  userId   String  @db.Uuid
+  user     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  folderId String?
+  folder   Folder? @relation(fields: [folderId], references: [id], onDelete: SetNull)
+
+  subjectId String?
+  subject   Subject? @relation("NoteSubject", fields: [subjectId], references: [id], onDelete: SetNull)
+  unitId    String?
+  unit      Unit?    @relation(fields: [unitId], references: [id], onDelete: SetNull)
+  topicId   String?
+  topic     Topic?   @relation(fields: [topicId], references: [id], onDelete: SetNull)
+
+  isFavorite Boolean @default(false)
+  isPinned   Boolean @default(false)
+  isArchived Boolean @default(false)
+  isPublic   Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   tags        NoteTag[]
   blocks      NoteBlock[]
@@ -1094,10 +1135,10 @@ model Note {
 }
 
 model NoteTag {
-  noteId    String
-  note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  tagId     String
-  tag       Tag      @relation(fields: [tagId], references: [id], onDelete: Cascade)
+  noteId String
+  note   Note   @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  tagId  String
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
   @@id([noteId, tagId])
 }
@@ -1106,10 +1147,10 @@ model NoteBlock {
   id        String   @id @default(cuid())
   noteId    String
   note      Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  type      String   // e.g., paragraph, heading_1, image, math, code_block
+  type      String // e.g., paragraph, heading_1, image, math, code_block
   content   String   @db.Text
   order     Int
-  props     Json?    // Optional properties (e.g., text color, alignment)
+  props     Json? // Optional properties (e.g., text color, alignment)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -1119,7 +1160,7 @@ model NoteBlock {
 model Source {
   id        String   @id @default(cuid())
   title     String
-  type      String   // PDF, DOCX, PPTX, IMAGE, URL, AUDIO
+  type      String // PDF, DOCX, PPTX, IMAGE, URL, AUDIO
   url       String
   userId    String   @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -1137,41 +1178,41 @@ model Attachment {
 }
 
 model Flashcard {
-  id          String   @id @default(cuid())
-  userId      String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  noteId      String?
-  note        Note?    @relation(fields: [noteId], references: [id], onDelete: SetNull)
-  front       String   @db.Text
-  back        String   @db.Text
-  type        String   // QUESTION_ANSWER, FILL_IN_BLANK
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  noteId    String?
+  note      Note?    @relation(fields: [noteId], references: [id], onDelete: SetNull)
+  front     String   @db.Text
+  back      String   @db.Text
+  type      String // QUESTION_ANSWER, FILL_IN_BLANK
+  createdAt DateTime @default(now())
 
-  reviews     FlashcardReview[]
+  reviews FlashcardReview[]
 }
 
 model FlashcardReview {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   flashcardId String
   flashcard   Flashcard @relation(fields: [flashcardId], references: [id], onDelete: Cascade)
-  userId      String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  rating      String   // AGAIN, HARD, GOOD, EASY
-  reviewDate  DateTime @default(now())
+  userId      String    @db.Uuid
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  rating      String // AGAIN, HARD, GOOD, EASY
+  reviewDate  DateTime  @default(now())
   nextReview  DateTime?
 }
 
 model Quiz {
-  id          String   @id @default(cuid())
-  userId      String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  title       String
-  subjectId   String?
-  subject     Subject? @relation("QuizSubject", fields: [subjectId], references: [id], onDelete: SetNull)
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  subjectId String?
+  subject   Subject? @relation("QuizSubject", fields: [subjectId], references: [id], onDelete: SetNull)
+  createdAt DateTime @default(now())
 
-  questions   QuizQuestion[]
-  attempts    QuizAttempt[]
+  questions QuizQuestion[]
+  attempts  QuizAttempt[]
 }
 
 model QuizQuestion {
@@ -1179,7 +1220,7 @@ model QuizQuestion {
   quizId        String
   quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
   questionText  String   @db.Text
-  type          String   // MCQ, TRUE_FALSE, SHORT_ANSWER
+  type          String // MCQ, TRUE_FALSE, SHORT_ANSWER
   options       Json?
   correctAnswer String   @db.Text
   explanation   String?  @db.Text
@@ -1187,14 +1228,14 @@ model QuizQuestion {
 }
 
 model QuizAttempt {
-  id          String   @id @default(cuid())
-  quizId      String
-  quiz        Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
-  userId      String   @db.Uuid
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  score       Int
-  total       Int
-  createdAt   DateTime @default(now())
+  id        String   @id @default(cuid())
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  score     Int
+  total     Int
+  createdAt DateTime @default(now())
 }
 
 model MindMap {
@@ -1204,19 +1245,19 @@ model MindMap {
   noteId    String?
   note      Note?    @relation(fields: [noteId], references: [id], onDelete: SetNull)
   title     String
-  data      Json     // The mindmap nodes and edges
+  data      Json // The mindmap nodes and edges
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model StudySession {
-  id        String   @id @default(cuid())
-  userId    String   @db.Uuid
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  startTime DateTime @default(now())
+  id        String    @id @default(cuid())
+  userId    String    @db.Uuid
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  startTime DateTime  @default(now())
   endTime   DateTime?
-  duration  Int?     // in seconds
-  type      String   // REVISION, QUIZ, READING
+  duration  Int? // in seconds
+  type      String // REVISION, QUIZ, READING
 }
 
 model RevisionHistory {
@@ -1235,21 +1276,21 @@ model TopicMastery {
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   topicId   String
   topic     Topic    @relation(fields: [topicId], references: [id], onDelete: Cascade)
-  level     String   // NEW, LEARNING, WEAK, GOOD, MASTERED
+  level     String // NEW, LEARNING, WEAK, GOOD, MASTERED
   updatedAt DateTime @updatedAt
 
   @@unique([userId, topicId])
 }
 
 model Share {
-  id          String   @id @default(cuid())
-  noteId      String
-  note        Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
-  ownerId     String   @db.Uuid
-  owner       User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
-  permission  String   // VIEW, COMMENT, EDIT
-  isPublic    Boolean  @default(false)
-  createdAt   DateTime @default(now())
+  id         String   @id @default(cuid())
+  noteId     String
+  note       Note     @relation(fields: [noteId], references: [id], onDelete: Cascade)
+  ownerId    String   @db.Uuid
+  owner      User     @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  permission String // VIEW, COMMENT, EDIT
+  isPublic   Boolean  @default(false)
+  createdAt  DateTime @default(now())
 }
 
 model Comment {
@@ -1263,76 +1304,75 @@ model Comment {
   updatedAt DateTime @updatedAt
 }
 
-
 // ==============================================================================
 // DU ACADEMIC INTELLIGENCE MODELS (Phase 0)
 // ==============================================================================
 
 model DuCourse {
-  id               String            @id @default(cuid())
-  canonicalTitle   String
-  slug             String            @unique
-  department       String?           
-  courseType       String            // e.g., SEC, VAC, AEC, DSC, DSE, GE
-  totalCredits     Int
-  
-  codes            DuCourseCode[]
-  versions         DuCourseVersion[]
-  createdAt        DateTime          @default(now())
+  id             String  @id @default(cuid())
+  canonicalTitle String
+  slug           String  @unique
+  department     String?
+  courseType     String // e.g., SEC, VAC, AEC, DSC, DSE, GE
+  totalCredits   Int
+
+  codes     DuCourseCode[]
+  versions  DuCourseVersion[]
+  createdAt DateTime          @default(now())
 }
 
 model DuCourseCode {
-  id               String            @id @default(cuid())
-  upc              String            @unique
-  courseId         String
-  course           DuCourse          @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  status           String            @default("CURRENT") // CURRENT, LEGACY, TBA
+  id       String   @id @default(cuid())
+  upc      String   @unique
+  courseId String
+  course   DuCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  status   String   @default("CURRENT") // CURRENT, LEGACY, TBA
 }
 
 model DuCourseVersion {
-  id               String            @id @default(cuid())
-  courseId         String
-  course           DuCourse          @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  
-  scheme           String            @default("UGCF-2022")
-  theoryCredits    Int               @default(0)
-  tutorialCredits  Int               @default(0)
-  practicalCredits Int               @default(0)
-  
+  id       String   @id @default(cuid())
+  courseId String
+  course   DuCourse @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  scheme           String @default("UGCF-2022")
+  theoryCredits    Int    @default(0)
+  tutorialCredits  Int    @default(0)
+  practicalCredits Int    @default(0)
+
   assessmentRuleId String?
   assessmentRule   DuAssessmentRule? @relation(fields: [assessmentRuleId], references: [id])
-  
+
   officialSourceId String?
   officialSource   DuOfficialSource? @relation(fields: [officialSourceId], references: [id])
-  
-  effectiveFrom    DateTime?
-  status           String            @default("ACTIVE")
+
+  effectiveFrom DateTime?
+  status        String    @default("ACTIVE")
 }
 
 model DuAssessmentRule {
-  id               String            @id @default(cuid())
-  ruleIdentifier   String            @unique // e.g., "4CR-3L-1P"
-  theoryMarks      Int               @default(0)
-  internalAssess   Int               @default(0)
-  tutorialCa       Int               @default(0)
-  practicalCa      Int               @default(0)
-  endTermPractical Int               @default(0)
-  viva             Int               @default(0)
-  totalMarks       Int               @default(0)
-  theoryDuration   String?           // e.g., "3 hr"
-  
-  versions         DuCourseVersion[]
+  id               String  @id @default(cuid())
+  ruleIdentifier   String  @unique // e.g., "4CR-3L-1P"
+  theoryMarks      Int     @default(0)
+  internalAssess   Int     @default(0)
+  tutorialCa       Int     @default(0)
+  practicalCa      Int     @default(0)
+  endTermPractical Int     @default(0)
+  viva             Int     @default(0)
+  totalMarks       Int     @default(0)
+  theoryDuration   String? // e.g., "3 hr"
+
+  versions DuCourseVersion[]
 }
 
 model DuOfficialSource {
-  id               String            @id @default(cuid())
-  authority        String            // e.g., "DU Academic Affairs"
-  url              String?
-  sourceType       String            // Formal Notification, Syllabus Page
-  retrievedAt      DateTime          @default(now())
-  authorityLevel   Int               @default(1) // 1=Formal, 2=Programme Page, etc.
-  
-  versions         DuCourseVersion[]
+  id             String   @id @default(cuid())
+  authority      String // e.g., "DU Academic Affairs"
+  url            String?
+  sourceType     String // Formal Notification, Syllabus Page
+  retrievedAt    DateTime @default(now())
+  authorityLevel Int      @default(1) // 1=Formal, 2=Programme Page, etc.
+
+  versions DuCourseVersion[]
 }
 
 // The unified, static catalog of all papers (DU Question Bank + Ramanujan + Drive).

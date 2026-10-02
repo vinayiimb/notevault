@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { Files, Flag, Gear, GraduationCap, NotePencil, SignOut } from "@phosphor-icons/react/dist/ssr";
+import { CurrencyInr, Files, Flag, Gear, GraduationCap, NotePencil, SignOut } from "@phosphor-icons/react/dist/ssr";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 
@@ -52,6 +52,13 @@ export default async function AdminDashboardLayout({
           >
             <Flag size={16} />
             Features
+          </Link>
+          <Link
+            href="/admin/payments"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <CurrencyInr size={16} />
+            Payments
           </Link>
           <Link
             href="/admin/settings"

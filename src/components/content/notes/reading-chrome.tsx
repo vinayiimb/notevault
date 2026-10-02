@@ -20,19 +20,21 @@ export function NotesReadingChrome({
   headings,
   subjectTheme,
   programmeName,
+  downloadable = true,
 }: {
   title: string;
   content: string;
   headings: ContentHeading[];
   subjectTheme?: { light: NotesLabColorTokens; dark: NotesLabColorTokens } | null;
   programmeName?: string;
+  downloadable?: boolean; // false while only a paid note's free preview is shown
 }) {
   return (
     <ContentThemeProvider subjectTheme={subjectTheme}>
       <ContentLightboxProvider>
         <div className="nt-bg-gradient overflow-hidden rounded-2xl border" style={{ borderColor: "var(--nt-border)" }}>
           <ContentReadingProgress />
-          <ContentReadingHeader title={title} targetId={ARTICLE_ID} />
+          <ContentReadingHeader title={title} targetId={ARTICLE_ID} downloadable={downloadable} />
           <div className="nt-shell" data-toc={headings.length > 0}>
             {/* Top Section: TOC (left) and Intro (right) */}
             <div className="nt-top-grid" style={{ gridTemplateColumns: headings.length > 0 ? undefined : "1fr" }}>

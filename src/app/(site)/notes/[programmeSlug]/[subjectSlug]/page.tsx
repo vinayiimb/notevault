@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getCanonicalNote } from "@/lib/canonical-subject-notes-data";
+import { getPaymentSettings } from "@/lib/paid-notes";
+import { previewOf } from "@/lib/paid-notes-pricing";
 import { NotesSection } from "@/components/subjects/notes-section";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
@@ -44,6 +46,11 @@ export default async function CanonicalSubjectNotePage({
   const note = await getCanonicalNote(programmeSlug, subjectSlug);
   if (!note || !note.content.trim()) notFound();
 
+  // Paid notes: this cached page only ever carries the free preview; the
+  // rest is fetched per-visitor by GatedNotes after an access check.
+  const { active } = await getPaymentSettings();
+  const { preview, truncated } = active ? previewOf(note.content) : { preview: note.content, truncated: false };
+
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Notes", url: "/notes" },
@@ -57,10 +64,11 @@ export default async function CanonicalSubjectNotePage({
       <VisibleBreadcrumb items={breadcrumbs} />
 
       <NotesSection 
-        content={note.content} 
-        theme={note.theme} 
+        content={preview}
+        theme={note.theme}
         subjectName={note.subjectName}
         programmeName={note.programmeName}
+        paywall={truncated ? { programmeSlug, subjectSlug } : undefined}
       />
     </div>
   );

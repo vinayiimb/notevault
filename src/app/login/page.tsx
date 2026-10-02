@@ -52,6 +52,13 @@ export default function EntryGatePage() {
             <span className="mt-auto text-sm font-medium text-accent">Sign in &rarr;</span>
           </Link>
         </div>
+
+        <p className="mt-6 text-center text-sm text-muted">
+          Bought subject notes?{" "}
+          <Link href="/paid-notes/login" className="font-medium text-accent hover:underline">
+            Sign in to your notes &rarr;
+          </Link>
+        </p>
       </div>
     </div>
   );

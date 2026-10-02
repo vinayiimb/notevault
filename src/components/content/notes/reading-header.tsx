@@ -5,7 +5,7 @@ import { ContentDownloadButton } from "./download-button";
 import { ContentThemeSwitcher } from "./theme-switcher";
 import { ContentDarkModeToggle } from "./dark-mode-toggle";
 
-export function ContentReadingHeader({ title, targetId }: { title: string; targetId: string }) {
+export function ContentReadingHeader({ title, targetId, downloadable = true }: { title: string; targetId: string; downloadable?: boolean }) {
   return (
     <header
       className="nt-no-print sticky top-0 z-40 border-b"
@@ -19,7 +19,7 @@ export function ContentReadingHeader({ title, targetId }: { title: string; targe
         <p className="truncate text-sm font-semibold" style={{ color: "var(--nt-text)" }}>{title}</p>
         <div className="flex items-center gap-2">
           <ContentSearch targetId={targetId} />
-          <ContentDownloadButton title={title} />
+          {downloadable && <ContentDownloadButton title={title} />}
           <ContentDarkModeToggle />
           <ContentThemeSwitcher />
         </div>
