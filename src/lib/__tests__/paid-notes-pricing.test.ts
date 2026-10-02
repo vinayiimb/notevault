@@ -43,8 +43,17 @@ test("previewOf cuts on a block boundary, never inside a fence", () => {
   assert.ok(md.startsWith(preview));
 });
 
-test("previewOf leaves short notes whole", () => {
-  assert.deepEqual(previewOf("# Short\n\nTiny note."), { preview: "# Short\n\nTiny note.", truncated: false });
+test("previewOf gates short notes too (live bug: a 1.5k-char note was fully free)", () => {
+  const md = ["# Management Accounting", "", "Intro paragraph.", "", "## Meaning", "", "Body one.", "", "## Scope", "", "Body two.", "", "## Functions", "", "Body three."].join("\n");
+  const { preview, truncated } = previewOf(md);
+  assert.equal(truncated, true);
+  assert.ok(preview.length <= md.length * 0.5, "about 30%, not most of it");
+  assert.ok(!preview.includes("Body three"));
+});
+
+test("previewOf can't split a single block, and never returns an empty lock", () => {
+  assert.deepEqual(previewOf("One paragraph only."), { preview: "One paragraph only.", truncated: false });
+  assert.deepEqual(previewOf("Para one.\n\n"), { preview: "Para one.\n\n", truncated: false });
 });
 
 test("input normalizers", () => {

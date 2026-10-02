@@ -25,6 +25,7 @@ import {
   SealCheck,
   Wrench,
   X,
+  Tag,
 } from "@phosphor-icons/react";
 import { FEATURES, featureForPath } from "@/lib/feature-flags";
 import { useFeatureFlags } from "@/components/feature-flags-client";
@@ -35,6 +36,7 @@ const NAVIGATION_SECTIONS = [
     items: [
       { href: "/papers", label: "Papers", desc: "Interactive PDF viewer and PYQ archive", icon: BookOpenText },
       { href: "/notes", label: "Notes", desc: "Access study notes and summaries", icon: NotePencil },
+      { href: "/paid-notes", label: "Pricing", desc: "Full notes & solutions from ₹49", icon: Tag },
     ],
   },
   {
@@ -83,6 +85,7 @@ export function SiteNavigation() {
   const links = [
     { href: "/papers", label: "Papers" },
     { href: "/notes", label: "Notes" },
+    { href: "/paid-notes", label: "Pricing" },
   ];
 
   // Contents and order come from src/lib/feature-flags.ts; admins switch

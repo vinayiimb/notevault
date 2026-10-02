@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getCanonicalNote } from "@/lib/canonical-subject-notes-data";
+import { getSession } from "@/lib/auth";
 import { canReadFullNote } from "@/lib/paid-notes";
 
 // Full text of a paid note, only for a signed-in student who bought it (or
@@ -17,5 +18,7 @@ export async function GET(request: NextRequest) {
   }
   const note = await getCanonicalNote(programmeSlug, subjectSlug);
   if (!note?.content.trim()) return NextResponse.json({ error: "Not found" }, { status: 404, headers });
-  return NextResponse.json({ content: note.content }, { headers });
+  // `admin` lets the page say why it's unlocked — admins bypass the paywall,
+  // which otherwise looks like "the lock is broken" when testing.
+  return NextResponse.json({ content: note.content, admin: !!(await getSession()) }, { headers });
 }
