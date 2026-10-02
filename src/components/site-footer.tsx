@@ -97,8 +97,14 @@ export function SiteFooter() {
             </ul>
           </div>
         </div>
-        <div className="mt-10 border-t border-border/60 pt-6 text-center text-xs text-muted">
-          <p>© {new Date().getFullYear()} DU PYQ Online. Free access with no login required.</p>
+        <div className="mt-10 flex flex-col items-center gap-3 border-t border-border/60 pt-6 text-xs text-muted sm:flex-row sm:justify-between">
+          <p>© {new Date().getFullYear()} DU PYQ Online. Not affiliated with the University of Delhi.</p>
+          <nav aria-label="Policies" className="flex flex-wrap justify-center gap-x-5 gap-y-2">
+            <Link href="/privacy-policy" className="hover:text-accent transition">Privacy</Link>
+            <Link href="/terms-of-service" className="hover:text-accent transition">Terms</Link>
+            <Link href="/refund-policy" className="hover:text-accent transition">Refund</Link>
+            <Link href="/feedback" className="hover:text-accent transition">Contact</Link>
+          </nav>
         </div>
       </div>
     </footer>

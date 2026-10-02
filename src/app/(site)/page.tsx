@@ -7,6 +7,7 @@ import { getProgramsByLevel, getSiteSettings } from "@/lib/data";
 import { getAllDuPypProgrammes } from "@/lib/du-pyp-data";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 import { FeatureCards } from "@/components/landing/feature-cards";
+import { FeatureShowcase } from "@/components/landing/feature-showcase";
 
 export const metadata: Metadata = {
   title: "DU Previous Year Papers & Notes | DU PYQ Online",
@@ -123,6 +124,9 @@ export default async function HomePage() {
             />
           </div>
         </section>
+
+        {/* Practice / Learn / Revise — animated feature mock-ups */}
+        <FeatureShowcase />
 
         {/* About / Informational Description section */}
         <section className="mt-16 border-t border-border/60 pt-12 text-sm text-muted leading-relaxed max-w-4xl mx-auto">

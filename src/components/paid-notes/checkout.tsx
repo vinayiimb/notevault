@@ -270,7 +270,11 @@ export function PaidNotesCheckout({
             >
               {pending ? "Submitting…" : `I've paid ₹${plan.price} — submit`}
             </button>
-            <p className="mt-3 text-center text-xs text-muted">Access is activated after we verify the payment.</p>
+            <p className="mt-3 text-center text-xs text-muted">
+              Access is activated after we verify the payment. By paying you agree to our{" "}
+              <Link href="/terms-of-service" className="underline hover:text-foreground">Terms</Link> and{" "}
+              <Link href="/refund-policy" className="underline hover:text-foreground">Refund Policy</Link>.
+            </p>
           </form>
         </div>
       )}

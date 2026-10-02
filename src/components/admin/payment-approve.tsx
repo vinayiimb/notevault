@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { WhatsappLogo } from "@phosphor-icons/react";
 import { approvePurchaseAction, resetStudentPasswordAction, type ApproveResult } from "@/lib/paid-notes-actions";
+import { googleSignInEnabled } from "@/lib/firebase-config";
 
 const LOGIN_URL = "https://dupyq.online/paid-notes/login";
 
@@ -13,6 +14,7 @@ function whatsappText(r: ApproveResult, subjects: string) {
         `Subjects: ${subjects}`,
         "",
         `Sign in here: ${LOGIN_URL}`,
+        ...(googleSignInEnabled ? [`Tap "Continue with Google" and pick ${r.email} — or use:`] : []),
         `Email: ${r.email}`,
         `Password: ${r.password}`,
       ]

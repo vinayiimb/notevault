@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { GraduationCap, ShieldCheck, Stack } from "@phosphor-icons/react/dist/ssr";
+import { GoogleSignInButton } from "@/components/paid-notes/google-sign-in-button";
 
 export default function EntryGatePage() {
   return (
@@ -53,6 +54,9 @@ export default function EntryGatePage() {
           </Link>
         </div>
 
+        <div className="mx-auto mt-6 max-w-sm">
+          <GoogleSignInButton next="/paid-notes" label="Student? Continue with Google" />
+        </div>
         <p className="mt-6 text-center text-sm text-muted">
           Bought subject notes?{" "}
           <Link href="/paid-notes/login" className="font-medium text-accent hover:underline">

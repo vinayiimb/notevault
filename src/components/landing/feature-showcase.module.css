@@ -1,0 +1,148 @@
+/* Homepage "Practice / Learn / Revise" mock-ups. Every animated part of a
+   mock shares one 7s timeline, so keyframe percentages line up: the cursor
+   arrives at ~X%, the thing under it "presses" at X+2%. Base styles are the
+   finished state, so reduced-motion visitors just see the end result. */
+
+.mock {
+  container-type: inline-size;
+  --t: 7s;
+}
+
+.anim {
+  animation-duration: var(--t);
+  animation-iteration-count: infinite;
+  animation-timing-function: ease-in-out;
+}
+
+/* Paused (at frame 0) until scrolled into view, and while hovered so the
+   visitor can press things themselves. */
+.mock[data-play="false"] .anim,
+.mock:hover .anim {
+  animation-play-state: paused;
+}
+
+.cursor {
+  position: absolute;
+  z-index: 20;
+  width: 5.5cqw;
+  height: 5.5cqw;
+  pointer-events: none;
+  filter: drop-shadow(0 1px 2px rgb(0 0 0 / 0.35));
+}
+
+.bubble {
+  animation: bob 4s ease-in-out infinite;
+}
+
+@keyframes bob {
+  50% { transform: translateY(-6px); }
+}
+
+/* ---------- Mock 1: papers ---------- */
+.c1 { animation-name: cursor1; left: 71%; top: 24%; }
+@keyframes cursor1 {
+  0%   { left: 88%; top: 88%; opacity: 0; transform: scale(1); }
+  6%   { opacity: 1; }
+  18%  { left: 24%; top: 30%; transform: scale(1); }
+  21%  { transform: scale(0.8); }
+  24%  { transform: scale(1); }
+  40%  { left: 71%; top: 24%; transform: scale(1); }
+  43%  { transform: scale(0.8); }
+  46%  { transform: scale(1); }
+  88%  { left: 71%; top: 24%; opacity: 1; }
+  96%, 100% { left: 88%; top: 88%; opacity: 0; }
+}
+
+.row1 { animation-name: row1; background: var(--color-accent-soft); }
+@keyframes row1 {
+  0%, 19%  { background: transparent; transform: scale(1); }
+  21%      { background: var(--color-accent-soft); transform: scale(0.96); }
+  25%, 92% { background: var(--color-accent-soft); transform: scale(1); }
+  98%, 100% { background: transparent; }
+}
+
+.chip1 { animation-name: chip1; background: var(--color-accent); color: var(--color-accent-foreground); }
+@keyframes chip1 {
+  0%, 42%  { background: var(--color-surface-muted); color: var(--color-muted); transform: scale(1); }
+  44%      { background: var(--color-accent); color: var(--color-accent-foreground); transform: scale(0.88); }
+  48%, 92% { background: var(--color-accent); color: var(--color-accent-foreground); transform: scale(1); }
+  98%, 100% { background: var(--color-surface-muted); color: var(--color-muted); }
+}
+
+.sheet1 { animation-name: sheet1; }
+@keyframes sheet1 {
+  0%, 45%  { opacity: 0; transform: translateY(8%); }
+  56%, 90% { opacity: 1; transform: translateY(0); }
+  97%, 100% { opacity: 0; transform: translateY(8%); }
+}
+
+/* ---------- Mock 2: notes unlock ---------- */
+.c2 { animation-name: cursor2; left: 50%; top: 74%; }
+@keyframes cursor2 {
+  0%   { left: 90%; top: 30%; opacity: 0; transform: scale(1); }
+  8%   { opacity: 1; }
+  32%  { left: 50%; top: 74%; transform: scale(1); }
+  35%  { transform: scale(0.8); }
+  38%  { transform: scale(1); }
+  88%  { left: 50%; top: 74%; opacity: 1; }
+  96%, 100% { left: 90%; top: 30%; opacity: 0; }
+}
+
+.unlockBtn { animation-name: unlockBtn; }
+@keyframes unlockBtn {
+  0%, 33% { transform: scale(1); }
+  35%     { transform: scale(0.9); }
+  38%, 100% { transform: scale(1); }
+}
+
+.lock2 { animation-name: lock2; opacity: 0; visibility: hidden; }
+@keyframes lock2 {
+  0%, 36%  { opacity: 1; visibility: visible; }
+  44%, 92% { opacity: 0; visibility: hidden; }
+  98%, 100% { opacity: 1; visibility: visible; }
+}
+
+.blur2 { animation-name: blur2; filter: none; }
+@keyframes blur2 {
+  0%, 36%  { filter: blur(3px); opacity: 0.55; }
+  48%, 92% { filter: blur(0); opacity: 1; }
+  98%, 100% { filter: blur(3px); opacity: 0.55; }
+}
+
+/* ---------- Mock 3: PDF download ---------- */
+.c3 { animation-name: cursor3; left: 80%; top: 22%; }
+@keyframes cursor3 {
+  0%   { left: 40%; top: 85%; opacity: 0; transform: scale(1); }
+  8%   { opacity: 1; }
+  24%  { left: 80%; top: 22%; transform: scale(1); }
+  27%  { transform: scale(0.8); }
+  30%  { transform: scale(1); }
+  88%  { left: 80%; top: 22%; opacity: 1; }
+  96%, 100% { left: 40%; top: 85%; opacity: 0; }
+}
+
+.dlBtn { animation-name: dlBtn; }
+@keyframes dlBtn {
+  0%, 25% { transform: scale(1); }
+  27%     { transform: scale(0.88); }
+  30%, 100% { transform: scale(1); }
+}
+
+.bar3 { animation-name: bar3; width: 100%; }
+@keyframes bar3 {
+  0%, 28%  { width: 0%; }
+  52%, 92% { width: 100%; }
+  98%, 100% { width: 0%; }
+}
+
+.pages3 { animation-name: pages3; }
+@keyframes pages3 {
+  0%, 52%  { opacity: 0; transform: translateY(10%) scale(0.95); }
+  62%, 90% { opacity: 1; transform: translateY(0) scale(1); }
+  97%, 100% { opacity: 0; transform: translateY(10%) scale(0.95); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim, .bubble { animation: none !important; }
+  .cursor { display: none; }
+}

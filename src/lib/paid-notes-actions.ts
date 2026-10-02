@@ -10,6 +10,8 @@ import { deleteByUrl, putBytes } from "@/lib/storage";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
 import { STUDENT_COOKIE, STUDENT_COOKIE_OPTIONS, signStudentSession } from "@/lib/paid-notes";
 import { normalizeEmail, normalizePhone, normalizeUtr, priceFor } from "@/lib/paid-notes-pricing";
+import { FIREBASE_CONFIG, googleSignInEnabled } from "@/lib/firebase-config";
+import { verifyFirebaseIdToken } from "@/lib/firebase-token";
 
 export type FormResult = { ok?: boolean; error?: string };
 
@@ -59,6 +61,22 @@ export async function studentLoginAction(_prev: FormResult, formData: FormData):
   }
   (await cookies()).set(STUDENT_COOKIE, signStudentSession(account.email), STUDENT_COOKIE_OPTIONS);
   // Only same-site paths — never an open redirect.
+  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/paid-notes");
+}
+
+// "Continue with Google" (Firebase): the browser signs in with Google and
+// sends us the ID token; we verify it and start the same student session the
+// password login does. Any verified Google account can sign in — what it
+// unlocks is still only the approved purchases for that Gmail.
+export async function googleSignInAction(idToken: string, next: string): Promise<FormResult> {
+  if (!googleSignInEnabled) return { error: "Google sign-in isn't set up yet." };
+  let email: string;
+  try {
+    ({ email } = await verifyFirebaseIdToken(idToken, FIREBASE_CONFIG.projectId));
+  } catch {
+    return { error: "Google sign-in failed. Please try again." };
+  }
+  (await cookies()).set(STUDENT_COOKIE, signStudentSession(email), STUDENT_COOKIE_OPTIONS);
   redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/paid-notes");
 }
 
