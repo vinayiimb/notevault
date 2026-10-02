@@ -51,6 +51,29 @@ test("previewOf gates short notes too (live bug: a 1.5k-char note was fully free
   assert.ok(!preview.includes("Body three"));
 });
 
+test("previewOf gates notes with no blank lines (live bug: Management Accounting fully free)", () => {
+  const md = [
+    "### Core Objectives",
+    ...Array.from({ length: 6 }, (_, i) => `* **Objective ${i}:** planning, control and decision making support.`),
+    "### Key Techniques and Tools",
+    ...Array.from({ length: 6 }, (_, i) => `* **Tool ${i}:** budgetary control, standard costing, ratio analysis.`),
+    "### Management vs. Financial Accounting",
+    ...Array.from({ length: 6 }, (_, i) => `* Difference ${i}: internal vs external users.`),
+  ].join("\r\n");
+  const { preview, truncated } = previewOf(md);
+  assert.equal(truncated, true);
+  assert.ok(preview.length < md.length * 0.45);
+  assert.ok(!preview.includes("Management vs. Financial"));
+});
+
+test("previewOf never cuts between table rows", () => {
+  const rows = Array.from({ length: 30 }, (_, i) => `| Row ${i} | value ${i} |`);
+  const md = ["Intro line.", "| A | B |", "|---|---|", ...rows, "After the table.", "More text."].join("\n");
+  const { preview, truncated } = previewOf(md);
+  assert.equal(truncated, true);
+  assert.ok(preview.endsWith("| Row 29 | value 29 |"), "the whole table stays together");
+});
+
 test("previewOf can't split a single block, and never returns an empty lock", () => {
   assert.deepEqual(previewOf("One paragraph only."), { preview: "One paragraph only.", truncated: false });
   assert.deepEqual(previewOf("Para one.\n\n"), { preview: "Para one.\n\n", truncated: false });

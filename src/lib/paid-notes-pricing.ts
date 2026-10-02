@@ -53,27 +53,29 @@ export function itemKey(programmeSlug: string, subjectSlug: string) {
   return `${programmeSlug}/${subjectSlug}`;
 }
 
-// The free part of a note: whole markdown blocks up to ~30% of the text
-// (never inside a ``` fence, so a half Mermaid/code block can't leak or
-// break rendering). Every note is gated, short ones included; only a note
-// with no block boundary after the 30% mark (one giant block) stays whole.
+// The free part of a note: the lines up to ~30% of the text. Every note is
+// gated, short ones included. The cut goes at the first line break past
+// 30% — never inside a ``` fence (a half Mermaid/code block) or between two
+// table rows. Not "blank lines only": live notes often have none at all
+// (heading, bullets, heading…), and that left a whole note unlocked.
 export const PREVIEW_RATIO = 0.3;
+
+const isTableRow = (line: string | undefined) => !!line && /^\s*\|/.test(line);
 
 export function previewOf(markdown: string): { preview: string; truncated: boolean } {
   const target = markdown.length * PREVIEW_RATIO;
   const lines = markdown.split("\n");
   let inFence = false;
   let length = 0;
-  for (let i = 0; i < lines.length; i++) {
+  for (let i = 0; i < lines.length - 1; i++) {
     if (/^\s*(```|~~~)/.test(lines[i])) inFence = !inFence;
     length += lines[i].length + 1;
-    // Cut only on a blank line outside a fence — a block boundary.
-    if (length >= target && !inFence && lines[i].trim() === "") {
-      const preview = lines.slice(0, i).join("\n").trimEnd();
-      // Only whitespace left after the cut = nothing to lock.
-      if (!markdown.slice(preview.length).trim()) break;
-      return { preview, truncated: true };
-    }
+    if (length < target || inFence || (isTableRow(lines[i]) && isTableRow(lines[i + 1]))) continue;
+    if (/^\s*#/.test(lines[i])) continue; // don't end on a heading with nothing under it
+    const preview = lines.slice(0, i + 1).join("\n").trimEnd();
+    // Only whitespace left after the cut = nothing to lock.
+    if (!markdown.slice(preview.length).trim()) break;
+    return { preview, truncated: true };
   }
   return { preview: markdown, truncated: false };
 }
