@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
-import { Comic_Neue, Fraunces, Inter, JetBrains_Mono, Manrope } from "next/font/google";
+import { Comic_Neue, Fraunces, Inter, JetBrains_Mono } from "next/font/google";
 import localFont from "next/font/local";
 import "katex/dist/katex.min.css";
 import "./globals.css";
@@ -12,13 +12,9 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-// Selectable as a heading-font option in the Note Designer's typography
-// controls (src/lib/note-theme.ts) alongside Winkle/Inter/Fraunces.
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
-});
+// --font-manrope ("friendly, rounded" notes font option) is defined in
+// globals.css as the system rounded face → Inter. No Google download: the
+// Manrope fetch broke Railway builds (2026-10-04).
 
 // MADE Gentle (the display face used by the reference design) is a paid,
 // non-Google-Fonts typeface — Fraunces is the closest free stand-in (same
@@ -117,7 +113,7 @@ export default function RootLayout({
       lang="en"
       suppressHydrationWarning
       data-scroll-behavior="smooth"
-      className={`${inter.variable} ${fraunces.variable} ${mono.variable} ${winkle.variable} ${manrope.variable} ${comicNeue.variable} h-full antialiased`}
+      className={`${inter.variable} ${fraunces.variable} ${mono.variable} ${winkle.variable} ${comicNeue.variable} h-full antialiased`}
     >
       <body className="flex min-h-full flex-col bg-background text-foreground">
         <script
