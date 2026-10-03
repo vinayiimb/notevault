@@ -1,0 +1,15 @@
+# DU PYQ Online
+
+> DU PYQ Online (https://www.dupyq.online) is a free archive of 29,000+ University of Delhi (DU) previous year question papers across 118 undergraduate programmes, organised by course and subject. Every paper links to its original PDF. No login is required.
+
+## Previous year question papers
+- [All DU previous year papers](https://www.dupyq.online/previous-year-papers): every DU programme with its paper count, linking to course pages
+- [Papers browser](https://www.dupyq.online/papers): pick a course, then a subject, to view papers
+- Course pages: https://www.dupyq.online/papers/{course-slug}, e.g. [B.Com (Hons)](https://www.dupyq.online/papers/bcom-hons): every subject in the course
+- Subject pages: https://www.dupyq.online/papers/{course-slug}/{subject-slug}: every available paper for that subject, grouped by exam year, with paper code (UPC) and paper type
+
+## Other resources
+- [Notes](https://www.dupyq.online/notes): subject notes
+- [Syllabus](https://www.dupyq.online/syllabus)
+- [Blog](https://www.dupyq.online/blog): DU exam guides
+- [Sitemap](https://www.dupyq.online/sitemap.xml)

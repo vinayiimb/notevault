@@ -10,7 +10,6 @@ import {
   isSubjectIndexable,
   getSeoProgrammeSemester,
   getProgrammeSemesterNumbers,
-  isProgrammeSemesterIndexable,
   type SeoSubject,
 } from "@/lib/du-pyp-seo";
 import {
@@ -77,11 +76,6 @@ export async function generateStaticParams() {
     for (const s of p.subjects) {
       if (isSubjectIndexable(s)) params.push({ programmeSlug: p.slug, subjectSlug: s.slug });
     }
-    // Also pre-build this programme's semester pages — small in number,
-    // high SEO value ("du <course> sem <n> pyq").
-    for (const n of await getProgrammeSemesterNumbers(p.slug)) {
-      params.push({ programmeSlug: p.slug, subjectSlug: `semester-${n}` });
-    }
   }
   return params;
 }
@@ -102,7 +96,8 @@ export async function generateMetadata({
       paperCount: ps.totalPapers,
       years: ps.years,
     });
-    return isProgrammeSemesterIndexable(ps) ? meta : { ...meta, robots: { index: false, follow: true } };
+    // Semester pages are noindex while the site focuses on course → subject.
+    return { ...meta, robots: { index: false, follow: true } };
   }
 
   const found = await getSeoSubject(programmeSlug, subjectSlug);
@@ -110,7 +105,6 @@ export async function generateMetadata({
 
   const { programme, subject } = found;
   const meta = subjectPapersMetadata(subject.name, programme.name, `${programme.slug}/${subject.slug}`, {
-    semesters: subject.semesters,
     years: subject.years,
     paperCode: subject.paperCodes[0] ?? null,
     paperCount: subject.papers.length,
@@ -208,12 +202,6 @@ export default async function SubjectPapersPage({
             <dt className="text-muted">Programme</dt>
             <dd className="font-medium text-foreground">{programme.name}</dd>
           </div>
-          {subject.semesters.length > 0 && (
-            <div>
-              <dt className="text-muted">Semester</dt>
-              <dd className="font-medium text-foreground">{subject.semesters.join(", ")}</dd>
-            </div>
-          )}
           {subject.paperTypes.length > 0 && (
             <div>
               <dt className="text-muted">Paper type</dt>
@@ -293,7 +281,7 @@ export default async function SubjectPapersPage({
         </div>
       )}
 
-      {hasContent && subject.semesters.length > 0 && (
+      {hasContent && (
         <section className="mt-14 border-t border-border pt-8">
           <h2 className="mb-4 text-xl font-bold text-foreground">Tools for this subject</h2>
           <ul className="grid gap-2 sm:grid-cols-2">

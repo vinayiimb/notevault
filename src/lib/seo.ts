@@ -133,7 +133,7 @@ export function generateSubjectMetadata(subjectName: string, program: string, se
 export function programmePapersMetadata(name: string, slug: string, paperCount: number, subjectCount: number) {
   const title = `${name} Previous Year Question Papers`;
   const description =
-    `Delhi University ${name} previous year question papers — ${paperCount.toLocaleString("en-IN")} papers across ${subjectCount} subjects, organised by semester and paper type. View or download the original PDFs.`;
+    `Delhi University ${name} previous year question papers — ${paperCount.toLocaleString("en-IN")} papers across ${subjectCount} subjects, organised by subject. View or download the original PDFs.`;
   const canonical = `/papers/${slug}`;
   return {
     title,

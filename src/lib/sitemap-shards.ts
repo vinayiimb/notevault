@@ -85,7 +85,8 @@ export async function listShardNames(): Promise<string[]> {
     getIndexablePaperCodeUrls(),
     getIndexablePaperUrls(),
   ]);
-  const names = ["static", "blog", "programmes", "programme-semesters"];
+  // Semester pages are left out while the site focuses on course → subject.
+  const names = ["static", "blog", "programmes"];
   for (let i = 0; i < chunkCount(subjectUrls.length); i++) names.push(`subjects-${i}`);
   for (let i = 0; i < chunkCount(paperCodeUrls.length); i++) names.push(`paper-codes-${i}`);
   for (let i = 0; i < chunkCount(paperUrls.length); i++) names.push(`papers-${i}`);

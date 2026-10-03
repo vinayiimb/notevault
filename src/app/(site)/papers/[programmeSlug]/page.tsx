@@ -8,7 +8,6 @@ import {
   getRelatedProgrammes,
   isProgrammeIndexable,
   isSubjectIndexable,
-  type SeoSubject,
 } from "@/lib/du-pyp-seo";
 import {
   programmePapersMetadata,
@@ -56,53 +55,6 @@ export async function generateMetadata({
   return meta;
 }
 
-const ROMAN_TO_NUM: Record<string, number> = {
-  I: 1, II: 2, III: 3, IV: 4, V: 5, VI: 6, VII: 7, VIII: 8,
-};
-
-function SemesterGroup({
-  programmeSlug,
-  semester,
-  subjects,
-}: {
-  programmeSlug: string;
-  semester: string;
-  subjects: SeoSubject[];
-}) {
-  const semNum = ROMAN_TO_NUM[semester];
-  return (
-    <section>
-      <h2 className="mb-3 text-lg font-bold text-foreground">
-        {semNum ? (
-          <Link
-            href={`/papers/${programmeSlug}/semester-${semNum}`}
-            className="hover:text-accent hover:underline"
-          >
-            Semester {semester}
-          </Link>
-        ) : (
-          <>Semester {semester}</>
-        )}
-      </h2>
-      <ul className="grid gap-2 sm:grid-cols-2">
-        {subjects.map((s) => (
-          <li key={s.slug}>
-            <Link
-              href={`/papers/${programmeSlug}/${s.slug}`}
-              className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50"
-            >
-              <span className="min-w-0 truncate font-medium text-foreground">{s.name}</span>
-              <span className="ml-2 shrink-0 text-xs text-muted">
-                {s.papers.length} paper{s.papers.length === 1 ? "" : "s"}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 export default async function ProgrammePapersPage({
   params,
 }: {
@@ -123,22 +75,8 @@ export default async function ProgrammePapersPage({
     { name: programme.name, url: `/papers/${programme.slug}` },
   ];
 
-  // Bucket subjects by semester (a subject can appear in more than one).
-  const bySemester = new Map<string, SeoSubject[]>();
-  const noSemester: SeoSubject[] = [];
-  for (const s of indexableSubjects) {
-    if (s.semesters.length === 0) {
-      noSemester.push(s);
-      continue;
-    }
-    for (const sem of s.semesters) {
-      if (!bySemester.has(sem)) bySemester.set(sem, []);
-      bySemester.get(sem)!.push(s);
-    }
-  }
-  const orderedSemesters = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "Pool"].filter((s) =>
-    bySemester.has(s),
-  );
+  // Course → subject only (semesters are out of focus for now).
+  const sortedSubjects = indexableSubjects.slice().sort((a, b) => a.name.localeCompare(b.name));
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
@@ -149,7 +87,7 @@ export default async function ProgrammePapersPage({
           __html: JSON.stringify(
             collectionPageJsonLd({
               name: `${programme.name} Previous Year Question Papers`,
-              description: `Delhi University ${programme.name} previous year question papers by semester and subject.`,
+              description: `Delhi University ${programme.name} previous year question papers by subject.`,
               url: absoluteUrl(`/papers/${programme.slug}`),
               itemUrls: indexableSubjects.map((s) => absoluteUrl(`/papers/${programme.slug}/${s.slug}`)),
             }),
@@ -182,42 +120,24 @@ export default async function ProgrammePapersPage({
         )}
       </header>
 
-      <div className="space-y-8">
-        {orderedSemesters.map((sem) => (
-          <SemesterGroup
-            key={sem}
-            programmeSlug={programme.slug}
-            semester={sem}
-            subjects={bySemester
-              .get(sem)!
-              .slice()
-              .sort((a, b) => a.name.localeCompare(b.name))}
-          />
-        ))}
-
-        {noSemester.length > 0 && (
-          <section>
-            <h2 className="mb-3 text-lg font-bold text-foreground">Other subjects</h2>
-            <ul className="grid gap-2 sm:grid-cols-2">
-              {noSemester
-                .sort((a, b) => a.name.localeCompare(b.name))
-                .map((s) => (
-                  <li key={s.slug}>
-                    <Link
-                      href={`/papers/${programme.slug}/${s.slug}`}
-                      className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50"
-                    >
-                      <span className="min-w-0 truncate font-medium text-foreground">{s.name}</span>
-                      <span className="ml-2 shrink-0 text-xs text-muted">
-                        {s.papers.length} paper{s.papers.length === 1 ? "" : "s"}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-            </ul>
-          </section>
-        )}
-      </div>
+      <section>
+        <h2 className="mb-3 text-lg font-bold text-foreground">Subjects</h2>
+        <ul className="grid gap-2 sm:grid-cols-2">
+          {sortedSubjects.map((s) => (
+            <li key={s.slug}>
+              <Link
+                href={`/papers/${programme.slug}/${s.slug}`}
+                className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50"
+              >
+                <span className="min-w-0 truncate font-medium text-foreground">{s.name}</span>
+                <span className="ml-2 shrink-0 text-xs text-muted">
+                  {s.papers.length} paper{s.papers.length === 1 ? "" : "s"}
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
 
       {relatedProgrammes.length > 0 && (
         <section className="mt-14 border-t border-border pt-8">

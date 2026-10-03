@@ -1,8 +1,8 @@
 /**
  * du-pyp-seo.ts — the SEO page + sitemap data layer for DU Previous Year Papers.
  *
- * Sits on top of `du-pyp-data.ts` (which reads the static
- * `du-question-bank-full-mapped.json` + Ramanujan catalog — no database) and
+ * Sits on top of `du-pyp-data.ts`'s /papers catalog loader
+ * (`public/data/papers-catalog.json`, same data as the /papers browser) and
  * turns those rows into a stable, crawlable URL hierarchy:
  *
  *   /papers/[programmeSlug]                    — Level 1, a DU programme
@@ -20,7 +20,7 @@
  * duplicate URLs.
  */
 import "server-only";
-import { getAllDuPypPapers, type DuPypPaper, type DuExamPaper } from "@/lib/du-pyp-data";
+import { getCatalogDuPypPapers, type DuPypPaper, type DuExamPaper } from "@/lib/du-pyp-data";
 import { slugify } from "@/lib/utils";
 
 /* ------------------------------------------------------------------ */
@@ -314,7 +314,7 @@ function examToSeoPapers(
 }
 
 async function buildGraph(): Promise<SeoGraph> {
-  const nodes: DuPypPaper[] = await getAllDuPypPapers();
+  const nodes: DuPypPaper[] = await getCatalogDuPypPapers();
 
   // 1. group raw subject-nodes -> consolidated SeoSubject, keyed by
   //    (programmeSlug, subjectSlug).

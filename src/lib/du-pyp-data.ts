@@ -3,7 +3,9 @@
  * Source: du-question-bank-full-mapped.json (15,165 rows scraped from qb.exam.du.ac.in,
  * matched against the official syllabus catalogue).
  */
-import { getDuQuestionBankRows, type DuQuestionBankRow as RawQuestionBankRow } from "@/lib/du-question-bank-raw-data";
+import fs from "node:fs";
+import path from "node:path";
+import { getDuQuestionBankRows } from "@/lib/du-question-bank-raw-data";
 // JSON removed for async loading
 
 export interface DuExamPaper {
@@ -242,6 +244,136 @@ async function buildPapers(): Promise<DuPypPaper[]> {
     papers.push(rest);
   }
   return papers;
+}
+
+/** One row of public/data/papers-catalog.json — the /papers ("ALL PYQ") dataset. */
+interface CatalogRow {
+  course: string;
+  subject: string;
+  semester: string | null;
+  semesterGroup?: string | null;
+  yearRange?: string | null;
+  pdfUrl: string;
+  note?: string | null;
+  isShivaji?: boolean;
+  isKalindi?: boolean;
+  isANDC?: boolean;
+  isRamanujan?: boolean;
+  college?: string | null;
+}
+
+let catalogCache: CatalogRow[] | null = null;
+
+// The /papers catalog (29k rows, ~13MB) is the single source of truth for
+// programmes, subjects and paper counts across the site and the sitemap.
+// Read once per process via fs (not a JS import — see du-question-bank-raw-data.ts).
+function getCatalogRows(): CatalogRow[] {
+  if (catalogCache) return catalogCache;
+  try {
+    catalogCache = JSON.parse(
+      fs.readFileSync(path.join(process.cwd(), "public", "data", "papers-catalog.json"), "utf-8"),
+    ) as CatalogRow[];
+  } catch (err) {
+    console.warn("Failed to load papers catalog JSON:", err);
+    catalogCache = [];
+  }
+  return catalogCache;
+}
+
+/**
+ * Pull structured fields out of a catalog note, e.g.
+ * "UPC 2302201101 | DSC/Core | DSC I | NOV-DEC-2025 | SET-1 | 90 marks".
+ */
+export function parseCatalogNote(note: string | null | undefined) {
+  const parts = (note ?? "").split("|").map((x) => x.trim()).filter(Boolean);
+  const upc = parts.map((x) => x.match(/^UPC\s*([0-9]{4,})/i)?.[1]).find(Boolean) ?? null;
+  const session = parts.find((x) => /^(MAY-JUNE|NOV-DEC|APRIL-MAY|DEC)[-\s]?\d{4}$/i.test(x)) ?? null;
+  const set = parts.find((x) => /^SET[-\s]?\w+$/i.test(x)) ?? null;
+  const marks = parts.map((x) => x.match(/^(\d+)\s*marks$/i)?.[1]).find(Boolean) ?? null;
+  const type = parts.find((x) => !/^UPC/i.test(x) && x !== session && x !== set && !/marks$/i.test(x)) ?? null;
+  return { upc, session, set, marks, paperType: normalizePaperType(type?.split(/\s/)[0]) };
+}
+
+async function buildCatalogPapers(): Promise<DuPypPaper[]> {
+  const bySubject = new Map<string, BuiltSubject>();
+
+  for (const row of getCatalogRows()) {
+    const programme = (row.course ?? "").trim();
+    const subjectName = (row.subject ?? "").trim();
+    const link = row.pdfUrl?.trim();
+    if (!programme || !subjectName || !link) continue;
+
+    const { upc, session, set, marks, paperType } = parseCatalogNote(row.note);
+    // "Semester (1,3,5)" / "5" / null-with-semesterGroup all occur in the catalog.
+    const semesters = normalizeSemester((row.semester ?? row.semesterGroup ?? "").replace(/[()]/g, " "));
+    const year = row.yearRange?.match(/(\d{4})(?!.*\d{4})/)?.[1] ?? null;
+
+    // Same grouping as the /papers browser: one subject per (course, subject name).
+    const key = [programme, subjectName.toLowerCase()].join("||");
+    let subject = bySubject.get(key);
+    if (!subject) {
+      subject = {
+        programme,
+        semesters,
+        paperType,
+        subjectName,
+        canonicalName: subjectName,
+        courseNumber: null,
+        upc,
+        credits: null,
+        officialLink: null,
+        examPapers: [],
+        _examLinkSeen: new Set(),
+      };
+      bySubject.set(key, subject);
+    } else {
+      for (const s of semesters) if (!subject.semesters.includes(s)) subject.semesters.push(s);
+      if (!subject.upc && upc) subject.upc = upc;
+      if (subject.paperType === "Other" && paperType !== "Other") subject.paperType = paperType;
+    }
+
+    if (subject._examLinkSeen.has(link)) continue;
+    subject._examLinkSeen.add(link);
+    const college =
+      row.college || (row.isShivaji ? "Shivaji" : row.isKalindi ? "Kalindi" : row.isANDC ? "ANDC" : row.isRamanujan ? "Ramanujan" : undefined);
+    subject.examPapers.push({
+      year,
+      session,
+      set,
+      marks,
+      link,
+      isShivaji: !!row.isShivaji,
+      isKalindi: !!row.isKalindi,
+      isANDC: !!row.isANDC,
+      isRamanujan: !!row.isRamanujan,
+      college,
+    });
+  }
+
+  const papers: DuPypPaper[] = [];
+  for (const subject of bySubject.values()) {
+    subject.semesters.sort((a, b) => ROMAN_ORDER.indexOf(a) - ROMAN_ORDER.indexOf(b));
+    subject.examPapers.sort((a, b) => Number(b.year ?? 0) - Number(a.year ?? 0));
+    const { _examLinkSeen, ...rest } = subject;
+    void _examLinkSeen;
+    papers.push(rest);
+  }
+  return papers;
+}
+
+let catalogPapersCache: DuPypPaper[] | null = null;
+/**
+ * Subject-nodes built from the /papers catalog. Used only by the SEO layer
+ * (du-pyp-seo.ts → /papers/[programme]/…, /paper/…, sitemap) so those pages
+ * mirror the /papers browser. The /papers page itself is untouched.
+ */
+export async function getCatalogDuPypPapers(): Promise<DuPypPaper[]> {
+  return (catalogPapersCache ??= await buildCatalogPapers());
+}
+
+/** Rows in papers-catalog.json — the number the /papers page shows. */
+export function getCatalogPaperCount(): number {
+  return getCatalogRows().length;
 }
 
 let allPapersCache: DuPypPaper[] | null = null;

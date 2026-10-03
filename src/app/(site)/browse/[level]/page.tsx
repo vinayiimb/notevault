@@ -79,7 +79,12 @@ export default async function BrowseLevelPage({
         Previous year questions, notes &amp; answer keys
       </h1>
       <p className="mt-2 text-sm text-muted">
-        Pick your course and semester for a quick jump, or browse every course below.
+        Pick your course and semester for a quick jump, or browse every course below. For
+        question papers grouped by programme, semester and subject, see{" "}
+        <Link href="/previous-year-papers" className="text-accent hover:underline">
+          all DU previous year papers
+        </Link>
+        .
       </p>
 
       {programs.length > 0 && (
@@ -131,7 +136,7 @@ export default async function BrowseLevelPage({
                         {program.terms.length} term{program.terms.length === 1 ? "" : "s"}
                       </td>
                       <td className="px-4 py-4 text-muted">
-                        {subjectCount} subject{subjectCount === 1 ? "" : "s"}
+                        {subjectCount > 0 ? `${subjectCount} subject${subjectCount === 1 ? "" : "s"}` : "—"}
                       </td>
                       <td className="px-4 py-4 text-right">
                         <ArrowRight aria-hidden="true" size={17} weight="bold" className="inline-block text-muted" />

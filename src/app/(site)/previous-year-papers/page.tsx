@@ -7,6 +7,7 @@ import Link from "next/link";
 import { Calendar, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { getProgramsByLevel, getExamSessions } from "@/lib/data";
 import { getSeoProgrammes, isProgrammeIndexable } from "@/lib/du-pyp-seo";
+import { getCatalogPaperCount } from "@/lib/du-pyp-data";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
@@ -23,6 +24,8 @@ export default async function PreviousYearPapersPage() {
     getSeoProgrammes(),
   ]);
 
+  const totalPapers = getCatalogPaperCount();
+  const subjectCount = seoProgrammes.reduce((n, p) => n + p.subjects.length, 0);
   const indexableProgrammes = seoProgrammes
     .filter(isProgrammeIndexable)
     .sort((a, b) => a.name.localeCompare(b.name));
@@ -42,8 +45,10 @@ export default async function PreviousYearPapersPage() {
           DU Previous Year Question Papers
         </h1>
         <p className="mt-3 text-base text-muted">
-          Find and download Delhi University previous year question papers by course, subject, semester, and year. 
-          Get instant access to study materials, solution keys, and past papers with no registration required.
+          DU PYQ Online has {totalPapers.toLocaleString("en-IN")} Delhi University previous year
+          question papers across {seoProgrammes.length} programmes and{" "}
+          {subjectCount.toLocaleString("en-IN")} subjects, organised by programme, subject,
+          paper code (UPC) and exam session. Every paper links to its original PDF — free, no login required.
         </p>
       </div>
 
