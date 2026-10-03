@@ -2,6 +2,7 @@ import { extractContentHeadings, preprocessNotesMarkdown } from "@/lib/content/t
 import { themeValuesToTokens, LEGACY_NOTES_THEME_TO_PRESET } from "@/lib/content/theme-tokens";
 import { findNotesLabTheme } from "@/lib/content/theme-presets";
 import { NotesReadingChrome } from "@/components/content/notes/reading-chrome";
+import { AskAiPanel } from "@/components/content/notes/ask-ai-panel";
 import { GatedNotes } from "@/components/paid-notes/gated-notes";
 import { resolveNotesTheme } from "./notes-renderer";
 import { StructuredNoteRenderer } from "./structured-note-renderer";
@@ -49,12 +50,14 @@ export function NotesSection({
               <StructuredNoteExportBar note={parsed.data} theme={resolvedTheme} />
             </div>
             <div
+              id="structured-note"
               data-pdf-root
               className="mt-3 overflow-hidden rounded-2xl border"
               style={{ borderColor: resolvedTheme.colors.border, backgroundColor: resolvedTheme.colors.background }}
             >
               <StructuredNoteRenderer note={parsed.data} theme={resolvedTheme} />
             </div>
+            <AskAiPanel subject={subjectName} targetId="structured-note" />
           </div>
         </div>
       );

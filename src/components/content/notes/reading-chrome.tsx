@@ -6,6 +6,7 @@ import { ContentReadingProgress } from "./reading-progress";
 import { ContentTocSidebar } from "./toc-sidebar";
 import { NotesMarkdown } from "./notes-markdown";
 import { ContentReadingHeader } from "./reading-header";
+import { AskAiPanel } from "./ask-ai-panel";
 
 const ARTICLE_ID = "notes-article";
 
@@ -62,6 +63,7 @@ export function NotesReadingChrome({
             </div>
           </div>
         </div>
+        <AskAiPanel subject={title} targetId={ARTICLE_ID} />
       </ContentLightboxProvider>
     </ContentThemeProvider>
   );
