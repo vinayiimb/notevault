@@ -8,7 +8,16 @@
 - Course pages: https://www.dupyq.online/papers/{course-slug}, e.g. [B.Com (Hons)](https://www.dupyq.online/papers/bcom-hons): every subject in the course
 - Subject pages: https://www.dupyq.online/papers/{course-slug}/{subject-slug}: every available paper for that subject, grouped by exam year, with paper code (UPC) and paper type
 
+## By UGCF paper type (all courses)
+- [Skill Enhancement Courses (SEC)](https://www.dupyq.online/skill-enhancement-courses)
+- [Value Addition Courses (VAC)](https://www.dupyq.online/value-addition-courses)
+- [Ability Enhancement Courses (AEC)](https://www.dupyq.online/ability-enhancement-courses)
+- [Generic Electives (GE)](https://www.dupyq.online/generic-electives)
+- Semester pages: https://www.dupyq.online/papers/{course-slug}/semester-{1-8}, e.g. [B.Com (Hons) Semester 1](https://www.dupyq.online/papers/bcom-hons/semester-1)
+- Paper code pages: https://www.dupyq.online/paper-code/{UPC}
+
 ## Other resources
+- [Full index of every course and subject](https://www.dupyq.online/llms-full.txt)
 - [Notes](https://www.dupyq.online/notes): subject notes
 - [Syllabus](https://www.dupyq.online/syllabus)
 - [Blog](https://www.dupyq.online/blog): DU exam guides

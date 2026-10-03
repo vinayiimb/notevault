@@ -1,9 +1,11 @@
 import Link from "next/link";
 import { CalendarBlank, Calculator, Notebook, BookOpenText } from "@phosphor-icons/react/dist/ssr";
 import type { SeoProgrammeSemester } from "@/lib/du-pyp-seo";
-import { collectionPageJsonLd, absoluteUrl } from "@/lib/seo";
+import { collectionPageJsonLd, semesterFaqs, absoluteUrl } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
+import { FaqBlock } from "@/components/seo/faq-block";
+import { ShareButtons } from "@/components/seo/share-buttons";
 
 // Human-readable label for a paper-type code, reused by the auto-generated
 // subject-mix summary below (SEO copy) and the grouped section headings.
@@ -221,6 +223,17 @@ export function ProgrammeSemesterView({
           )}
         </ul>
       </section>
+
+      <div className="mt-10">
+        <ShareButtons
+          url={absoluteUrl(`/papers/${programme.slug}/semester-${semester}`)}
+          text={`Got the DU ${programme.name} Sem ${semester} PYQs here:`}
+        />
+      </div>
+
+      <FaqBlock
+        faqs={semesterFaqs({ name: programme.name, semester, subjectCount: subjects.length, paperCount: totalPapers, years })}
+      />
 
       {otherSemesters.length > 0 && (
         <nav className="mt-14 border-t border-border pt-8" aria-label="Other semesters">

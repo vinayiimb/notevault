@@ -52,6 +52,28 @@ export default async function PreviousYearPapersPage() {
         </p>
       </div>
 
+      {/* UGCF paper-type hubs — cross-programme AEC / SEC / VAC / GE landing pages */}
+      <section className="mt-12">
+        <h2 className="text-xl font-bold text-foreground">Browse by paper type (UGCF)</h2>
+        <ul className="mt-4 flex flex-wrap gap-2">
+          {[
+            ["/skill-enhancement-courses", "Skill Enhancement (SEC)"],
+            ["/value-addition-courses", "Value Addition (VAC)"],
+            ["/ability-enhancement-courses", "Ability Enhancement (AEC)"],
+            ["/generic-electives", "Generic Electives (GE)"],
+          ].map(([href, label]) => (
+            <li key={href}>
+              <Link
+                href={href}
+                className="inline-block rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground transition hover:border-accent"
+              >
+                {label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
       {/* All DU programmes — crawlable index into the /papers/[programme] hierarchy */}
       <section className="mt-12">
         <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">

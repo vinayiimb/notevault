@@ -813,3 +813,35 @@ export async function getSeoCoverageStats() {
       indexablePapers,
   };
 }
+
+/* ------------------------------------------------------------------ */
+/* UGCF paper-type hubs (AEC / SEC / VAC / GE)                         */
+/* ------------------------------------------------------------------ */
+
+export interface PaperTypeHubSubject {
+  name: string;
+  paperCount: number;
+  placements: { programmeName: string; programmeSlug: string; subjectSlug: string; paperCount: number }[];
+}
+
+/** Every indexable subject tagged with `type`, merged by name across programmes, A–Z. */
+export async function getPaperTypeHub(type: string): Promise<{ subjects: PaperTypeHubSubject[]; totalPapers: number }> {
+  const byName = new Map<string, PaperTypeHubSubject>();
+  for (const p of (await getSeoProgrammes()).filter(isProgrammeIndexable)) {
+    for (const s of p.subjects) {
+      if (!isSubjectIndexable(s) || !s.paperTypes.includes(type)) continue;
+      const key = s.name.trim().toLowerCase();
+      const hub = byName.get(key) ?? { name: s.name.trim(), paperCount: 0, placements: [] };
+      hub.paperCount += s.papers.length;
+      hub.placements.push({
+        programmeName: p.name,
+        programmeSlug: p.slug,
+        subjectSlug: s.slug,
+        paperCount: s.papers.length,
+      });
+      byName.set(key, hub);
+    }
+  }
+  const subjects = [...byName.values()].sort((a, b) => a.name.localeCompare(b.name));
+  return { subjects, totalPapers: subjects.reduce((n, s) => n + s.paperCount, 0) };
+}

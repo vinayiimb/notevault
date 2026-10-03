@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteSidebar } from "@/components/site-sidebar";
 import { FeatureGate } from "@/components/feature-flags-client";
+import { CommandPalette } from "@/components/command-palette";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className="flex w-full flex-1">
+      <CommandPalette />
       {!isPapers && <SiteSidebar />}
       <div className="flex min-w-0 flex-1 flex-col">
         <SiteHeader />

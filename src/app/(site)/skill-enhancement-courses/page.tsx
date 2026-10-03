@@ -1,24 +1,8 @@
-import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { PaperTypeHub, paperTypeMetadata } from "@/components/seo/paper-type-hub";
 
-interface Props {
-  params: Promise<{ slug?: string; id?: string; code?: string; number?: string }>;
-}
+export const revalidate = 86400;
+export const metadata = paperTypeMetadata("SEC");
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  return {
-    title: `Skill Enhancement Courses (SEC)`,
-    description: `Comprehensive resources for Skill Enhancement Courses (SEC)`,
-  };
-}
-
-export default async function Page({ params }: Props) {
-  const resolvedParams = await params;
-  return (
-    <div className="container mx-auto px-4 py-24 min-h-screen">
-      <h1 className="text-4xl font-bold mb-6">Skill Enhancement Courses (SEC)</h1>
-      <p className="text-gray-600">This page is part of the new SEO architecture. Dynamic data integration pending.</p>
-    </div>
-  );
+export default function Page() {
+  return <PaperTypeHub type="SEC" />;
 }

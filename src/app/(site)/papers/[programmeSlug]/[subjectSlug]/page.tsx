@@ -10,17 +10,21 @@ import {
   isSubjectIndexable,
   getSeoProgrammeSemester,
   getProgrammeSemesterNumbers,
+  isProgrammeSemesterIndexable,
   type SeoSubject,
 } from "@/lib/du-pyp-seo";
 import {
   subjectPapersMetadata,
   programmeSemesterMetadata,
   collectionPageJsonLd,
+  subjectFaqs,
   absoluteUrl,
 } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PaperCard } from "@/components/seo/paper-card";
+import { FaqBlock } from "@/components/seo/faq-block";
+import { ShareButtons } from "@/components/seo/share-buttons";
 import { ProgrammeSemesterView } from "@/components/seo/programme-semester-view";
 import { getSemesterGuidePost, getPyqUsageGuidePost } from "@/lib/blog";
 
@@ -96,8 +100,9 @@ export async function generateMetadata({
       paperCount: ps.totalPapers,
       years: ps.years,
     });
-    // Semester pages are noindex while the site focuses on course → subject.
-    return { ...meta, robots: { index: false, follow: true } };
+    // Thin / data-noise semesters stay out of the index.
+    if (!isProgrammeSemesterIndexable(ps)) return { ...meta, robots: { index: false, follow: true } };
+    return meta;
   }
 
   const found = await getSeoSubject(programmeSlug, subjectSlug);
@@ -265,6 +270,15 @@ export default async function SubjectPapersPage({
       </header>
 
       {hasContent && (
+        <div className="mb-8">
+          <ShareButtons
+            url={absoluteUrl(`/papers/${programme.slug}/${subject.slug}`)}
+            text={`Got the DU ${subject.name} PYQs here:`}
+          />
+        </div>
+      )}
+
+      {hasContent && (
         <div className="space-y-8">
           {years.map((year) => (
             <section key={year}>
@@ -350,6 +364,20 @@ export default async function SubjectPapersPage({
             ))}
           </ul>
         </section>
+      )}
+
+      {hasContent && (
+        <FaqBlock
+          faqs={subjectFaqs({
+            name: subject.name,
+            programmeName: programme.name,
+            paperCount: subject.papers.length,
+            years: subject.years,
+            paperCodes: subject.paperCodes,
+            semesters: subject.semesters,
+            paperTypes: subject.paperTypes,
+          })}
+        />
       )}
 
       <p className="mt-10 text-sm text-muted">

@@ -6,16 +6,22 @@ import {
   getSeoProgramme,
   getSeoProgrammes,
   getRelatedProgrammes,
+  getProgrammeSemesterNumbers,
+  getSeoProgrammeSemester,
   isProgrammeIndexable,
+  isProgrammeSemesterIndexable,
   isSubjectIndexable,
 } from "@/lib/du-pyp-seo";
 import {
   programmePapersMetadata,
+  programmeFaqs,
   collectionPageJsonLd,
   absoluteUrl,
 } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
+import { FaqBlock } from "@/components/seo/faq-block";
+import { ShareButtons } from "@/components/seo/share-buttons";
 
 // Content is derived from a static JSON catalog that changes at most a few
 // times a week (new exam sessions). Rebuild pages daily; render on demand
@@ -68,6 +74,11 @@ export default async function ProgrammePapersPage({
   if (indexableSubjects.length === 0) notFound();
 
   const relatedProgrammes = await getRelatedProgrammes(programme.slug);
+  const semesterNumbers: number[] = [];
+  for (const n of await getProgrammeSemesterNumbers(programme.slug)) {
+    const ps = await getSeoProgrammeSemester(programme.slug, n);
+    if (ps && isProgrammeSemesterIndexable(ps)) semesterNumbers.push(n);
+  }
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
@@ -75,7 +86,6 @@ export default async function ProgrammePapersPage({
     { name: programme.name, url: `/papers/${programme.slug}` },
   ];
 
-  // Course → subject only (semesters are out of focus for now).
   const sortedSubjects = indexableSubjects.slice().sort((a, b) => a.name.localeCompare(b.name));
 
   return (
@@ -120,6 +130,24 @@ export default async function ProgrammePapersPage({
         )}
       </header>
 
+      {semesterNumbers.length > 0 && (
+        <nav className="mb-8" aria-label="Browse by semester">
+          <h2 className="mb-3 text-lg font-bold text-foreground">Browse by semester</h2>
+          <ul className="flex flex-wrap gap-2">
+            {semesterNumbers.map((n) => (
+              <li key={n}>
+                <Link
+                  href={`/papers/${programme.slug}/semester-${n}`}
+                  className="inline-block rounded-lg border border-border bg-surface px-4 py-2 text-sm font-medium text-foreground hover:border-accent/50"
+                >
+                  Semester {n}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+
       <section>
         <h2 className="mb-3 text-lg font-bold text-foreground">Subjects</h2>
         <ul className="grid gap-2 sm:grid-cols-2">
@@ -156,6 +184,23 @@ export default async function ProgrammePapersPage({
           </ul>
         </section>
       )}
+
+      <div className="mt-10">
+        <ShareButtons
+          url={absoluteUrl(`/papers/${programme.slug}`)}
+          text={`Got the DU ${programme.name} PYQs here:`}
+        />
+      </div>
+
+      <FaqBlock
+        faqs={programmeFaqs({
+          name: programme.name,
+          paperCount: programme.totalPapers,
+          subjectCount: indexableSubjects.length,
+          semesters: programme.semesters,
+          paperTypes: programme.paperTypes,
+        })}
+      />
 
       <p className="mt-10 text-sm text-muted">
         Looking for a different course?{" "}

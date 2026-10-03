@@ -8,10 +8,12 @@ import {
   getIndexablePaperUrls,
   isPaperSlugIndexable,
 } from "@/lib/du-pyp-seo";
-import { individualPaperMetadata } from "@/lib/seo";
+import { absoluteUrl, individualPaperMetadata, learningResourceJsonLd, paperFaqs } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PaperCard } from "@/components/seo/paper-card";
+import { FaqBlock } from "@/components/seo/faq-block";
+import { ShareButtons } from "@/components/seo/share-buttons";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -37,6 +39,7 @@ export async function generateMetadata({
     year: paper.year,
     session: paper.session,
     slug: paper.slug,
+    paperCode: paper.paperCode,
   });
   if (!(await isPaperSlugIndexable(slug))) {
     return { ...meta, robots: { index: false, follow: true } };
@@ -68,6 +71,10 @@ export default async function IndividualPaperPage({
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
       <BreadcrumbJsonLd items={breadcrumbs} />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(learningResourceJsonLd(paper)) }}
+      />
       <VisibleBreadcrumb items={breadcrumbs} />
 
       <header className="mb-6">
@@ -182,6 +189,13 @@ export default async function IndividualPaperPage({
         </a>
       </div>
 
+      <div className="mb-8">
+        <ShareButtons
+          url={absoluteUrl(`/paper/${paper.slug}`)}
+          text={`Got the DU ${paper.subjectName}${paper.year ? ` ${paper.year}` : ""} PYQ here:`}
+        />
+      </div>
+
       {paper.syllabusUrl && (
         <p className="mb-8 text-sm">
           <a
@@ -215,6 +229,8 @@ export default async function IndividualPaperPage({
           </p>
         </section>
       )}
+
+      <FaqBlock faqs={paperFaqs(paper)} />
     </div>
   );
 }

@@ -60,6 +60,10 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: EntryFreq }[]
   { path: "/previous-year-papers", priority: 0.9, changefreq: "daily" },
   { path: "/papers", priority: 0.9, changefreq: "daily" },
   { path: "/notes", priority: 0.8, changefreq: "weekly" },
+  { path: "/skill-enhancement-courses", priority: 0.7, changefreq: "weekly" },
+  { path: "/value-addition-courses", priority: 0.7, changefreq: "weekly" },
+  { path: "/ability-enhancement-courses", priority: 0.7, changefreq: "weekly" },
+  { path: "/generic-electives", priority: 0.7, changefreq: "weekly" },
   { path: "/syllabus", priority: 0.7, changefreq: "weekly" },
   { path: "/browse/college", priority: 0.7, changefreq: "weekly" },
   { path: "/semesters", priority: 0.6, changefreq: "weekly" },
@@ -85,8 +89,7 @@ export async function listShardNames(): Promise<string[]> {
     getIndexablePaperCodeUrls(),
     getIndexablePaperUrls(),
   ]);
-  // Semester pages are left out while the site focuses on course → subject.
-  const names = ["static", "blog", "programmes"];
+  const names = ["static", "blog", "programmes", "programme-semesters"];
   for (let i = 0; i < chunkCount(subjectUrls.length); i++) names.push(`subjects-${i}`);
   for (let i = 0; i < chunkCount(paperCodeUrls.length); i++) names.push(`paper-codes-${i}`);
   for (let i = 0; i < chunkCount(paperUrls.length); i++) names.push(`papers-${i}`);

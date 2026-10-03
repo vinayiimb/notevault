@@ -131,7 +131,7 @@ export function generateSubjectMetadata(subjectName: string, program: string, se
 /* ------------------------------------------------------------------ */
 
 export function programmePapersMetadata(name: string, slug: string, paperCount: number, subjectCount: number) {
-  const title = `${name} Previous Year Question Papers`;
+  const title = `${name} Previous Year Question Papers PDF`;
   const description =
     `Delhi University ${name} previous year question papers — ${paperCount.toLocaleString("en-IN")} papers across ${subjectCount} subjects, organised by subject. View or download the original PDFs.`;
   const canonical = `/papers/${slug}`;
@@ -149,7 +149,7 @@ export function programmeSemesterMetadata(
   semester: number,
   opts: { subjectCount: number; paperCount: number; years: string[] },
 ) {
-  const title = `${name} Semester ${semester} Previous Year Question Papers | DU`;
+  const title = `${name} Semester ${semester} Previous Year Question Papers PDF | DU`;
   const yearSpan =
     opts.years.length > 1 ? `${opts.years[opts.years.length - 1]}–${opts.years[0]}` : opts.years[0];
   const description =
@@ -172,7 +172,7 @@ export function subjectPapersMetadata(
   opts: { semesters?: string[]; years?: string[]; paperCode?: string | null; paperCount: number },
 ) {
   const semPart = opts.semesters && opts.semesters.length === 1 ? ` (Semester ${opts.semesters[0]})` : "";
-  const title = `${subjectName} DU Previous Year Question Papers | ${programmeName}`;
+  const title = `${subjectName} Previous Year Question Papers PDF | DU ${programmeName}`;
   const yearSpan =
     opts.years && opts.years.length > 1 ? `${opts.years[opts.years.length - 1]}–${opts.years[0]}` : opts.years?.[0];
   const description =
@@ -210,12 +210,14 @@ export function individualPaperMetadata(p: {
   year: string | null;
   session: string | null;
   slug: string;
+  paperCode?: string | null;
 }) {
   const when = [p.session, p.year].filter(Boolean).join(" ");
   const title =
-    `${p.subjectName} Question Paper${p.year ? ` ${p.year}` : ""} | ${p.programmeName} DU`;
+    `${p.subjectName} Question Paper${p.year ? ` ${p.year}` : ""} PDF | ${p.programmeName} DU`;
   const description =
-    `Delhi University ${p.programmeName} — ${p.subjectName} previous year question paper${when ? ` (${when})` : ""}. ` +
+    `Delhi University ${p.programmeName} — ${p.subjectName} previous year question paper${when ? ` (${when})` : ""}` +
+    `${p.paperCode ? `, paper code ${p.paperCode}` : ""}. ` +
     `View the original PDF, download it, or browse other years for the same subject.`;
   const canonical = `/paper/${p.slug}`;
   return {
@@ -265,4 +267,168 @@ export function educationalCourseJsonLd(courseName: string, description: string,
     },
     "url": absoluteUrl(url)
   };
+}
+
+/* ------------------------------------------------------------------ */
+/* LearningResource + FAQ — rich results / AI-answer extraction        */
+/* ------------------------------------------------------------------ */
+
+export interface Faq {
+  q: string;
+  a: string;
+}
+
+export function faqJsonLd(faqs: Faq[]) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    mainEntity: faqs.map((f) => ({
+      "@type": "Question",
+      name: f.q,
+      acceptedAnswer: { "@type": "Answer", text: f.a },
+    })),
+  };
+}
+
+/** One past exam paper as a free, openly-accessible learning resource. */
+export function learningResourceJsonLd(p: {
+  slug: string;
+  subjectName: string;
+  programmeName: string;
+  year: string | null;
+  session: string | null;
+  paperType: string | null;
+  paperCode: string | null;
+  fileUrl: string;
+}) {
+  const when = [p.session, p.year].filter(Boolean).join(" ");
+  return {
+    "@context": "https://schema.org",
+    "@type": "LearningResource",
+    name: `${p.subjectName} Question Paper${p.year ? ` ${p.year}` : ""} — DU ${p.programmeName}`,
+    url: absoluteUrl(`/paper/${p.slug}`),
+    learningResourceType: "Past Examination Paper",
+    educationalLevel: "Undergraduate",
+    inLanguage: "en",
+    isAccessibleForFree: true,
+    about: p.subjectName,
+    ...(when ? { temporalCoverage: when } : {}),
+    ...(p.paperCode ? { identifier: p.paperCode } : {}),
+    educationalAlignment: {
+      "@type": "AlignmentObject",
+      alignmentType: "educationalFramework",
+      educationalFramework: "Delhi University UGCF 2022 (NEP 2020)",
+      targetName: [p.paperType, p.subjectName].filter(Boolean).join(" "),
+    },
+    encoding: { "@type": "MediaObject", contentUrl: p.fileUrl, encodingFormat: "application/pdf" },
+    provider: { "@id": `${SITE_URL}/#organization` },
+    offers: { "@type": "Offer", price: "0", priceCurrency: "INR" },
+  };
+}
+
+function yearSpanOf(years: string[]): string {
+  return years.length > 1 ? `${years[years.length - 1]}–${years[0]}` : (years[0] ?? "");
+}
+
+// FAQ answers are built only from fields already on the page — never invented.
+export function subjectFaqs(s: {
+  name: string;
+  programmeName: string;
+  paperCount: number;
+  years: string[];
+  paperCodes: string[];
+  semesters: string[];
+  paperTypes: string[];
+}): Faq[] {
+  const faqs: Faq[] = [
+    {
+      q: `Where can I download the DU ${s.name} previous year question paper PDF?`,
+      a: `This page lists ${s.paperCount} ${s.name} question paper${s.paperCount === 1 ? "" : "s"} for ${s.programmeName} at Delhi University${s.years.length ? ` (${yearSpanOf(s.years)})` : ""}. Open any paper to view the original PDF or download it. It is free and needs no login.`,
+    },
+  ];
+  if (s.years.length > 0)
+    faqs.push({
+      q: `Which years of ${s.name} question papers are available?`,
+      a: `${s.name} papers are available for ${s.years.join(", ")}.`,
+    });
+  if (s.paperCodes.length > 0)
+    faqs.push({
+      q: `What is the paper code (UPC) of ${s.name}?`,
+      a: `The Unique Paper Code${s.paperCodes.length > 1 ? "s" : ""} for ${s.name} in ${s.programmeName} ${s.paperCodes.length > 1 ? "are" : "is"} ${s.paperCodes.join(", ")}.`,
+    });
+  if (s.semesters.length > 0)
+    faqs.push({
+      q: `Which semester is ${s.name} taught in?`,
+      a: `${s.name} is ${s.paperTypes.length ? `a ${s.paperTypes.join("/")} paper` : "a paper"} in Semester ${s.semesters.join(", ")} of ${s.programmeName}, according to DU's published scheme.`,
+    });
+  return faqs;
+}
+
+export function programmeFaqs(p: {
+  name: string;
+  paperCount: number;
+  subjectCount: number;
+  semesters: string[];
+  paperTypes: string[];
+}): Faq[] {
+  const faqs: Faq[] = [
+    {
+      q: `Where can I get ${p.name} previous year question papers?`,
+      a: `This page has ${p.paperCount.toLocaleString("en-IN")} ${p.name} question papers across ${p.subjectCount} subjects at Delhi University. Pick a subject to view or download the original PDFs, organised by exam year.`,
+    },
+    {
+      q: `Are the ${p.name} question papers free?`,
+      a: `Yes. Every paper is free to view and download, with no login. Each links to the original PDF.`,
+    },
+  ];
+  if (p.semesters.length > 0)
+    faqs.push({
+      q: `Which ${p.name} semesters are covered?`,
+      a: `Papers are available for Semester ${p.semesters.join(", ")}.`,
+    });
+  if (p.paperTypes.length > 0)
+    faqs.push({
+      q: `Can I find core, elective and skill papers for ${p.name}?`,
+      a: `Yes. Papers are tagged by type (${p.paperTypes.join(", ")}), so you can find the core, elective, skill and value-added papers for your semester.`,
+    });
+  return faqs;
+}
+
+export function semesterFaqs(p: {
+  name: string;
+  semester: number;
+  subjectCount: number;
+  paperCount: number;
+  years: string[];
+}): Faq[] {
+  return [
+    {
+      q: `Where can I find ${p.name} Semester ${p.semester} previous year question papers?`,
+      a: `This page lists all ${p.subjectCount} Semester ${p.semester} subjects of ${p.name} with ${p.paperCount.toLocaleString("en-IN")} question papers${p.years.length ? ` from ${yearSpanOf(p.years)}` : ""}. Open a subject to view or download the PDFs.`,
+    },
+    {
+      q: `How many subjects are in ${p.name} Semester ${p.semester}?`,
+      a: `${p.subjectCount} subjects have question papers listed for ${p.name} Semester ${p.semester}.`,
+    },
+  ];
+}
+
+export function paperFaqs(p: {
+  subjectName: string;
+  programmeName: string;
+  year: string | null;
+  paperCode: string | null;
+}): Faq[] {
+  const faqs: Faq[] = [
+    {
+      q: `Where can I download the ${p.subjectName}${p.year ? ` ${p.year}` : ""} question paper PDF?`,
+      a: `Use the View PDF or Download PDF button on this page to open the original ${p.programmeName} ${p.subjectName} question paper${p.year ? ` (${p.year})` : ""}. It is free, no login.`,
+    },
+  ];
+  if (p.paperCode)
+    faqs.push({
+      q: `What is the paper code of this ${p.subjectName} paper?`,
+      a: `The Unique Paper Code (UPC) is ${p.paperCode}.`,
+    });
+  return faqs;
 }
