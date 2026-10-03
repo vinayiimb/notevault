@@ -2,6 +2,11 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  // Admin-uploaded hero/landing images live on Cloudflare R2.
+  images: {
+    formats: ["image/avif", "image/webp"],
+    remotePatterns: [{ protocol: "https", hostname: "*.r2.dev" }],
+  },
   // Railway runs `next start` (or the standalone server.js) as a
   // long-lived Node process, not Vercel's per-route serverless functions.
   // "standalone" makes `next build` emit a minimal, self-contained
@@ -47,6 +52,20 @@ const nextConfig: NextConfig = {
       "./public/data/ramanujan-pyq-catalog.json",
       "./public/data/papers-catalog.json",
     ],
+  },
+  // Old/scraper-era course slugs (pre-dating the current papers-catalog.json
+  // programme names) that crawlers (Amazonbot, PetalBot, SemrushBot — seen
+  // in Railway HTTP logs 2026-10-03) still request from stale sitemaps or
+  // backlinks. None of these patterns exist in the current catalog, so they
+  // 404; redirect the pattern once here instead of 404ing per-URL forever.
+  async redirects() {
+    return [
+      {
+        source: "/papers/:slug((?:department-of-|aecc|.*-bah-?gesec|.*-bah-?bap(?:gesec)?|.*-bsch-bapgesec).*)",
+        destination: "/previous-year-papers",
+        permanent: false,
+      },
+    ];
   },
   experimental: {
     // Server Actions default to a 1MB request body — silently too small
