@@ -46,13 +46,15 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # (package.json's NODE_OPTIONS), but that flag doesn't carry over to the
 # running server — CMD below is a separate `node` process with Node's
 # default heap ceiling (~2GB), regardless of how much RAM the container
-# actually has (Railway gives this service 8GB). Loading this app's large
-# JSON data files (a couple 10-20MB files, parsed and cached in memory per
-# warm instance) repeatedly hit that default ceiling and crashed the
-# process with "JavaScript heap out of memory", taking the whole site down
-# — not just the request that triggered it. Raising it here lets the
-# runtime actually use the container's real memory.
-ENV NODE_OPTIONS=--max-old-space-size=6144
+# actually has. This used to be set to 6144 to fix OOM crashes from large
+# JSON catalog files loaded at runtime, but those catalogs are now cached/
+# split (see src/lib/pyq-catalog.ts, scripts/build-papers-split.mjs) instead
+# of re-parsed per request, so the real working set is small — a local
+# load test against this exact build peaked at ~410MB RSS. Railway bills by
+# memory used, and the 6144 cap let the process creep to 1-1.8GB average in
+# production for no behavioral benefit. 768 leaves ~2x headroom over the
+# measured peak; raise it again if a future data file genuinely needs it.
+ENV NODE_OPTIONS=--max-old-space-size=768
 
 RUN groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nextjs
