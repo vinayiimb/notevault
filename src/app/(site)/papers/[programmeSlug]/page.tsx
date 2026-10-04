@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import {
   getSeoProgramme,
@@ -11,6 +11,7 @@ import {
   isProgrammeIndexable,
   isProgrammeSemesterIndexable,
   isSubjectIndexable,
+  resolvePapersPath,
 } from "@/lib/du-pyp-seo";
 import {
   programmePapersMetadata,
@@ -68,7 +69,11 @@ export default async function ProgrammePapersPage({
 }) {
   const { programmeSlug } = await params;
   const programme = await getSeoProgramme(programmeSlug);
-  if (!programme) notFound();
+  if (!programme) {
+    const path = await resolvePapersPath(programmeSlug);
+    if (path) permanentRedirect(path);
+    notFound();
+  }
 
   const indexableSubjects = programme.subjects.filter(isSubjectIndexable);
   if (indexableSubjects.length === 0) notFound();

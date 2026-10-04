@@ -11,6 +11,13 @@ export function middleware(request: NextRequest) {
 
   const { pathname } = request.nextUrl;
 
+  // One canonical host: dupyq.online and www both served 200, splitting
+  // Google's signals. Exact-match so Railway's internal health checks pass.
+  const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+  if (host === "dupyq.online") {
+    return NextResponse.redirect(`https://www.dupyq.online${pathname}${request.nextUrl.search}`, 301);
+  }
+
   if (pathname.startsWith("/admin")) {
     if (pathname === "/admin/login") return NextResponse.next();
     const hasSession = request.cookies.has(SESSION_COOKIE_NAME);

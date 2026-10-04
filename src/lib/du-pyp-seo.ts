@@ -22,6 +22,7 @@
 import "server-only";
 import { getCatalogDuPypPapers, type DuPypPaper, type DuExamPaper } from "@/lib/du-pyp-data";
 import { slugify } from "@/lib/utils";
+import { bestSlug, semesterFromSlug } from "@/lib/slug-match";
 
 /* ------------------------------------------------------------------ */
 /* Types                                                               */
@@ -553,6 +554,25 @@ export async function getSeoSubject(
   const subject = g.subjectByKey.get(`${programmeSlug}//${subjectSlug}`);
   if (!programme || !subject) return null;
   return { programme, subject };
+}
+
+/**
+ * Canonical /papers path for a guessed URL ("bcom-honours/financial-accounting-sem-1"),
+ * so LLM- and human-typed links land on the real page instead of a 404.
+ * Returns null when the guess is already canonical or nothing matches.
+ */
+export async function resolvePapersPath(programmeSlug: string, subjectSlug?: string): Promise<string | null> {
+  const g = await graph();
+  const indexable = g.programmes.filter(isProgrammeIndexable);
+  const prog = g.programmeBySlug.get(programmeSlug)
+    ?? g.programmeBySlug.get(bestSlug(programmeSlug, indexable.map((p) => p.slug)) ?? "");
+  if (!prog) return null;
+  if (!subjectSlug) return prog.slug === programmeSlug ? null : `/papers/${prog.slug}`;
+  const sub = g.subjectByKey.get(`${prog.slug}//${subjectSlug}`)
+    ?? g.subjectByKey.get(`${prog.slug}//${bestSlug(subjectSlug, prog.subjects.filter(isSubjectIndexable).map((s) => s.slug)) ?? ""}`);
+  if (sub) return `/papers/${prog.slug}/${sub.slug}`;
+  const sem = semesterFromSlug(subjectSlug);
+  return sem ? `/papers/${prog.slug}/semester-${sem}` : `/papers/${prog.slug}`;
 }
 
 export async function getSeoPaperCode(code: string): Promise<SeoPaperCode | null> {

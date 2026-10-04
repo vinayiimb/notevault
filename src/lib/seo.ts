@@ -171,8 +171,11 @@ export function subjectPapersMetadata(
   slugPath: string,
   opts: { semesters?: string[]; years?: string[]; paperCode?: string | null; paperCount: number },
 ) {
-  const semPart = opts.semesters && opts.semesters.length === 1 ? ` (Semester ${opts.semesters[0]})` : "";
-  const title = `${subjectName} Previous Year Question Papers PDF | DU ${programmeName}`;
+  // Data tags semesters in Roman numerals; students search "sem 3".
+  const ROMAN: Record<string, string> = { I: "1", II: "2", III: "3", IV: "4", V: "5", VI: "6", VII: "7", VIII: "8" };
+  const sems = (opts.semesters ?? []).map((r) => ROMAN[r] ?? r);
+  const semPart = sems.length === 1 ? ` (Semester ${sems[0]})` : "";
+  const title = `${subjectName} PYQ${sems.length === 1 ? ` Sem ${sems[0]}` : ""} | DU ${programmeName} Previous Year Question Papers PDF`;
   const yearSpan =
     opts.years && opts.years.length > 1 ? `${opts.years[opts.years.length - 1]}–${opts.years[0]}` : opts.years?.[0];
   const description =

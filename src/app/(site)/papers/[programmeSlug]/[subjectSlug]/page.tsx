@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { BookOpenText, Calculator, Notebook } from "@phosphor-icons/react/dist/ssr";
 import {
   getSeoSubject,
@@ -11,6 +11,7 @@ import {
   getSeoProgrammeSemester,
   getProgrammeSemesterNumbers,
   isProgrammeSemesterIndexable,
+  resolvePapersPath,
   type SeoSubject,
 } from "@/lib/du-pyp-seo";
 import {
@@ -110,6 +111,7 @@ export async function generateMetadata({
 
   const { programme, subject } = found;
   const meta = subjectPapersMetadata(subject.name, programme.name, `${programme.slug}/${subject.slug}`, {
+    semesters: subject.semesters,
     years: subject.years,
     paperCode: subject.paperCodes[0] ?? null,
     paperCount: subject.papers.length,
@@ -131,7 +133,11 @@ export default async function SubjectPapersPage({
   const semNum = parseSemesterSegment(subjectSlug);
   if (semNum !== null) {
     const ps = await getSeoProgrammeSemester(programmeSlug, semNum);
-    if (!ps || ps.subjects.length === 0) notFound();
+    if (!ps || ps.subjects.length === 0) {
+      const path = ps ? null : await resolvePapersPath(programmeSlug, subjectSlug);
+      if (path) permanentRedirect(path);
+      notFound();
+    }
     const allSems = await getProgrammeSemesterNumbers(programmeSlug);
     return (
       <ProgrammeSemesterView
@@ -143,7 +149,11 @@ export default async function SubjectPapersPage({
   }
 
   const found = await getSeoSubject(programmeSlug, subjectSlug);
-  if (!found) notFound();
+  if (!found) {
+    const path = await resolvePapersPath(programmeSlug, subjectSlug);
+    if (path) permanentRedirect(path);
+    notFound();
+  }
   const { programme, subject } = found;
 
   // A subject that resolves but carries no real papers is not a 404 (it's a
@@ -199,7 +209,7 @@ export default async function SubjectPapersPage({
           </span>
         </div>
         <h1 className="text-2xl font-bold text-foreground sm:text-3xl">
-          {subject.name} — DU Previous Year Question Papers
+          {subject.name} — DU {programme.name} Previous Year Question Papers
         </h1>
 
         <dl className="mt-4 grid grid-cols-2 gap-x-6 gap-y-2 text-sm sm:grid-cols-3">
