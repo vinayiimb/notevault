@@ -28,6 +28,7 @@ ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = LIBRARY / "drive_manifest.json"
 OUT = ROOT / "public" / "data" / "papers-catalog.json"
 OUT_NONCORE = ROOT / "public" / "data" / "papers-noncore-catalog.json"
+REMATCH = ROOT / "scripts" / "rematch.json"
 
 ROMAN = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6, "VII": 7, "VIII": 8}
 
@@ -106,6 +107,10 @@ def build():
             return names_by_upc[upc].most_common(1)[0][0]
         return name or "Untitled paper"
 
+    # scripts/rematch-papers.py: "More Papers" whose course + name match a current syllabus
+    # subject ("nep"), or whose course is at least known ("earlier").
+    rematch = json.loads(REMATCH.read_text()) if REMATCH.exists() else {}
+
     catalog, unmatched = [], []
     for f in manifest:
         r = rows.get(f["path"].lower())
@@ -116,20 +121,32 @@ def build():
         tag = r["Tag"].strip()
         exam = r["Exam"].strip() or "Year not known"
         sem = semester_of(f["path"])
+        course = r["Course folder"].strip()
+        subject = subject_name(upc, r["Name of the Paper"].strip())
+        verified = f["path"].startswith("1 - Verified")
+        printed_code = None
+        m = rematch.get(f["path"].lower())
+        if m:
+            course = m["course"]
+            if m["tier"] == "nep":
+                printed_code = upc if upc != m["upc"] else None
+                upc, subject, tag, verified = m["upc"], m["subject"], m["tag"], True
+                sem = str(ROMAN[m["semester"]]) if m["semester"] in ROMAN else sem
         catalog.append({
             "id": f"drive-{f['id']}",
             "yearRange": exam,
             "semesterGroup": f"Semester {sem}" if sem else "Semester not specified",
-            "course": r["Course folder"].strip(),
-            "subject": subject_name(upc, r["Name of the Paper"].strip()),
+            "course": course,
+            "subject": subject,
             "semester": sem,
             "pdfUrl": f"https://drive.google.com/file/d/{f['id']}/view",
-            "note": " | ".join(x for x in [f"UPC {upc}" if upc else "", tag] if x) or None,
+            "note": " | ".join(x for x in [f"UPC {upc}" if upc else "", tag,
+                                           f"code on paper {printed_code}" if printed_code else ""] if x) or None,
             "source": "drive",
             "fileName": f["path"].rsplit("/", 1)[-1],
             "upc": upc or None,
             "paperType": tag or None,
-            "verified": f["path"].startswith("1 - Verified"),
+            "verified": verified,
             "college": None,
         })
 

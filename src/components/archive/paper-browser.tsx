@@ -158,6 +158,7 @@ export function PaperBrowser({ dataBase = "/data/papers" }: { dataBase?: string 
   const [searchRows, setSearchRows] = useState<[string, string, number][] | null>(null);
   const [initialized, setInitialized] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
+  const [showEarlier, setShowEarlier] = useState(false);
   const inFlight = useRef(new Set<string>());
 
   // 1. Tiny course list + admin overrides — nothing else loads up front.
@@ -311,7 +312,16 @@ export function PaperBrowser({ dataBase = "/data/papers" }: { dataBase?: string 
     () => subjects.filter((s) => looseMatch(s.label, subjectSearch)),
     [subjects, subjectSearch],
   );
+  // NEP (syllabus-matched) subjects first; a subject made only of earlier-
+  // syllabus papers (verified: false, merged in by build-papers-split) goes
+  // in the collapsible group at the end.
+  const isEarlier = (s: { papers: CatalogPaper[] }) =>
+    dataBase === "/data/papers" && s.papers.every((p) => p.verified === false);
+  const nepSubjects = visibleSubjects.filter((s) => !isEarlier(s));
+  const earlierSubjects = visibleSubjects.filter(isEarlier);
   const subject = subjects.find((s) => s.key === subjectKey) ?? null;
+  const earlierOpen =
+    showEarlier || nepSubjects.length === 0 || subjectSearch.trim() !== "" || (subject !== null && isEarlier(subject));
   const openPaper = subject?.papers.find((p) => p.id === openPaperId) ?? null;
 
   function pickCourse(name: string) {
@@ -479,15 +489,42 @@ export function PaperBrowser({ dataBase = "/data/papers" }: { dataBase?: string 
                 {!coursePapers ? (
                   <ListSkeleton />
                 ) : (
-                  visibleSubjects.map((s) => (
-                    <FilterCheckbox
-                      key={s.key}
-                      checked={subjectKey === s.key}
-                      label={s.label}
-                      count={s.papers.length}
-                      onClick={() => pickSubject(s.key)}
-                    />
-                  ))
+                  <>
+                    {nepSubjects.map((s) => (
+                      <FilterCheckbox
+                        key={s.key}
+                        checked={subjectKey === s.key}
+                        label={s.label}
+                        count={s.papers.length}
+                        onClick={() => pickSubject(s.key)}
+                      />
+                    ))}
+                    {earlierSubjects.length > 0 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setShowEarlier((v) => !v)}
+                          aria-expanded={earlierOpen}
+                          className="mt-2 flex w-full items-center gap-2 rounded-lg border border-dashed border-border px-2 py-1.5 text-left text-xs font-semibold text-muted transition hover:bg-surface-muted hover:text-foreground"
+                        >
+                          <span className="min-w-0 flex-1">Earlier syllabus papers (CBCS / LOCF)</span>
+                          <span className="shrink-0 text-[11px]">
+                            {earlierSubjects.length} {earlierOpen ? "▴" : "▾"}
+                          </span>
+                        </button>
+                        {earlierOpen &&
+                          earlierSubjects.map((s) => (
+                            <FilterCheckbox
+                              key={s.key}
+                              checked={subjectKey === s.key}
+                              label={s.label}
+                              count={s.papers.length}
+                              onClick={() => pickSubject(s.key)}
+                            />
+                          ))}
+                      </>
+                    )}
+                  </>
                 )}
               </FilterList>
             ) : (

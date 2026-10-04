@@ -32,8 +32,8 @@ rmSync(OUT, { recursive: true, force: true });
 // /papers/noncore (papers not in the current syllabus) is split the same way
 // into public/data/papers/noncore/.
 const driveIds = [];
-function split(source, out) {
-  const papers = JSON.parse(readFileSync(source, "utf8"));
+function split(source, out, extra = []) {
+  const papers = [...JSON.parse(readFileSync(source, "utf8")), ...extra];
   const byCourse = new Map();
   for (const p of papers) {
     const list = byCourse.get(p.course) ?? [];
@@ -67,7 +67,13 @@ function split(source, out) {
   console.log(`papers split: ${papers.length} papers → ${index.length} course files, ${search.length} search rows (${path.relative(root, out)})`);
 }
 
-split(SOURCE, OUT);
+// /papers also carries each course's earlier-syllabus papers (verified: false),
+// shown after the NEP subjects in the browser.
+const mainCourses = new Set(JSON.parse(readFileSync(SOURCE, "utf8")).map((p) => p.course));
+const earlier = existsSync(NONCORE)
+  ? JSON.parse(readFileSync(NONCORE, "utf8")).filter((p) => mainCourses.has(p.course))
+  : [];
+split(SOURCE, OUT, earlier);
 if (existsSync(NONCORE)) split(NONCORE, path.join(OUT, "noncore"));
 // Allow-list for /api/papers-zip, so it only ever fetches our own Drive files.
-writeFileSync(path.join(OUT, "drive-ids.json"), JSON.stringify(driveIds));
+writeFileSync(path.join(OUT, "drive-ids.json"), JSON.stringify([...new Set(driveIds)]));
