@@ -1,10 +1,10 @@
 ---
-title: "Best SEC Courses in DU: How to Choose Skill Enhancement Courses Wisely"
-description: "A complete guide to Skill Enhancement Courses (SEC) in Delhi University under NEP UGCF — how to pick the easiest, most useful SECs and score high marks effortlessly."
+title: "SEC Full Form in DU: Skill Enhancement Course — Best SEC Options & PYQs"
+description: "SEC full form in DU is Skill Enhancement Course: a 2-credit practical skill paper under UGCF. The best and easiest SEC courses in DU, how they're graded, and free SEC previous year papers."
 slug: "best-sec-courses-in-du-skill-enhancement-guide"
 author: "DU PYQ Online Team"
 publishedAt: "2026-08-03"
-updatedAt: "2026-08-03"
+updatedAt: "2026-10-04"
 keywords:
   - "SEC courses DU"
   - "skill enhancement course Delhi University"
@@ -12,6 +12,8 @@ keywords:
   - "easy SEC courses"
   - "NEP SEC papers"
 ---
+
+**SEC full form in DU: Skill Enhancement Course.** Under DU's UGCF (NEP), SEC is a 2-credit skill-based paper (theory + practical) taken in semesters 1–6, chosen from a common pool. Free SEC previous year papers: [DU SEC PYQs](/skill-enhancement-courses).
 
 Skill Enhancement Courses (SECs) are among the most misunderstood components of the Delhi University UGCF structure. Many students treat them as throwaway papers, but a poorly chosen SEC can drag your SGPA down by 0.3–0.5 points. On the flip side, a well-chosen SEC is an easy 9 or 10 grade points with minimal effort.
 

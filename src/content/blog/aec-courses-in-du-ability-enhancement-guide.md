@@ -1,10 +1,10 @@
 ---
-title: "AEC Courses in DU: Everything About Ability Enhancement Courses"
-description: "A complete guide to Ability Enhancement Courses (AEC) in Delhi University — language papers, environmental studies, and how to clear them with top grades."
+title: "AEC Full Form in DU: Ability Enhancement Course — Subjects, Credits & PYQs"
+description: "AEC full form in DU is Ability Enhancement Course: the compulsory 2-credit language / EVS paper under UGCF. What you study in AEC, how it's graded, and free AEC previous year papers."
 slug: "aec-courses-in-du-ability-enhancement-guide"
 author: "DU PYQ Online Team"
 publishedAt: "2026-08-03"
-updatedAt: "2026-08-03"
+updatedAt: "2026-10-04"
 keywords:
   - "AEC courses DU"
   - "ability enhancement course Delhi University"
@@ -12,6 +12,8 @@ keywords:
   - "language paper DU"
   - "AEC NEP UGCF"
 ---
+
+**AEC full form in DU: Ability Enhancement Course.** Under DU's UGCF (NEP), AEC is a compulsory 2-credit paper — Environmental Science (EVS) or a language/communication paper — taken in semesters 1–4. Free AEC previous year papers: [DU AEC PYQs](/ability-enhancement-courses).
 
 Ability Enhancement Courses (AECs) are the compulsory language and foundational papers that every Delhi University student must clear, regardless of their degree program. While most students view AECs as formalities, they carry real credit value and affect your CGPA. Ignoring them or underperforming can create an unnecessary drag on your academic record.
 

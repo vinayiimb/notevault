@@ -84,15 +84,16 @@ function chunkCount(total: number): number {
 
 /** Ordered list of shard names, e.g. ["static","blog","programmes","subjects-0",…]. */
 export async function listShardNames(): Promise<string[]> {
-  const [subjectUrls, paperCodeUrls, paperUrls] = await Promise.all([
+  const [subjectUrls, paperCodeUrls] = await Promise.all([
     getIndexableSubjectUrls(),
     getIndexablePaperCodeUrls(),
-    getIndexablePaperUrls(),
   ]);
   const names = ["static", "blog", "programmes", "programme-semesters"];
   for (let i = 0; i < chunkCount(subjectUrls.length); i++) names.push(`subjects-${i}`);
   for (let i = 0; i < chunkCount(paperCodeUrls.length); i++) names.push(`paper-codes-${i}`);
-  for (let i = 0; i < chunkCount(paperUrls.length); i++) names.push(`papers-${i}`);
+  // papers-N shards (~14k single-PDF /paper/ pages) are left out of the index on purpose:
+  // GSC showed 25k "Discovered – not indexed" with 19 indexed, so crawl budget goes to
+  // subject pages, which already list every paper. The shard routes still resolve.
   return names;
 }
 

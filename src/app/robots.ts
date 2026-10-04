@@ -15,6 +15,7 @@ const DISALLOW = [
   "/login",
   "/api/",
   "/search", // internal search results — not SEO landing pages
+  "/*?_rsc=", // Next.js RSC prefetch payloads — were 53% of Googlebot's requests (GSC crawl stats)
 ];
 
 // Search / AI-answer crawlers named explicitly: a bot with its own group

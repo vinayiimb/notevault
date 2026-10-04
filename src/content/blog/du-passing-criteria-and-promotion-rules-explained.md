@@ -1,10 +1,10 @@
 ---
-title: "DU Passing Criteria & Promotion Rules Explained: Everything You Need to Know"
-description: "A comprehensive breakdown of Delhi University's promotional rules, internal assessment weightage, the 40% pass rule, and how to resolve Essential Repeat (ER) papers."
+title: "DU Passing Criteria & Promotion Rules 2026: Pass Marks, ER & Next-Year Promotion"
+description: "DU passing criteria explained: 40% pass marks per paper, internal assessment weightage, Essential Repeat (ER), and how many papers you can fail and still get promoted to the next year."
 slug: "du-passing-criteria-and-promotion-rules-explained"
 author: "DU PYQ Online Team"
 publishedAt: "2026-08-03"
-updatedAt: "2026-08-03"
+updatedAt: "2026-10-04"
 keywords:
   - "DU passing marks"
   - "DU promotion rules"

@@ -1,10 +1,10 @@
 ---
-title: "Best VAC Courses in DU: Easy Value Addition Courses to Score High"
-description: "Everything you need to know about Value Addition Courses (VAC) in Delhi University — the easiest options, grading patterns, and how to use them to boost your CGPA."
+title: "VAC Full Form in DU: Value Addition Course — Easiest VAC Options & PYQs"
+description: "VAC full form in DU is Value Addition Course: a 2-credit paper under UGCF. The easiest VAC courses in DU, grading pattern, and free VAC previous year papers."
 slug: "best-vac-courses-in-du-value-addition-guide"
 author: "DU PYQ Online Team"
 publishedAt: "2026-08-03"
-updatedAt: "2026-08-03"
+updatedAt: "2026-10-04"
 keywords:
   - "VAC courses DU"
   - "value addition course Delhi University"
@@ -12,6 +12,8 @@ keywords:
   - "easy VAC courses"
   - "VAC NEP DU"
 ---
+
+**VAC full form in DU: Value Addition Course.** Under DU's UGCF (NEP), VAC is a 2-credit paper (e.g. Constitutional Values, Ayurveda and Nutrition, Digital Empowerment) taken in semesters 1–4. Free VAC previous year papers: [DU VAC PYQs](/value-addition-courses).
 
 Value Addition Courses (VACs) are among the lightest papers in the Delhi University UGCF structure — yet they can make or break the difference between an 8.5 and a 9.0 SGPA. Most students barely think about VACs until registration week, then scramble to pick whatever slot is available. That is a mistake.
 
