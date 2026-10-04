@@ -11,6 +11,10 @@ under a single subject.
   python3 scripts/drive-catalog.py crawl   # list the Drive folder -> manifest
   python3 scripts/drive-catalog.py build   # manifest + CSV -> papers-catalog.json
 
+Only papers matched to the official syllabus ("1 - Verified ..." folder) are
+published; pass --all to build to also include "2 - More Papers (Not in
+Syllabus)" (older CBCS / unmatched papers).
+
 Re-run both after more files are uploaded to the folder.
 """
 import collections, csv, html, json, re, sys, time, unicodedata, urllib.request
@@ -100,8 +104,11 @@ def build():
             return names_by_upc[upc].most_common(1)[0][0]
         return name or "Untitled paper"
 
+    include_all = "--all" in sys.argv
     catalog, unmatched = [], []
     for f in manifest:
+        if not include_all and not f["path"].startswith("1 - Verified"):
+            continue
         r = rows.get(f["path"].lower())
         if not r:
             unmatched.append(f["path"])
