@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, usePathname, useSearchParams } from "next/navigation";
-import { ArrowSquareOut, DownloadSimple, FilePdf, Funnel, MagnifyingGlass, X } from "@phosphor-icons/react";
+import { ArrowSquareOut, DownloadSimple, FileZip, FilePdf, Funnel, MagnifyingGlass, X } from "@phosphor-icons/react";
 import { CopyButton } from "@/components/pyq/copy-button";
+import { CgpaLoader } from "@/components/archive/cgpa-loader";
 import { NotesNudge } from "@/components/paid-notes/notes-nudge";
 import { semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
@@ -37,6 +38,10 @@ function embeddableUrl(url: string): string {
   const idParam = url.match(/[?&]id=([a-zA-Z0-9_-]{10,})/);
   if (idParam) return `https://drive.google.com/file/d/${idParam[1]}/preview`;
   return url;
+}
+
+function driveId(url: string): string | null {
+  return url.match(/\/file\/d\/([a-zA-Z0-9_-]{10,})/)?.[1] ?? null;
 }
 
 // Some source sites send `X-Frame-Options: DENY` / a restrictive
@@ -126,7 +131,10 @@ function applyOverrides(raw: CatalogPaper[], overrides: Overrides): CatalogPaper
 
 type SearchHit = { course: string; key: string; label: string; count: number };
 
-type Tab = "course" | "subject";
+type Tab = "course" | "semester" | "subject";
+
+const NO_SEM = "none";
+const semKey = (p: CatalogPaper) => p.semester ?? NO_SEM;
 
 // Layout: course/subject picker on the left (~30%), paper viewer on the
 // right. A PDF is only loaded once the student clicks a year — never
@@ -140,6 +148,7 @@ export function PaperBrowser() {
   const [overrides, setOverrides] = useState<Overrides | null>(null);
   const [course, setCourse] = useState<string | null>(null);
   const [loadedCourses, setLoadedCourses] = useState<Record<string, CatalogPaper[]>>({});
+  const [semester, setSemester] = useState<string | null>(null);
   const [subjectKey, setSubjectKey] = useState<string | null>(null);
   const [openPaperId, setOpenPaperId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<Tab>("course");
@@ -170,8 +179,13 @@ export function PaperBrowser() {
           if (match) {
             matched = match.course;
             setCourse(match.course);
-            setActiveTab("subject");
+            setActiveTab("semester");
           }
+        }
+        const sem = searchParams.get("sem");
+        if (sem && matched) {
+          setSemester(sem);
+          setActiveTab("subject");
         }
         const subject = searchParams.get("subject");
         if (subject && matched) setSubjectKey(subject);
@@ -248,22 +262,33 @@ export function PaperBrowser() {
     const params = new URLSearchParams(searchParams.toString());
     const set = (k: string, v: string | null) => (v ? params.set(k, v) : params.delete(k));
     set("course", course);
+    set("sem", semester);
     set("subject", subjectKey);
     set("paper", openPaperId);
-    params.delete("sem");
     params.delete("q");
     const next = params.toString();
     if (next !== searchParams.toString()) router.replace(`${pathname}?${next}`, { scroll: false });
-  }, [initialized, course, subjectKey, openPaperId, pathname, router, searchParams]);
+  }, [initialized, course, semester, subjectKey, openPaperId, pathname, router, searchParams]);
 
   const courses = useMemo(
     () => (index ?? []).filter((c) => looseMatch(c.course, courseSearch)),
     [index, courseSearch],
   );
 
+  const semesters = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const p of coursePapers ?? []) counts.set(semKey(p), (counts.get(semKey(p)) ?? 0) + 1);
+    return [...counts.entries()]
+      .map(([key, count]) => ({ key, count, label: key === NO_SEM ? "Semester not specified" : semesterLabel({ semester: key }) }))
+      .sort((a, b) => (a.key === NO_SEM ? 1 : b.key === NO_SEM ? -1 : Number(a.key) - Number(b.key)));
+  }, [coursePapers]);
+
+  // Subjects are grouped by name; build-drive-catalog gives every paper with
+  // the same UPC the same name, so one subject = one paper code.
   const subjects = useMemo(() => {
     const map = new Map<string, { labels: string[]; papers: CatalogPaper[] }>();
     for (const p of coursePapers ?? []) {
+      if (semester && semKey(p) !== semester) continue;
       const key = canonicalSubjectKey(p.subject);
       const entry = map.get(key) ?? { labels: [], papers: [] };
       entry.labels.push(p.subject);
@@ -279,7 +304,7 @@ export function PaperBrowser() {
         ),
       }))
       .sort((a, b) => a.label.localeCompare(b.label));
-  }, [coursePapers]);
+  }, [coursePapers, semester]);
 
   const visibleSubjects = useMemo(
     () => subjects.filter((s) => looseMatch(s.label, subjectSearch)),
@@ -291,10 +316,18 @@ export function PaperBrowser() {
   function pickCourse(name: string) {
     const next = name === course ? null : name;
     setCourse(next);
+    setSemester(null);
     setSubjectKey(null);
     setOpenPaperId(null);
     setSubjectSearch("");
-    if (next) setActiveTab("subject");
+    if (next) setActiveTab("semester");
+  }
+  function pickSemester(key: string) {
+    setSemester(key === semester ? null : key);
+    setSubjectKey(null);
+    setOpenPaperId(null);
+    setSubjectSearch("");
+    if (key !== semester) setActiveTab("subject");
   }
   function pickSubject(key: string) {
     const isSame = key === subjectKey;
@@ -305,6 +338,7 @@ export function PaperBrowser() {
   }
   function pickSearchHit(hit: SearchHit) {
     setCourse(hit.course);
+    setSemester(null);
     setSubjectKey(hit.key);
     setOpenPaperId(null);
     setSubjectSearch("");
@@ -312,6 +346,7 @@ export function PaperBrowser() {
   }
   function clearAll() {
     setCourse(null);
+    setSemester(null);
     setSubjectKey(null);
     setOpenPaperId(null);
     setSubjectSearch("");
@@ -321,13 +356,16 @@ export function PaperBrowser() {
   if (!index || !overrides) {
     return (
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(280px,30%)_1fr]">
-        <div className="h-[600px] animate-pulse rounded-2xl border border-border bg-surface p-4" />
-        <div className="hidden h-[600px] animate-pulse rounded-2xl border border-border bg-surface p-6 lg:block" />
+        <div className="hidden h-[600px] animate-pulse rounded-2xl border border-border bg-surface p-4 lg:block" />
+        <div className="flex h-[450px] items-center justify-center rounded-2xl border border-border bg-surface lg:h-[600px]">
+          <CgpaLoader />
+        </div>
       </div>
     );
   }
 
-  const activeCount = (course ? 1 : 0) + (subjectKey ? 1 : 0);
+  const activeCount = (course ? 1 : 0) + (semester ? 1 : 0) + (subjectKey ? 1 : 0);
+  const semesterName = semesters.find((s) => s.key === semester)?.label ?? null;
 
   return (
     <div className="grid grid-cols-1 gap-5 lg:grid-cols-[minmax(280px,30%)_1fr]">
@@ -340,7 +378,9 @@ export function PaperBrowser() {
         >
           <Funnel size={18} weight="bold" className="shrink-0 text-muted" />
           <span className="min-w-0 flex-1 truncate">
-            {course ? (subject ? `${course} · ${subject.label}` : course) : "Choose course & subject"}
+            {course
+              ? [course, semesterName, subject?.label].filter(Boolean).join(" · ")
+              : "Choose course, semester & subject"}
           </span>
           {activeCount > 0 && (
             <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-[11px] font-bold text-white">
@@ -380,6 +420,7 @@ export function PaperBrowser() {
 
         <div className="flex rounded-xl border border-border/80 bg-surface-muted/80 p-1 text-sm shadow-2xs">
           <TabButton active={activeTab === "course"} onClick={() => setActiveTab("course")} label="Course" count={course ? 1 : 0} />
+          <TabButton active={activeTab === "semester"} onClick={() => setActiveTab("semester")} label="Semester" count={semester ? 1 : 0} />
           <TabButton active={activeTab === "subject"} onClick={() => setActiveTab("subject")} label="Subject" count={subjectKey ? 1 : 0} />
         </div>
 
@@ -403,6 +444,27 @@ export function PaperBrowser() {
               ))}
             </FilterList>
           )}
+
+          {activeTab === "semester" &&
+            (course ? (
+              <FilterList total={semesters.length} empty={Boolean(coursePapers) && semesters.length === 0}>
+                {!coursePapers ? (
+                  <ListSkeleton />
+                ) : (
+                  semesters.map((s) => (
+                    <FilterCheckbox
+                      key={s.key}
+                      checked={semester === s.key}
+                      label={s.label}
+                      count={s.count}
+                      onClick={() => pickSemester(s.key)}
+                    />
+                  ))
+                )}
+              </FilterList>
+            ) : (
+              <p className="px-2.5 py-1.5 text-xs text-muted">Pick a course first to see its semesters.</p>
+            ))}
 
           {activeTab === "subject" &&
             (course ? (
@@ -470,11 +532,22 @@ export function PaperBrowser() {
             onMobilePick={() => setIsMobileFilterOpen(true)}
           />
         ) : !coursePapers ? (
-          <div className="h-[450px] animate-pulse rounded-2xl border border-border bg-surface" />
+          <div className="flex h-[450px] items-center justify-center rounded-2xl border border-border bg-surface">
+            <CgpaLoader label={`Opening ${course}…`} />
+          </div>
+        ) : !semester && !subject ? (
+          <Placeholder
+            title="Now pick a semester"
+            text={`${course} has papers in ${semesters.length} semester${semesters.length === 1 ? "" : "s"}. Choose one on the left.`}
+            onMobilePick={() => {
+              setActiveTab("semester");
+              setIsMobileFilterOpen(true);
+            }}
+          />
         ) : !subject ? (
           <Placeholder
             title="Now pick a subject"
-            text={`${course} has ${subjects.length} subjects. Choose one on the left to see its papers.`}
+            text={`${semesterName ?? course} has ${subjects.length} subjects. Choose one on the left to see its papers.`}
             onMobilePick={() => {
               setActiveTab("subject");
               setIsMobileFilterOpen(true);
@@ -528,6 +601,14 @@ function sessionLabel(p: CatalogPaper) {
   return years.length > 1 ? p.yearRange : years.length ? "" : p.yearRange;
 }
 
+// Drive papers all carry the same "UPC x | type" note within a subject, so
+// label them by exam session, numbering repeats ("May-Jun 2024 · 2").
+function paperButtonLabel(p: CatalogPaper, yearPapers: CatalogPaper[], i: number) {
+  if (!p.upc) return [sessionLabel(p), cleanNote(p)].filter(Boolean).join(" · ") || `Paper ${i + 1}`;
+  const same = yearPapers.filter((q) => q.yearRange === p.yearRange);
+  return same.length > 1 ? `${p.yearRange} · ${same.indexOf(p) + 1}` : p.yearRange;
+}
+
 function PaperPanel({
   course,
   subjectLabel,
@@ -542,11 +623,36 @@ function PaperPanel({
   onOpen: (id: string) => void;
 }) {
   const [pickedYear, setPickedYear] = useState<string | null>(null);
+  const [loadedPaperId, setLoadedPaperId] = useState<string | null>(null);
+  const [zipState, setZipState] = useState<"idle" | "loading" | "error">("idle");
+  const zipPapers = papers.filter((p) => driveId(p.pdfUrl));
+
+  // One ZIP of every paper in this subject, built by /api/papers-zip.
+  async function downloadAll() {
+    setZipState("loading");
+    const name = `${subjectLabel} - ${course} - DU PYQs`;
+    const params = new URLSearchParams({ name });
+    for (const p of zipPapers.slice(0, 60)) params.append("p", `${driveId(p.pdfUrl)}|${p.yearRange}`);
+    try {
+      const res = await fetch(`/api/papers-zip?${params}`);
+      if (!res.ok) throw new Error(String(res.status));
+      const url = URL.createObjectURL(await res.blob());
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${name}.zip`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      setZipState("idle");
+    } catch {
+      setZipState("error");
+    }
+  }
   const years = [...new Set(papers.map(examYear))].sort((a, b) =>
     a === "Other" ? 1 : b === "Other" ? -1 : b.localeCompare(a),
   );
   const activeYear = pickedYear ?? (openPaper ? examYear(openPaper) : null);
   const yearPapers = papers.filter((p) => examYear(p) === activeYear);
+  const upcs = [...new Set(papers.map((p) => p.upc).filter(Boolean))];
 
   function pickYear(year: string) {
     setPickedYear(year);
@@ -557,16 +663,20 @@ function PaperPanel({
   return (
     <>
       <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 shadow-2xs sm:p-5">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-0 flex-1 basis-full sm:basis-0">
           <span className="inline-block rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent">
             {course}
           </span>
           <h2 className="mt-1.5 text-lg font-bold leading-snug text-foreground sm:text-xl">{subjectLabel}</h2>
+          {upcs.length > 0 && (
+            <p className="mt-0.5 text-xs font-medium text-muted">Paper code (UPC): {upcs.join(", ")}</p>
+          )}
           <p className="mt-1 text-xs text-muted sm:text-sm">
             {openPaper ? (
               <>
                 {semesterLabel(openPaper)} · <span className="font-medium text-foreground">{openPaper.yearRange}</span>
-                {cleanNote(openPaper) && ` · ${cleanNote(openPaper)}`}
+                {(openPaper.paperType || (!openPaper.upc && cleanNote(openPaper))) &&
+                  ` · ${openPaper.paperType || cleanNote(openPaper)}`}
               </>
             ) : (
               `${papers.length} paper${papers.length === 1 ? "" : "s"} — choose a year below to open one`
@@ -574,6 +684,17 @@ function PaperPanel({
           </p>
           <NotesNudge course={course} subject={subjectLabel} />
         </div>
+        {zipPapers.length > 1 && (
+          <button
+            type="button"
+            onClick={downloadAll}
+            disabled={zipState === "loading"}
+            className="inline-flex shrink-0 items-center gap-1.5 rounded-lg border border-accent bg-accent-soft px-3 py-1.5 text-xs font-bold text-accent shadow-2xs transition hover:bg-accent hover:text-white disabled:opacity-60"
+          >
+            <FileZip size={14} weight="bold" />
+            {zipState === "loading" ? "Preparing ZIP…" : `Download all (${Math.min(zipPapers.length, 60)})`}
+          </button>
+        )}
         {openPaper && (
           <div className="flex shrink-0 items-center gap-2">
             <CopyButton
@@ -601,6 +722,17 @@ function PaperPanel({
           </div>
         )}
       </div>
+
+      {zipState === "loading" && (
+        <div className="mt-3.5 rounded-2xl border border-border bg-surface py-5 shadow-2xs">
+          <CgpaLoader label={`Packing ${Math.min(zipPapers.length, 60)} papers into one ZIP…`} />
+        </div>
+      )}
+      {zipState === "error" && (
+        <p className="mt-3.5 rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-2.5 text-xs text-red-600">
+          Couldn&apos;t build the ZIP right now — Google Drive may be busy. Try again in a minute, or download papers one by one.
+        </p>
+      )}
 
       {/* Years, then that year's papers — clicking a paper is what loads a PDF */}
       <div className="mt-3.5 flex flex-wrap items-center gap-2">
@@ -635,7 +767,7 @@ function PaperPanel({
               }`}
             >
               <span className="max-w-56 truncate">
-                {[sessionLabel(p), cleanNote(p)].filter(Boolean).join(" · ") || `Paper ${i + 1}`}
+                {paperButtonLabel(p, yearPapers, i)}
               </span>
               <CollegeBadges paper={p} />
             </button>
@@ -673,12 +805,20 @@ function PaperPanel({
                 </a>
               </div>
             ) : (
-              <iframe
-                key={openPaper.id}
-                src={embeddableUrl(openPaper.pdfUrl)}
-                title={fileName(openPaper)}
-                className="h-[80vh] min-h-[560px] w-full bg-surface-muted/40"
-              />
+              <div className="relative">
+                {loadedPaperId !== openPaper.id && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-surface">
+                    <CgpaLoader label="Opening the paper…" />
+                  </div>
+                )}
+                <iframe
+                  key={openPaper.id}
+                  src={embeddableUrl(openPaper.pdfUrl)}
+                  title={fileName(openPaper)}
+                  onLoad={() => setLoadedPaperId(openPaper.id)}
+                  className="h-[80vh] min-h-[560px] w-full bg-surface-muted/40"
+                />
+              </div>
             )}
           </>
         )}

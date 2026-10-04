@@ -71,6 +71,7 @@ export type PapersArchiveSubject = {
   paperCount: number;
   editedPapers: number;
   semesters: string[];
+  upcs: string[];
   semesterOverride: number | null;
   courseOverride: string | null;
   hidden: boolean;
@@ -102,17 +103,25 @@ export async function getPapersArchiveSubjects(course: string): Promise<PapersAr
     count: number;
     edited: number;
     semesters: Set<string>;
+    upcs: Set<string>;
   };
   const groups = new Map<string, Group>();
   for (const p of papers) {
     const { subjectKey, groupKey } = groupKeyOf(p);
-    const group = groups.get(groupKey) ?? { members: new Map(), count: 0, edited: 0, semesters: new Set<string>() };
+    const group = groups.get(groupKey) ?? {
+      members: new Map(),
+      count: 0,
+      edited: 0,
+      semesters: new Set<string>(),
+      upcs: new Set<string>(),
+    };
     const member = group.members.get(subjectKey) ?? { subjectKey, originalName: p.subject, paperCount: 0 };
     member.paperCount += 1;
     group.members.set(subjectKey, member);
     group.count += 1;
     if (editedPaperIds.has(p.id)) group.edited += 1;
     if (p.semester) group.semesters.add(String(p.semester));
+    if (p.upc) group.upcs.add(p.upc);
     groups.set(groupKey, group);
   }
 
@@ -127,7 +136,8 @@ export async function getPapersArchiveSubjects(course: string): Promise<PapersAr
         displayName: first?.displayName || members[0].originalName,
         paperCount: g.count,
         editedPapers: g.edited,
-        semesters: [...g.semesters].sort(),
+        semesters: [...g.semesters].sort((a, b) => Number(a) - Number(b)),
+        upcs: [...g.upcs].sort(),
         semesterOverride: first?.semesterOverride ?? null,
         courseOverride: first?.courseOverride ?? null,
         hidden: memberOverrides.every((o) => o?.hidden),

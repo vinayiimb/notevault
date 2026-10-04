@@ -5,6 +5,7 @@
 //   public/data/papers/courses/<slug>.json — that course's papers
 //   public/data/papers/search-index.json   — [course, subject, count] rows,
 //                                            fetched only for header search
+//   public/data/papers/drive-ids.json      — Drive file ids /api/papers-zip may fetch
 // Generated at build time (prebuild); the output is gitignored.
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
@@ -55,4 +56,7 @@ for (const [course, list] of byCourse) {
 index.sort((a, b) => a.course.localeCompare(b.course));
 writeFileSync(path.join(OUT, "index.json"), JSON.stringify(index));
 writeFileSync(path.join(OUT, "search-index.json"), JSON.stringify(search));
+// Allow-list for /api/papers-zip, so it only ever fetches our own Drive files.
+const driveIds = papers.map((p) => p.pdfUrl.match(/\/file\/d\/([\w-]+)/)?.[1]).filter(Boolean);
+writeFileSync(path.join(OUT, "drive-ids.json"), JSON.stringify(driveIds));
 console.log(`papers split: ${papers.length} papers → ${index.length} course files, ${search.length} search rows`);

@@ -413,3 +413,24 @@ textarea,
   }
 
 }
+
+/* CgpaLoader (components/archive/cgpa-loader.tsx): bar sweeping toward a 10. */
+@keyframes cgpa-fill {
+  0% {
+    width: 8%;
+  }
+  70% {
+    width: 92%;
+  }
+  100% {
+    width: 92%;
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cgpa-fill {
+    animation: none !important;
+    width: 85% !important;
+  }
+}

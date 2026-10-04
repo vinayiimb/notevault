@@ -19,9 +19,9 @@ export default async function PapersArchiveCoursePage({
   searchParams,
 }: {
   params: Promise<{ courseSlug: string }>;
-  searchParams: Promise<{ q?: string; ok?: string; err?: string }>;
+  searchParams: Promise<{ q?: string; sem?: string; ok?: string; err?: string }>;
 }) {
-  const [{ courseSlug }, { q = "", ok, err }] = await Promise.all([params, searchParams]);
+  const [{ courseSlug }, { q = "", sem = "", ok, err }] = await Promise.all([params, searchParams]);
   const course = await findPapersArchiveCourse(courseSlug);
   if (!course) notFound();
 
@@ -30,13 +30,28 @@ export default async function PapersArchiveCoursePage({
     getAllPapersArchiveCourseNames(),
   ]);
   const query = q.trim().toLowerCase();
-  const subjects = query
-    ? allSubjects.filter(
-        (s) =>
-          s.displayName.toLowerCase().includes(query) ||
-          s.members.some((m) => m.originalName.toLowerCase().includes(query)),
-      )
-    : allSubjects;
+  const semesterCounts = new Map<string, number>();
+  for (const s of allSubjects) {
+    for (const n of s.semesters.length ? s.semesters : ["none"]) semesterCounts.set(n, (semesterCounts.get(n) ?? 0) + 1);
+  }
+  const semesterTabs = [...semesterCounts.entries()].sort((a, b) =>
+    a[0] === "none" ? 1 : b[0] === "none" ? -1 : Number(a[0]) - Number(b[0]),
+  );
+  const subjects = allSubjects.filter(
+    (s) =>
+      (!sem || (sem === "none" ? s.semesters.length === 0 : s.semesters.includes(sem))) &&
+      (!query ||
+        s.displayName.toLowerCase().includes(query) ||
+        s.upcs.some((u) => u.includes(query)) ||
+        s.members.some((m) => m.originalName.toLowerCase().includes(query))),
+  );
+  const tabHref = (n: string) => {
+    const params = new URLSearchParams();
+    if (n) params.set("sem", n);
+    if (q) params.set("q", q);
+    const qs = params.toString();
+    return `/admin/papers-archive/${courseSlug}${qs ? `?${qs}` : ""}`;
+  };
   const totalPapers = allSubjects.reduce((n, s) => n + s.paperCount, 0);
 
   return (
@@ -100,22 +115,39 @@ export default async function PapersArchiveCoursePage({
         </form>
       </section>
 
+      <div className="flex flex-wrap gap-2">
+        {[["", allSubjects.length] as const, ...semesterTabs].map(([n, count]) => (
+          <Link
+            key={n || "all"}
+            href={tabHref(n)}
+            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+              sem === n ? "bg-accent text-white" : "bg-surface-muted text-muted hover:text-foreground"
+            }`}
+          >
+            {n === "" ? "All semesters" : n === "none" ? "No semester" : `Semester ${n}`}
+            <span className="ml-1 opacity-75">{count}</span>
+          </Link>
+        ))}
+      </div>
+
       <form className="flex max-w-md items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2">
         <MagnifyingGlass size={16} className="text-muted" />
+        {sem && <input type="hidden" name="sem" value={sem} />}
         <input
           name="q"
           defaultValue={q}
-          placeholder="Search subjects in this programme…"
+          placeholder="Search subject name or paper code…"
           className="w-full bg-transparent text-sm outline-none"
         />
       </form>
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
-        <table className="w-full min-w-[980px] text-left text-sm">
+        <table className="w-full min-w-[1080px] text-left text-sm">
           <thead className="border-b border-border bg-surface-muted text-xs uppercase tracking-wide text-muted">
             <tr>
               <th className="w-10 px-3 py-3"></th>
               <th className="px-3 py-3">Subject name</th>
+              <th className="px-3 py-3">Paper code</th>
               <th className="px-3 py-3">Semester</th>
               <th className="px-3 py-3">Programme</th>
               <th className="px-3 py-3">Remove</th>
@@ -177,6 +209,9 @@ export default async function PapersArchiveCoursePage({
                         <p className="mt-1 text-[11px] text-muted">Originally: {s.members[0].originalName}</p>
                       )
                     )}
+                  </td>
+                  <td className="px-3 py-3 text-xs text-muted">
+                    <span className="mt-2 block font-mono">{s.upcs.join(", ") || "—"}</span>
                   </td>
                   <td className="px-3 py-3">
                     <input
@@ -250,8 +285,8 @@ export default async function PapersArchiveCoursePage({
             })}
             {subjects.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-sm text-muted">
-                  No subject matches “{q}”.
+                <td colSpan={8} className="px-4 py-8 text-center text-sm text-muted">
+                  No subject matches{q ? ` “${q}”` : " this semester"}.
                 </td>
               </tr>
             )}
