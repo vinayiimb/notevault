@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CurrencyInr, Files, Flag, Gear, GraduationCap, NotePencil, SignOut } from "@phosphor-icons/react/dist/ssr";
+import { CurrencyInr, FileArrowUp, Files, Flag, Gear, GraduationCap, NotePencil, SignOut } from "@phosphor-icons/react/dist/ssr";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 
@@ -45,6 +45,13 @@ export default async function AdminDashboardLayout({
           >
             <Files size={16} />
             Papers archive
+          </Link>
+          <Link
+            href="/admin/restore"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <FileArrowUp size={16} />
+            OCR upload
           </Link>
           <Link
             href="/admin/features"
