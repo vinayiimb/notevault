@@ -130,40 +130,74 @@ export async function mergePapersSubjectsAction(formData: FormData) {
   finish(formData, `Combined ${subjectKeys.length} subjects into “${targetName}”.`);
 }
 
-export async function updatePaperAction(formData: FormData) {
+function parseUrl(raw: string): string | null {
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+// The full set of fields a paper shows with, from the edit / add forms.
+function paperFields(formData: FormData) {
+  const course = str(formData, "course").slice(0, 200);
+  const subject = str(formData, "subject").slice(0, 300);
+  const semester = parseSemester(str(formData, "semester"));
+  const upc = str(formData, "upc").replace(/\s/g, "");
+  if (!course) finish(formData, "Programme can't be empty.", true);
+  if (!subject) finish(formData, "Subject can't be empty.", true);
+  if (upc && !/^\d{4,12}$/.test(upc)) finish(formData, "Paper code (UPC) should be 4–12 digits.", true);
+  return {
+    course,
+    subject,
+    semester: semester ? String(semester) : null,
+    yearRange: str(formData, "yearRange").slice(0, 60) || null,
+    upc: upc || null,
+    paperType: str(formData, "paperType").slice(0, 20) || null,
+    verified: str(formData, "dataset") !== "noncore",
+    hidden: formData.get("hidden") === "on",
+  };
+}
+
+// Edit every field of one paper. Saves a complete snapshot, so the paper can
+// move to another subject, semester, programme or between /papers and
+// /papers/noncore.
+export async function savePaperAction(formData: FormData) {
   await requireAdmin();
   const paperId = str(formData, "paperId");
   if (!paperId) finish(formData, "Missing paper.", true);
-  const originalUrl = str(formData, "originalUrl");
-  const pdfUrlRaw = str(formData, "pdfUrl");
+  const fields = paperFields(formData);
+  const added = formData.get("added") === "1";
+  // Always stored: a paper moved to another programme is rebuilt from this
+  // row alone on pages that don't load its original catalog file.
+  const pdfUrl = parseUrl(str(formData, "pdfUrl") || str(formData, "originalUrl"));
+  if (!pdfUrl) finish(formData, "That link isn't valid — it must start with http:// or https://", true);
 
-  let pdfUrl: string | null = null;
-  if (pdfUrlRaw && pdfUrlRaw !== originalUrl) {
-    let parsed: URL | null = null;
-    try {
-      parsed = new URL(pdfUrlRaw);
-    } catch {}
-    if (!parsed || (parsed.protocol !== "https:" && parsed.protocol !== "http:")) {
-      finish(formData, "That link isn't valid — it must start with http:// or https://", true);
-    }
-    pdfUrl = parsed.toString();
-  }
-  const hidden = formData.get("hidden") === "on";
+  const data = { ...fields, pdfUrl };
+  await prisma.catalogPaperOverride.upsert({
+    where: { paperId },
+    create: { paperId, added, ...data },
+    update: data,
+  });
+  finish(formData, fields.hidden ? "Paper saved and hidden from students." : `Paper saved — now under “${fields.subject}”.`);
+}
 
-  if (!pdfUrl && !hidden) {
-    await prisma.catalogPaperOverride.deleteMany({ where: { paperId } });
-  } else {
-    await prisma.catalogPaperOverride.upsert({
-      where: { paperId },
-      create: { paperId, pdfUrl, hidden },
-      update: { pdfUrl, hidden },
-    });
-  }
-  finish(formData, hidden ? "Paper saved and hidden from students." : "Paper saved.");
+// Add a paper that isn't in the Drive catalog (any PDF link; Drive links
+// get the inline viewer).
+export async function addPaperAction(formData: FormData) {
+  await requireAdmin();
+  const fields = paperFields(formData);
+  const pdfUrl = parseUrl(str(formData, "pdfUrl"));
+  if (!pdfUrl) finish(formData, "Paste the paper's PDF or Google Drive link (http:// or https://).", true);
+  await prisma.catalogPaperOverride.create({
+    data: { paperId: `added-${crypto.randomUUID()}`, added: true, pdfUrl, ...fields },
+  });
+  finish(formData, `Paper added to “${fields.subject}” (${fields.verified ? "/papers" : "/papers/noncore"}).`);
 }
 
 export async function resetPaperAction(formData: FormData) {
   await requireAdmin();
   await prisma.catalogPaperOverride.deleteMany({ where: { paperId: str(formData, "paperId") } });
-  finish(formData, "Paper reset to original.");
+  finish(formData, formData.get("added") === "1" ? "Added paper deleted." : "Paper reset to original.");
 }

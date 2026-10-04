@@ -34,7 +34,7 @@ export default function NoncorePapersPage() {
       </p>
 
       <Suspense fallback={<div className="h-96 rounded-2xl bg-surface/50 animate-pulse" />}>
-        <PaperBrowser dataBase="/data/papers/noncore" />
+        <PaperBrowser noncore />
       </Suspense>
     </div>
   );

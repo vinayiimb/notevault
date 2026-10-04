@@ -504,6 +504,19 @@ model CatalogPaperOverride {
   paperId   String   @unique
   pdfUrl    String?
   hidden    Boolean  @default(false)
+  // Full edit from Admin → Papers archive: when `course` is set, every field
+  // below is a complete snapshot of the paper as students should see it
+  // (null `course` = an older row that only replaces pdfUrl / hides).
+  course    String?
+  subject   String?
+  semester  String?
+  yearRange String?
+  upc       String?
+  paperType String?
+  // true = /papers (matched to the syllabus), false = /papers/noncore.
+  verified  Boolean?
+  // A paper added by an admin (not in the Drive catalog files).
+  added     Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

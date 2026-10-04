@@ -8,6 +8,7 @@ import { CgpaLoader } from "@/components/archive/cgpa-loader";
 import { NotesNudge } from "@/components/paid-notes/notes-nudge";
 import { semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
+import { applyPaperEdits, type PaperEdit } from "@/lib/paper-edits";
 
 // Data comes from small per-course files built by
 // scripts/build-papers-split.mjs — a visitor downloads only the course they
@@ -21,8 +22,7 @@ type SubjectOverride = {
   hidden: boolean;
   courseOverride: string | null;
 };
-type PaperOverride = { paperId: string; pdfUrl: string | null; hidden: boolean };
-type Overrides = { subjects: Map<string, SubjectOverride>; papers: Map<string, PaperOverride>; list: SubjectOverride[] };
+type Overrides = { subjects: Map<string, SubjectOverride>; papers: PaperEdit[]; list: SubjectOverride[] };
 
 function yearStart(value: string) {
   return Number(value.match(/\d{4}/)?.[0] ?? 0);
@@ -61,6 +61,7 @@ function isFrameBlocked(url: string): boolean {
 
 function fileName(paper: CatalogPaper) {
   if (paper.fileName) return paper.fileName;
+  if (driveId(paper.pdfUrl)) return `${paper.subject} - ${paper.yearRange}.pdf`;
   const tail = paper.pdfUrl.split("/").pop() ?? "Question paper.pdf";
   try {
     return decodeURIComponent(tail).replace(/_/g, " ");
@@ -93,28 +94,27 @@ async function fetchJson<T>(url: string, fallback: T): Promise<T> {
 }
 
 // Admin edits from Admin → Papers archive (rename/combine/move/hide a
-// subject, replace or hide a single paper), layered on the static files.
+// subject; edit, add, re-link or hide a single paper), layered on the
+// static files.
 async function loadOverrides(): Promise<Overrides> {
   const [subjects, papers] = await Promise.all([
     fetchJson<SubjectOverride[]>("/api/catalog-overrides", []),
-    fetchJson<PaperOverride[]>("/api/catalog-paper-overrides", []),
+    fetchJson<PaperEdit[]>("/api/catalog-paper-overrides", []),
   ]);
   const list = Array.isArray(subjects) ? subjects : [];
   return {
     list,
     subjects: new Map(list.map((o) => [`${o.course}\u0000${o.subjectKey}`, o])),
-    papers: new Map((Array.isArray(papers) ? papers : []).map((o) => [o.paperId, o])),
+    papers: Array.isArray(papers) ? papers : [],
   };
 }
 
 function applyOverrides(raw: CatalogPaper[], overrides: Overrides): CatalogPaper[] {
   const out: CatalogPaper[] = [];
   for (const p of raw) {
-    const paperOverride = overrides.papers.get(p.id);
-    if (paperOverride?.hidden) continue;
     const override = overrides.subjects.get(`${p.course}\u0000${canonicalSubjectKey(p.subject)}`);
     if (override?.hidden) continue;
-    let paper = paperOverride?.pdfUrl ? { ...p, pdfUrl: paperOverride.pdfUrl } : p;
+    let paper = p;
     if (override) {
       paper = {
         ...paper,
@@ -138,9 +138,10 @@ const semKey = (p: CatalogPaper) => p.semester ?? NO_SEM;
 
 // Layout: course/subject picker on the left (~30%), paper viewer on the
 // right. A PDF is only loaded once the student clicks a year — never
-// automatically. `dataBase` picks the dataset: /papers (syllabus-matched)
+// automatically. `noncore` picks the dataset: /papers (syllabus-matched)
 // or /papers/noncore (everything else).
-export function PaperBrowser({ dataBase = "/data/papers" }: { dataBase?: string }) {
+export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
+  const dataBase = noncore ? "/data/papers/noncore" : "/data/papers";
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -222,10 +223,11 @@ export function PaperBrowser({ dataBase = "/data/papers" }: { dataBase?: string 
         .map((c) => fetchJson<CatalogPaper[]>(`${dataBase}/courses/${slugOf.get(c)}.json`, [])),
     ).then((lists) => {
       inFlight.current.delete(course);
-      const papers = applyOverrides(lists.flat(), overrides).filter((p) => p.course === course);
+      const edited = applyPaperEdits(lists.flat(), overrides.papers, { dataset: !noncore });
+      const papers = applyOverrides(edited, overrides).filter((p) => p.course === course);
       setLoadedCourses((prev) => ({ ...prev, [course]: papers }));
     });
-  }, [course, index, overrides, loadedCourses, dataBase]);
+  }, [course, index, overrides, loadedCourses, dataBase, noncore]);
   const coursePapers = course ? loadedCourses[course] ?? null : null;
 
   // Searching subjects before picking a course searches every course; the

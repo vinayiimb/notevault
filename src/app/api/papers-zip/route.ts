@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { prisma } from "@/lib/prisma";
 
 // "Download all" on /papers: streams every paper of one subject as a single
 // ZIP. PDFs are fetched from Google Drive a few at a time and written out as
@@ -12,7 +13,8 @@ const MAX_FILES = 60;
 const PARALLEL = 4;
 
 // Only Drive files that are in our own catalog (written by
-// scripts/build-papers-split.mjs) — never an open proxy for any Drive file.
+// scripts/build-papers-split.mjs) or linked by an admin edit — never an open
+// proxy for any Drive file.
 let allowed: Set<string> | null = null;
 function allowedIds(): Set<string> {
   if (!allowed) {
@@ -56,14 +58,23 @@ async function fetchPdf(id: string): Promise<Uint8Array | null> {
 export async function GET(request: Request) {
   const url = new URL(request.url);
   const ids = allowedIds();
-  const files = url.searchParams
+  const requested = url.searchParams
     .getAll("p")
+    .slice(0, MAX_FILES)
     .map((v) => {
       const [id, ...rest] = v.split("|");
       return { id, label: rest.join("|") };
     })
-    .filter((f) => ids.has(f.id))
-    .slice(0, MAX_FILES);
+    .filter((f) => /^[\w-]{10,}$/.test(f.id));
+  const unknown = requested.filter((f) => !ids.has(f.id)).map((f) => f.id);
+  const adminLinked = new Set<string>();
+  if (unknown.length) {
+    const rows = await prisma.catalogPaperOverride
+      .findMany({ where: { OR: unknown.map((id) => ({ pdfUrl: { contains: id } })) }, select: { pdfUrl: true } })
+      .catch(() => []);
+    for (const id of unknown) if (rows.some((r) => r.pdfUrl?.includes(id))) adminLinked.add(id);
+  }
+  const files = requested.filter((f) => ids.has(f.id) || adminLinked.has(f.id));
   if (files.length === 0) return Response.json({ error: "No papers to download." }, { status: 400 });
 
   const zipName = `${safeName(url.searchParams.get("name") ?? "DU question papers")}.zip`;

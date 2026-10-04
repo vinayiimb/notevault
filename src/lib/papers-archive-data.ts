@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { canonicalSubjectKey } from "@/lib/subject-normalization";
 import { slugify } from "@/lib/utils";
 import type { CatalogPaper } from "@/lib/pyq-catalog-types";
+import { applyPaperEdits, type EditedPaper } from "@/lib/paper-edits";
 
 // Admin-side reads for the /papers archive (public/data/papers-catalog.json,
 // ~29k papers). The file is read once per process and only ever sliced per
@@ -25,6 +26,13 @@ function loadCatalog(): CatalogPaper[] {
   return catalog;
 }
 
+// The catalog with every per-paper admin edit applied (added papers
+// included, hidden ones kept but flagged) — what the admin pages show.
+async function editedCatalog(): Promise<EditedPaper[]> {
+  const edits = await prisma.catalogPaperOverride.findMany();
+  return applyPaperEdits(loadCatalog(), edits, { keepHidden: true });
+}
+
 export type PapersArchiveCourse = {
   course: string;
   slug: string;
@@ -41,7 +49,7 @@ export async function getPapersArchiveCourses(): Promise<PapersArchiveCourse[]> 
   for (const o of overrides) editedByCourse.set(o.course, (editedByCourse.get(o.course) ?? 0) + 1);
 
   const byCourse = new Map<string, { papers: number; matched: number; subjects: Set<string> }>();
-  for (const p of loadCatalog()) {
+  for (const p of await editedCatalog()) {
     const entry = byCourse.get(p.course) ?? { papers: 0, matched: 0, subjects: new Set<string>() };
     entry.papers += 1;
     if (p.verified) entry.matched += 1;
@@ -63,11 +71,11 @@ export async function getPapersArchiveCourses(): Promise<PapersArchiveCourse[]> 
 }
 
 export async function getAllPapersArchiveCourseNames(): Promise<string[]> {
-  return [...new Set(loadCatalog().map((p) => p.course))].sort((a, b) => a.localeCompare(b));
+  return [...new Set((await editedCatalog()).map((p) => p.course))].sort((a, b) => a.localeCompare(b));
 }
 
 export async function findPapersArchiveCourse(slug: string): Promise<string | null> {
-  for (const p of loadCatalog()) if (slugify(p.course) === slug) return p.course;
+  for (const p of await editedCatalog()) if (slugify(p.course) === slug) return p.course;
   return null;
 }
 
@@ -91,10 +99,10 @@ export type PapersArchiveSubject = {
 };
 
 async function loadCourseSubjects(course: string) {
-  const papers = loadCatalog().filter((p) => p.course === course);
+  const papers = (await editedCatalog()).filter((p) => p.course === course);
   const overrides = await prisma.catalogSubjectOverride.findMany({ where: { course } });
   const overrideByKey = new Map(overrides.map((o) => [o.subjectKey, o]));
-  const groupKeyOf = (p: CatalogPaper) => {
+  const groupKeyOf = (p: EditedPaper) => {
     const subjectKey = canonicalSubjectKey(p.subject);
     const name = overrideByKey.get(subjectKey)?.displayName || p.subject;
     return { subjectKey, groupKey: canonicalSubjectKey(name) };
@@ -104,11 +112,6 @@ async function loadCourseSubjects(course: string) {
 
 export async function getPapersArchiveSubjects(course: string): Promise<PapersArchiveSubject[]> {
   const { papers, overrideByKey, groupKeyOf } = await loadCourseSubjects(course);
-  const paperOverrides = await prisma.catalogPaperOverride.findMany({
-    where: { paperId: { in: papers.map((p) => p.id) } },
-    select: { paperId: true },
-  });
-  const editedPaperIds = new Set(paperOverrides.map((o) => o.paperId));
 
   type Group = {
     members: Map<string, { subjectKey: string; originalName: string; paperCount: number }>;
@@ -134,7 +137,7 @@ export async function getPapersArchiveSubjects(course: string): Promise<PapersAr
     group.members.set(subjectKey, member);
     group.count += 1;
     if (p.verified) group.matched += 1;
-    if (editedPaperIds.has(p.id)) group.edited += 1;
+    if (p.edited) group.edited += 1;
     if (p.semester) group.semesters.add(String(p.semester));
     if (p.upc) group.upcs.add(p.upc);
     groups.set(groupKey, group);
@@ -171,10 +174,15 @@ export type PapersArchivePaper = {
   pdfUrl: string;
   note: string | null;
   college: string | null;
-  originalSubject: string;
+  subject: string;
+  course: string;
+  upc: string | null;
+  paperType: string | null;
+  fileName: string | null;
   verified: boolean;
   hidden: boolean;
   edited: boolean;
+  added: boolean;
 };
 
 export async function getPapersArchiveSubjectPapers(course: string, groupKey: string) {
@@ -182,31 +190,29 @@ export async function getPapersArchiveSubjectPapers(course: string, groupKey: st
   const papers = coursePapers.filter((p) => groupKeyOf(p).groupKey === groupKey);
   if (papers.length === 0) return null;
 
-  const paperOverrides = await prisma.catalogPaperOverride.findMany({
-    where: { paperId: { in: papers.map((p) => p.id) } },
-  });
-  const overrideById = new Map(paperOverrides.map((o) => [o.paperId, o]));
   const subjectOverrides = [...new Set(papers.map((p) => canonicalSubjectKey(p.subject)))].map((k) =>
     overrideByKey.get(k),
   );
 
   const rows: PapersArchivePaper[] = papers
-    .map((p) => {
-      const o = overrideById.get(p.id);
-      return {
-        id: p.id,
-        yearRange: p.yearRange,
-        semester: p.semester ?? null,
-        originalUrl: p.pdfUrl,
-        pdfUrl: o?.pdfUrl || p.pdfUrl,
-        note: p.note ?? null,
-        college: p.college ?? null,
-        originalSubject: p.subject,
-        verified: Boolean(p.verified),
-        hidden: o?.hidden ?? false,
-        edited: Boolean(o),
-      };
-    })
+    .map((p) => ({
+      id: p.id,
+      yearRange: p.yearRange,
+      semester: p.semester ?? null,
+      originalUrl: p.originalUrl ?? p.pdfUrl,
+      pdfUrl: p.pdfUrl,
+      note: p.note ?? null,
+      college: p.college ?? null,
+      subject: p.subject,
+      course: p.course,
+      upc: p.upc ?? null,
+      paperType: p.paperType ?? null,
+      fileName: p.fileName ?? null,
+      verified: Boolean(p.verified),
+      hidden: Boolean(p.hidden),
+      edited: Boolean(p.edited),
+      added: Boolean(p.added),
+    }))
     .sort((a, b) => b.yearRange.localeCompare(a.yearRange));
 
   return {
