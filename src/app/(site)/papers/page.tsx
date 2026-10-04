@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import type { Metadata } from "next";
 import { getAllDuPypProgrammes, getGroupedDuPypProgrammes, getTotalDuPypCount } from "@/lib/du-pyp-data";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
@@ -35,6 +36,13 @@ export default async function PapersPage() {
     <div className="mx-auto w-full px-4 py-6 sm:px-6 sm:py-8">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <VisibleBreadcrumb items={breadcrumbs} />
+
+      <p className="mb-4 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs text-muted sm:text-sm">
+        Papers matched to the current DU syllabus. Looking for older CBCS papers or others?{" "}
+        <Link href="/papers/noncore" className="font-semibold text-accent hover:underline">
+          Browse more papers →
+        </Link>
+      </p>
 
       <Suspense fallback={<div className="h-96 rounded-2xl bg-surface/50 animate-pulse" />}>
         <PapersViewTabs

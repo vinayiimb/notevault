@@ -138,8 +138,9 @@ const semKey = (p: CatalogPaper) => p.semester ?? NO_SEM;
 
 // Layout: course/subject picker on the left (~30%), paper viewer on the
 // right. A PDF is only loaded once the student clicks a year — never
-// automatically.
-export function PaperBrowser() {
+// automatically. `dataBase` picks the dataset: /papers (syllabus-matched)
+// or /papers/noncore (everything else).
+export function PaperBrowser({ dataBase = "/data/papers" }: { dataBase?: string }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -164,7 +165,7 @@ export function PaperBrowser() {
   // shared "Copy link"s).
   useEffect(() => {
     let alive = true;
-    Promise.all([fetchJson<CourseIndexEntry[]>("/data/papers/index.json", []), loadOverrides()]).then(
+    Promise.all([fetchJson<CourseIndexEntry[]>(`${dataBase}/index.json`, []), loadOverrides()]).then(
       ([idx, ov]) => {
         if (!alive) return;
         setIndex(idx);
@@ -217,13 +218,13 @@ export function PaperBrowser() {
     Promise.all(
       [...sources]
         .filter((c) => slugOf.has(c))
-        .map((c) => fetchJson<CatalogPaper[]>(`/data/papers/courses/${slugOf.get(c)}.json`, [])),
+        .map((c) => fetchJson<CatalogPaper[]>(`${dataBase}/courses/${slugOf.get(c)}.json`, [])),
     ).then((lists) => {
       inFlight.current.delete(course);
       const papers = applyOverrides(lists.flat(), overrides).filter((p) => p.course === course);
       setLoadedCourses((prev) => ({ ...prev, [course]: papers }));
     });
-  }, [course, index, overrides, loadedCourses]);
+  }, [course, index, overrides, loadedCourses, dataBase]);
   const coursePapers = course ? loadedCourses[course] ?? null : null;
 
   // Searching subjects before picking a course searches every course; the
@@ -231,8 +232,8 @@ export function PaperBrowser() {
   const globalSearch = !course && subjectSearch.trim().length >= 2;
   useEffect(() => {
     if (!globalSearch || searchRows) return;
-    fetchJson<[string, string, number][]>("/data/papers/search-index.json", []).then(setSearchRows);
-  }, [globalSearch, searchRows]);
+    fetchJson<[string, string, number][]>(`${dataBase}/search-index.json`, []).then(setSearchRows);
+  }, [globalSearch, searchRows, dataBase]);
 
   const searchHits = useMemo<SearchHit[]>(() => {
     if (!globalSearch || !searchRows || !overrides) return [];

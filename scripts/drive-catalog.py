@@ -11,9 +11,10 @@ under a single subject.
   python3 scripts/drive-catalog.py crawl   # list the Drive folder -> manifest
   python3 scripts/drive-catalog.py build   # manifest + CSV -> papers-catalog.json
 
-Only papers matched to the official syllabus ("1 - Verified ..." folder) are
-published; pass --all to build to also include "2 - More Papers (Not in
-Syllabus)" (older CBCS / unmatched papers).
+Papers matched to the official syllabus ("1 - Verified ..." folder) go to
+papers-catalog.json (/papers); everything else ("2 - More Papers (Not in
+Syllabus)": older CBCS / unmatched) goes to papers-noncore-catalog.json
+(/papers/noncore).
 
 Re-run both after more files are uploaded to the folder.
 """
@@ -26,6 +27,7 @@ LIBRARY = Path("/Volumes/SSD/DU_Papers_Library")
 ROOT = Path(__file__).resolve().parent.parent
 MANIFEST = LIBRARY / "drive_manifest.json"
 OUT = ROOT / "public" / "data" / "papers-catalog.json"
+OUT_NONCORE = ROOT / "public" / "data" / "papers-noncore-catalog.json"
 
 ROMAN = {"I": 1, "II": 2, "III": 3, "IV": 4, "V": 5, "VI": 6, "VII": 7, "VIII": 8}
 
@@ -104,11 +106,8 @@ def build():
             return names_by_upc[upc].most_common(1)[0][0]
         return name or "Untitled paper"
 
-    include_all = "--all" in sys.argv
     catalog, unmatched = [], []
     for f in manifest:
-        if not include_all and not f["path"].startswith("1 - Verified"):
-            continue
         r = rows.get(f["path"].lower())
         if not r:
             unmatched.append(f["path"])
@@ -135,9 +134,11 @@ def build():
         })
 
     catalog.sort(key=lambda p: (p["course"], int(p["semester"] or 99), p["subject"], p["yearRange"]))
-    OUT.write_text(json.dumps(catalog, ensure_ascii=False))
-    courses = {p["course"] for p in catalog}
-    print(f"wrote {OUT}: {len(catalog)} papers, {len(courses)} courses, {len(unmatched)} unmatched")
+    for out, verified in [(OUT, True), (OUT_NONCORE, False)]:
+        part = [p for p in catalog if p["verified"] == verified]
+        out.write_text(json.dumps(part, ensure_ascii=False))
+        print(f"wrote {out.name}: {len(part)} papers, {len({p['course'] for p in part})} courses")
+    print(f"{len(unmatched)} Drive files not in the index")
     for p in unmatched[:20]:
         print("  unmatched:", p)
 

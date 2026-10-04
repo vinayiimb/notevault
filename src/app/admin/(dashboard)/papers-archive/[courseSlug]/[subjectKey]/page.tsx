@@ -5,6 +5,7 @@ import { ArrowLeft, ArrowSquareOut } from "@phosphor-icons/react/dist/ssr";
 import { findPapersArchiveCourse, getPapersArchiveSubjectPapers } from "@/lib/papers-archive-data";
 import { resetPaperAction, updatePaperAction } from "@/lib/papers-archive-actions";
 import { ArchiveFlash } from "@/components/admin/archive-flash";
+import { PapersDatasetBadge } from "@/components/admin/papers-dataset-badge";
 
 function decode(value: string) {
   try {
@@ -40,7 +41,7 @@ export default async function PapersArchiveSubjectPage({
         <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-foreground">{data.subjectName}</h1>
         <p className="mt-1 text-sm text-muted">
           {data.papers.length} paper{data.papers.length === 1 ? "" : "s"}. Paste a new link to replace a broken
-          one, or tick Hide to remove a single paper from /papers.
+          one, or tick Hide to remove a single paper from /papers or /papers/noncore.
           {data.combined && " This heading combines several subjects — the original subject of each paper is shown under its session."}
           {data.subjectHidden && " This whole subject is currently hidden from students."}
         </p>
@@ -69,6 +70,7 @@ export default async function PapersArchiveSubjectPage({
                 >
                   <td className="px-3 py-3">
                     <p className="font-medium text-foreground">{p.yearRange}</p>
+                    <PapersDatasetBadge matched={p.verified ? 1 : 0} noncore={p.verified ? 0 : 1} />
                     {data.combined && <p className="text-[11px] font-semibold text-accent">{p.originalSubject}</p>}
                     {p.college && <p className="text-[11px] text-muted">{p.college}</p>}
                     {p.note && <p className="mt-0.5 max-w-xs text-[11px] leading-4 text-muted">{p.note}</p>}

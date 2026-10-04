@@ -19,6 +19,9 @@ export type CatalogPaper = {
   paperType?: string | null;
   courseNumber?: string | null;
   upc?: string | null;
+  // Drive catalog: true = matched to the current syllabus (/papers),
+  // false = /papers/noncore.
+  verified?: boolean;
   matchStatus?: "Exact" | "Strong" | "Review" | "Unmatched";
   matchConfidence?: number;
   semesterCheck?: string;

@@ -13,15 +13,16 @@ import {
   updatePapersSubjectAction,
 } from "@/lib/papers-archive-actions";
 import { ArchiveFlash } from "@/components/admin/archive-flash";
+import { DATASET_FILTERS, PapersDatasetBadge, matchesDataset } from "@/components/admin/papers-dataset-badge";
 
 export default async function PapersArchiveCoursePage({
   params,
   searchParams,
 }: {
   params: Promise<{ courseSlug: string }>;
-  searchParams: Promise<{ q?: string; sem?: string; ok?: string; err?: string }>;
+  searchParams: Promise<{ q?: string; sem?: string; set?: string; ok?: string; err?: string }>;
 }) {
-  const [{ courseSlug }, { q = "", sem = "", ok, err }] = await Promise.all([params, searchParams]);
+  const [{ courseSlug }, { q = "", sem = "", set = "", ok, err }] = await Promise.all([params, searchParams]);
   const course = await findPapersArchiveCourse(courseSlug);
   if (!course) notFound();
 
@@ -32,21 +33,26 @@ export default async function PapersArchiveCoursePage({
   const query = q.trim().toLowerCase();
   const semesterCounts = new Map<string, number>();
   for (const s of allSubjects) {
+    if (!matchesDataset(set, s.matchedCount, s.paperCount)) continue;
     for (const n of s.semesters.length ? s.semesters : ["none"]) semesterCounts.set(n, (semesterCounts.get(n) ?? 0) + 1);
   }
+  const subjectsInSet = allSubjects.filter((s) => matchesDataset(set, s.matchedCount, s.paperCount)).length;
   const semesterTabs = [...semesterCounts.entries()].sort((a, b) =>
     a[0] === "none" ? 1 : b[0] === "none" ? -1 : Number(a[0]) - Number(b[0]),
   );
   const subjects = allSubjects.filter(
     (s) =>
+      matchesDataset(set, s.matchedCount, s.paperCount) &&
       (!sem || (sem === "none" ? s.semesters.length === 0 : s.semesters.includes(sem))) &&
       (!query ||
         s.displayName.toLowerCase().includes(query) ||
         s.upcs.some((u) => u.includes(query)) ||
         s.members.some((m) => m.originalName.toLowerCase().includes(query))),
   );
-  const tabHref = (n: string) => {
+  const totalMatched = allSubjects.reduce((n, s) => n + s.matchedCount, 0);
+  const tabHref = (n: string, s = set) => {
     const params = new URLSearchParams();
+    if (s) params.set("set", s);
     if (n) params.set("sem", n);
     if (q) params.set("q", q);
     const qs = params.toString();
@@ -65,7 +71,9 @@ export default async function PapersArchiveCoursePage({
         </Link>
         <h1 className="mt-2 font-display text-2xl font-bold tracking-tight text-foreground">{course}</h1>
         <p className="mt-1 text-sm text-muted">
-          {allSubjects.length} subjects · {totalPapers.toLocaleString("en-IN")} papers
+          {allSubjects.length} subjects · {totalPapers.toLocaleString("en-IN")} papers ·{" "}
+          <span className="text-emerald-600">{totalMatched} matched</span> ·{" "}
+          <span className="text-amber-600">{totalPapers - totalMatched} non-core</span>
         </p>
       </div>
 
@@ -116,7 +124,21 @@ export default async function PapersArchiveCoursePage({
       </section>
 
       <div className="flex flex-wrap gap-2">
-        {[["", allSubjects.length] as const, ...semesterTabs].map(([n, count]) => (
+        {DATASET_FILTERS.map(([s, label]) => (
+          <Link
+            key={label}
+            href={tabHref("", s)}
+            className={`rounded-full px-3.5 py-1.5 text-xs font-semibold transition ${
+              set === s ? "bg-foreground text-background" : "bg-surface-muted text-muted hover:text-foreground"
+            }`}
+          >
+            {label}
+          </Link>
+        ))}
+      </div>
+
+      <div className="flex flex-wrap gap-2">
+        {[["", subjectsInSet] as const, ...semesterTabs].map(([n, count]) => (
           <Link
             key={n || "all"}
             href={tabHref(n)}
@@ -133,6 +155,7 @@ export default async function PapersArchiveCoursePage({
       <form className="flex max-w-md items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2">
         <MagnifyingGlass size={16} className="text-muted" />
         {sem && <input type="hidden" name="sem" value={sem} />}
+        {set && <input type="hidden" name="set" value={set} />}
         <input
           name="q"
           defaultValue={q}
@@ -191,6 +214,9 @@ export default async function PapersArchiveCoursePage({
                       defaultValue={s.displayName}
                       className="w-full min-w-56 rounded-lg border border-border bg-background px-2 py-1.5 text-sm focus:border-accent focus:outline-none"
                     />
+                    <div className="mt-1.5">
+                      <PapersDatasetBadge matched={s.matchedCount} noncore={s.paperCount - s.matchedCount} />
+                    </div>
                     {s.members.length > 1 ? (
                       <div className="mt-1.5 text-[11px] leading-4 text-muted">
                         <span className="rounded-full bg-accent-soft px-1.5 py-0.5 font-bold text-accent">

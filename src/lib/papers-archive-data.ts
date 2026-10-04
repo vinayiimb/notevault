@@ -10,11 +10,17 @@ import type { CatalogPaper } from "@/lib/pyq-catalog-types";
 // ~29k papers). The file is read once per process and only ever sliced per
 // programme/subject before reaching a page — never shipped to the browser
 // whole (loading all of it into one page is what OOM-crashed production).
+// Both datasets are edited here: papers-catalog.json (/papers) and
+// papers-noncore-catalog.json (/papers/noncore). Edits are keyed by course +
+// subject name, so a course in both shows as one programme and an edit
+// applies on both pages.
 let catalog: CatalogPaper[] | null = null;
 function loadCatalog(): CatalogPaper[] {
   if (!catalog) {
-    const file = path.join(process.cwd(), "public", "data", "papers-catalog.json");
-    catalog = JSON.parse(fs.readFileSync(file, "utf8")) as CatalogPaper[];
+    catalog = ["papers-catalog.json", "papers-noncore-catalog.json"].flatMap((name) => {
+      const file = path.join(process.cwd(), "public", "data", name);
+      return fs.existsSync(file) ? (JSON.parse(fs.readFileSync(file, "utf8")) as CatalogPaper[]) : [];
+    });
   }
   return catalog;
 }
@@ -23,6 +29,8 @@ export type PapersArchiveCourse = {
   course: string;
   slug: string;
   paperCount: number;
+  matchedCount: number;
+  noncoreCount: number;
   subjectCount: number;
   editedSubjects: number;
 };
@@ -32,10 +40,11 @@ export async function getPapersArchiveCourses(): Promise<PapersArchiveCourse[]> 
   const editedByCourse = new Map<string, number>();
   for (const o of overrides) editedByCourse.set(o.course, (editedByCourse.get(o.course) ?? 0) + 1);
 
-  const byCourse = new Map<string, { papers: number; subjects: Set<string> }>();
+  const byCourse = new Map<string, { papers: number; matched: number; subjects: Set<string> }>();
   for (const p of loadCatalog()) {
-    const entry = byCourse.get(p.course) ?? { papers: 0, subjects: new Set<string>() };
+    const entry = byCourse.get(p.course) ?? { papers: 0, matched: 0, subjects: new Set<string>() };
     entry.papers += 1;
+    if (p.verified) entry.matched += 1;
     entry.subjects.add(canonicalSubjectKey(p.subject));
     byCourse.set(p.course, entry);
   }
@@ -45,6 +54,8 @@ export async function getPapersArchiveCourses(): Promise<PapersArchiveCourse[]> 
       course,
       slug: slugify(course),
       paperCount: e.papers,
+      matchedCount: e.matched,
+      noncoreCount: e.papers - e.matched,
       subjectCount: e.subjects.size,
       editedSubjects: editedByCourse.get(course) ?? 0,
     }))
@@ -69,6 +80,7 @@ export type PapersArchiveSubject = {
   members: { subjectKey: string; originalName: string; paperCount: number }[];
   displayName: string;
   paperCount: number;
+  matchedCount: number;
   editedPapers: number;
   semesters: string[];
   upcs: string[];
@@ -101,6 +113,7 @@ export async function getPapersArchiveSubjects(course: string): Promise<PapersAr
   type Group = {
     members: Map<string, { subjectKey: string; originalName: string; paperCount: number }>;
     count: number;
+    matched: number;
     edited: number;
     semesters: Set<string>;
     upcs: Set<string>;
@@ -111,6 +124,7 @@ export async function getPapersArchiveSubjects(course: string): Promise<PapersAr
     const group = groups.get(groupKey) ?? {
       members: new Map(),
       count: 0,
+      matched: 0,
       edited: 0,
       semesters: new Set<string>(),
       upcs: new Set<string>(),
@@ -119,6 +133,7 @@ export async function getPapersArchiveSubjects(course: string): Promise<PapersAr
     member.paperCount += 1;
     group.members.set(subjectKey, member);
     group.count += 1;
+    if (p.verified) group.matched += 1;
     if (editedPaperIds.has(p.id)) group.edited += 1;
     if (p.semester) group.semesters.add(String(p.semester));
     if (p.upc) group.upcs.add(p.upc);
@@ -135,6 +150,7 @@ export async function getPapersArchiveSubjects(course: string): Promise<PapersAr
         members,
         displayName: first?.displayName || members[0].originalName,
         paperCount: g.count,
+        matchedCount: g.matched,
         editedPapers: g.edited,
         semesters: [...g.semesters].sort((a, b) => Number(a) - Number(b)),
         upcs: [...g.upcs].sort(),
@@ -156,6 +172,7 @@ export type PapersArchivePaper = {
   note: string | null;
   college: string | null;
   originalSubject: string;
+  verified: boolean;
   hidden: boolean;
   edited: boolean;
 };
@@ -185,6 +202,7 @@ export async function getPapersArchiveSubjectPapers(course: string, groupKey: st
         note: p.note ?? null,
         college: p.college ?? null,
         originalSubject: p.subject,
+        verified: Boolean(p.verified),
         hidden: o?.hidden ?? false,
         edited: Boolean(o),
       };

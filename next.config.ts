@@ -51,6 +51,7 @@ const nextConfig: NextConfig = {
       "./public/data/du-question-bank-full-mapped.json",
       "./public/data/ramanujan-pyq-catalog.json",
       "./public/data/papers-catalog.json",
+      "./public/data/papers-noncore-catalog.json",
     ],
   },
   // Old/scraper-era course slugs (pre-dating the current papers-catalog.json
