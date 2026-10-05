@@ -49,7 +49,8 @@ export default async function CanonicalSubjectNotePage({
   // Paid notes: this cached page only ever carries the free preview; the
   // rest is fetched per-visitor by GatedNotes after an access check.
   const { active } = await getPaymentSettings();
-  const { preview, truncated } = active ? previewOf(note.content) : { preview: note.content, truncated: false };
+  const { preview, truncated } =
+    active && !note.isFree ? previewOf(note.content) : { preview: note.content, truncated: false };
 
   const breadcrumbs = [
     { name: "Home", url: "/" },

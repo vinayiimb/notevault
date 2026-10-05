@@ -24,6 +24,7 @@ export function CanonicalNotesEditor({
   initialContent,
   initialTheme,
   initialSemester,
+  initialIsFree,
 }: {
   programmeSlug: string;
   programme: string;
@@ -32,11 +33,13 @@ export function CanonicalNotesEditor({
   initialContent: string;
   initialTheme: string;
   initialSemester: number | null;
+  initialIsFree: boolean;
 }) {
   const mdInputRef = useRef<HTMLInputElement>(null);
   const [content, setContent] = useState(initialContent);
   const [theme, setTheme] = useState(initialTheme);
   const [semester, setSemester] = useState<string>(initialSemester ? String(initialSemester) : "");
+  const [isFree, setIsFree] = useState(initialIsFree);
   const [dragOver, setDragOver] = useState(false);
   const [editorMode, setEditorMode] = useState<"write" | "preview">("write");
   const [saving, setSaving] = useState(false);
@@ -65,6 +68,7 @@ export function CanonicalNotesEditor({
       formData.set("content", content);
       formData.set("theme", theme);
       formData.set("semester", semester);
+      if (isFree) formData.set("isFree", "on");
       await updateCanonicalSubjectNoteAction(formData);
       setSaved(true);
     } finally {
@@ -238,6 +242,25 @@ export function CanonicalNotesEditor({
           </select>
           <p className="max-w-[220px] text-[11px] leading-4 text-muted">
             Groups this subject under &quot;Sem {semester || "…"}&quot; on the public notes page.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label className="flex items-center gap-1.5 text-xs font-medium text-muted" htmlFor="canonical-note-free">
+            <input
+              id="canonical-note-free"
+              type="checkbox"
+              checked={isFree}
+              onChange={(e) => {
+                setIsFree(e.target.checked);
+                setSaved(false);
+              }}
+              className="accent-accent"
+            />
+            Always free
+          </label>
+          <p className="max-w-[220px] text-[11px] leading-4 text-muted">
+            Everyone can read this note in full, even with the site-wide paywall on.
           </p>
         </div>
       </div>

@@ -280,6 +280,9 @@ model CanonicalSubjectNote {
   // field, so this is the only source of truth for grouping /notes/[slug]
   // by semester. Null means "not set yet" (shown ungrouped).
   semester      Int?
+  // Per-note override: true always unlocks the full note for everyone,
+  // even with the site-wide paywall on. See canReadFullNote().
+  isFree        Boolean  @default(false)
   updatedAt     DateTime @updatedAt
   createdAt     DateTime @default(now())
 

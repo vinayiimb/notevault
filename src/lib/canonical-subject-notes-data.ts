@@ -103,6 +103,7 @@ export async function getCanonicalNote(programmeSlug: string, subjectSlug: strin
     content: existing?.content ?? "",
     theme: existing?.theme ?? "sky",
     semester: existing?.semester ?? null,
+    isFree: existing?.isFree ?? false,
     updatedAt: existing?.updatedAt ?? null,
   };
 }

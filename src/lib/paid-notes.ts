@@ -80,6 +80,11 @@ export async function canReadFullNote(programmeSlug: string, subjectSlug: string
   const settings = await getPaymentSettings();
   if (!settings.active) return true;
   if (await getSession()) return true; // admins always see everything
+  const note = await prisma.canonicalSubjectNote.findUnique({
+    where: { programmeSlug_subjectSlug: { programmeSlug, subjectSlug } },
+    select: { isFree: true },
+  });
+  if (note?.isFree) return true; // admin opted this subject out of the paywall
   const email = await getStudentEmail();
   if (!email) return false;
   return (await getUnlockedItems(email)).has(itemKey(programmeSlug, subjectSlug));

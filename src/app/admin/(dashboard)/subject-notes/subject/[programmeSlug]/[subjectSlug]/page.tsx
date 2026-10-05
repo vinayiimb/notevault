@@ -41,6 +41,7 @@ export default async function SubjectNotesEditorPage({
         initialContent={note.content}
         initialTheme={note.theme}
         initialSemester={note.semester}
+        initialIsFree={note.isFree}
       />
     </div>
   );
