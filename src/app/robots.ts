@@ -19,6 +19,11 @@ const DISALLOW = [
   "/pyq-notes$", // ~15MB of HTML (whole archive inlined); /papers is the indexable hub
 ];
 
+// Read-only APIs that public pages call while rendering. Blocking them made
+// Googlebot render pages without that data (URL Inspection: "blocked by
+// robots.txt" page resources). Longest match wins, so these beat "/api/".
+const ALLOW = ["/", "/api/feature-flags", "/api/catalog-overrides", "/api/pyp-grid", "/api/notes-available"];
+
 // Search / AI-answer crawlers named explicitly: a bot with its own group
 // ignores the "*" group, so each gets the same disallow list.
 const NAMED_BOTS = [
@@ -40,8 +45,8 @@ const NAMED_BOTS = [
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
-      { userAgent: "*", allow: "/", disallow: DISALLOW },
-      { userAgent: NAMED_BOTS, allow: "/", disallow: DISALLOW },
+      { userAgent: "*", allow: ALLOW, disallow: DISALLOW },
+      { userAgent: NAMED_BOTS, allow: ALLOW, disallow: DISALLOW },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
