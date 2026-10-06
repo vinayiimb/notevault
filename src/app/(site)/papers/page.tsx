@@ -43,6 +43,7 @@ export default async function PapersPage() {
     <div className="mx-auto w-full px-4 py-6 sm:px-6 sm:py-8">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <VisibleBreadcrumb items={breadcrumbs} />
+      <h1 className="mb-3 text-2xl font-semibold tracking-tight sm:text-3xl">DU Previous Year Question Papers</h1>
 
       <p className="mb-4 rounded-xl border border-border bg-surface px-4 py-2.5 text-xs text-muted sm:text-sm">
         Papers matched to the current DU syllabus. Looking for older CBCS papers or others?{" "}

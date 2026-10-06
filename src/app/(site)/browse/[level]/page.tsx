@@ -34,8 +34,8 @@ export async function generateMetadata({
   if (!enumLevel) return {};
 
   const title = level === "college" 
-    ? "Browse Delhi University Courses | DU PYQ Online"
-    : `Browse ${levelLabel(enumLevel)} Courses | DU PYQ Online`;
+    ? "Browse Delhi University Courses"
+    : `Browse ${levelLabel(enumLevel)} Courses`;
     
   const description = level === "college"
     ? "Browse every college course on DU PYQ Online and jump straight to its semester-wise previous year question papers and notes."
