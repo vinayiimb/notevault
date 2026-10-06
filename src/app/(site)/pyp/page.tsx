@@ -5,7 +5,7 @@ import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { DuPypBrowser } from "@/components/pyp/du-pyp-browser";
 
 export const metadata: Metadata = {
-  title: "DU Previous Year Papers (PYP) — All Programmes | DU PYQ Online",
+  title: "DU Previous Year Papers (PYP) — All Programmes",
   description:
     "Browse all 118 official DU programmes with semester-wise (I–VIII) previous year question papers, organised by paper type: DSC, DSE, GE, AEC, SEC, VAC.",
   alternates: { canonical: "/pyp" },

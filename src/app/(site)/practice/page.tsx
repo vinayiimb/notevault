@@ -20,7 +20,7 @@ const PRACTICE_PROGRAM_SLUGS = ["b-com-hons-du-syllabus", "bcom-programme"];
 const PRACTICE_MAX_SEMESTER_ORDER = 6;
 
 export const metadata: Metadata = {
-  title: "Interactive PYQ Practice & Mock Drills | DU PYQ Online",
+  title: "Interactive PYQ Practice & Mock Drills",
   description:
     "Test your knowledge and practice with real exam questions and AI-generated step-by-step solutions for DU previous year papers.",
   alternates: { canonical: "/practice" },

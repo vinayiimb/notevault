@@ -15,7 +15,7 @@ import { PlannerShell } from "@/components/planner/planner-shell";
 import type { SerializedPlan } from "@/components/planner/planner-types";
 
 export const metadata: Metadata = {
-  title: "Study Planner | DU PYQ Online",
+  title: "Study Planner",
   description:
     "A personalized Delhi University exam study plan built automatically from your subjects, exam dates, and previous-year questions.",
   robots: { index: false, follow: false },

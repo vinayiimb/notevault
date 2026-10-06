@@ -6,7 +6,7 @@ import { getUnifiedPyqArchive, catalogIntegrity } from "@/lib/pyq-catalog";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
-  title: "Complete DU Papers and Notes Archive | DU PYQ Online",
+  title: "Complete DU Papers and Notes Archive",
   description:
     "Browse the complete Delhi University previous year question paper archive — every course, semester, and subject in one searchable library.",
   alternates: { canonical: "/pyq-notes" },

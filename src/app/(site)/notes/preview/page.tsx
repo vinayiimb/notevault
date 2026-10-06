@@ -6,7 +6,7 @@ import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
 export const metadata: Metadata = {
-  title: "Notes Preview | DU PYQ Online",
+  title: "Notes Preview",
   description: "See a sample of the compiled study notes available on DU PYQ Online — picked at random from a real subject.",
   robots: { index: false, follow: true },
 };

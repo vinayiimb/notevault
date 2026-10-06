@@ -10,7 +10,7 @@ import { FeatureCards } from "@/components/landing/feature-cards";
 import { FeatureShowcase } from "@/components/landing/feature-showcase";
 
 export const metadata: Metadata = {
-  title: "DU Previous Year Papers & Notes | DU PYQ Online",
+  title: "DU Previous Year Papers & Notes",
   description: "Find Delhi University previous year question papers by course, semester, subject, paper type and year. Read or download DU PYQs free.",
   alternates: { canonical: "/" },
 };

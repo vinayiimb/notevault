@@ -6,7 +6,7 @@ import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PaperBrowser } from "@/components/archive/paper-browser";
 
 export const metadata: Metadata = {
-  title: "More DU Question Papers (Older CBCS & Other Papers) | DU PYQ Online",
+  title: "More DU Question Papers (Older CBCS & Other Papers)",
   description:
     "Delhi University previous year question papers that are not in the current syllabus — older CBCS papers and other papers, by course, semester and subject.",
   alternates: { canonical: "/papers/noncore" },
