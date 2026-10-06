@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useEffect, useState } from "react";
 import type { CatalogPaper } from "@/lib/pyq-catalog-types";
 import { CatalogArchiveBrowser } from "./catalog-archive-browser";
 
@@ -11,37 +11,28 @@ import { CatalogArchiveBrowser } from "./catalog-archive-browser";
  * - Separates unmatched papers into "(Unmatched)" section
  * - Preserves all existing features (search, filtering, download, etc.)
  */
-export function CanonicalArchiveBrowser({ papers: rawPapers }: { papers: CatalogPaper[] }) {
-  // Transform papers to prioritize canonical names while keeping raw data intact
-  const enrichedPapers = useMemo(() => {
-    return rawPapers.map((paper): CatalogPaper => {
-      // Mark unmapped papers explicitly
-      if (!paper.canonicalProgramme && paper.canonicalMappingStatus !== "UNMATCHED") {
-        return {
-          ...paper,
-          canonicalMappingStatus: "UNMATCHED" as const,
-        };
-      }
+export function CanonicalArchiveBrowser() {
+  const [matched, setMatched] = useState<CatalogPaper[] | null>(null);
+  const [failed, setFailed] = useState(false);
 
-      return paper;
-    });
-  }, [rawPapers]);
+  // Fetched instead of passed as props: inlining the whole archive made the
+  // page ~15MB of HTML. The API already drops unmatched papers.
+  useEffect(() => {
+    fetch("/api/pyq-archive")
+      .then((r) => (r.ok ? r.json() : Promise.reject(r.status)))
+      .then(setMatched)
+      .catch(() => setFailed(true));
+  }, []);
 
-  // Separate matched and unmatched papers
-  const { matched, unmatched } = useMemo(() => {
-    const m = [];
-    const u = [];
-
-    for (const paper of enrichedPapers) {
-      if (paper.canonicalProgramme && paper.canonicalMappingStatus !== "UNMATCHED") {
-        m.push(paper);
-      } else {
-        u.push(paper);
-      }
-    }
-
-    return { matched: m, unmatched: u };
-  }, [enrichedPapers]);
+  if (!matched) {
+    return failed ? (
+      <div className="rounded-2xl border border-dashed border-border bg-surface-muted p-8 text-center">
+        <p className="text-sm text-muted">Couldn&rsquo;t load the archive. Please refresh the page.</p>
+      </div>
+    ) : (
+      <div className="h-[500px] w-full animate-pulse rounded-2xl bg-surface-muted border border-border/60" />
+    );
+  }
 
   return (
     <div className="space-y-8">

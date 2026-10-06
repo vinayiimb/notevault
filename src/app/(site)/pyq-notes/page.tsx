@@ -1,8 +1,6 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { BookOpenText } from "@phosphor-icons/react/dist/ssr";
 import { CanonicalArchiveBrowser } from "@/components/archive/canonical-archive-browser";
-import { getUnifiedPyqArchive, catalogIntegrity } from "@/lib/pyq-catalog";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 
 export const metadata: Metadata = {
@@ -12,12 +10,6 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pyq-notes" },
 };
 
-export const dynamic = "force-dynamic";
-
-async function PapersContent() {
-  const papers = await getUnifiedPyqArchive();
-  return <CanonicalArchiveBrowser papers={papers} />;
-}
 
 export default function PyqNotesArchivePage() {
   return (
@@ -55,9 +47,9 @@ export default function PyqNotesArchivePage() {
         </span>
       </div>
 
-      <Suspense fallback={<div className="mt-10 h-[500px] w-full animate-pulse rounded-2xl bg-surface-muted border border-border/60" />}>
-        <PapersContent />
-      </Suspense>
+      <div className="mt-10">
+        <CanonicalArchiveBrowser />
+      </div>
     </div>
   );
 }
