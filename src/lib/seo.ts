@@ -130,10 +130,19 @@ export function generateSubjectMetadata(subjectName: string, program: string, se
 /* stuffing); the root layout appends " | DU PYQ Online".              */
 /* ------------------------------------------------------------------ */
 
+// "B.Com. (Hons.)" → "BCom Hons": the spelling students type into Google.
+function typedName(name: string) {
+  const t = name.replace(/[.()]/g, "").replace(/\b([A-Z]) (?=[A-Z]\b)/g, "$1").replace(/\s+/g, " ").trim();
+  return t === name ? "" : ` (${t})`;
+}
+
+const ORDINAL = ["", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
+
 export function programmePapersMetadata(name: string, slug: string, paperCount: number, subjectCount: number) {
-  const title = `${name} Previous Year Question Papers PDF`;
+  // Front-loads the query shape students use: "du bcom hons pyq".
+  const title = `DU ${name} PYQ – Previous Year Question Papers PDF, All Semesters`;
   const description =
-    `Delhi University ${name} previous year question papers — ${paperCount.toLocaleString("en-IN")} papers across ${subjectCount} subjects, organised by subject. View or download the original PDFs.`;
+    `Delhi University ${name}${typedName(name)} previous year question papers — ${paperCount.toLocaleString("en-IN")} papers across ${subjectCount} subjects, organised by subject. View or download the original PDFs.`;
   const canonical = `/papers/${slug}`;
   return {
     title,
@@ -149,11 +158,12 @@ export function programmeSemesterMetadata(
   semester: number,
   opts: { subjectCount: number; paperCount: number; years: string[] },
 ) {
-  const title = `${name} Semester ${semester} Previous Year Question Papers PDF | DU`;
+  // Matches "du bcom sem 1 pyq" and "bcom 1st sem question paper du".
+  const title = `DU ${name} Sem ${semester} PYQ – ${ORDINAL[semester] ?? semester} Semester Question Papers PDF`;
   const yearSpan =
     opts.years.length > 1 ? `${opts.years[opts.years.length - 1]}–${opts.years[0]}` : opts.years[0];
   const description =
-    `Delhi University ${name} Semester ${semester} previous year question papers — ` +
+    `DU ${name}${typedName(name)} Sem ${semester} PYQ: every Semester ${semester} previous year question paper — ` +
     `${opts.subjectCount} subjects, ${opts.paperCount} papers${yearSpan ? ` (${yearSpan})` : ""}. ` +
     `Every subject with its DSC/DSE/GE/SEC papers, view or download the original PDFs.`;
   const canonical = `/papers/${slug}/semester-${semester}`;
