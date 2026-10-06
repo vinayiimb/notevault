@@ -259,29 +259,9 @@ export async function getExamSessions() {
       orderBy: { order: "desc" },
     });
   } catch {
-    return [
-      {
-        id: "session-2025-2026-dec-jan",
-        label: "2025-26 (Dec-Jan) Question Papers",
-        order: 90,
-        createdAt: new Date(),
-        _count: { links: 24 },
-      },
-      {
-        id: "session-2025-may-june",
-        label: "2025 (May-June-July) Question Papers",
-        order: 80,
-        createdAt: new Date(),
-        _count: { links: 23 },
-      },
-      {
-        id: "session-2024-2025-dec-jan",
-        label: "2024-25 (Dec-Jan-Feb) Question Papers",
-        order: 70,
-        createdAt: new Date(),
-        _count: { links: 22 },
-      },
-    ];
+    // No hardcoded fallback: made-up ids link to /exam-sessions/<id> pages
+    // that 404 (Search Console flagged them).
+    return [];
   }
 }
 
