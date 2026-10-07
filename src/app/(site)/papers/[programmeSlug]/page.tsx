@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { SampleQuestions } from "@/components/seo/sample-questions";
+import { getSampleQuestions } from "@/lib/subject-questions";
 import { notFound, permanentRedirect } from "next/navigation";
 import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import {
@@ -92,6 +94,14 @@ export default async function ProgrammePapersPage({
   ];
 
   const sortedSubjects = indexableSubjects.slice().sort((a, b) => a.name.localeCompare(b.name));
+  // Real question text: the hub was only links, which Google left unindexed.
+  const samples = await getSampleQuestions(
+    indexableSubjects
+      .slice()
+      .sort((a, b) => b.papers.length - a.papers.length)
+      .map((s) => ({ name: s.name, href: `/papers/${programme.slug}/${s.slug}`, paperCodes: s.paperCodes })),
+    8,
+  );
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
@@ -171,6 +181,8 @@ export default async function ProgrammePapersPage({
           ))}
         </ul>
       </section>
+
+      <SampleQuestions title={`Sample questions from recent ${programme.name} papers`} items={samples} />
 
       {relatedProgrammes.length > 0 && (
         <section className="mt-14 border-t border-border pt-8">

@@ -28,6 +28,7 @@ import { FaqBlock } from "@/components/seo/faq-block";
 import { ShareButtons } from "@/components/seo/share-buttons";
 import { ProgrammeSemesterView } from "@/components/seo/programme-semester-view";
 import { getSemesterGuidePost, getPyqUsageGuidePost } from "@/lib/blog";
+import { getSubjectQuestions, getSampleQuestions } from "@/lib/subject-questions";
 
 /**
  * One sentence of genuinely subject-specific coverage detail, built only
@@ -144,6 +145,10 @@ export default async function SubjectPapersPage({
         data={ps}
         otherSemesters={allSems.filter((n) => n !== semNum)}
         guidePost={getSemesterGuidePost(semNum)}
+        samples={await getSampleQuestions(
+          ps.subjects.map((s) => ({ name: s.name, href: `/papers/${programmeSlug}/${s.slug}`, paperCodes: s.paperCodes })),
+          12,
+        )}
       />
     );
   }
@@ -161,6 +166,7 @@ export default async function SubjectPapersPage({
   const hasContent = subject.papers.length > 0;
   const related = await getRelatedSubjects(programme.slug, subject.slug);
   const pyqUsageGuide = getPyqUsageGuidePost();
+  const questions = hasContent ? await getSubjectQuestions(subject.paperCodes) : null;
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
@@ -303,6 +309,21 @@ export default async function SubjectPapersPage({
             </section>
           ))}
         </div>
+      )}
+
+      {questions && (
+        <section className="mt-10">
+          <h2 className="mb-1 text-lg font-bold text-foreground">
+            Questions from the {questions.year || "latest"} {subject.name} paper
+          </h2>
+          <p className="mb-3 text-sm text-muted">
+            Text of the {questions.session ? `${questions.session.replace(/-/g, " ").toLowerCase()} ` : ""}DU question
+            paper (UPC {questions.upc}), so you can see what gets asked before opening a PDF.
+          </p>
+          <div className="whitespace-pre-line rounded-xl border border-border bg-surface p-4 text-sm leading-relaxed text-foreground">
+            {questions.text}
+          </div>
+        </section>
       )}
 
       {hasContent && (

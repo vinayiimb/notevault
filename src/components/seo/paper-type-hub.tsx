@@ -6,6 +6,8 @@ import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { FaqBlock } from "@/components/seo/faq-block";
 import { ShareButtons } from "@/components/seo/share-buttons";
+import { SampleQuestions } from "@/components/seo/sample-questions";
+import { getSampleQuestions } from "@/lib/subject-questions";
 
 const TYPES = {
   AEC: { path: "/ability-enhancement-courses", name: "Ability Enhancement Courses (AEC)", blurb: "language and communication papers" },
@@ -32,6 +34,17 @@ export function paperTypeMetadata(type: HubType) {
 export async function PaperTypeHub({ type }: { type: HubType }) {
   const t = TYPES[type];
   const { subjects, totalPapers } = await getPaperTypeHub(type);
+  const samples = await getSampleQuestions(
+    subjects
+      .slice()
+      .sort((a, b) => b.paperCount - a.paperCount)
+      .map((s) => ({
+        name: s.name,
+        href: `/papers/${s.placements[0].programmeSlug}/${s.placements[0].subjectSlug}`,
+        paperCodes: s.paperCodes,
+      })),
+    8,
+  );
   const breadcrumbs = [
     { name: "Home", url: "/" },
     { name: "Previous Year Papers", url: "/previous-year-papers" },
@@ -100,6 +113,8 @@ export async function PaperTypeHub({ type }: { type: HubType }) {
           </li>
         ))}
       </ul>
+
+      <SampleQuestions title={`Sample questions from recent ${type} papers`} items={samples} />
 
       <div className="mt-10">
         <ShareButtons url={absoluteUrl(t.path)} text={`DU ${type} previous year papers:`} />

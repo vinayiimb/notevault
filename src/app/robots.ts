@@ -11,7 +11,7 @@ import { SITE_URL } from "@/lib/seo";
  */
 const DISALLOW = [
   "/admin/",
-  "/dashboard/",
+  "/dashboard", // also the bare /dashboard (was in GSC "crawled - not indexed")
   "/login",
   "/api/",
   "/search", // internal search results — not SEO landing pages

@@ -841,6 +841,7 @@ export async function getSeoCoverageStats() {
 export interface PaperTypeHubSubject {
   name: string;
   paperCount: number;
+  paperCodes: string[];
   placements: { programmeName: string; programmeSlug: string; subjectSlug: string; paperCount: number }[];
 }
 
@@ -851,8 +852,9 @@ export async function getPaperTypeHub(type: string): Promise<{ subjects: PaperTy
     for (const s of p.subjects) {
       if (!isSubjectIndexable(s) || !s.paperTypes.includes(type)) continue;
       const key = s.name.trim().toLowerCase();
-      const hub = byName.get(key) ?? { name: s.name.trim(), paperCount: 0, placements: [] };
+      const hub = byName.get(key) ?? { name: s.name.trim(), paperCount: 0, paperCodes: [], placements: [] };
       hub.paperCount += s.papers.length;
+      hub.paperCodes.push(...s.paperCodes);
       hub.placements.push({
         programmeName: p.name,
         programmeSlug: p.slug,

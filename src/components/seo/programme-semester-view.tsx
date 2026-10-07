@@ -1,4 +1,6 @@
 import Link from "next/link";
+import { SampleQuestions } from "@/components/seo/sample-questions";
+import type { SampleQuestion } from "@/lib/subject-questions";
 import { CalendarBlank, Calculator, Notebook, BookOpenText } from "@phosphor-icons/react/dist/ssr";
 import type { SeoProgrammeSemester } from "@/lib/du-pyp-seo";
 import { collectionPageJsonLd, semesterFaqs, absoluteUrl } from "@/lib/seo";
@@ -57,8 +59,11 @@ export function ProgrammeSemesterView({
   data,
   otherSemesters,
   guidePost,
+  samples = [],
 }: {
   data: SeoProgrammeSemester;
+  /** One real question per subject (lib/subject-questions). */
+  samples?: SampleQuestion[];
   otherSemesters: number[];
   /** The blog post that specifically covers this semester's exam prep, if one exists. */
   guidePost?: { slug: string; title: string; description: string } | null;
@@ -173,6 +178,8 @@ export function ProgrammeSemesterView({
           </section>
         ))}
       </div>
+
+      <SampleQuestions title={`Sample questions from ${programme.name} Semester ${semester} papers`} items={samples} />
 
       <section className="mt-14 border-t border-border pt-8">
         <h2 className="mb-4 text-xl font-bold text-foreground">
