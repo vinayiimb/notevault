@@ -3,10 +3,10 @@
 // ship in the browser bundle; sign-ins are verified server-side in
 // src/lib/firebase-token.ts. Leave apiKey empty to hide Google sign-in.
 export const FIREBASE_CONFIG = {
-  apiKey: "",
-  authDomain: "",
-  projectId: "",
-  appId: "",
+  apiKey: "AIzaSyB8Rw1y6T32LcYgLV9gqzQ9wq4AirbI2Ds",
+  authDomain: "dupyqonline.firebaseapp.com",
+  projectId: "dupyqonline",
+  appId: "1:285502274473:web:7bc34664bc3972c89b22b8",
 };
 
 export const googleSignInEnabled = !!(FIREBASE_CONFIG.apiKey && FIREBASE_CONFIG.projectId);
