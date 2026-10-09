@@ -105,7 +105,7 @@ export function GatedNotes({
                 Unlock for ₹{SINGLE_PRICE}
               </Link>
               <Link
-                href={`/paid-notes/login?next=${encodeURIComponent(pathname)}`}
+                href={`/login?next=${encodeURIComponent(pathname)}`}
                 className="text-sm font-medium text-brand hover:underline"
               >
                 Already bought? Sign in

@@ -109,6 +109,12 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
             {s.charAt(0) + s.slice(1).toLowerCase()} ({countOf(s)})
           </Link>
         ))}
+        <Link
+          href="/admin/payments/students"
+          className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted hover:text-foreground"
+        >
+          Students &rarr;
+        </Link>
       </div>
 
       {purchases.length === 0 ? (

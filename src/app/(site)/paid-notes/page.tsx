@@ -63,7 +63,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
               <button type="submit" className="font-medium text-brand hover:underline">Sign out</button>
             </form>
           ) : (
-            <Link href="/paid-notes/login" className="font-medium text-brand hover:underline">Already bought? Sign in</Link>
+            <Link href="/login" className="font-medium text-brand hover:underline">Already bought? Sign in</Link>
           )}
         </div>
       </div>

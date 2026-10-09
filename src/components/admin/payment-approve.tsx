@@ -5,7 +5,7 @@ import { WhatsappLogo } from "@phosphor-icons/react";
 import { approvePurchaseAction, resetStudentPasswordAction, type ApproveResult } from "@/lib/paid-notes-actions";
 import { googleSignInEnabled } from "@/lib/firebase-config";
 
-const LOGIN_URL = "https://dupyq.online/paid-notes/login";
+const LOGIN_URL = "https://www.dupyq.online/login";
 
 function whatsappText(r: ApproveResult, subjects: string) {
   const lines = r.password

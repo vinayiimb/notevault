@@ -1,6 +1,6 @@
 "use server";
 
-import { randomInt } from "node:crypto";
+import { randomInt, randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -61,7 +61,7 @@ export async function studentLoginAction(_prev: FormResult, formData: FormData):
   }
   (await cookies()).set(STUDENT_COOKIE, signStudentSession(account.email), STUDENT_COOKIE_OPTIONS);
   // Only same-site paths — never an open redirect.
-  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/paid-notes");
+  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/account");
 }
 
 // "Continue with Google" (Firebase): the browser signs in with Google and
@@ -77,12 +77,12 @@ export async function googleSignInAction(idToken: string, next: string): Promise
     return { error: "Google sign-in failed. Please try again." };
   }
   (await cookies()).set(STUDENT_COOKIE, signStudentSession(email), STUDENT_COOKIE_OPTIONS);
-  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/paid-notes");
+  redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/account");
 }
 
 export async function studentLogoutAction() {
   (await cookies()).delete(STUDENT_COOKIE);
-  redirect("/paid-notes");
+  redirect("/");
 }
 
 // ---------- Admin ----------
@@ -139,6 +139,55 @@ export async function rejectPurchaseAction(formData: FormData) {
   const adminNote = String(formData.get("adminNote") ?? "").trim() || null;
   await prisma.purchase.update({ where: { id }, data: { status: "REJECTED", reviewedAt: new Date(), adminNote } });
   revalidatePath("/admin/payments");
+}
+
+// Admin edits a student's access (Admin → Payments → Students). Access is the
+// union of their APPROVED purchases, so a grant is a ₹0 approved purchase
+// (no schema change) and a removal strips the subject from those purchases.
+export async function grantSubjectsAction(formData: FormData) {
+  await requireAdmin();
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  if (!email) throw new Error("Enter a valid email.");
+  const pairs = formData.getAll("item").map(String).map((k) => k.split("/")).filter((p) => p.length === 2);
+  if (!pairs.length) return;
+  const [notes, approved, latest] = await Promise.all([
+    prisma.canonicalSubjectNote.findMany({
+      where: { OR: pairs.map(([programmeSlug, subjectSlug]) => ({ programmeSlug, subjectSlug })), NOT: { content: "" } },
+      select: { programmeSlug: true, subjectSlug: true },
+    }),
+    prisma.purchase.findMany({ where: { email, status: "APPROVED" }, select: { items: true } }),
+    prisma.purchase.findFirst({ where: { email }, orderBy: { createdAt: "desc" }, select: { phone: true } }),
+  ]);
+  const owned = new Set(approved.flatMap((p) => p.items));
+  const items = notes.map((n) => `${n.programmeSlug}/${n.subjectSlug}`).filter((k) => !owned.has(k));
+  if (!items.length) return;
+  await prisma.purchase.create({
+    data: {
+      email,
+      phone: latest?.phone ?? "",
+      utr: `admin-${randomUUID()}`,
+      amount: 0,
+      items,
+      status: "APPROVED",
+      reviewedAt: new Date(),
+      adminNote: "Added by admin",
+    },
+  });
+  revalidatePath("/admin/payments", "layout");
+}
+
+export async function revokeSubjectAction(formData: FormData) {
+  await requireAdmin();
+  const email = String(formData.get("email") ?? "");
+  const item = String(formData.get("item") ?? "");
+  const purchases = await prisma.purchase.findMany({
+    where: { email, status: "APPROVED", items: { has: item } },
+    select: { id: true, items: true },
+  });
+  await prisma.$transaction(
+    purchases.map((p) => prisma.purchase.update({ where: { id: p.id }, data: { items: p.items.filter((k) => k !== item) } })),
+  );
+  revalidatePath("/admin/payments", "layout");
 }
 
 export async function updatePaymentSettingsAction(formData: FormData) {

@@ -84,7 +84,7 @@ export function PaidNotesCheckout({
             We&apos;ll verify your UPI payment (usually within a few hours) and send your login — your Gmail and a password —
             on WhatsApp. Sign in with it to open your notes on any device.
           </p>
-          <Link href="/paid-notes/login" className="mt-6 inline-block text-sm font-semibold text-brand hover:underline">
+          <Link href="/login" className="mt-6 inline-block text-sm font-semibold text-brand hover:underline">
             Got the login? Sign in →
           </Link>
         </div>
