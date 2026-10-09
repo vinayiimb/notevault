@@ -1,10 +1,17 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { isDynamicServerError } from "next/dist/client/components/hooks-server-context";
 
 const SESSION_COOKIE = "notevault_session";
-const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret-change-me";
+// Fail closed: with the public fallback anyone could forge an admin cookie.
+// Read lazily so `next build` (no runtime env) still works.
+export function jwtSecret() {
+  const secret = process.env.JWT_SECRET;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") throw new Error("JWT_SECRET is not set");
+  return "dev-secret-change-me";
+}
 
 export type SessionPayload = {
   adminId: string;
@@ -21,12 +28,15 @@ export async function verifyPassword(password: string, hash: string) {
 }
 
 export function signSession(payload: SessionPayload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: "7d" });
+  return jwt.sign(payload, jwtSecret(), { expiresIn: "7d" });
 }
 
 export function verifySessionToken(token: string): SessionPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as SessionPayload;
+    const payload = jwt.verify(token, jwtSecret()) as Partial<SessionPayload>;
+    // Student tokens share the secret — without this a student cookie pasted
+    // into notevault_session would pass every admin check.
+    return typeof payload.adminId === "string" ? (payload as SessionPayload) : null;
   } catch {
     return null;
   }
@@ -64,3 +74,31 @@ export async function getSession(): Promise<SessionPayload | null> {
 }
 
 export const SESSION_COOKIE_NAME = SESSION_COOKIE;
+
+// Login brute-force guard: 5 wrong passwords per IP+email → 15 min lockout.
+// ponytail: in-memory per process — fine on one Railway instance; move to the DB if it ever scales out.
+const loginFailures = new Map<string, { count: number; until: number }>();
+const MAX_LOGIN_FAILURES = 5;
+const LOGIN_LOCK_MS = 15 * 60 * 1000;
+
+export async function loginThrottleKey(email: string) {
+  // Rightmost X-Forwarded-For entry is the one Railway's proxy added; earlier ones are client-supplied.
+  const ip = (await headers()).get("x-forwarded-for")?.split(",").pop()?.trim() ?? "local";
+  return `${ip}|${email}`;
+}
+
+export function isLoginLocked(key: string) {
+  const f = loginFailures.get(key);
+  return !!f && f.count >= MAX_LOGIN_FAILURES && f.until > Date.now();
+}
+
+export function recordLoginFailure(key: string) {
+  if (loginFailures.size > 10_000) loginFailures.clear();
+  const f = loginFailures.get(key);
+  const count = f && f.until > Date.now() ? f.count + 1 : 1;
+  loginFailures.set(key, { count, until: Date.now() + LOGIN_LOCK_MS });
+}
+
+export function clearLoginFailures(key: string) {
+  loginFailures.delete(key);
+}

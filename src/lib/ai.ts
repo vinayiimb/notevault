@@ -9,6 +9,7 @@ import {
   type NoteSection,
   type Visual,
 } from "@/lib/note-schema";
+import { getSession } from "@/lib/auth";
 
 // Switched to Groq (the user doesn't have an Anthropic key yet, but does
 // have a Groq one). Groq's chat completions API supports the same kind of
@@ -29,6 +30,10 @@ const MAX_TOKENS = 2000;
 
 export type AiResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
+// Admin-only actions below are still public POST endpoints (every "use server"
+// export is), so each checks the admin session itself.
+const UNAUTHORIZED = { ok: false, error: "Unauthorized" } as const;
+
 function getClient(): Groq | null {
   if (!process.env.GROQ_API_KEY) return null;
   return new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -43,6 +48,7 @@ export async function reformatOcrChunk(
   source: string,
   context: { paperTitle: string; chunkNumber: number; chunkCount: number },
 ): Promise<AiResult<string>> {
+  if (!(await getSession())) return UNAUTHORIZED;
   const client = getClient();
   if (!client) return { ok: false, error: "GROQ_API_KEY is not configured in production." };
 
@@ -432,6 +438,7 @@ export async function matchSubjectsWithAI(
   titles: string[],
   candidates: { id: string; name: string }[]
 ) {
+  if (!(await getSession())) return UNAUTHORIZED;
   const candidateList = candidates.map((c) => `${c.id} :: ${c.name}`).join("\n");
   const titleList = titles.map((t, i) => `${i + 1}. ${t}`).join("\n");
 
@@ -475,6 +482,7 @@ export type SubjectGroupingCandidate = {
 // so cross-programme false merges can't happen here regardless of what the
 // model returns.
 export async function suggestSubjectGrouping(candidates: SubjectGroupingCandidate[]) {
+  if (!(await getSession())) return UNAUTHORIZED;
   const list = candidates
     .map(
       (c) =>
@@ -547,6 +555,7 @@ const NoteOverviewSchema = z.object({
 });
 
 export async function generateNoteOverview(sourceText: string, context: NoteContext) {
+  if (!(await getSession())) return UNAUTHORIZED;
   return callStructured(
     NoteOverviewSchema,
     "You write the opening summary of a structured educational note: a clear title, a short summary, key facts, and a final takeaway. Preserve the source's meaning and facts exactly; never invent anything not present in the source.",
@@ -573,6 +582,7 @@ const SectionsChunkSchema = z.object({
 // first 14,000 characters) rather than one call for the whole document —
 // the actual "split into small calls" step the plan calls for.
 export async function generateNoteSections(sourceText: string, context: NoteContext): Promise<AiResult<NoteSection[]>> {
+  if (!(await getSession())) return UNAUTHORIZED;
   const chunks = chunkSource(sourceText, 3500, 4);
   const sections: NoteSection[] = [];
 
@@ -612,6 +622,7 @@ const NoteSupportingSchema = z.object({
 });
 
 export async function generateNoteSupporting(sourceText: string, context: NoteContext) {
+  if (!(await getSession())) return UNAUTHORIZED;
   return callStructured(
     NoteSupportingSchema,
     "You extract definitions, formulas, worked examples, and common student mistakes from educational source material. Only include what's genuinely present or directly implied by the source — empty arrays are fine when a category doesn't apply.",
@@ -655,6 +666,7 @@ const VisualClassificationSchema = z.object({
 });
 
 export async function classifyNoteVisual(sourceText: string, context: NoteContext) {
+  if (!(await getSession())) return UNAUTHORIZED;
   return callStructured(
     VisualClassificationSchema,
     `You choose the single best visual format for an educational note, or decide none fits. ${VISUAL_SELECTION_RULES}`,
@@ -712,6 +724,7 @@ export async function generateNoteVisualData(
   title: string,
   context: NoteContext
 ): Promise<AiResult<Visual>> {
+  if (!(await getSession())) return UNAUTHORIZED;
   if (visualType === "none") return { ok: true, data: { type: "none" } };
 
   const excerpt = truncateSource(sourceText, 4000);
@@ -767,6 +780,7 @@ export async function generateNoteVisualData(
  * broken/incomplete note is never saved.
  */
 export async function generateStructuredNote(sourceText: string, context: NoteContext): Promise<AiResult<StructuredNote>> {
+  if (!(await getSession())) return UNAUTHORIZED;
   const [overview, sections, supporting, classification] = await Promise.all([
     generateNoteOverview(sourceText, context),
     generateNoteSections(sourceText, context),

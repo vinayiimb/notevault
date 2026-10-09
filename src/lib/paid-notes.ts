@@ -2,7 +2,7 @@ import "server-only";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
-import { getSession } from "@/lib/auth";
+import { getSession, jwtSecret } from "@/lib/auth";
 import { findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
 import { slugify } from "@/lib/utils";
 import { itemKey } from "@/lib/paid-notes-pricing";
@@ -14,7 +14,6 @@ import raw from "../../public/data/canonical-programmes.json";
 
 export const STUDENT_COOKIE = "notevault_student";
 const STUDENT_SESSION_DAYS = 60;
-const JWT_SECRET = process.env.JWT_SECRET ?? "dev-secret-change-me";
 
 export type PaymentSettings = {
   paywallEnabled: boolean;
@@ -46,7 +45,7 @@ export async function getPaymentSettings(): Promise<PaymentSettings> {
 }
 
 export function signStudentSession(email: string) {
-  return jwt.sign({ studentEmail: email }, JWT_SECRET, { expiresIn: `${STUDENT_SESSION_DAYS}d` });
+  return jwt.sign({ studentEmail: email }, jwtSecret(), { expiresIn: `${STUDENT_SESSION_DAYS}d` });
 }
 
 export const STUDENT_COOKIE_OPTIONS = {
@@ -61,7 +60,7 @@ export async function getStudentEmail(): Promise<string | null> {
   try {
     const token = (await cookies()).get(STUDENT_COOKIE)?.value;
     if (!token) return null;
-    const payload = jwt.verify(token, JWT_SECRET) as { studentEmail?: string };
+    const payload = jwt.verify(token, jwtSecret()) as { studentEmail?: string };
     return payload.studentEmail ?? null;
   } catch {
     return null;

@@ -28,7 +28,11 @@ import {
 import {
   createSessionCookie,
   destroySessionCookie,
+  clearLoginFailures,
   getSession,
+  isLoginLocked,
+  loginThrottleKey,
+  recordLoginFailure,
   verifyPassword,
 } from "@/lib/auth";
 import type { Prisma, BulkUploadRowStatus } from "@prisma/client";
@@ -338,10 +342,14 @@ export async function loginAction(_prevState: unknown, formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const requestedPath = String(formData.get("next") ?? "").trim();
 
+  const throttleKey = await loginThrottleKey(email);
+  if (isLoginLocked(throttleKey)) return { error: "Too many attempts. Try again in 15 minutes." };
   const admin = await prisma.admin.findUnique({ where: { email } });
   if (!admin || !(await verifyPassword(password, admin.passwordHash))) {
+    recordLoginFailure(throttleKey);
     return { error: "Incorrect email or password." };
   }
+  clearLoginFailures(throttleKey);
 
   await createSessionCookie({ adminId: admin.id, email: admin.email, name: admin.name });
   const safePath =

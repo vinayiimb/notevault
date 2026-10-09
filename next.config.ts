@@ -59,6 +59,20 @@ const nextConfig: NextConfig = {
   // in Railway HTTP logs 2026-10-03) still request from stale sitemaps or
   // backlinks. None of these patterns exist in the current catalog, so they
   // 404; redirect the pattern once here instead of 404ing per-URL forever.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "Strict-Transport-Security", value: "max-age=63072000" },
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "X-Frame-Options", value: "SAMEORIGIN" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+        ],
+      },
+    ];
+  },
   async redirects() {
     return [
       {

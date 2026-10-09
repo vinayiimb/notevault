@@ -5,7 +5,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { getSession, hashPassword, verifyPassword } from "@/lib/auth";
+import { clearLoginFailures, getSession, hashPassword, isLoginLocked, loginThrottleKey, recordLoginFailure, verifyPassword } from "@/lib/auth";
 import { deleteByUrl, putBytes } from "@/lib/storage";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
 import { STUDENT_COOKIE, STUDENT_COOKIE_OPTIONS, signStudentSession } from "@/lib/paid-notes";
@@ -55,10 +55,14 @@ export async function studentLoginAction(_prev: FormResult, formData: FormData):
   const email = normalizeEmail(String(formData.get("email") ?? ""));
   const password = String(formData.get("password") ?? "");
   const next = String(formData.get("next") ?? "");
+  const throttleKey = await loginThrottleKey(email ?? "");
+  if (isLoginLocked(throttleKey)) return { error: "Too many attempts. Try again in 15 minutes." };
   const account = email ? await prisma.notesAccount.findUnique({ where: { email } }) : null;
   if (!account || !(await verifyPassword(password, account.passwordHash))) {
+    recordLoginFailure(throttleKey);
     return { error: "Wrong email or password. Use the login we sent you on WhatsApp." };
   }
+  clearLoginFailures(throttleKey);
   (await cookies()).set(STUDENT_COOKIE, signStudentSession(account.email), STUDENT_COOKIE_OPTIONS);
   // Only same-site paths — never an open redirect.
   redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/account");

@@ -1,7 +1,7 @@
 // Push every sitemap URL to IndexNow (Bing → ChatGPT search/Copilot, Yandex, Seznam, Naver).
 // Run after a deploy is live: node scripts/indexnow.mjs   (DRY=1 to only count)
 const SITE = "https://www.dupyq.online";
-const KEY = "c056ae2338ffe0517b99c36b7cd69272"; // must match public/c056ae2338ffe0517b99c36b7cd69272.txt
+const KEY = "c056ae2338ffe0517b99c36b7cd69272"; // gitleaks:allow — public by design; must match public/c056ae2338ffe0517b99c36b7cd69272.txt
 
 const locs = async (url) => [...(await (await fetch(url)).text()).matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
 const urls = [];
