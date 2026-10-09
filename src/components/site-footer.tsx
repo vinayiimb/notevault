@@ -66,11 +66,6 @@ export function SiteFooter() {
                 </Link>
               </li>
               <li>
-                <Link href="/pyq-notes" className="text-muted hover:text-accent transition">
-                  Full Archive
-                </Link>
-              </li>
-              <li>
                 <Link href="/pyp" className="text-muted hover:text-accent transition">
                   Official Papers (PYP)
                 </Link>

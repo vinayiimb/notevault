@@ -45,7 +45,7 @@ export function DashboardMobileNav({
 
   const secondaryItems = [
     { label: "Notes", href: "/browse/college", icon: FileText },
-    { label: "PYQs", href: "/pyq-notes", icon: ListChecks },
+    { label: "PYQs", href: "/papers", icon: ListChecks },
     { label: "Syllabus", href: "/programs", icon: Compass },
     { label: "Answer Keys", href: "/browse/college", icon: CheckSquare },
     { label: "Quiz & Flashcards", href: "/tools/exam-kit", icon: Brain },

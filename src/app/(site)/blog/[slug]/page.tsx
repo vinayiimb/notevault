@@ -176,7 +176,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 semester and subject, and build your own topic-frequency revision plan.
               </p>
               <Link
-                href="/pyq-notes"
+                href="/papers"
                 className="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2.5 text-sm font-bold text-white shadow-xs transition hover:bg-indigo-700"
               >
                 Open the full PYQ archive

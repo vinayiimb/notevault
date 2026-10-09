@@ -39,7 +39,7 @@ export function BannerCards({
               {todayNoteTitle}
             </p>
             <Link
-              href="/pyq-notes"
+              href="/papers"
               className="ml-auto inline-flex items-center gap-1 rounded-full bg-[#FF7527] hover:bg-[#EE6417] px-4 py-1 text-xs font-bold text-white shadow-xs active:scale-95 transition-transform"
             >
               <span>Attempt</span>
@@ -51,7 +51,7 @@ export function BannerCards({
         {/* Bottom Link */}
         <div className="mt-7">
           <Link
-            href="/pyq-notes"
+            href="/papers"
             className="text-xs font-semibold text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors inline-flex items-center gap-1"
           >
             <span>View All Passages →</span>

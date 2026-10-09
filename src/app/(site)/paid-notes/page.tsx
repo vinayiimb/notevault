@@ -28,7 +28,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
           The complete notes collection is being prepared. You can preview the free archive while access is being finalised.
         </p>
         <Link
-          href="/pyq-notes"
+          href="/papers"
           className="mx-auto mt-8 inline-flex min-h-12 items-center justify-center rounded-xl bg-brand px-7 py-3 text-sm font-semibold text-brand-foreground hover:bg-brand-hover"
         >
           Preview Notes

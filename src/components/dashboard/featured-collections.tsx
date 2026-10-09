@@ -22,7 +22,7 @@ export function FeaturedCollections() {
       title: "DU B.Com (Hons) PYQ Collection",
       description: "Previous-year question papers covering all official LOCF core and elective units.",
       count: "40+ Papers",
-      href: "/pyq-notes",
+      href: "/papers",
       isExternal: false,
       icon: ListChecks,
       badge: "Curated Pack",

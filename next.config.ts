@@ -75,6 +75,8 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // Full Archive hub removed 2026-10-09 (its ~120MB in-memory catalogue cost Railway RAM); /papers replaces it.
+      { source: "/pyq-notes", destination: "/papers", permanent: true },
       {
         source: "/papers/:slug((?:department-of-|aecc|.*-bah-?gesec|.*-bah-?bap(?:gesec)?|.*-bsch-bapgesec).*)",
         destination: "/previous-year-papers",

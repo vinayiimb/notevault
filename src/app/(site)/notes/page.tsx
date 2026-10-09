@@ -76,7 +76,7 @@ export default async function NotesPage() {
             </p>
           </div>
           <Link
-            href="/pyq-notes"
+            href="/papers"
             className="mt-6 text-sm font-bold text-accent hover:underline"
           >
             Browse PDF downloads →

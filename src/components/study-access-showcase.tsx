@@ -157,7 +157,7 @@ export function StudyAccessShowcase() {
                 Complete notes for every subject, organised and ready to study.
               </p>
               <div className="study-access-card__actions">
-                <Link href="/pyq-notes" className="study-access-card__outline-button">
+                <Link href="/papers" className="study-access-card__outline-button">
                   Preview Notes
                 </Link>
                 <Link href="/paid-notes" className="study-access-card__primary-button">

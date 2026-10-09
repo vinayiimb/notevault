@@ -135,7 +135,7 @@ export default function LinkToUsPage() {
           className="inline-flex items-center gap-2 rounded-xl bg-accent px-4 py-2.5 text-sm font-semibold text-accent-foreground transition hover:opacity-90"
         />
         <Link
-          href="/pyq-notes"
+          href="/papers"
           className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-semibold text-foreground transition hover:border-accent hover:text-accent"
         >
           <GraduationCap size={16} weight="bold" />

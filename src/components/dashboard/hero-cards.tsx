@@ -79,8 +79,8 @@ export function HeroCards({ pyqCount, notesCount, latestPyq, latestNotes }: Hero
         icon={ListChecks}
         count={pyqCount}
         latest={latestPyq}
-        attemptHref={latestPyq ? `/subjects/${latestPyq.subject.id}` : "/pyq-notes"}
-        viewAllHref="/pyq-notes"
+        attemptHref={latestPyq ? `/subjects/${latestPyq.subject.id}` : "/papers"}
+        viewAllHref="/papers"
         viewAllLabel="View All Passages"
       />
       <HeroCard

@@ -31,7 +31,7 @@ const RESOURCES = [
     icon: Compass,
   },
   {
-    href: "/pyq-notes",
+    href: "/papers",
     title: "Full paper & notes archive",
     description: "The complete, searchable archive — every course, semester, and subject in one place.",
     icon: FileArchive,

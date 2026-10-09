@@ -55,6 +55,11 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # production for no behavioral benefit. 768 leaves ~2x headroom over the
 # measured peak; raise it again if a future data file genuinely needs it.
 ENV NODE_OPTIONS=--max-old-space-size=768
+# The heap cap above doesn't cover native memory (Prisma's query engine,
+# sharp). glibc opens up to 8 malloc arenas per vCPU — 64 on Railway's 8 vCPU
+# box — and fragments them, so RSS climbed linearly to 4+GB and crashed
+# (Railway metrics 2026-10-08). 2 arenas is the standard fix for Node on glibc.
+ENV MALLOC_ARENA_MAX=2
 
 RUN groupadd --system --gid 1001 nodejs \
   && useradd --system --uid 1001 --gid nodejs nextjs

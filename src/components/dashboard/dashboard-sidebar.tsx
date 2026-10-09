@@ -54,7 +54,7 @@ export function DashboardSidebar({
     { id: "dashboard", label: "Dashboard", href: "/dashboard", icon: SquaresFour },
     { id: "videos", label: "Videos", href: "/browse/college", icon: PlayCircle },
     { id: "practice", label: "Practice", href: "#subjects", icon: BookOpen, hasChevron: true },
-    { id: "past-papers", label: "Past Papers", href: "/pyq-notes", icon: ClockCounterClockwise, hasChevron: true },
+    { id: "past-papers", label: "Past Papers", href: "/papers", icon: ClockCounterClockwise, hasChevron: true },
     { id: "analyse", label: "Analyse", href: "#recent", icon: ChartLine, hasChevron: true },
     { id: "forum", label: "Forum", href: "/feedback", icon: ChatCircleDots, hasChevron: true },
     { id: "interview", label: "Interview", href: "/browse/college", icon: UserFocus, hasChevron: true },

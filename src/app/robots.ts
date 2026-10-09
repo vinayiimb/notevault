@@ -17,7 +17,6 @@ const DISALLOW = [
   "/api/",
   "/search", // internal search results — not SEO landing pages
   "/*?_rsc=", // Next.js RSC prefetch payloads — were 53% of Googlebot's requests (GSC crawl stats)
-  "/pyq-notes$", // ~15MB of HTML (whole archive inlined); /papers is the indexable hub
 ];
 
 // Read-only APIs that public pages call while rendering. Blocking them made

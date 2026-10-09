@@ -580,7 +580,8 @@ export const getSiteSettings = cache(async () => {
       heroSearchCaption: settings?.heroSearchCaption || "Search a subject, paper title, program, or topic.",
       heroImageUrl: (() => {
         const url = settings?.heroImageUrl?.trim();
-        return (!url) ? "/images/hero-du-colleges.png" : url;
+        // The 1.7MB PNG was ~44% of Railway egress; the WebP is the same image at 95KB.
+        return (!url || url === "/images/hero-du-colleges.png") ? "/images/hero-du-colleges.webp" : url;
       })(),
       currencyIconUrl: settings?.currencyIconUrl || null,
       notesFeaturedProgrammes: settings?.notesFeaturedProgrammes || null,
@@ -591,7 +592,7 @@ export const getSiteSettings = cache(async () => {
       heroHeadline: "The Best, One Stop,\nStudy Platform",
       heroSubtitle: "Notes, PYQs and answer keys for every DU program — free, no login needed",
       heroSearchCaption: "Search a subject, paper title, program, or topic.",
-      heroImageUrl: "/images/hero-du-colleges.png",
+      heroImageUrl: "/images/hero-du-colleges.webp",
       currencyIconUrl: null,
       notesFeaturedProgrammes: null,
     };

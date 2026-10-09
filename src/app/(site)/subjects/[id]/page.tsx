@@ -21,7 +21,6 @@ import { ExamWeightage } from "@/components/subjects/exam-weightage";
 import { DownloadAllButton } from "@/components/subjects/download-all-button";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
-import { getUnifiedPyqArchive } from "@/lib/pyq-catalog";
 
 export function generateStaticParams() {
   return [];
@@ -75,31 +74,7 @@ export default async function SubjectPage({
   const notes = subject.resources.filter((r) => r.type === "NOTES");
   const dbPyqs = subject.resources.filter((r) => r.type === "PYQ");
   
-  // Load and merge matching papers from the static unified catalog
-  const allCatalogPapers = await getUnifiedPyqArchive();
-  const catalogPyqs = allCatalogPapers
-    .filter((p) => (subject.upc && p.upc === subject.upc) || p.subject.toLowerCase() === subject.name.toLowerCase())
-    .map((p) => ({
-      id: p.id,
-      subjectId: subject.id,
-      type: "PYQ" as const,
-      title: (p.fileName || p.subject || p.id).replace(/\.pdf$/i, "").replace(/_+/g, " ").replace(/\s+/g, " "),
-      year: parseInt(p.yearRange.split("-")[0]) || 2024,
-      academicYear: p.yearRange,
-      fileUrl: p.pdfUrl,
-      fileName: p.fileName,
-      fileSize: 0,
-      fileHash: null,
-      ocrText: "",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }));
-
-  const pyqsMap = new Map<string, any>();
-  for (const p of [...dbPyqs, ...catalogPyqs]) {
-    pyqsMap.set(p.fileUrl, p);
-  }
-  const pyqs = Array.from(pyqsMap.values());
+  const pyqs = dbPyqs;
   const repeated = subject.questions.filter((q) => q.isRepeated);
   const others = subject.questions.filter((q) => !q.isRepeated);
   const initialAnalysis = subject.analysis

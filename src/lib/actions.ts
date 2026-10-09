@@ -1621,7 +1621,7 @@ export async function uploadCatalogPaperAction(
   }
 
   invalidateArchiveCache();
-  revalidatePath("/pyq-notes");
+  revalidatePath("/papers");
   revalidatePath("/admin/course-coverage");
   revalidatePath(`/admin/course-coverage/${slugify(course)}`);
   return {
@@ -2253,7 +2253,7 @@ export async function skipBulkUploadRowsAction(formData: FormData): Promise<{ sk
         ).count;
 
   invalidateArchiveCache();
-  revalidatePath("/pyq-notes");
+  revalidatePath("/papers");
   revalidatePath("/admin/course-coverage");
   revalidatePath("/admin/bulk-upload");
 
@@ -2337,7 +2337,7 @@ export async function upsertCatalogSubjectOverrideAction(formData: FormData) {
   });
 
   invalidateArchiveCache();
-  revalidatePath("/pyq-notes");
+  revalidatePath("/papers");
   revalidatePath("/papers");
   revalidatePath("/notes");
   revalidatePath("/admin/subject-notes");
@@ -2376,7 +2376,7 @@ export async function mergeCatalogSubjectsAction(formData: FormData) {
   );
 
   invalidateArchiveCache();
-  revalidatePath("/pyq-notes");
+  revalidatePath("/papers");
   revalidatePath("/papers");
   revalidatePath("/notes");
   revalidatePath("/admin/subject-notes");
@@ -2412,7 +2412,7 @@ export async function manualMergeCatalogSubjectsAction(
   );
 
   invalidateArchiveCache();
-  revalidatePath("/pyq-notes");
+  revalidatePath("/papers");
   revalidatePath("/papers");
   revalidatePath("/notes");
   revalidatePath("/admin/subject-notes");
@@ -2438,7 +2438,7 @@ export async function resetCatalogSubjectOverrideAction(formData: FormData) {
   await prisma.catalogSubjectOverride.delete({ where: { id } }).catch(() => {});
 
   invalidateArchiveCache();
-  revalidatePath("/pyq-notes");
+  revalidatePath("/papers");
   revalidatePath("/papers");
   revalidatePath("/notes");
   revalidatePath("/admin/subject-notes");

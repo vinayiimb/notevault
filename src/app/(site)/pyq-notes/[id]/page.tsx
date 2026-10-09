@@ -97,7 +97,7 @@ export default async function PyqPaperPage({ params }: { params: Promise<{ id: s
               { name: paper.title, url: `/pyq-notes/${paper.id}` },
             ]}
           />
-          <Link href="/pyq-notes" className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground">
+          <Link href="/papers" className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground">
             <ArrowLeft size={16} weight="bold" /> Back to complete archive
           </Link>
 
@@ -151,7 +151,7 @@ export default async function PyqPaperPage({ params }: { params: Promise<{ id: s
       <div className="mx-auto max-w-6xl">
         <BreadcrumbJsonLd items={breadcrumbs} />
         <VisibleBreadcrumb items={breadcrumbs} />
-        <Link href="/pyq-notes" className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground">
+        <Link href="/papers" className="inline-flex items-center gap-2 text-sm font-medium text-muted transition hover:text-foreground">
           <ArrowLeft size={16} weight="bold" /> Back to complete archive
         </Link>
 

@@ -15,7 +15,7 @@ export function QuickActions() {
     {
       title: "Find a PYQ",
       description: "Browse previous-year papers by subject and year.",
-      href: "/pyq-notes",
+      href: "/papers",
       icon: ListChecks,
       accent: "text-blue-500 bg-blue-500/10",
     },

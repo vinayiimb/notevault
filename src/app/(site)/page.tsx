@@ -143,7 +143,7 @@ export default async function HomePage() {
             We offer flexible options for finding study materials. You can easily <Link href="/browse/college" className="text-brand hover:underline">browse courses</Link> to view a structured subject roadmap or <Link href="/semesters" className="text-brand hover:underline">browse by semester</Link> to jump directly to files relevant to your current academic term (Semester 1 through Semester 6). Our advanced study files are integrated with high-accuracy OCR text extraction, allowing students to read and search question papers directly online without downloading PDFs.
           </p>
           <p>
-            Whether you need to review the syllabus rules, test your knowledge using our revision kits, or download past papers from our <Link href="/pyq-notes" className="text-brand hover:underline">full archive</Link>, DU PYQ Online ensures you have stable, crawlable, and fast access to everything you need. All our study collections, solution keys, and past papers are updated regularly to match the latest UGCF regulations.
+            Whether you need to review the syllabus rules, test your knowledge using our revision kits, or download past papers from our <Link href="/papers" className="text-brand hover:underline">full archive</Link>, DU PYQ Online ensures you have stable, crawlable, and fast access to everything you need. All our study collections, solution keys, and past papers are updated regularly to match the latest UGCF regulations.
           </p>
         </section>
       </div>
