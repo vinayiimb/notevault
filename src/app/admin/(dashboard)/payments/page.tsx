@@ -115,6 +115,12 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
         >
           Students &rarr;
         </Link>
+        <Link
+          href="/admin/payments/promoters"
+          className="rounded-lg border border-border px-3 py-1.5 text-sm text-muted hover:text-foreground"
+        >
+          Promoters &rarr;
+        </Link>
       </div>
 
       {purchases.length === 0 ? (

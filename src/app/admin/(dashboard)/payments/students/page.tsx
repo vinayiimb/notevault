@@ -172,7 +172,7 @@ async function StudentDetail({ email }: { email: string }) {
                   <p className="font-semibold">₹{p.amount} · {p.status.charAt(0) + p.status.slice(1).toLowerCase()}</p>
                   <p className="text-xs text-muted">{p.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
                 </div>
-                <p className="mt-1 font-mono text-xs text-muted">{p.utr.startsWith("admin-") ? "Added by admin" : `UTR ${p.utr}`}</p>
+                <p className="mt-1 font-mono text-xs text-muted">{p.utr.startsWith("admin-") || p.utr.startsWith("promoter-") ? p.adminNote ?? "Added by admin" : `UTR ${p.utr}`}</p>
                 <p className="mt-1">{p.items.length ? p.items.map((k) => names[k] ?? k).join(", ") : <span className="text-muted">(all subjects removed)</span>}</p>
               </li>
             ))}

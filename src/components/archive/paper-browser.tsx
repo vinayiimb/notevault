@@ -9,6 +9,7 @@ import { NotesNudge } from "@/components/paid-notes/notes-nudge";
 import { semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
 import { applyPaperEdits, type PaperEdit } from "@/lib/paper-edits";
+import { searchMatch } from "@/lib/search-match";
 
 // Data comes from small per-course files built by
 // scripts/build-papers-split.mjs — a visitor downloads only the course they
@@ -75,12 +76,6 @@ function cleanNote(p: CatalogPaper) {
     .replace(/\[[SKAR]\]\s*(Shivaji|Kalindi|ANDC|Ramanujan)\s*\|?\s*/gi, "")
     .replace(/^\|\s*/, "")
     .trim();
-}
-
-// "bcom hons", "B.Com (Hons" and "B.Com. (Hons.)" should all match.
-function looseMatch(haystack: string, needle: string) {
-  const squash = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, "");
-  return squash(haystack).includes(squash(needle));
 }
 
 async function fetchJson<T>(url: string, fallback: T): Promise<T> {
@@ -255,7 +250,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
     }
     return [...groups.values()]
       .map((g) => ({ course: g.course, key: g.key, label: preferredSubjectLabel(g.labels), count: g.count }))
-      .filter((h) => looseMatch(h.label, subjectSearch))
+      .filter((h) => searchMatch(`${h.label} ${h.course}`, subjectSearch))
       .sort((a, b) => b.count - a.count)
       .slice(0, 80);
   }, [globalSearch, searchRows, overrides, subjectSearch]);
@@ -275,7 +270,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
   }, [initialized, course, semester, subjectKey, openPaperId, pathname, router, searchParams]);
 
   const courses = useMemo(
-    () => (index ?? []).filter((c) => looseMatch(c.course, courseSearch)),
+    () => (index ?? []).filter((c) => searchMatch(c.course, courseSearch)),
     [index, courseSearch],
   );
 
@@ -311,7 +306,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
   }, [coursePapers, semester]);
 
   const visibleSubjects = useMemo(
-    () => subjects.filter((s) => looseMatch(s.label, subjectSearch)),
+    () => subjects.filter((s) => searchMatch(s.label, subjectSearch)),
     [subjects, subjectSearch],
   );
   // NEP (syllabus-matched) subjects first; a subject made only of earlier-

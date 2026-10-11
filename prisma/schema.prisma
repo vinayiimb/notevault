@@ -839,6 +839,19 @@ model Admin {
   createdAt    DateTime @default(now())
 }
 
+// Sub-admin for promoters: signs in at /promoter and can only give students
+// notes access (a ₹0 approved Purchase whose utr starts "promoter-<id>-").
+// Kept out of Admin on purpose so a promoter session can never pass an
+// admin check.
+model Promoter {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  active       Boolean  @default(true)
+  createdAt    DateTime @default(now())
+}
+
 // Learned filename/title -> subject associations for Bulk Upload. When an
 // admin manually assigns a subject to a paper the filename-matching heuristic
 // couldn't place, we remember it (keyed by a normalized title with trailing

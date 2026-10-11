@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { MagnifyingGlass } from "@phosphor-icons/react";
 import { slugify } from "@/lib/utils";
+import { searchMatch } from "@/lib/search-match";
 
 type Row = [programme: string, subject: string, papers: number];
 
@@ -41,10 +42,7 @@ export function CommandPalette() {
     const tokens = q.toLowerCase().split(/\s+/).filter(Boolean);
     if (!rows || tokens.length === 0) return [];
     return rows
-      .filter(([p, s]) => {
-        const hay = `${s} ${p}`.toLowerCase();
-        return tokens.every((t) => hay.includes(t));
-      })
+      .filter(([p, s]) => searchMatch(`${s} ${p}`, q))
       .sort((a, b) => Number(b[1].toLowerCase().startsWith(tokens[0])) - Number(a[1].toLowerCase().startsWith(tokens[0])) || b[2] - a[2])
       .slice(0, 8);
   }, [q, rows]);

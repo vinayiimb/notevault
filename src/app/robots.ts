@@ -14,6 +14,7 @@ const DISALLOW = [
   "/dashboard", // also the bare /dashboard (was in GSC "crawled - not indexed")
   "/login",
   "/account",
+  "/promoter",
   "/api/",
   "/search", // internal search results — not SEO landing pages
   "/*?_rsc=", // Next.js RSC prefetch payloads — were 53% of Googlebot's requests (GSC crawl stats)

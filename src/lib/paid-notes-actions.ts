@@ -11,6 +11,7 @@ import { currencyIconExtensionFor } from "@/lib/currency-icon";
 import { STUDENT_COOKIE, STUDENT_COOKIE_OPTIONS, signStudentSession } from "@/lib/paid-notes";
 import { normalizeEmail, normalizePhone, normalizeUtr, priceFor } from "@/lib/paid-notes-pricing";
 import { FIREBASE_CONFIG, googleSignInEnabled } from "@/lib/firebase-config";
+import { PROMOTER_COOKIE, PROMOTER_COOKIE_OPTIONS, getPromoter, promoterUtrPrefix, signPromoterSession } from "@/lib/promoter";
 import { verifyFirebaseIdToken } from "@/lib/firebase-token";
 
 export type FormResult = { ok?: boolean; error?: string };
@@ -148,8 +149,8 @@ export async function rejectPurchaseAction(formData: FormData) {
 // Admin edits a student's access (Admin → Payments → Students). Access is the
 // union of their APPROVED purchases, so a grant is a ₹0 approved purchase
 // (no schema change) and a removal strips the subject from those purchases.
-export async function grantSubjectsAction(formData: FormData) {
-  await requireAdmin();
+// Promoters grant through the same path, tagged by utr prefix.
+async function grantItems(formData: FormData, by: { utr: string; adminNote: string }) {
   const email = normalizeEmail(String(formData.get("email") ?? ""));
   if (!email) throw new Error("Enter a valid email.");
   const pairs = formData.getAll("item").map(String).map((k) => k.split("/")).filter((p) => p.length === 2);
@@ -169,15 +170,21 @@ export async function grantSubjectsAction(formData: FormData) {
     data: {
       email,
       phone: latest?.phone ?? "",
-      utr: `admin-${randomUUID()}`,
+      utr: by.utr,
       amount: 0,
       items,
       status: "APPROVED",
       reviewedAt: new Date(),
-      adminNote: "Added by admin",
+      adminNote: by.adminNote,
     },
   });
   revalidatePath("/admin/payments", "layout");
+  revalidatePath("/promoter");
+}
+
+export async function grantSubjectsAction(formData: FormData) {
+  await requireAdmin();
+  await grantItems(formData, { utr: `admin-${randomUUID()}`, adminNote: "Added by admin" });
 }
 
 export async function revokeSubjectAction(formData: FormData) {
@@ -192,6 +199,82 @@ export async function revokeSubjectAction(formData: FormData) {
     purchases.map((p) => prisma.purchase.update({ where: { id: p.id }, data: { items: p.items.filter((k) => k !== item) } })),
   );
   revalidatePath("/admin/payments", "layout");
+}
+
+// ---------- Promoters (sub-admins, /promoter) ----------
+
+export async function promoterLoginAction(_prev: FormResult, formData: FormData): Promise<FormResult> {
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  const password = String(formData.get("password") ?? "");
+  const throttleKey = await loginThrottleKey(`promoter:${email ?? ""}`);
+  if (isLoginLocked(throttleKey)) return { error: "Too many attempts. Try again in 15 minutes." };
+  const promoter = email ? await prisma.promoter.findUnique({ where: { email } }) : null;
+  if (!promoter?.active || !(await verifyPassword(password, promoter.passwordHash))) {
+    recordLoginFailure(throttleKey);
+    return { error: "Wrong email or password." };
+  }
+  clearLoginFailures(throttleKey);
+  (await cookies()).set(PROMOTER_COOKIE, signPromoterSession(promoter.id), PROMOTER_COOKIE_OPTIONS);
+  redirect("/promoter");
+}
+
+export async function promoterLogoutAction() {
+  (await cookies()).delete(PROMOTER_COOKIE);
+  redirect("/promoter");
+}
+
+async function requirePromoter() {
+  const promoter = await getPromoter();
+  if (!promoter) throw new Error("Unauthorized");
+  return promoter;
+}
+
+export async function promoterGrantAction(formData: FormData) {
+  const promoter = await requirePromoter();
+  await grantItems(formData, { utr: `${promoterUtrPrefix(promoter.id)}${randomUUID()}`, adminNote: `Added by promoter ${promoter.name}` });
+}
+
+// A promoter can only take back what they themselves gave — never a paid or admin grant.
+export async function promoterRevokeAction(formData: FormData) {
+  const promoter = await requirePromoter();
+  const email = String(formData.get("email") ?? "");
+  const item = String(formData.get("item") ?? "");
+  const purchases = await prisma.purchase.findMany({
+    where: { email, status: "APPROVED", items: { has: item }, utr: { startsWith: promoterUtrPrefix(promoter.id) } },
+    select: { id: true, items: true },
+  });
+  await prisma.$transaction(
+    purchases.map((p) => prisma.purchase.update({ where: { id: p.id }, data: { items: p.items.filter((k) => k !== item) } })),
+  );
+  revalidatePath("/promoter");
+  revalidatePath("/admin/payments", "layout");
+}
+
+// Admin → Payments → Promoters: creates the promoter, or for an existing
+// email issues a new password and re-activates them. Password shown once.
+export async function issuePromoterLoginAction(_prev: ApproveResult, formData: FormData): Promise<ApproveResult> {
+  await requireAdmin();
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  const name = String(formData.get("name") ?? "").trim();
+  if (!email) return { error: "Enter a valid email." };
+  const password = generatePassword();
+  const passwordHash = await hashPassword(password);
+  await prisma.promoter.upsert({
+    where: { email },
+    create: { email, name: name || email.split("@")[0], passwordHash },
+    update: { passwordHash, active: true, ...(name && { name }) },
+  });
+  revalidatePath("/admin/payments/promoters");
+  return { ok: true, email, password };
+}
+
+export async function setPromoterActiveAction(formData: FormData) {
+  await requireAdmin();
+  await prisma.promoter.update({
+    where: { id: String(formData.get("id") ?? "") },
+    data: { active: formData.get("active") === "true" },
+  });
+  revalidatePath("/admin/payments/promoters");
 }
 
 export async function updatePaymentSettingsAction(formData: FormData) {
