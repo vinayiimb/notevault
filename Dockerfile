@@ -38,7 +38,8 @@ RUN npm run build
 # --- runner: minimal image that actually serves traffic
 FROM base AS runner
 WORKDIR /app
-RUN apt-get update -y && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+RUN apt-get update -y && apt-get install -y openssl libjemalloc2 && rm -rf /var/lib/apt/lists/* \
+  && ln -s /usr/lib/$(uname -m)-linux-gnu/libjemalloc.so.2 /usr/lib/libjemalloc.so.2
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -58,7 +59,11 @@ ENV NODE_OPTIONS=--max-old-space-size=768
 # The heap cap above doesn't cover native memory (Prisma's query engine,
 # sharp). glibc opens up to 8 malloc arenas per vCPU — 64 on Railway's 8 vCPU
 # box — and fragments them, so RSS climbed linearly to 4+GB and crashed
-# (Railway metrics 2026-10-08). 2 arenas is the standard fix for Node on glibc.
+# (Railway metrics 2026-10-08). MALLOC_ARENA_MAX=2 alone wasn't enough: RSS
+# still crept ~0.2GB/hour to 6GB with near-zero traffic (2026-10-10) while the
+# JS heap stayed capped. jemalloc (sharp's recommended allocator on glibc)
+# hands freed native memory back to the OS instead of fragmenting.
+ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
 ENV MALLOC_ARENA_MAX=2
 
 RUN groupadd --system --gid 1001 nodejs \

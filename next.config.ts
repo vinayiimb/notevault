@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   // Admin-uploaded hero/landing images live on Cloudflare R2.
   images: {
-    formats: ["image/avif", "image/webp"],
+    formats: ["image/webp"],
     remotePatterns: [{ protocol: "https", hostname: "*.r2.dev" }],
   },
   // Railway runs `next start` (or the standalone server.js) as a
