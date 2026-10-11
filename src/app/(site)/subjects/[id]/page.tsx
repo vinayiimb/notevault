@@ -18,7 +18,6 @@ import { formatBytes, levelLabel } from "@/lib/utils";
 import { PaperAnalysisPanel } from "@/components/subjects/paper-analysis-panel";
 import { NotesSection } from "@/components/subjects/notes-section";
 import { ExamWeightage } from "@/components/subjects/exam-weightage";
-import { DownloadAllButton } from "@/components/subjects/download-all-button";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
@@ -125,9 +124,6 @@ export default async function SubjectPage({
       </p>
       <div className="mt-1 flex flex-wrap items-start justify-between gap-3">
         <h1 className="text-3xl font-semibold tracking-tight">{subject.name}</h1>
-        {(notes.length > 0 || pyqs.length > 0 || subject.notes) && (
-          <DownloadAllButton subjectId={subject.id} />
-        )}
       </div>
       {subject.description && <p className="mt-2 text-muted">{subject.description}</p>}
 

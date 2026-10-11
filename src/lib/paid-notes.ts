@@ -89,6 +89,20 @@ export async function canReadFullNote(programmeSlug: string, subjectSlug: string
   return (await getUnlockedItems(email)).has(itemKey(programmeSlug, subjectSlug));
 }
 
+// Paid-only perks (e.g. "Download all" ZIPs, which cost Railway egress): an
+// admin, or a signed-in student with a real (₹ > 0) approved purchase. Admin
+// ₹0 grants don't count. Fails closed — unlike the notes paywall.
+export async function hasPaidAccess(): Promise<boolean> {
+  try {
+    if (await getSession()) return true;
+    const email = await getStudentEmail();
+    if (!email) return false;
+    return (await prisma.purchase.count({ where: { email, status: "APPROVED", amount: { gt: 0 } } })) > 0;
+  } catch {
+    return false;
+  }
+}
+
 export type NotesCatalogProgramme = {
   slug: string;
   name: string;

@@ -659,7 +659,7 @@ function PaperPanel({
 }) {
   const [pickedYear, setPickedYear] = useState<string | null>(null);
   const [loadedPaperId, setLoadedPaperId] = useState<string | null>(null);
-  const [zipState, setZipState] = useState<"idle" | "loading" | "error">("idle");
+  const [zipState, setZipState] = useState<"idle" | "loading" | "error" | "locked">("idle");
   const zipPapers = papers.filter((p) => driveId(p.pdfUrl));
 
   // One ZIP of every paper in this subject, built by /api/papers-zip.
@@ -670,6 +670,7 @@ function PaperPanel({
     for (const p of zipPapers.slice(0, 60)) params.append("p", `${driveId(p.pdfUrl)}|${p.yearRange}`);
     try {
       const res = await fetch(`/api/papers-zip?${params}`);
+      if (res.status === 403) return setZipState("locked");
       if (!res.ok) throw new Error(String(res.status));
       const url = URL.createObjectURL(await res.blob());
       const a = document.createElement("a");
@@ -762,6 +763,12 @@ function PaperPanel({
         <div className="mt-3.5 rounded-2xl border border-border bg-surface py-5 shadow-2xs">
           <CgpaLoader label={`Packing ${Math.min(zipPapers.length, 60)} papers into one ZIP…`} />
         </div>
+      )}
+      {zipState === "locked" && (
+        <p className="mt-3.5 rounded-xl border border-border bg-accent-soft px-4 py-2.5 text-xs text-foreground">
+          &ldquo;Download all&rdquo; is for paid members.{" "}
+          <a href="/paid-notes" className="font-bold text-accent underline">Get notes access</a> to unlock it, or download papers one by one for free.
+        </p>
       )}
       {zipState === "error" && (
         <p className="mt-3.5 rounded-xl border border-red-500/30 bg-red-500/5 px-4 py-2.5 text-xs text-red-600">

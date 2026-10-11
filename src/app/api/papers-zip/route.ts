@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 import { prisma } from "@/lib/prisma";
+import { hasPaidAccess } from "@/lib/paid-notes";
 
 // "Download all" on /papers: streams every paper of one subject as a single
 // ZIP. PDFs are fetched from Google Drive a few at a time and written out as
@@ -56,6 +57,9 @@ async function fetchPdf(id: string): Promise<Uint8Array | null> {
 }
 
 export async function GET(request: Request) {
+  // Paid students only: every ZIP is fetched from Drive and re-sent through
+  // Railway, which bills the egress.
+  if (!(await hasPaidAccess())) return Response.json({ error: "paid_only" }, { status: 403 });
   const url = new URL(request.url);
   const ids = allowedIds();
   const requested = url.searchParams
