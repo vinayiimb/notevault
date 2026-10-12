@@ -63,6 +63,8 @@ function spells(w: string, hay: string[], i: number): boolean {
 }
 
 export function searchMatch(haystack: string, needle: string) {
+  // Nothing typed = no filter (the /papers course list starts unfiltered).
+  if (!needle.trim()) return true;
   const squash = (v: string) => v.toLowerCase().replace(/[^a-z0-9]/g, "");
   // Plain substring only from 3 letters: "cs" inside "economiCS" isn't a hit.
   const q = squash(needle);

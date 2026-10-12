@@ -2,6 +2,11 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { searchMatch } from "@/lib/search-match";
 
+test("empty search shows everything", () => {
+  assert.ok(searchMatch("B.A. (Hons.) English", ""));
+  assert.ok(searchMatch("B.A. (Hons.) English", "  "));
+});
+
 test("students' shorthand finds the course", () => {
   const pol = "B.A. (Hons.) Political Science";
   for (const q of ["polscience", "pol science", "political science", "ba hons pol sci", "b.a. pol sc", "BA Honours Political"]) {
