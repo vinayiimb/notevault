@@ -55,7 +55,9 @@ ENV NEXT_TELEMETRY_DISABLED=1
 # memory used, and the 6144 cap let the process creep to 1-1.8GB average in
 # production for no behavioral benefit. 768 leaves ~2x headroom over the
 # measured peak; raise it again if a future data file genuinely needs it.
-ENV NODE_OPTIONS=--max-old-space-size=768
+# 512 since 2026-10-12: a 6.5k-page local crawl peaked at 351MB heap, and
+# Railway bills the ~0.9GB the 768 cap let RSS settle at.
+ENV NODE_OPTIONS=--max-old-space-size=512
 # The heap cap above doesn't cover native memory (Prisma's query engine,
 # sharp). glibc opens up to 8 malloc arenas per vCPU — 64 on Railway's 8 vCPU
 # box — and fragments them, so RSS climbed linearly to 4+GB and crashed
@@ -64,6 +66,8 @@ ENV NODE_OPTIONS=--max-old-space-size=768
 # JS heap stayed capped. jemalloc (sharp's recommended allocator on glibc)
 # hands freed native memory back to the OS instead of fragmenting.
 ENV LD_PRELOAD=/usr/lib/libjemalloc.so.2
+# Purge freed pages within ~1s instead of jemalloc's 10s default hoarding.
+ENV MALLOC_CONF=background_thread:true,dirty_decay_ms:1000,muzzy_decay_ms:0
 ENV MALLOC_ARENA_MAX=2
 
 RUN groupadd --system --gid 1001 nodejs \

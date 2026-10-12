@@ -43,11 +43,29 @@ const NAMED_BOTS = [
   "DuckDuckBot",
 ];
 
+// SEO-tool / scraper crawlers: they bring no visitors but each crawl costs
+// Railway CPU, renders and egress. Blocked site-wide.
+const COST_ONLY_BOTS = [
+  "SemrushBot",
+  "AhrefsBot",
+  "MJ12bot",
+  "DotBot",
+  "PetalBot",
+  "BLEXBot",
+  "DataForSeoBot",
+  "Barkrowler",
+  "serpstatbot",
+  "SeznamBot",
+  "Bytespider",
+  "ImagesiftBot",
+];
+
 export default function robots(): MetadataRoute.Robots {
   return {
     rules: [
       { userAgent: "*", allow: ALLOW, disallow: DISALLOW },
       { userAgent: NAMED_BOTS, allow: ALLOW, disallow: DISALLOW },
+      { userAgent: COST_ONLY_BOTS, disallow: "/" },
     ],
     sitemap: `${SITE_URL}/sitemap.xml`,
     host: SITE_URL,
