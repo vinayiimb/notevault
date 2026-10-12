@@ -82,17 +82,12 @@ function chunkCount(total: number): number {
 
 /** Ordered list of shard names, e.g. ["static","blog","programmes","subjects-0",…]. */
 export async function listShardNames(): Promise<string[]> {
-  const [subjectUrls, paperCodeUrls] = await Promise.all([
-    getIndexableSubjectUrls(),
-    getIndexablePaperCodeUrls(),
-  ]);
-  const names = ["static", "blog", "programmes", "programme-semesters"];
-  for (let i = 0; i < chunkCount(subjectUrls.length); i++) names.push(`subjects-${i}`);
-  for (let i = 0; i < chunkCount(paperCodeUrls.length); i++) names.push(`paper-codes-${i}`);
-  // papers-N shards (~14k single-PDF /paper/ pages) are left out of the index on purpose:
-  // GSC showed 25k "Discovered – not indexed" with 19 indexed, so crawl budget goes to
-  // subject pages, which already list every paper. The shard routes still resolve.
-  return names;
+  // Only the ~600 hub pages (courses, semesters, static, blog). GSC 2026-10-12: Google
+  // crawled freshly improved subject pages and still declined them — on a low-authority
+  // domain, thousands of template pages read as scaled content. Subject pages stay
+  // crawlable through the hub links; the subjects-N / paper-codes-N / papers-N shard
+  // routes still resolve, they're just not advertised.
+  return ["static", "blog", "programmes", "programme-semesters"];
 }
 
 function sliceFor(urls: SitemapUrl[], shard: string, prefix: string): SitemapUrl[] {

@@ -5,7 +5,6 @@ import { Hash } from "@phosphor-icons/react/dist/ssr";
 import {
   getSeoPaperCode,
   getIndexablePaperCodeUrls,
-  isPaperCodeIndexable,
 } from "@/lib/du-pyp-seo";
 import { paperCodeMetadata, collectionPageJsonLd, absoluteUrl } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
@@ -31,8 +30,9 @@ export async function generateMetadata({
   if (!pc) return { title: "Paper code not found", robots: { index: false, follow: false } };
 
   const meta = paperCodeMetadata(pc.code, pc.subjectNames, pc.papers.length, pc.years);
-  if (!isPaperCodeIndexable(pc)) return { ...meta, robots: { index: false, follow: true } };
-  return meta;
+  // Always noindex: each code page lists the same papers as its subject page
+  // (/papers/<course>/<subject>), so 3k of them read as duplicates to Google.
+  return { ...meta, robots: { index: false, follow: true } };
 }
 
 export default async function PaperCodePage({
