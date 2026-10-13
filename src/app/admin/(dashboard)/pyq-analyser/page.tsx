@@ -4,20 +4,19 @@ import { prisma } from "@/lib/prisma";
 import { PyqAnalyserAdminClient } from "@/components/pyq-analyser/pyq-analyser-admin-client";
 
 export default async function AdminPyqAnalyserPage() {
-  const [programs, counts] = await Promise.all([
-    prisma.program.findMany({
-      orderBy: { name: "asc" },
-      select: {
-        id: true,
-        name: true,
-        terms: {
-          orderBy: { order: "asc" },
-          select: { id: true, name: true, subjects: { orderBy: { name: "asc" }, select: { id: true, name: true } } },
-        },
-      },
-    }),
-    prisma.question.groupBy({ by: ["subjectId"], _count: { _all: true } }),
-  ]);
+  // Question counts keyed by UPC, so the catalog picker can show which
+  // subjects already have questions.
+  const grouped = await prisma.question.groupBy({ by: ["subjectId"], _count: { _all: true } });
+  const subjects = await prisma.subject.findMany({
+    where: { id: { in: grouped.map((g) => g.subjectId) }, upc: { not: null } },
+    select: { id: true, upc: true },
+  });
+  const upcOf = new Map(subjects.map((s) => [s.id, s.upc!]));
+  const counts: Record<string, number> = {};
+  for (const g of grouped) {
+    const upc = upcOf.get(g.subjectId);
+    if (upc) counts[upc] = (counts[upc] ?? 0) + g._count._all;
+  }
 
   return (
     <div className="p-8">
@@ -35,10 +34,7 @@ export default async function AdminPyqAnalyserPage() {
         .
       </p>
       <div className="mt-6">
-        <PyqAnalyserAdminClient
-          programs={programs}
-          counts={Object.fromEntries(counts.map((c) => [c.subjectId, c._count._all]))}
-        />
+        <PyqAnalyserAdminClient counts={counts} />
       </div>
     </div>
   );

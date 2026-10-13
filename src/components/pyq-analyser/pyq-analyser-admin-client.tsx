@@ -1,12 +1,15 @@
 "use client";
 
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FileArrowUp, Sparkle, Trash } from "@phosphor-icons/react";
 import { readPdfWithOcr } from "@/lib/pdf-ocr-client";
-import { extractQuestionsChunkAction, savePaperQuestionsAction } from "@/lib/pyq-analyser-actions";
+import { ensureCatalogSubjectAction, extractQuestionsChunkAction, savePaperQuestionsAction } from "@/lib/pyq-analyser-actions";
 import { parseSolvedText } from "@/lib/pyq-analyser";
 
-type Program = { id: string; name: string; terms: { id: string; name: string; subjects: { id: string; name: string }[] }[] };
+// Same static catalog files /papers reads (public/data/papers/*).
+type CatalogCourse = { course: string; slug: string };
+type CatalogPaper = { course: string; subject: string; semester: string | null; upc: string | null; paperType: string | null };
+type CatalogSubject = { key: string; name: string; semester: number; upc: string | null; paperType: string | null };
 type Row = {
   key: number;
   questionNumber: string;
@@ -41,10 +44,13 @@ function chunkText(text: string): string[] {
 
 const input = "w-full rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none";
 
-export function PyqAnalyserAdminClient({ programs, counts }: { programs: Program[]; counts: Record<string, number> }) {
-  const [programId, setProgramId] = useState("");
-  const [termId, setTermId] = useState("");
-  const [subjectId, setSubjectId] = useState("");
+export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, number> }) {
+  const [courses, setCourses] = useState<CatalogCourse[]>([]);
+  const [courseSlug, setCourseSlug] = useState("");
+  const [courseName, setCourseName] = useState("");
+  const [catalogSubjects, setCatalogSubjects] = useState<CatalogSubject[]>([]);
+  const [semester, setSemester] = useState(0);
+  const [subjectKey, setSubjectKey] = useState("");
   const [year, setYear] = useState(String(new Date().getFullYear()));
   const [text, setText] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
@@ -53,9 +59,50 @@ export function PyqAnalyserAdminClient({ programs, counts }: { programs: Program
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const program = programs.find((p) => p.id === programId);
-  const term = program?.terms.find((t) => t.id === termId);
-  const subject = term?.subjects.find((s) => s.id === subjectId);
+  const subject = catalogSubjects.find((s) => s.key === subjectKey);
+  const semesters = [...new Set(catalogSubjects.map((s) => s.semester))].sort((a, b) => a - b);
+
+  useEffect(() => {
+    fetch("/data/papers/index.json")
+      .then((r) => r.json())
+      .then((list: CatalogCourse[]) => setCourses(list.sort((a, b) => a.course.localeCompare(b.course))))
+      .catch(() => setMessage({ ok: false, text: "Could not load the course list." }));
+  }, []);
+
+  async function pickCourse(slug: string) {
+    setCourseSlug(slug);
+    setSemester(0);
+    setSubjectKey("");
+    setCatalogSubjects([]);
+    if (!slug) return;
+    try {
+      const papers: CatalogPaper[] = await (await fetch(`/data/papers/courses/${slug}.json`)).json();
+      const bySubject = new Map<string, CatalogSubject>();
+      for (const p of papers) {
+        const sem = Number(p.semester);
+        if (!(sem >= 1 && sem <= 8)) continue;
+        const key = `${sem}|${p.upc ?? p.subject}`;
+        if (!bySubject.has(key)) bySubject.set(key, { key, name: p.subject, semester: sem, upc: p.upc, paperType: p.paperType });
+      }
+      setCourseName(papers[0]?.course ?? "");
+      setCatalogSubjects([...bySubject.values()].sort((a, b) => a.name.localeCompare(b.name)));
+    } catch {
+      setMessage({ ok: false, text: "Could not load that course's subjects." });
+    }
+  }
+
+  // Resolved (and created if needed) only when a paper is actually read or saved.
+  async function subjectId() {
+    if (!subject) throw new Error("Pick a subject first.");
+    return ensureCatalogSubjectAction({
+      courseSlug,
+      course: courseName,
+      semester: subject.semester,
+      subject: subject.name,
+      upc: subject.upc,
+      paperType: subject.paperType,
+    });
+  }
   const validYear = /^(19|20)\d{2}$/.test(year);
   const chunks = useMemo(() => chunkText(text), [text]);
   const solvedCount = useMemo(() => parseSolvedText(text).length, [text]);
@@ -103,7 +150,7 @@ export function PyqAnalyserAdminClient({ programs, counts }: { programs: Program
     try {
       for (let i = 0; i < chunks.length; i++) {
         setBusy(`AI is reading part ${i + 1} of ${chunks.length}…`);
-        const res = await extractQuestionsChunkAction(subjectId, chunks[i]);
+        const res = await extractQuestionsChunkAction(await subjectId(), chunks[i]);
         if (!res.ok) throw new Error(res.error);
         for (const q of res.data.questions) {
           found.push({ ...q, key: found.length, group: "", answerText: "", topics: q.topics.join(", ") });
@@ -124,7 +171,7 @@ export function PyqAnalyserAdminClient({ programs, counts }: { programs: Program
     setBusy("Saving…");
     try {
       const res = await savePaperQuestionsAction({
-        subjectId,
+        subjectId: await subjectId(),
         year,
         questions: shown.map((r) => ({
           questionNumber: r.questionNumber.trim(),
@@ -158,37 +205,40 @@ export function PyqAnalyserAdminClient({ programs, counts }: { programs: Program
     <div className="flex max-w-5xl flex-col gap-5">
       <div className="grid grid-cols-1 gap-3 rounded-xl border border-border bg-surface p-4 md:grid-cols-4">
         <label className="flex flex-col gap-1 text-xs font-medium text-muted">
-          Programme
-          <select value={programId} onChange={(e) => (setProgramId(e.target.value), setTermId(""), setSubjectId(""))} className={input}>
-            <option value="">Select…</option>
-            {programs.map((p) => (
-              <option key={p.id} value={p.id}>
-                {p.name}
+          Course
+          <select value={courseSlug} onChange={(e) => pickCourse(e.target.value)} className={input}>
+            <option value="">{courses.length ? "Select…" : "Loading…"}</option>
+            {courses.map((c) => (
+              <option key={c.slug} value={c.slug}>
+                {c.course}
               </option>
             ))}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-muted">
           Semester
-          <select value={termId} onChange={(e) => (setTermId(e.target.value), setSubjectId(""))} className={input} disabled={!program}>
+          <select value={semester || ""} onChange={(e) => (setSemester(Number(e.target.value)), setSubjectKey(""))} className={input} disabled={!semesters.length}>
             <option value="">Select…</option>
-            {program?.terms.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.name}
+            {semesters.map((n) => (
+              <option key={n} value={n}>
+                Semester {n}
               </option>
             ))}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-muted">
           Subject
-          <select value={subjectId} onChange={(e) => setSubjectId(e.target.value)} className={input} disabled={!term}>
+          <select value={subjectKey} onChange={(e) => setSubjectKey(e.target.value)} className={input} disabled={!semester}>
             <option value="">Select…</option>
-            {term?.subjects.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name}
-                {counts[s.id] ? ` (${counts[s.id]} Qs)` : ""}
-              </option>
-            ))}
+            {catalogSubjects
+              .filter((x) => x.semester === semester)
+              .map((x) => (
+                <option key={x.key} value={x.key}>
+                  {x.name}
+                  {x.paperType ? ` · ${x.paperType}` : ""}
+                  {x.upc && counts[x.upc] ? ` (${counts[x.upc]} Qs)` : ""}
+                </option>
+              ))}
           </select>
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-muted">

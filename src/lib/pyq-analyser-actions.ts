@@ -6,9 +6,51 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { extractPaperQuestions } from "@/lib/ai";
 import { findRepeat, parseYears } from "@/lib/pyq-analyser";
+import { slugify } from "@/lib/utils";
 
 async function requireAdmin() {
   if (!(await getSession())) throw new Error("Unauthorized");
+}
+
+const CatalogSubjectSchema = z.object({
+  courseSlug: z.string().regex(/^[a-z0-9-]{1,80}$/),
+  course: z.string().trim().min(1).max(120),
+  semester: z.number().int().min(1).max(8),
+  subject: z.string().trim().min(1).max(200),
+  upc: z.string().trim().max(20).nullable(),
+  paperType: z.string().trim().max(20).nullable(),
+});
+
+/**
+ * The admin picks from the /papers catalog (every course and semester), but
+ * questions hang off a DB Subject. Reuse the Subject with the same UPC, else
+ * create Program → Term → Subject the first time a paper is saved for it.
+ */
+export async function ensureCatalogSubjectAction(input: z.infer<typeof CatalogSubjectSchema>) {
+  await requireAdmin();
+  const c = CatalogSubjectSchema.parse(input);
+  if (c.upc) {
+    const byUpc = await prisma.subject.findFirst({ where: { upc: c.upc, mergedIntoId: null }, select: { id: true } });
+    if (byUpc) return byUpc.id;
+  }
+  const program = await prisma.program.upsert({
+    where: { slug: c.courseSlug },
+    create: { slug: c.courseSlug, name: c.course, level: "COLLEGE" },
+    update: {},
+  });
+  const term = await prisma.term.upsert({
+    where: { programId_order: { programId: program.id, order: c.semester } },
+    create: { programId: program.id, order: c.semester, name: `Semester ${c.semester}` },
+    update: {},
+  });
+  const slug = slugify(c.subject) || "subject";
+  const subject = await prisma.subject.upsert({
+    where: { termId_slug: { termId: term.id, slug } },
+    create: { termId: term.id, name: c.subject, slug, upc: c.upc, paperType: c.paperType },
+    update: {},
+    select: { id: true },
+  });
+  return subject.id;
 }
 
 export async function extractQuestionsChunkAction(subjectId: string, text: string) {
