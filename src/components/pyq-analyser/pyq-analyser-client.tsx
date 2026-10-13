@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ArrowRight, CaretDown, ChartBar, Funnel, MagnifyingGlass, Repeat, X } from "@phosphor-icons/react";
+import { ArrowLeft, ArrowRight, CaretDown, ChartBar, CheckCircle, DownloadSimple, Funnel, MagnifyingGlass, Repeat, X } from "@phosphor-icons/react";
 import { tally, type AnalyserQuestion } from "@/lib/pyq-analyser";
 import { SolutionMarkdown } from "./solution-markdown";
 
@@ -27,10 +27,11 @@ type Filters = {
 
 const EMPTY: Filters = { q: "", years: [], marks: [], difficulty: [], topics: [], repeatedOnly: false };
 const DIFFICULTY_LABEL: Record<string, string> = { EASY: "Easy", MEDIUM: "Medium", HARD: "Hard" };
+// Light-only: these chips sit on the always-white .pyq-paper card.
 const DIFFICULTY_CHIP: Record<string, string> = {
-  EASY: "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300",
-  MEDIUM: "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300",
-  HARD: "bg-red-50 text-red-700 dark:bg-red-500/15 dark:text-red-300",
+  EASY: "bg-emerald-50 text-emerald-700",
+  MEDIUM: "bg-amber-50 text-amber-700",
+  HARD: "bg-red-50 text-red-700",
 };
 
 function toggle(list: string[], value: string) {
@@ -113,6 +114,15 @@ export function PyqAnalyserClient({
     );
   }, [questions, filters, sort]);
   const current = filtered[Math.min(idx, filtered.length - 1)];
+
+  // Browser print → "Save as PDF": keeps KaTeX and SVG diagrams as sharp vectors.
+  const downloadPdf = () => {
+    if (!current || !selected) return;
+    const before = document.title;
+    document.title = `${selected.name.replace(/^[A-Z]+-[\d.]+\s*—\s*/, "")} ${current.years.join(", ")} Q${current.number ?? idx + 1} - DU PYQ Online`;
+    window.addEventListener("afterprint", () => (document.title = before), { once: true });
+    window.print();
+  };
 
   useEffect(() => {
     pillsRef.current?.querySelector<HTMLElement>(`[data-i="${idx}"]`)?.scrollIntoView({ block: "nearest", inline: "center" });
@@ -372,9 +382,12 @@ export function PyqAnalyserClient({
         )}
 
         {current ? (
-          <article className={`${card} space-y-4 p-4 sm:p-6`}>
+          <article data-print-root className={`${card} pyq-paper space-y-4 p-4 sm:p-6`}>
+            <p className="print-only text-xs text-muted">
+              DU PYQ Online · dupyq.online/papers/analyser · {selected.program} · {selected.name}
+            </p>
             <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="rounded-full bg-violet-50 px-3 py-1 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
+              <span className="rounded-full bg-violet-50 px-3 py-1 text-violet-700">
                 {selected.name.replace(/^[A-Z]+-[\d.]+\s*—\s*/, "")} {current.years.join(", ")}
               </span>
               {current.difficulty && <span className={`rounded-full px-3 py-1 ${DIFFICULTY_CHIP[current.difficulty]}`}>{DIFFICULTY_LABEL[current.difficulty]}</span>}
@@ -383,22 +396,33 @@ export function PyqAnalyserClient({
                   <Repeat size={13} /> Asked {current.repeatCount}×
                 </span>
               )}
-              {(current.number || current.marks) && (
-                <span className="ml-auto text-xs text-muted">
-                  {current.number && `Q${current.number}`}
-                  {current.number && current.marks ? " · " : ""}
-                  {current.marks ? `${current.marks} marks` : ""}
-                </span>
-              )}
+              <span className="ml-auto flex items-center gap-3">
+                {(current.number || current.marks) && (
+                  <span className="text-xs text-muted">
+                    {current.number && `Q${current.number}`}
+                    {current.number && current.marks ? " · " : ""}
+                    {current.marks ? `${current.marks} marks` : ""}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={downloadPdf}
+                  className="no-print flex items-center gap-1.5 rounded-lg border border-border px-2.5 py-1.5 text-xs font-medium text-foreground transition hover:bg-surface-muted"
+                >
+                  <DownloadSimple size={14} /> Download PDF
+                </button>
+              </span>
             </div>
 
-            <div className="rounded-2xl border border-border p-4 text-[15px] leading-7 text-foreground sm:p-6">
+            <div className="rounded-2xl border border-border p-4 text-base leading-[1.85] text-foreground sm:p-6">
               {/* ChatGPT-copied text escapes markdown characters: "\$15,000". */}
               <p className="whitespace-pre-line">{current.text.replace(/\\([$%&#_*])/g, "$1")}</p>
             </div>
 
             <div className="rounded-2xl border border-border p-4 sm:p-6">
-              <p className="mb-3 text-[15px] font-semibold text-foreground">Solution</p>
+              <p className="mb-2 flex items-center gap-2 text-base font-semibold text-foreground">
+                <CheckCircle size={20} weight="fill" className="text-emerald-600" aria-hidden /> Solution
+              </p>
               {current.answer ? (
                 <SolutionMarkdown key={current.id} content={current.answer} />
               ) : (
@@ -406,7 +430,7 @@ export function PyqAnalyserClient({
               )}
             </div>
 
-            <div className="flex items-center justify-between gap-3 pt-1">
+            <div className="no-print flex items-center justify-between gap-3 pt-1">
               <button
                 type="button"
                 onClick={() => setIdx((i) => Math.max(i - 1, 0))}

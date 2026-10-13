@@ -107,3 +107,34 @@ test("diagram library: parse cards and match each marker to the right diagram", 
   assert.equal(pick("Draw the budget lines for income ₹6,000 and when income changes.", "Label BL₁, BL₂, BL₃."), "Budget line: income changes");
   assert.equal(fillDiagramsFromLibrary("zzz", `${DIAGRAM_MARKER}`, lib).filled, 0);
 });
+
+test("the ChatGPT prompt names the paper and its answer format round-trips through the parser", async () => {
+  const { solvedPaperPrompt, parseSolvedText } = await import("@/lib/pyq-analyser");
+  const prompt = solvedPaperPrompt({ course: "B.Com. (Hons.)", semester: 5, subject: "Business Economics", upc: "2412083502", paperType: "DSC", year: "2024" });
+  assert.match(prompt, /Paper: Business Economics \(DSC, UPC 2412083502\)/);
+  assert.match(prompt, /## BUSINESS ECONOMICS — QUESTION 1\(a\)/);
+  // A reply written the way the prompt asks, including an inline SVG.
+  const reply = [
+    "## BUSINESS ECONOMICS — QUESTION 1(a)",
+    "Question: Explain the law of supply.",
+    "",
+    "Unit tag: Unit 1 — Introduction to Business Economics",
+    "",
+    "### 1. Meaning",
+    "Supply rises with price \\(P\\).",
+    "",
+    "### 2. Diagram",
+    '<svg class="diagram" viewBox="0 0 440 300"><path class="axis" d="M55 25V250H405"/><path class="curve green" d="M90 220L365 55"/><text x="370" y="55">S</text></svg>',
+    "Draw an upward-sloping S curve.",
+    "",
+    "## BUSINESS ECONOMICS — QUESTION 1(a) OR",
+    "Question: Explain elasticity of supply.",
+    "",
+    "Unit tag: Unit 1 — Introduction to Business Economics",
+    "",
+    "Answer.",
+  ].join("\n");
+  const qs = parseSolvedText(reply);
+  assert.deepEqual(qs.map((q) => q.questionNumber), ["1(a)", "1(a) OR"]);
+  assert.ok(qs[0].answer.includes("<svg") && qs[0].answer.includes("$P$"));
+});

@@ -13,6 +13,7 @@ import { ContentMermaidBlock } from "@/components/content/notes/mermaid-block";
 import { DataChart } from "@/components/subjects/data-chart";
 import type { NotesLabColorTokens } from "@/lib/content/theme-presets";
 import { EconDiagram } from "./econ-diagram";
+import { ZoomableFigure } from "./zoomable-figure";
 import "./solution.css";
 
 function text(node: React.ReactNode): string {
@@ -61,6 +62,11 @@ function wrapSvgs(md: string) {
 }
 
 const components: Components = {
+  figure: ({ className, children }) => (
+    <ZoomableFigure>
+      <figure className={className}>{children}</figure>
+    </ZoomableFigure>
+  ),
   table: ({ children }) => (
     <div className="pyq-table">
       <table>{children}</table>
@@ -71,7 +77,12 @@ const components: Components = {
     const lang = /language-([\w-]+)/.exec(className ?? "")?.[1];
     if (!lang) return <code>{children}</code>;
     const raw = text(children).replace(/\n$/, "");
-    if (lang === "diagram") return <EconDiagram source={raw} />;
+    if (lang === "diagram")
+      return (
+        <ZoomableFigure>
+          <EconDiagram source={raw} />
+        </ZoomableFigure>
+      );
     if (lang === "mermaid") return <ContentMermaidBlock chart={raw} />;
     if (lang === "chart") return <DataChart source={raw} />;
     return (

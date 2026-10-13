@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BookOpen, ChartLine, Eye, FileArrowUp, Sparkle, Trash } from "@phosphor-icons/react";
+import { BookOpen, ChartLine, Check, Copy, Eye, FileArrowUp, Sparkle, Trash } from "@phosphor-icons/react";
 import { readPdfWithOcr } from "@/lib/pdf-ocr-client";
 import { ensureCatalogSubjectAction, extractQuestionsChunkAction, savePaperQuestionsAction } from "@/lib/pyq-analyser-actions";
 import {
@@ -10,6 +10,7 @@ import {
   fillDiagramsFromLibrary,
   parseDiagramLibrary,
   parseSolvedText,
+  solvedPaperPrompt,
   type LibraryDiagram,
 } from "@/lib/pyq-analyser";
 import { drawEconDiagram } from "@/lib/ai";
@@ -69,6 +70,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
   const [rows, setRows] = useState<Row[]>([]);
   const [group, setGroup] = useState("");
   const [previewKey, setPreviewKey] = useState<number | null>(null);
+  const [copied, setCopied] = useState(false);
   const [library, setLibrary] = useState<LibraryDiagram[]>([]);
   const libraryRef = useRef<HTMLInputElement>(null);
 
@@ -352,6 +354,37 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
       </div>
 
       {subject && (
+        <details className="rounded-xl border border-border bg-surface p-4">
+          <summary className="cursor-pointer text-sm font-semibold text-foreground">
+            ChatGPT prompt for {subject.name} <span className="font-normal text-muted">— copy, paste into ChatGPT with the question paper, then paste its reply below</span>
+          </summary>
+          {(() => {
+            const prompt = solvedPaperPrompt({ course: courseName, semester: subject.semester, subject: subject.name, upc: subject.upc, paperType: subject.paperType, year });
+            return (
+              <>
+                <textarea readOnly value={prompt} rows={14} className={`${input} mt-3 font-mono text-xs`} onFocus={(e) => e.currentTarget.select()} />
+                <button
+                  type="button"
+                  onClick={async () => {
+                    try {
+                      await navigator.clipboard.writeText(prompt);
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    } catch {
+                      setMessage({ ok: false, text: "Couldn't copy automatically — click in the box, Ctrl/Cmd+A, then copy." });
+                    }
+                  }}
+                  className="mt-2 flex items-center gap-2 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-background transition hover:opacity-90"
+                >
+                  {copied ? <Check size={16} /> : <Copy size={16} />} {copied ? "Copied" : "Copy prompt"}
+                </button>
+              </>
+            );
+          })()}
+        </details>
+      )}
+
+      {subject && (
         <div className="rounded-xl border border-border bg-surface p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <p className="text-sm font-semibold text-foreground">Paper text</p>
@@ -508,7 +541,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
                     </button>
                   )}
                   {previewKey === r.key && (
-                    <div className="rounded-xl border border-border bg-background p-4">
+                    <div className="pyq-paper rounded-xl border border-border p-4">
                       <SolutionMarkdown content={r.answerText} />
                     </div>
                   )}

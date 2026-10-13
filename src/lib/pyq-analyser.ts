@@ -192,3 +192,53 @@ export function fillDiagramsFromLibrary(question: string, answer: string, librar
   }
   return { answer: out, filled };
 }
+
+// ---------- ChatGPT prompt the admin copies per subject ----------
+// Produces text in exactly the format parseSolvedText() reads, with diagrams
+// as inline SVG in the coded-diagram-library style (solution.css classes).
+
+export type PromptSubject = { course: string; semester: number; subject: string; upc: string | null; paperType: string | null; year: string };
+
+export function solvedPaperPrompt(s: PromptSubject): string {
+  const head = s.subject.toUpperCase();
+  const code = [s.paperType, s.upc && `UPC ${s.upc}`].filter(Boolean).join(", ");
+  return `You are a Delhi University (DU) examiner and topper writing complete, exam-ready solved answers.
+
+Paper: ${s.subject}${code ? ` (${code})` : ""}
+Course: ${s.course} · Semester ${s.semester} · NEP (UGCF 2022) syllabus${/^(19|20)\d{2}$/.test(s.year) ? ` · Exam year ${s.year}` : ""}
+
+I will paste the question paper after this message. Solve EVERY question — every sub-part and every OR alternative.
+
+OUTPUT FORMAT (software imports it — follow it exactly):
+1. Start each question with its own line:
+   ## ${head} — QUESTION 1(a)
+   Use the number exactly as printed: 1(a), 1(b), 2, 3(c). Mark alternatives like: QUESTION 1(a) OR
+2. Next line: Question: <the full question exactly as printed, on one paragraph>
+3. Blank line, then: Unit tag: Unit N — <unit name from the official DU syllabus of this paper>
+4. Then the full answer in Markdown:
+   - Steps as ### headings: ### 1. Meaning, ### 2. Explanation, ### 3. Formula, ### 4. Diagram … (never use # or ## inside an answer)
+   - Length to suit the marks (a 9–15 mark answer ≈ 500–900 words), in simple exam language, ending with a "Conclusion:" paragraph.
+   - Formulas in LaTeX: inline \\( … \\), display \\[ … \\]. Show every numerical step and box the final answer with \\boxed{…}.
+   - Tables as Markdown pipe tables.
+   - Flowcharts as \`\`\`mermaid code blocks.
+   - Every diagram as ONE inline <svg> (no images, no links), placed where it belongs, with no blank lines inside it, followed by one line telling the student what to draw. Use this exact style:
+     <svg class="diagram" viewBox="0 0 440 300"><path class="axis" d="M55 25V250H405"/><text x="18" y="22">Price</text><text x="335" y="280">Quantity</text><path class="curve blue" d="M95 55L365 220"/><text x="370" y="225">D</text><text x="42" y="265">O</text></svg>
+     Classes: axis = axes · curve + blue/green/red/purple = curves (red for the new or shifted curve) · dash = dashed · guide = dotted guide line · dot = point (<circle class="dot" r="4">). Label every axis, curve, equilibrium point and axis value with Unicode subscripts (D₁, S₂, P₁, Qₑ, E₁). Make sure points sit exactly where curves cross.
+5. Write nothing before the first ## line and nothing after the last answer: no introduction, no web links, no citations, no college names, no images.
+
+Example of one question:
+
+## ${head} — QUESTION 1(a)
+Question: <question text>
+
+Unit tag: Unit 1 — <unit name>
+
+### 1. Meaning
+…
+
+### 2. Diagram
+<svg class="diagram" viewBox="0 0 440 300">…</svg>
+Draw … 
+
+Conclusion: …`;
+}
