@@ -12,6 +12,8 @@ export type AnalyserQuestion = {
   topics: string[];
   difficulty: "EASY" | "MEDIUM" | "HARD" | null;
   repeatCount: number;
+  /** answer is an HTML bundle, loaded from /api/pyq-answer when shown */
+  bundle?: boolean;
 };
 
 export function parseYears(raw: string | null | undefined): string[] {
@@ -241,4 +243,53 @@ Unit tag: Unit 1 — <unit name>
 Draw … 
 
 Conclusion: …`;
+}
+
+// ---------- HTML solution bundles (admin-dropped, rendered sandboxed) ----------
+// A bundle is a whole self-contained HTML document stored as answerText; the
+// student page renders it in a sandboxed iframe (scripts on, no site access).
+
+export function isBundle(answer: string): boolean {
+  return /^\s*(<!doctype html|<html[\s>])/i.test(answer);
+}
+
+/** Inline sibling .css/.js files the HTML links by name, so the bundle is one document. */
+export function inlineBundleAssets(html: string, files: Record<string, string>): string {
+  const byName = (href: string) => files[href.split(/[?#]/)[0].split("/").pop() ?? ""];
+  return html
+    .replace(/<link\b[^>]*\brel=["']?stylesheet["']?[^>]*>/gi, (tag) => {
+      const href = tag.match(/\bhref=["']([^"']+)["']/i)?.[1];
+      const css = href && !/^https?:/i.test(href) ? byName(href) : undefined;
+      return css === undefined ? tag : `<style>${css}</style>`;
+    })
+    .replace(/<script\b([^>]*)\bsrc=["']([^"']+)["']([^>]*)>\s*<\/script>/gi, (tag, a, src, b) => {
+      const js = /^https?:/i.test(src) ? undefined : byName(src);
+      const attrs = `${a} ${b}`.trim();
+      return js === undefined ? tag : `<script${attrs ? ` ${attrs}` : ""}>${js.replace(/<\/script/gi, "<\\/script")}</script>`;
+    });
+}
+
+/** One question's standalone document: the bundle's <head> plus that question's section. */
+export function bundleDocument(head: string, section: string, bodyScripts = ""): string {
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${head}</head><body>${section}${bodyScripts}</body></html>`;
+}
+
+/** The bundle variant of the prompt: one self-contained HTML file for the whole paper. */
+export function solvedBundlePrompt(s: PromptSubject): string {
+  const code = [s.paperType, s.upc && `UPC ${s.upc}`].filter(Boolean).join(", ");
+  return `You are a Delhi University (DU) examiner and topper writing complete, exam-ready solved answers, and a front-end developer.
+
+Paper: ${s.subject}${code ? ` (${code})` : ""}
+Course: ${s.course} · Semester ${s.semester} · NEP (UGCF 2022) syllabus${/^(19|20)\d{2}$/.test(s.year) ? ` · Exam year ${s.year}` : ""}
+
+I will paste the question paper after this message. Solve EVERY question — every sub-part and every OR alternative.
+
+Return ONE complete, self-contained HTML file (<!DOCTYPE html> … </html>) for the whole paper. Software splits it into questions, so follow this structure exactly:
+1. <head>: all CSS in a single <style> block — clean white exam-sheet style, readable on phones (no horizontal scrolling; wide tables scroll inside their own box). Load libraries only from https://cdn.jsdelivr.net/npm/ (for example KaTeX + its auto-render for formulas, Chart.js for charts). No other external files, no images, no web fonts.
+2. <body>: one <section data-question="1(a)" data-unit="Unit 1 — <unit name from the official DU syllabus>"> for each question, sub-part and OR alternative. Use the number exactly as printed: 1(a), 1(b), 1(a) OR, 2 …
+3. The first child of every section: <p data-question-text>the full question exactly as printed</p>. Then the complete answer.
+4. Answers: numbered step headings, length to suit the marks (a 9–15 mark answer ≈ 500–900 words), formulas with KaTeX (\\( … \\) inline, \\[ … \\] display, final answers in \\boxed{}), every numerical step shown, HTML tables, every economics diagram as inline <svg> with labelled axes, curves (shifted curve dashed or in red), equilibrium points and axis values, charts as <canvas> drawn with Chart.js, and a final "Conclusion".
+5. Colours: white background, near-black text, light-grey table headers and borders. No sky-blue or tinted boxes. In diagrams use blue/green for the original curves and red (or dashed) for the shifted one; chart bars and lines in dark grey (#374151) unless a second series is needed.
+6. Each section is shown ON ITS OWN, so all JavaScript must initialise whatever is on the page on DOMContentLoaded and never depend on another section existing.
+7. Nothing outside the sections: no site header, navigation, footer, introduction, web links, citations or college names.`;
 }

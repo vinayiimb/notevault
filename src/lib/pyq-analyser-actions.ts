@@ -71,7 +71,8 @@ const SaveSchema = z.object({
         questionNumber: z.string(),
         section: z.string(),
         questionText: z.string().trim().min(5),
-        answerText: z.string().max(60000).default(""),
+        // HTML bundles carry their own CSS/JS, so allow up to ~1.5 MB each.
+        answerText: z.string().max(1_500_000).default(""),
         marks: z.number().int().min(0).max(100),
         topics: z.array(z.string().trim().min(1)).max(6),
         difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).nullable(),

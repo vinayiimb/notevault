@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, ArrowRight, CaretDown, ChartBar, CheckCircle, DownloadSimple, Funnel, MagnifyingGlass, Repeat, X } from "@phosphor-icons/react";
 import { tally, type AnalyserQuestion } from "@/lib/pyq-analyser";
 import { SolutionMarkdown } from "./solution-markdown";
+import { SolutionBundle } from "./solution-bundle";
 
 export type AnalyserSubject = {
   id: string;
@@ -423,7 +424,9 @@ export function PyqAnalyserClient({
               <p className="mb-2 flex items-center gap-2 text-base font-semibold text-foreground">
                 <CheckCircle size={20} weight="fill" className="text-emerald-600" aria-hidden /> Solution
               </p>
-              {current.answer ? (
+              {current.bundle ? (
+                <SolutionBundle key={current.id} questionId={current.id} title={`Solution to Q${current.number ?? idx + 1}`} />
+              ) : current.answer ? (
                 <SolutionMarkdown key={current.id} content={current.answer} />
               ) : (
                 <p className="text-sm text-muted">Solution coming soon.</p>

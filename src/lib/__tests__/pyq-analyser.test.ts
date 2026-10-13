@@ -138,3 +138,18 @@ test("the ChatGPT prompt names the paper and its answer format round-trips throu
   assert.deepEqual(qs.map((q) => q.questionNumber), ["1(a)", "1(a) OR"]);
   assert.ok(qs[0].answer.includes("<svg") && qs[0].answer.includes("$P$"));
 });
+
+test("bundles: detection, asset inlining and per-question documents", async () => {
+  const { isBundle, inlineBundleAssets, bundleDocument } = await import("@/lib/pyq-analyser");
+  assert.ok(isBundle("  <!DOCTYPE html><html>…"));
+  assert.ok(isBundle("<html lang='en'>"));
+  assert.ok(!isBundle("### 1. Meaning\n<svg></svg>"));
+  const html = '<link rel="stylesheet" href="./styles.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"><script src="app.js"></script><script src="https://cdn.jsdelivr.net/npm/chart.js"></script>';
+  const out = inlineBundleAssets(html, { "styles.css": "body{color:red}", "app.js": "console.log('</script>')" });
+  assert.ok(out.includes("<style>body{color:red}</style>"));
+  assert.ok(out.includes('href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css"'), "CDN links stay");
+  assert.ok(out.includes("<script>console.log('<\\/script>')</script>"), "inlined JS can't close the tag early");
+  assert.ok(out.includes('src="https://cdn.jsdelivr.net/npm/chart.js"'));
+  const doc = bundleDocument("<style>x</style>", '<section data-question="1(a)">A</section>');
+  assert.ok(isBundle(doc) && doc.includes('<head><meta charset="utf-8">') && doc.includes("<section"));
+});

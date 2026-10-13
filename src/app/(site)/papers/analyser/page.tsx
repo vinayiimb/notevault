@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { parseYears, type AnalyserQuestion } from "@/lib/pyq-analyser";
+import { isBundle, parseYears, type AnalyserQuestion } from "@/lib/pyq-analyser";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { PyqAnalyserClient, type AnalyserSubject } from "@/components/pyq-analyser/pyq-analyser-client";
 
@@ -60,7 +60,9 @@ async function loadQuestions(subjectId: string): Promise<AnalyserQuestion[]> {
     id: q.id,
     number: q.questionNumber,
     text: q.questionText,
-    answer: q.answerText,
+    // Bundles are fetched on demand (/api/pyq-answer), not shipped with the page.
+    answer: isBundle(q.answerText) ? "" : q.answerText,
+    bundle: isBundle(q.answerText),
     marks: q.marks,
     years: parseYears(q.years),
     section: q.section,

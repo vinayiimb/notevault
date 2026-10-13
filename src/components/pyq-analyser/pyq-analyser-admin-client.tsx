@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { BookOpen, ChartLine, Check, Copy, Eye, FileArrowUp, Sparkle, Trash } from "@phosphor-icons/react";
+import { BookOpen, ChartLine, Check, Code, Copy, Eye, FileArrowUp, Sparkle, Trash } from "@phosphor-icons/react";
 import { readPdfWithOcr } from "@/lib/pdf-ocr-client";
 import { ensureCatalogSubjectAction, extractQuestionsChunkAction, savePaperQuestionsAction } from "@/lib/pyq-analyser-actions";
 import {
@@ -9,12 +9,17 @@ import {
   diagramContext,
   fillDiagramsFromLibrary,
   parseDiagramLibrary,
+  bundleDocument,
+  inlineBundleAssets,
+  isBundle,
   parseSolvedText,
+  solvedBundlePrompt,
   solvedPaperPrompt,
   type LibraryDiagram,
 } from "@/lib/pyq-analyser";
 import { drawEconDiagram } from "@/lib/ai";
 import { SolutionMarkdown } from "./solution-markdown";
+import { SolutionBundle } from "./solution-bundle";
 import { applyOverrides, fetchJson, loadOverrides, type Overrides } from "@/lib/catalog-overrides";
 import { applyPaperEdits } from "@/lib/paper-edits";
 import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
@@ -71,6 +76,55 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
   const [group, setGroup] = useState("");
   const [previewKey, setPreviewKey] = useState<number | null>(null);
   const [copied, setCopied] = useState(false);
+  const [promptKind, setPromptKind] = useState<"markdown" | "bundle">("markdown");
+  const bundleRef = useRef<HTMLInputElement>(null);
+
+  // An HTML solution bundle (plus any .css/.js it links by name) → one row
+  // per <section data-question>, each a standalone document.
+  async function loadBundle(list: FileList) {
+    setMessage(null);
+    const all = [...list];
+    const main = all.find((f) => /\.html?$/i.test(f.name));
+    if (!main) return setMessage({ ok: false, text: "Include the .html file of the bundle (CSS/JS files are optional)." });
+    const assets: Record<string, string> = {};
+    for (const f of all) if (f !== main) assets[f.name] = await f.text();
+    readBundle(inlineBundleAssets(await main.text(), assets), `${main.name}${all.length > 1 ? ` + ${all.length - 1} file${all.length > 2 ? "s" : ""}` : ""}`);
+  }
+
+  function readBundle(html: string, source: string) {
+    const dom = new DOMParser().parseFromString(html, "text/html");
+    const head = dom.head.innerHTML;
+    const bodyScripts = [...dom.body.children].filter((el) => el.tagName === "SCRIPT").map((el) => el.outerHTML).join("");
+    const sections = [...dom.querySelectorAll<HTMLElement>("[data-question]")];
+    const found: Row[] = sections.map((sec, key) => {
+      const clone = sec.cloneNode(true) as HTMLElement;
+      const qEl = clone.querySelector("[data-question-text]");
+      const questionText = (qEl?.textContent ?? sec.getAttribute("data-question-text") ?? "").replace(/\s+/g, " ").trim();
+      qEl?.remove();
+      return {
+        key,
+        group: "",
+        questionNumber: sec.getAttribute("data-question") ?? "",
+        section: "",
+        questionText,
+        answerText: bundleDocument(head, clone.outerHTML, bodyScripts),
+        marks: 0,
+        topics: sec.getAttribute("data-unit") ?? "",
+        difficulty: null,
+      };
+    });
+    if (!found.length) {
+      // No markers: keep the whole page as one solution; admin types the question.
+      found.push({ key: 0, group: "", questionNumber: "", section: "", questionText: "", answerText: html, marks: 0, topics: "", difficulty: null });
+    }
+    setRows(found);
+    setMessage({
+      ok: true,
+      text: sections.length
+        ? `Bundle read: ${found.length} questions (${source}). Preview each, then save.`
+        : "No <section data-question> found, so the whole bundle is one solution — type its question text below, then save.",
+    });
+  }
   const [library, setLibrary] = useState<LibraryDiagram[]>([]);
   const libraryRef = useRef<HTMLInputElement>(null);
 
@@ -233,6 +287,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
 
   async function extract() {
     setMessage(null);
+    if (isBundle(text)) return readBundle(text, "pasted HTML");
     const solved = parseSolvedText(text);
     if (solved.length) {
       const found = solved.map((q, key) => ({
@@ -359,9 +414,22 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
             ChatGPT prompt for {subject.name} <span className="font-normal text-muted">— copy, paste into ChatGPT with the question paper, then paste its reply below</span>
           </summary>
           {(() => {
-            const prompt = solvedPaperPrompt({ course: courseName, semester: subject.semester, subject: subject.name, upc: subject.upc, paperType: subject.paperType, year });
+            const info = { course: courseName, semester: subject.semester, subject: subject.name, upc: subject.upc, paperType: subject.paperType, year };
+            const prompt = promptKind === "bundle" ? solvedBundlePrompt(info) : solvedPaperPrompt(info);
             return (
               <>
+                <div className="mt-3 flex gap-2 text-xs">
+                  {(["markdown", "bundle"] as const).map((k) => (
+                    <button
+                      key={k}
+                      type="button"
+                      onClick={() => setPromptKind(k)}
+                      className={`rounded-full border px-3 py-1 transition ${promptKind === k ? "border-foreground bg-foreground text-background" : "border-border hover:border-foreground/40"}`}
+                    >
+                      {k === "markdown" ? "Text answers (paste below)" : "HTML bundle (upload)"}
+                    </button>
+                  ))}
+                </div>
                 <textarea readOnly value={prompt} rows={14} className={`${input} mt-3 font-mono text-xs`} onFocus={(e) => e.currentTarget.select()} />
                 <button
                   type="button"
@@ -396,6 +464,26 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
             >
               <FileArrowUp size={16} /> Upload PDF
             </button>
+            <button
+              type="button"
+              onClick={() => bundleRef.current?.click()}
+              disabled={!!busy}
+              className="flex items-center gap-2 rounded-lg border border-border px-3 py-1.5 text-sm transition hover:border-accent disabled:opacity-50"
+              title="Self-contained HTML solution (+ its .css/.js files)"
+            >
+              <Code size={16} /> Upload HTML bundle
+            </button>
+            <input
+              ref={bundleRef}
+              type="file"
+              multiple
+              accept=".html,.htm,.css,.js,text/html,text/css,text/javascript"
+              className="hidden"
+              onChange={(e) => {
+                if (e.target.files?.length) loadBundle(e.target.files);
+                e.target.value = "";
+              }}
+            />
             <input
               ref={fileRef}
               type="file"
@@ -422,7 +510,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
               disabled={!!busy || !text.trim()}
               className="flex items-center gap-2 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition hover:bg-accent-hover disabled:opacity-50"
             >
-              <Sparkle size={16} weight="fill" /> {solvedCount ? `Read ${solvedCount} solved questions` : "Extract questions with AI"}
+              <Sparkle size={16} weight="fill" /> {isBundle(text) ? "Read HTML bundle" : solvedCount ? `Read ${solvedCount} solved questions` : "Extract questions with AI"}
             </button>
             {text && (
               <span className="text-xs text-muted">
@@ -542,7 +630,11 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
                   )}
                   {previewKey === r.key && (
                     <div className="pyq-paper rounded-xl border border-border p-4">
-                      <SolutionMarkdown content={r.answerText} />
+                      {isBundle(r.answerText) ? (
+                        <SolutionBundle html={r.answerText} title={`Preview of ${r.questionNumber || "solution"}`} />
+                      ) : (
+                        <SolutionMarkdown content={r.answerText} />
+                      )}
                     </div>
                   )}
                 </div>
