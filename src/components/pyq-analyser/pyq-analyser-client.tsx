@@ -4,6 +4,9 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowsClockwise, ChartBar, Funnel, MagnifyingGlass, Repeat } from "@phosphor-icons/react";
 import { tally, type AnalyserQuestion } from "@/lib/pyq-analyser";
+import { ContentThemeProvider } from "@/components/content/notes/theme-provider";
+import { ContentLightboxProvider } from "@/components/content/notes/note-image";
+import { NotesMarkdown } from "@/components/content/notes/notes-markdown";
 
 export type AnalyserSubject = {
   id: string;
@@ -360,12 +363,7 @@ export function PyqAnalyserClient({
                     </button>
                   ))}
                 </div>
-                {q.answer && (
-                  <details className="mt-3 border-t border-border pt-3">
-                    <summary className="cursor-pointer text-xs font-semibold text-accent">Show answer</summary>
-                    <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-foreground/90">{q.answer}</p>
-                  </details>
-                )}
+                {q.answer && <Answer markdown={q.answer} />}
               </li>
             ))}
             {filtered.length === 0 && (
@@ -374,6 +372,28 @@ export function PyqAnalyserClient({
           </ul>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Mounted only when opened: KaTeX + markdown for every card up front would
+// make a 50-question subject slow on phones.
+function Answer({ markdown }: { markdown: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-3 border-t border-border pt-3">
+      <button type="button" onClick={() => setOpen((o) => !o)} className="text-xs font-semibold text-accent hover:underline" aria-expanded={open}>
+        {open ? "Hide answer" : "Show answer"}
+      </button>
+      {open && (
+        <div className="@container mt-3">
+          <ContentThemeProvider>
+            <ContentLightboxProvider>
+              <NotesMarkdown content={markdown} />
+            </ContentLightboxProvider>
+          </ContentThemeProvider>
+        </div>
+      )}
     </div>
   );
 }

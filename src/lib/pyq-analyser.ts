@@ -71,3 +71,59 @@ export function tally(values: string[][]): { key: string; count: number }[] {
   for (const list of values) for (const v of new Set(list)) counts.set(v, (counts.get(v) ?? 0) + 1);
   return [...counts.entries()].map(([key, count]) => ({ key, count })).sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
 }
+
+// ---------- Solved Q&A text (the admin's ChatGPT-style paste) ----------
+// Format:  "## BUSINESS ECONOMICS (HONS.) — QUESTION 1(a)" / "Question: …" /
+// "Unit tag: Unit 1 — …" / answer markdown until the next question or "# UNIT".
+
+export type SolvedQuestion = { group: string; questionNumber: string; questionText: string; unit: string; answer: string };
+
+const QUESTION_HEADING = /^##\s+(.+?)\s+[—–-]\s+QUESTION\s+(.+?)\s*$/i;
+
+// ChatGPT copies LaTeX as \\[ … \\] (or \[ … \]) and \\( … \\) with escaped _ < %;
+// remark-math wants $$ … $$ and $ … $.
+export function normalizeMath(md: string): string {
+  const fix = (m: string) => m.replace(/\\_/g, "_").replace(/\\</g, "<").replace(/\\\\%/g, "\\%").replace(/\\\\&/g, "\\&");
+  return md
+    .replace(/\\\\?\[([\s\S]*?)\\\\?\]/g, (_, m) => `\n$$\n${fix(m).trim()}\n$$\n`)
+    .replace(/\\\\?\(([\s\S]*?)\\\\?\)/g, (_, m) => `$${fix(m).trim()}$`);
+}
+
+export function parseSolvedText(text: string): SolvedQuestion[] {
+  const out: SolvedQuestion[] = [];
+  let cur: { group: string; questionNumber: string; lines: string[] } | null = null;
+  const flush = () => {
+    if (!cur) return;
+    const body = cur.lines.join("\n");
+    const q = body.match(/^Question:\s*([\s\S]*?)(?=^Unit tag:|^#{1,4}\s|\n\s*\n)/m);
+    const unit = body.match(/^Unit tag:\s*(.+)$/m)?.[1].trim() ?? "";
+    let answer = body;
+    if (q) answer = answer.replace(q[0], "");
+    answer = answer.replace(/^Unit tag:.*$/m, "");
+    // Drop ChatGPT's hot-linked web images and the source line under each:
+    // third-party diagrams on expiring URLs. The "Draw …" guidance stays.
+    answer = answer
+      .split("\n")
+      .filter((line, i, all) => !/images\.openai\.com/.test(line) && !(/^\[[^\]]+\]\(https?:\/\/[^)]+\)\s*$/.test(line.trim()) && /images\.openai\.com/.test(all.slice(Math.max(0, i - 3), i).join(" "))))
+      .join("\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+    if (q && q[1].trim()) {
+      out.push({ group: cur.group, questionNumber: cur.questionNumber, questionText: q[1].trim(), unit, answer: normalizeMath(answer) });
+    }
+    cur = null;
+  };
+  for (const line of text.replace(/\r\n?/g, "\n").split("\n")) {
+    const h = line.match(QUESTION_HEADING);
+    if (h) {
+      flush();
+      cur = { group: h[1].trim(), questionNumber: h[2].trim(), lines: [] };
+    } else if (/^#{1,2}\s|^##\s*$/.test(line)) {
+      flush(); // "# UNIT 2 …" or a stray "##" ends the current answer
+    } else {
+      cur?.lines.push(line);
+    }
+  }
+  flush();
+  return out;
+}

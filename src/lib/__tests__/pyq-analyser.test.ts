@@ -30,3 +30,51 @@ test("tally counts each topic once per question, most common first", () => {
     { key: "C", count: 1 },
   ]);
 });
+
+test("parseSolvedText reads ChatGPT-style solved papers", async () => {
+  const { parseSolvedText } = await import("@/lib/pyq-analyser");
+  const text = [
+    "# BUSINESS ECONOMICS — COMPLETE SOLVED PYQs",
+    "# UNIT 1 — INTRODUCTION TO BUSINESS ECONOMICS",
+    "## BUSINESS ECONOMICS (PROGRAMME) — QUESTION 1(b)",
+    "Question: A consumer has preferences for two complementary goods, pen and ink. Measure the cross elasticity.",
+    "Unit tag: Unit 1 — Introduction to Business Economics",
+    "### 3. Formula",
+    "\\\\[ E\\_{xy}=\\frac{-50\\\\%}{100\\\\%}=\\boxed{-0.5} \\\\]",
+    "| Type | Value |",
+    "| --- | --- |",
+    "| Inelastic | \\\\(0\\<E_s<1\\\\) |",
+    "### 4. Diagram",
+    "[Supply And Demand Graph](https://images.openai.com/static-rsc-4/abc?purpose=inline)",
+    "",
+    "[storage.googleapis.com](https://storage.googleapis.com/x.html)",
+    "",
+    "Show the demand curve for ink shifting left.",
+    "## BUSINESS ECONOMICS (HONS.) — QUESTION 2(b) OR",
+    "Question: Ram divides his income in consumption and savings.",
+    "Unit tag: Unit 2 — Consumer Behaviour",
+    "Answer body.",
+    "##",
+  ].join("\n");
+  const qs = parseSolvedText(text);
+  assert.equal(qs.length, 2);
+  assert.deepEqual(
+    qs.map((q) => [q.group, q.questionNumber, q.unit]),
+    [
+      ["BUSINESS ECONOMICS (PROGRAMME)", "1(b)", "Unit 1 — Introduction to Business Economics"],
+      ["BUSINESS ECONOMICS (HONS.)", "2(b) OR", "Unit 2 — Consumer Behaviour"],
+    ],
+  );
+  assert.match(qs[0].questionText, /^A consumer has preferences/);
+  assert.ok(qs[0].answer.includes("$$\nE_{xy}=\\frac{-50\\%}{100\\%}=\\boxed{-0.5}\n$$"), qs[0].answer);
+  assert.ok(qs[0].answer.includes("| Inelastic | $0<E_s<1$ |"));
+  assert.ok(!qs[0].answer.includes("images.openai.com") && !qs[0].answer.includes("storage.googleapis"));
+  assert.ok(qs[0].answer.includes("Show the demand curve for ink shifting left."));
+  assert.equal(qs[1].answer, "Answer body.");
+});
+
+test("normalizeMath also takes single-backslash delimiters", async () => {
+  const { normalizeMath } = await import("@/lib/pyq-analyser");
+  assert.equal(normalizeMath("a \\(x\\_1\\) b"), "a $x_1$ b");
+  assert.equal(normalizeMath("[link](http://x.com)"), "[link](http://x.com)");
+});

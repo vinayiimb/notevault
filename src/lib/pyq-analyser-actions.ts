@@ -29,6 +29,7 @@ const SaveSchema = z.object({
         questionNumber: z.string(),
         section: z.string(),
         questionText: z.string().trim().min(5),
+        answerText: z.string().max(60000).default(""),
         marks: z.number().int().min(0).max(100),
         topics: z.array(z.string().trim().min(1)).max(6),
         difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).nullable(),
@@ -48,7 +49,7 @@ export async function savePaperQuestionsAction(input: z.infer<typeof SaveSchema>
   const { subjectId, year, questions } = SaveSchema.parse(input);
   const existing = await prisma.question.findMany({
     where: { subjectId },
-    select: { id: true, questionText: true, years: true, topics: true },
+    select: { id: true, questionText: true, answerText: true, years: true, topics: true },
   });
 
   let created = 0;
@@ -60,7 +61,13 @@ export async function savePaperQuestionsAction(input: z.infer<typeof SaveSchema>
       const topics = [...new Set([...match.topics, ...q.topics])];
       await prisma.question.update({
         where: { id: match.id },
-        data: { years: years.join(","), repeatCount: Math.max(years.length, 1), isRepeated: years.length > 1, topics },
+        data: {
+          years: years.join(","),
+          repeatCount: Math.max(years.length, 1),
+          isRepeated: years.length > 1,
+          topics,
+          ...(!match.answerText && q.answerText ? { answerText: q.answerText } : {}),
+        },
       });
       match.years = years.join(",");
       match.topics = topics;
@@ -72,7 +79,7 @@ export async function savePaperQuestionsAction(input: z.infer<typeof SaveSchema>
         data: {
           subjectId,
           questionText: q.questionText,
-          answerText: "",
+          answerText: q.answerText,
           marks: q.marks || null,
           years: year,
           questionNumber: q.questionNumber || null,
