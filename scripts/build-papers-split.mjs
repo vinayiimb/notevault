@@ -67,13 +67,9 @@ function split(source, out, extra = []) {
   console.log(`papers split: ${papers.length} papers → ${index.length} course files, ${search.length} search rows (${path.relative(root, out)})`);
 }
 
-// /papers also carries each course's earlier-syllabus papers (verified: false),
-// shown after the NEP subjects in the browser.
-const mainCourses = new Set(JSON.parse(readFileSync(SOURCE, "utf8")).map((p) => p.course));
-const earlier = existsSync(NONCORE)
-  ? JSON.parse(readFileSync(NONCORE, "utf8")).filter((p) => mainCourses.has(p.course))
-  : [];
-split(SOURCE, OUT, earlier);
+// /papers is NEP (current-syllabus) papers only — the user's call, 2026-10-14.
+// Earlier-syllabus (CBCS/LOCF) papers live only on /papers/noncore.
+split(SOURCE, OUT);
 if (existsSync(NONCORE)) split(NONCORE, path.join(OUT, "noncore"));
 // Allow-list for /api/papers-zip, so it only ever fetches our own Drive files.
 writeFileSync(path.join(OUT, "drive-ids.json"), JSON.stringify([...new Set(driveIds)]));

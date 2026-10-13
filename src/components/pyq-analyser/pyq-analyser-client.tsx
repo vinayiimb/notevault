@@ -377,11 +377,6 @@ export function PyqAnalyserClient({
               <span className="rounded-full bg-violet-50 px-3 py-1 text-violet-700 dark:bg-violet-500/15 dark:text-violet-300">
                 {selected.name.replace(/^[A-Z]+-[\d.]+\s*—\s*/, "")} {current.years.join(", ")}
               </span>
-              {current.topics.slice(0, 2).map((t) => (
-                <span key={t} className="rounded-full bg-sky-50 px-3 py-1 text-sky-700 dark:bg-sky-500/15 dark:text-sky-300">
-                  {t}
-                </span>
-              ))}
               {current.difficulty && <span className={`rounded-full px-3 py-1 ${DIFFICULTY_CHIP[current.difficulty]}`}>{DIFFICULTY_LABEL[current.difficulty]}</span>}
               {current.repeatCount > 1 && (
                 <span className="flex items-center gap-1 rounded-full bg-surface-muted px-3 py-1 text-foreground">
@@ -398,7 +393,8 @@ export function PyqAnalyserClient({
             </div>
 
             <div className="rounded-2xl border border-border p-4 text-[15px] leading-7 text-foreground sm:p-6">
-              <p className="whitespace-pre-line">{current.text}</p>
+              {/* ChatGPT-copied text escapes markdown characters: "\$15,000". */}
+              <p className="whitespace-pre-line">{current.text.replace(/\\([$%&#_*])/g, "$1")}</p>
             </div>
 
             <div className="rounded-2xl border border-border p-4 sm:p-6">
