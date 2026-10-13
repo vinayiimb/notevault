@@ -96,7 +96,7 @@ const components: Components = {
 /** Exam-sheet rendering for PYQ solutions: tables, KaTeX, inline <svg>, ```diagram, ```mermaid, ```chart. */
 export function SolutionMarkdown({ content }: { content: string }) {
   return (
-    <ContentThemeProvider subjectTheme={MONO}>
+    <ContentThemeProvider subjectTheme={MONO} forceMode="light">
       <div className="pyq-solution">
         <ReactMarkdown
           remarkPlugins={[remarkGfm, remarkMath]}
