@@ -135,10 +135,13 @@ export function ContentThemeProvider({
   subjectTheme,
   children,
   forceMode,
+  ignoreStored = false,
 }: {
   subjectTheme?: { light: NotesLabColorTokens; dark: NotesLabColorTokens } | null;
   children: React.ReactNode;
   forceMode?: "light" | "dark";
+  /** Never apply the reader's saved theme/typography (localStorage) — for fixed-look surfaces like PYQ solutions. */
+  ignoreStored?: boolean;
 }) {
   const hasSubjectTheme = Boolean(subjectTheme);
   const allThemes = useMemo<NotesLabTheme[]>(() => {
@@ -165,10 +168,10 @@ export function ContentThemeProvider({
   const stored = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const prefs: ContentReadingPrefs = useMemo(
     () =>
-      stored
+      stored && !ignoreStored
         ? { ...initial, ...stored, typography: { ...DEFAULT_TYPOGRAPHY, ...stored.typography } }
         : initial,
-    [stored, initial],
+    [stored, initial, ignoreStored],
   );
 
   const systemPrefersDark = useSystemPrefersDark();
