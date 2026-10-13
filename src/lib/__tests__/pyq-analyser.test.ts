@@ -69,6 +69,7 @@ test("parseSolvedText reads ChatGPT-style solved papers", async () => {
   assert.ok(qs[0].answer.includes("$$\nE_{xy}=\\frac{-50\\%}{100\\%}=\\boxed{-0.5}\n$$"), qs[0].answer);
   assert.ok(qs[0].answer.includes("| Inelastic | $0<E_s<1$ |"));
   assert.ok(!qs[0].answer.includes("images.openai.com") && !qs[0].answer.includes("storage.googleapis"));
+  assert.ok(qs[0].answer.includes("### 4. Diagram\n\n<!-- diagram -->\n\nShow the demand curve"), qs[0].answer);
   assert.ok(qs[0].answer.includes("Show the demand curve for ink shifting left."));
   assert.equal(qs[1].answer, "Answer body.");
 });
@@ -77,4 +78,32 @@ test("normalizeMath also takes single-backslash delimiters", async () => {
   const { normalizeMath } = await import("@/lib/pyq-analyser");
   assert.equal(normalizeMath("a \\(x\\_1\\) b"), "a $x_1$ b");
   assert.equal(normalizeMath("[link](http://x.com)"), "[link](http://x.com)");
+  assert.equal(normalizeMath("| \\\\(\\|E_d\\|=1\\\\) |"), "| $\\vert E_d\\vert =1$ |");
+});
+
+test("diagramContext takes the heading above and the text below the marker", async () => {
+  const { diagramContext, DIAGRAM_MARKER } = await import("@/lib/pyq-analyser");
+  const a = `intro\n### 3. Diagram of price control\n\n${DIAGRAM_MARKER}\n\nShow the controlled price below equilibrium.\n\n### 4. Next\nother`;
+  assert.equal(diagramContext(a, a.indexOf(DIAGRAM_MARKER)), "3. Diagram of price control\nShow the controlled price below equilibrium.");
+});
+
+test("diagram library: parse cards and match each marker to the right diagram", async () => {
+  const { parseDiagramLibrary, fillDiagramsFromLibrary, DIAGRAM_MARKER } = await import("@/lib/pyq-analyser");
+  const fs = await import("node:fs");
+  const os = await import("node:os");
+  const file = `${os.homedir()}/Downloads/business_economics_coded_diagrams.html`;
+  const html = fs.existsSync(file)
+    ? fs.readFileSync(file, "utf8")
+    : '<h3>2. Complementary goods: demand for ink falls</h3><svg viewBox="0 0 1 1"><path d="M0 0"/></svg><h3>5. Binding price ceiling and shortage</h3><svg viewBox="0 0 1 1"></svg><h3>9. Budget line: income changes</h3><svg viewBox="0 0 1 1"></svg><h3>4. Supply decreases after input costs rise</h3><svg viewBox="0 0 1 1"></svg>';
+  const lib = parseDiagramLibrary(html);
+  assert.ok(lib.length >= 4);
+  assert.ok(lib.every((d) => d.svg.startsWith("<svg") && d.svg.endsWith("</svg>") && !/^\d/.test(d.title)));
+  const pick = (q: string, ctx: string) => {
+    const r = fillDiagramsFromLibrary(q, `### Diagram\n\n${DIAGRAM_MARKER}\n\n${ctx}`, lib);
+    return r.answer.match(/<figcaption>([^<]+)/)?.[1];
+  };
+  assert.equal(pick("A consumer has preferences for two complementary goods, pen and ink.", "Show the demand curve for ink shifting left."), "Complementary goods: demand for ink falls");
+  assert.equal(pick("If the government does not allow the price of cream cheese to change what problems arise?", "Show the government-controlled price ceiling below equilibrium; shortage."), "Binding price ceiling and shortage");
+  assert.equal(pick("Draw the budget lines for income ₹6,000 and when income changes.", "Label BL₁, BL₂, BL₃."), "Budget line: income changes");
+  assert.equal(fillDiagramsFromLibrary("zzz", `${DIAGRAM_MARKER}`, lib).filled, 0);
 });

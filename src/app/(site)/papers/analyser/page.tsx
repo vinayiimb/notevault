@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
 import { parseYears, type AnalyserQuestion } from "@/lib/pyq-analyser";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
-import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PyqAnalyserClient, type AnalyserSubject } from "@/components/pyq-analyser/pyq-analyser-client";
 
 export const metadata: Metadata = {
@@ -77,22 +76,13 @@ export default async function PyqAnalyserPage({ searchParams }: { searchParams: 
   const selected = subjects.find((s) => s.id === subject) ?? null;
   const questions = selected ? await loadQuestions(selected.id).catch(() => []) : [];
 
+  // Full-width workspace: filters flush left, the question gets the rest.
+  // The title stays for SEO and screen readers, not on screen.
   return (
-    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-12">
+    <div className="px-3 pb-8 pt-5 sm:px-5 lg:px-6 lg:pt-6">
       <BreadcrumbJsonLd items={breadcrumbs} />
-      <VisibleBreadcrumb items={breadcrumbs} />
-
-      <div className="max-w-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">PYQ Analyser</h1>
-        <p className="mt-3 text-base text-muted">
-          Filter DU previous year questions topic-wise. See which topics come most often, which questions repeat across years, and
-          practise exactly what gets asked.
-        </p>
-      </div>
-
-      <div className="mt-6">
-        <PyqAnalyserClient subjects={subjects} selected={selected} questions={questions} />
-      </div>
+      <h1 className="sr-only">PYQ Analyser — DU previous year questions topic-wise, with solutions</h1>
+      <PyqAnalyserClient subjects={subjects} selected={selected} questions={questions} />
     </div>
   );
 }

@@ -78,12 +78,23 @@ export function tally(values: string[][]): { key: string; count: number }[] {
 
 export type SolvedQuestion = { group: string; questionNumber: string; questionText: string; unit: string; answer: string };
 
+export const DIAGRAM_MARKER = "<!-- diagram -->";
+
+/** Text a diagram is drawn from: the heading above the marker and the instructions below it. */
+export function diagramContext(answer: string, markerIndex: number): string {
+  const before = answer.slice(0, markerIndex).split("\n").reverse().find((l) => /^#{2,4}\s/.test(l)) ?? "";
+  const after = answer.slice(markerIndex + DIAGRAM_MARKER.length).split(/\n#{2,4}\s/)[0];
+  return `${before.replace(/^#+\s*/, "")}\n${after.trim()}`.slice(0, 1500);
+}
+
 const QUESTION_HEADING = /^##\s+(.+?)\s+[—–-]\s+QUESTION\s+(.+?)\s*$/i;
 
 // ChatGPT copies LaTeX as \\[ … \\] (or \[ … \]) and \\( … \\) with escaped _ < %;
 // remark-math wants $$ … $$ and $ … $.
 export function normalizeMath(md: string): string {
-  const fix = (m: string) => m.replace(/\\_/g, "_").replace(/\\</g, "<").replace(/\\\\%/g, "\\%").replace(/\\\\&/g, "\\&");
+  // \| is GFM's escaped table pipe; in LaTeX it would be ‖, so use \vert.
+  const fix = (m: string) =>
+    m.replace(/\\_/g, "_").replace(/\\</g, "<").replace(/\\\\%/g, "\\%").replace(/\\\\&/g, "\\&").replace(/\\\|/g, "\\vert ");
   return md
     .replace(/\\\\?\[([\s\S]*?)\\\\?\]/g, (_, m) => `\n$$\n${fix(m).trim()}\n$$\n`)
     .replace(/\\\\?\(([\s\S]*?)\\\\?\)/g, (_, m) => `$${fix(m).trim()}$`);
@@ -100,11 +111,13 @@ export function parseSolvedText(text: string): SolvedQuestion[] {
     let answer = body;
     if (q) answer = answer.replace(q[0], "");
     answer = answer.replace(/^Unit tag:.*$/m, "");
-    // Drop ChatGPT's hot-linked web images and the source line under each:
-    // third-party diagrams on expiring URLs. The "Draw …" guidance stays.
+    // ChatGPT's hot-linked web images (third-party diagrams on expiring
+    // URLs) become a hidden DIAGRAM_MARKER for the admin's "Draw diagrams"
+    // step; the source line under each is dropped, the "Draw …" text stays.
     answer = answer
       .split("\n")
-      .filter((line, i, all) => !/images\.openai\.com/.test(line) && !(/^\[[^\]]+\]\(https?:\/\/[^)]+\)\s*$/.test(line.trim()) && /images\.openai\.com/.test(all.slice(Math.max(0, i - 3), i).join(" "))))
+      .filter((line, i, all) => !(/^\[[^\]]+\]\(https?:\/\/[^)]+\)\s*$/.test(line.trim()) && /images\.openai\.com/.test(all.slice(Math.max(0, i - 3), i).join(" "))))
+      .map((line) => (/images\.openai\.com/.test(line) ? `\n${DIAGRAM_MARKER}\n` : line))
       .join("\n")
       .replace(/\n{3,}/g, "\n\n")
       .trim();
@@ -126,4 +139,56 @@ export function parseSolvedText(text: string): SolvedQuestion[] {
   }
   flush();
   return out;
+}
+
+// ---------- Admin's coded SVG diagram library (one HTML file of cards) ----------
+
+export type LibraryDiagram = { title: string; svg: string };
+
+/** `<h3>N. Title</h3><svg …>…</svg>` cards, as in business_economics_coded_diagrams.html. */
+export function parseDiagramLibrary(html: string): LibraryDiagram[] {
+  return [...html.matchAll(/<h3[^>]*>([\s\S]*?)<\/h3>\s*(<svg[\s\S]*?<\/svg>)/gi)].map((m) => ({
+    title: m[1].replace(/<[^>]+>/g, "").replace(/^\s*\d+\.\s*/, "").trim(),
+    svg: m[2],
+  }));
+}
+
+/** Library diagram whose title words best appear in the context; null if none share a word. */
+export function bestDiagram(context: string, library: LibraryDiagram[]): LibraryDiagram | null {
+  const ctx = tokens(context);
+  let best: LibraryDiagram | null = null;
+  let bestScore = 0;
+  let bestShared = 0;
+  for (const d of library) {
+    const t = tokens(d.title);
+    if (!t.size) continue;
+    let shared = 0;
+    for (const w of t) if (ctx.has(w)) shared++;
+    const score = shared / t.size;
+    if (shared && (score > bestScore || (score === bestScore && shared > bestShared))) [best, bestScore, bestShared] = [d, score, shared];
+  }
+  return bestScore >= 0.3 ? best : null;
+}
+
+export function libraryFigure(d: LibraryDiagram): string {
+  return `\n\n<figure class="pyq-svg">${d.svg.replace(/\n\s*\n/g, "\n")}<figcaption>${d.title.replace(/[<>&]/g, "")}</figcaption></figure>\n\n`;
+}
+
+/** Replaces each DIAGRAM_MARKER with its best library match; returns the new answer and how many were filled. */
+export function fillDiagramsFromLibrary(question: string, answer: string, library: LibraryDiagram[]) {
+  let filled = 0;
+  let out = answer;
+  let from = 0;
+  for (let at = out.indexOf(DIAGRAM_MARKER, from); at !== -1; at = out.indexOf(DIAGRAM_MARKER, from)) {
+    const match = bestDiagram(`${question}\n${diagramContext(out, at)}`, library);
+    if (!match) {
+      from = at + DIAGRAM_MARKER.length;
+      continue;
+    }
+    const fig = libraryFigure(match);
+    out = out.slice(0, at) + fig + out.slice(at + DIAGRAM_MARKER.length);
+    from = at + fig.length;
+    filled++;
+  }
+  return { answer: out, filled };
 }

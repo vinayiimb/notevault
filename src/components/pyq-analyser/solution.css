@@ -1,0 +1,45 @@
+/* PYQ solutions: plain, exam-sheet typography (no themed colours). */
+.pyq-solution { color: var(--foreground); font-size: 15px; line-height: 1.75; overflow-wrap: break-word; }
+.pyq-solution > :first-child { margin-top: 0; }
+.pyq-solution p { margin: .55em 0; }
+.pyq-solution h1, .pyq-solution h2, .pyq-solution h3, .pyq-solution h4 { font-weight: 600; line-height: 1.35; margin: 1.4em 0 .5em; }
+.pyq-solution h1, .pyq-solution h2 { font-size: 1.15em; }
+.pyq-solution h3 { font-size: 1.05em; }
+.pyq-solution h4 { font-size: 1em; }
+.pyq-solution ul, .pyq-solution ol { margin: .5em 0; padding-left: 1.4em; }
+.pyq-solution ul { list-style: disc; }
+.pyq-solution ol { list-style: decimal; }
+.pyq-solution li { margin: .25em 0; }
+.pyq-solution strong { font-weight: 600; }
+.pyq-solution hr { border: 0; border-top: 1px solid var(--border); margin: 1.4em 0; }
+.pyq-solution a { text-decoration: underline; text-underline-offset: 2px; }
+.pyq-solution blockquote { padding-left: 1.2em; color: var(--muted); font-style: italic; margin: .8em 0; }
+.pyq-solution code { font-size: .9em; background: var(--surface-muted); padding: .1em .35em; border-radius: 4px; }
+.pyq-solution .pyq-table { overflow-x: auto; margin: .9em 0; }
+.pyq-solution table { border-collapse: collapse; font-size: .95em; min-width: 50%; }
+.pyq-solution th, .pyq-solution td { border: 1px solid var(--border); padding: .5em .75em; text-align: left; vertical-align: top; }
+.pyq-solution th { font-weight: 600; background: var(--surface-muted); white-space: nowrap; }
+.pyq-solution .katex { font-size: 1.08em; }
+.pyq-solution .katex-display { margin: .8em 0; overflow-x: auto; overflow-y: hidden; text-align: left; }
+.pyq-solution .katex-display > .katex { text-align: left; }
+.pyq-solution .pyq-diagram { margin: 1.1em 0; display: flex; flex-direction: column; align-items: center; gap: .4em; }
+.pyq-solution .pyq-diagram figcaption { font-size: .85em; color: var(--muted); text-align: center; }
+.pyq-solution .pyq-diagram-error { font-size: .85em; color: var(--muted); font-style: italic; }
+
+/* Coded SVG diagrams from the admin's diagram library — same classes and
+   palette as business_economics_coded_diagrams.html, on a white "paper"
+   panel in both themes so the drawn colours stay readable. */
+.pyq-solution figure.pyq-svg { margin: 1.1em 0; display: flex; flex-direction: column; align-items: center; gap: .45em; }
+.pyq-solution .pyq-svg svg { display: block; width: 100%; max-width: 560px; height: auto; background: #fff; border-radius: 8px; }
+.pyq-solution .pyq-svg svg text { font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; fill: #182230; font-size: 12px; }
+.pyq-solution .pyq-svg .axis { stroke: #182230; stroke-width: 1.6; fill: none; }
+.pyq-solution .pyq-svg .curve { stroke-width: 2.6; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.pyq-solution .pyq-svg .dash { stroke-dasharray: 5 5; }
+.pyq-solution .pyq-svg .blue { stroke: #2563eb; }
+.pyq-solution .pyq-svg .green { stroke: #16803c; }
+.pyq-solution .pyq-svg .red { stroke: #d92d20; }
+.pyq-solution .pyq-svg .purple { stroke: #7a3ee6; }
+.pyq-solution .pyq-svg .gray { stroke: #98a2b3; }
+.pyq-solution .pyq-svg .dot { fill: #182230; }
+.pyq-solution .pyq-svg .guide { stroke: #98a2b3; stroke-width: 1; stroke-dasharray: 4 4; }
+.pyq-solution .pyq-svg figcaption { font-size: .85em; color: var(--muted); text-align: center; }

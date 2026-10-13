@@ -1,10 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { FileArrowUp, Sparkle, Trash } from "@phosphor-icons/react";
+import { BookOpen, ChartLine, Eye, FileArrowUp, Sparkle, Trash } from "@phosphor-icons/react";
 import { readPdfWithOcr } from "@/lib/pdf-ocr-client";
 import { ensureCatalogSubjectAction, extractQuestionsChunkAction, savePaperQuestionsAction } from "@/lib/pyq-analyser-actions";
-import { parseSolvedText } from "@/lib/pyq-analyser";
+import {
+  DIAGRAM_MARKER,
+  diagramContext,
+  fillDiagramsFromLibrary,
+  parseDiagramLibrary,
+  parseSolvedText,
+  type LibraryDiagram,
+} from "@/lib/pyq-analyser";
+import { drawEconDiagram } from "@/lib/ai";
+import { SolutionMarkdown } from "./solution-markdown";
 
 // Same static catalog files /papers reads (public/data/papers/*).
 type CatalogCourse = { course: string; slug: string };
@@ -55,6 +64,45 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
   const [text, setText] = useState("");
   const [rows, setRows] = useState<Row[]>([]);
   const [group, setGroup] = useState("");
+  const [previewKey, setPreviewKey] = useState<number | null>(null);
+  const [library, setLibrary] = useState<LibraryDiagram[]>([]);
+  const libraryRef = useRef<HTMLInputElement>(null);
+
+  // The diagram library is a per-admin convenience: remembered in this browser only.
+  useEffect(() => {
+    let saved: LibraryDiagram[] = [];
+    try {
+      saved = JSON.parse(localStorage.getItem("pyq-diagram-library") ?? "[]");
+    } catch {}
+    if (saved.length) Promise.resolve().then(() => setLibrary(saved));
+  }, []);
+
+  async function loadLibrary(file: File) {
+    const lib = parseDiagramLibrary(await file.text());
+    if (!lib.length) {
+      setMessage({ ok: false, text: "No diagrams found in that file (expected <h3>Title</h3><svg>…</svg> cards)." });
+      return;
+    }
+    setLibrary(lib);
+    try {
+      localStorage.setItem("pyq-diagram-library", JSON.stringify(lib));
+    } catch {}
+    setMessage({ ok: true, text: `Diagram library loaded: ${lib.length} diagrams.` });
+  }
+
+  function insertFromLibrary() {
+    let filled = 0;
+    for (const row of shown) {
+      const res = fillDiagramsFromLibrary(row.questionText, row.answerText, library);
+      if (res.filled) update(row.key, { answerText: res.answer });
+      filled += res.filled;
+    }
+    const left = markerCount - filled;
+    setMessage({
+      ok: true,
+      text: `Inserted ${filled} diagram${filled === 1 ? "" : "s"} from your library.${left ? ` ${left} had no matching diagram — draw them with AI or edit the answer.` : ""} Check each with Preview.`,
+    });
+  }
   const [busy, setBusy] = useState("");
   const [message, setMessage] = useState<{ ok: boolean; text: string } | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -110,6 +158,37 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
   // is saved to its own subject, one at a time.
   const groups = [...new Set(rows.map((r) => r.group))];
   const shown = groups.length > 1 ? rows.filter((r) => r.group === group) : rows;
+  const markerCount = shown.reduce((n, r) => n + r.answerText.split(DIAGRAM_MARKER).length - 1, 0);
+
+  // One free Groq call per diagram, in order; a failed one keeps its marker
+  // (invisible to students) so it can be retried.
+  async function drawDiagrams() {
+    setMessage(null);
+    let drawn = 0;
+    let failed = 0;
+    let lastError = "";
+    for (const row of shown) {
+      let answer = row.answerText;
+      let from = 0;
+      for (let at = answer.indexOf(DIAGRAM_MARKER, from); at !== -1; at = answer.indexOf(DIAGRAM_MARKER, from)) {
+        setBusy(`Drawing diagram ${drawn + failed + 1} of ${markerCount}…`);
+        const res = await drawEconDiagram(row.questionText, diagramContext(answer, at));
+        if (res.ok) {
+          const block = "```diagram\n" + JSON.stringify(res.data) + "\n```";
+          answer = answer.slice(0, at) + block + answer.slice(at + DIAGRAM_MARKER.length);
+          from = at + block.length;
+          drawn++;
+          update(row.key, { answerText: answer });
+        } else {
+          from = at + DIAGRAM_MARKER.length;
+          failed++;
+          lastError = res.error;
+        }
+      }
+    }
+    setBusy("");
+    setMessage({ ok: !failed, text: `Drew ${drawn} diagram${drawn === 1 ? "" : "s"}.${failed ? ` ${failed} failed (${lastError}) — click again to retry.` : " Use Preview to check them."}` });
+  }
 
   async function readFile(file: File) {
     setMessage(null);
@@ -324,6 +403,45 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
             <p className="text-sm font-semibold text-foreground">
               Review {shown.length} questions · {subject?.name ?? "pick a subject"} · {year}
             </p>
+            <button
+              type="button"
+              onClick={() => libraryRef.current?.click()}
+              className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm transition hover:border-accent"
+              title="Upload your coded SVG diagram library (.html)"
+            >
+              <BookOpen size={16} /> {library.length ? `Library: ${library.length} diagrams` : "Upload diagram library"}
+            </button>
+            <input
+              ref={libraryRef}
+              type="file"
+              accept=".html,.htm,text/html"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) loadLibrary(f);
+                e.target.value = "";
+              }}
+            />
+            {markerCount > 0 && library.length > 0 && (
+              <button
+                type="button"
+                onClick={insertFromLibrary}
+                disabled={!!busy}
+                className="flex items-center gap-2 rounded-lg bg-foreground px-3 py-2 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-50"
+              >
+                <BookOpen size={16} /> Insert {markerCount} from library
+              </button>
+            )}
+            {markerCount > 0 && (
+              <button
+                type="button"
+                onClick={drawDiagrams}
+                disabled={!!busy}
+                className="flex items-center gap-2 rounded-lg border border-border px-3 py-2 text-sm transition hover:border-accent disabled:opacity-50"
+              >
+                <ChartLine size={16} /> Draw {markerCount} diagram{markerCount === 1 ? "" : "s"} (free AI)
+              </button>
+            )}
             <input
               inputMode="numeric"
               placeholder="Marks for all"
@@ -355,6 +473,20 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
                     <summary className="cursor-pointer text-xs text-muted">Answer {r.answerText ? `(${r.answerText.length.toLocaleString()} chars)` : "(none)"}</summary>
                     <textarea value={r.answerText} onChange={(e) => update(r.key, { answerText: e.target.value })} rows={10} className={`${input} mt-2 font-mono text-xs`} />
                   </details>
+                  {r.answerText && (
+                    <button
+                      type="button"
+                      onClick={() => setPreviewKey(previewKey === r.key ? null : r.key)}
+                      className="flex w-fit items-center gap-1.5 text-xs font-medium text-accent hover:underline"
+                    >
+                      <Eye size={14} /> {previewKey === r.key ? "Hide preview" : "Preview as students see it"}
+                    </button>
+                  )}
+                  {previewKey === r.key && (
+                    <div className="rounded-xl border border-border bg-background p-4">
+                      <SolutionMarkdown content={r.answerText} />
+                    </div>
+                  )}
                 </div>
                 <input value={r.marks} onChange={(e) => update(r.key, { marks: Number(e.target.value) || 0 })} inputMode="numeric" placeholder="Marks" className={input} />
                 <select value={r.difficulty ?? ""} onChange={(e) => update(r.key, { difficulty: (e.target.value || null) as Row["difficulty"] })} className={input}>

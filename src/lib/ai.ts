@@ -10,6 +10,7 @@ import {
   type Visual,
 } from "@/lib/note-schema";
 import { getSession } from "@/lib/auth";
+import { DiagramSchema } from "@/lib/econ-diagram";
 
 // Switched to Groq (the user doesn't have an Anthropic key yet, but does
 // have a Groq one). Groq's chat completions API supports the same kind of
@@ -104,6 +105,7 @@ async function callStructured<S extends z.ZodType>(
   userContent: string,
   maxTokens = MAX_TOKENS,
   model = MODEL,
+  retried = false,
 ): Promise<AiResult<z.infer<S>>> {
   const client = getClient();
   if (!client) {
@@ -161,6 +163,10 @@ async function callStructured<S extends z.ZodType>(
       return { ok: false, error: "Couldn't reach the AI service — check your network connection and try again." };
     }
     if (err instanceof Groq.APIError) {
+      // Groq rejects output that breaks the schema (e.g. a misspelt key); one retry usually passes.
+      if (!retried && /json_validate_failed/.test(err.message)) {
+        return callStructured(schema, system, userContent, maxTokens, model, true);
+      }
       if (/tokens per minute|request too large/i.test(err.message)) {
         return {
           ok: false,
@@ -856,4 +862,34 @@ Tag topics with short syllabus-style names (e.g. "Elasticity of Demand", not "Ec
     knownTopics.length ? ` Reuse these existing topic names whenever one fits: ${knownTopics.slice(0, 80).join("; ")}.` : ""
   }`;
   return callStructured(PaperQuestionsSchema, system, `Subject: ${subjectName}\n\nPAPER TEXT\n----------\n${text}\n----------`, 4000);
+}
+
+// ---------- PYQ Analyser: draw an economics diagram from "Draw …" text ----------
+
+const DIAGRAM_EXAMPLE = JSON.stringify({
+  title: "Rise in milk prices shifts the supply of cream cheese left",
+  xLabel: "Quantity",
+  yLabel: "Price",
+  curves: [
+    { label: "D", points: [{ x: 1, y: 9 }, { x: 9, y: 1 }], dashed: false },
+    { label: "S₁", points: [{ x: 1, y: 1 }, { x: 9, y: 9 }], dashed: false },
+    { label: "S₂", points: [{ x: 0, y: 3 }, { x: 7, y: 10 }], dashed: true },
+  ],
+  points: [
+    { label: "E₁", x: 5, y: 5, guides: true, xMark: "Q₁", yMark: "P₁" },
+    { label: "E₂", x: 3.5, y: 6.5, guides: true, xMark: "Q₂", yMark: "P₂" },
+  ],
+  arrows: [{ x1: 7, y1: 7, x2: 5.5, y2: 8.5, label: "" }],
+});
+
+/** Admin-only. Turns a solution's diagram instructions into a ```diagram spec. */
+export async function drawEconDiagram(question: string, context: string) {
+  if (!(await getSession())) return UNAUTHORIZED;
+  const system = `You draw economics diagrams for Delhi University exam solutions as a JSON spec on a 0-10 grid (origin bottom-left, x right, y up).
+Draw exactly what the context describes, the way a DU student would draw it in the answer sheet: correct slopes and shapes, correct direction of shifts, and every labelled point placed exactly where those curves cross (solve the line equations).
+Rules: a straight line needs 2 points; curves (indifference curves, U-shaped cost curves, Engel curves, total revenue) need 4-6 points, left to right, so they bend the right way (convex ICs bow toward the origin; AC/MC are U-shaped and MC cuts AC at AC's minimum). Mark the new or shifted curve dashed. Use subscripts like S₁, S₂, P₁, Q₁, E₁. Scale the drawing to use most of the 0-10 grid (rescale given numbers if needed), keep every coordinate between 0 and 10 and keep labels short.
+Use guides with xMark/yMark only for values that belong on an axis (P₁, Q₁, OQ); for plain labelled bundles like A, B, C set guides false and leave xMark/yMark empty.
+Example for "Show supply of cream cheese shifting left from S1 to S2 after milk prices rise":
+${DIAGRAM_EXAMPLE}`;
+  return callStructured(DiagramSchema, system, `Question: ${question.slice(0, 600)}\n\nDiagram to draw (from the solution):\n${context.slice(0, 1500)}`, 1500);
 }
