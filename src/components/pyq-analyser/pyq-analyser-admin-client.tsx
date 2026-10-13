@@ -14,10 +14,13 @@ import {
 } from "@/lib/pyq-analyser";
 import { drawEconDiagram } from "@/lib/ai";
 import { SolutionMarkdown } from "./solution-markdown";
+import { applyOverrides, fetchJson, loadOverrides, type Overrides } from "@/lib/catalog-overrides";
+import { applyPaperEdits } from "@/lib/paper-edits";
+import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
+import type { CatalogPaper } from "@/lib/pyq-catalog-types";
 
 // Same static catalog files /papers reads (public/data/papers/*).
 type CatalogCourse = { course: string; slug: string };
-type CatalogPaper = { course: string; subject: string; semester: string | null; upc: string | null; paperType: string | null };
 type CatalogSubject = { key: string; name: string; semester: number; upc: string | null; paperType: string | null };
 type Row = {
   key: number;
@@ -58,6 +61,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
   const [courseSlug, setCourseSlug] = useState("");
   const [courseName, setCourseName] = useState("");
   const [catalogSubjects, setCatalogSubjects] = useState<CatalogSubject[]>([]);
+  const overridesRef = useRef<Overrides | null>(null);
   const [semester, setSemester] = useState(0);
   const [subjectKey, setSubjectKey] = useState("");
   const [year, setYear] = useState(String(new Date().getFullYear()));
@@ -124,16 +128,37 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
     setCatalogSubjects([]);
     if (!slug) return;
     try {
-      const papers: CatalogPaper[] = await (await fetch(`/data/papers/courses/${slug}.json`)).json();
-      const bySubject = new Map<string, CatalogSubject>();
+      // Same pipeline as /papers (paper-browser.tsx): admin paper edits, then
+      // subject overrides (rename/move/hide), grouped by canonical name, and
+      // earlier-syllabus-only subjects (verified: false) left out.
+      const ov = overridesRef.current ?? (overridesRef.current = await loadOverrides());
+      const course = courses.find((c) => c.slug === slug)?.course ?? "";
+      const sources = new Set([course]);
+      for (const o of ov.list) if (o.courseOverride === course) sources.add(o.course);
+      const slugOf = new Map(courses.map((c) => [c.course, c.slug]));
+      const lists = await Promise.all(
+        [...sources].filter((c) => slugOf.has(c)).map((c) => fetchJson<CatalogPaper[]>(`/data/papers/courses/${slugOf.get(c)}.json`, [])),
+      );
+      const papers = applyOverrides(applyPaperEdits(lists.flat(), ov.papers, { dataset: true }), ov).filter((p) => p.course === course);
+      const groups = new Map<string, { semester: number; labels: string[]; papers: CatalogPaper[] }>();
       for (const p of papers) {
         const sem = Number(p.semester);
         if (!(sem >= 1 && sem <= 8)) continue;
-        const key = `${sem}|${p.upc ?? p.subject}`;
-        if (!bySubject.has(key)) bySubject.set(key, { key, name: p.subject, semester: sem, upc: p.upc, paperType: p.paperType });
+        const key = `${sem}|${canonicalSubjectKey(p.subject)}`;
+        const g = groups.get(key) ?? { semester: sem, labels: [], papers: [] };
+        g.labels.push(p.subject);
+        g.papers.push(p);
+        groups.set(key, g);
       }
-      setCourseName(papers[0]?.course ?? "");
-      setCatalogSubjects([...bySubject.values()].sort((a, b) => a.name.localeCompare(b.name)));
+      const list: CatalogSubject[] = [];
+      for (const [key, g] of groups) {
+        if (g.papers.every((p) => p.verified === false)) continue;
+        const upcs = g.papers.map((p) => p.upc).filter((u): u is string => !!u);
+        const upc = upcs.sort((a, b) => upcs.filter((u) => u === b).length - upcs.filter((u) => u === a).length)[0] ?? null;
+        list.push({ key, name: preferredSubjectLabel(g.labels), semester: g.semester, upc, paperType: g.papers.find((p) => p.paperType)?.paperType ?? null });
+      }
+      setCourseName(course);
+      setCatalogSubjects(list.sort((a, b) => a.name.localeCompare(b.name)));
     } catch {
       setMessage({ ok: false, text: "Could not load that course's subjects." });
     }

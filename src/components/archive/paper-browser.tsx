@@ -8,22 +8,14 @@ import { CgpaLoader } from "@/components/archive/cgpa-loader";
 import { NotesNudge } from "@/components/paid-notes/notes-nudge";
 import { semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
-import { applyPaperEdits, type PaperEdit } from "@/lib/paper-edits";
+import { applyPaperEdits } from "@/lib/paper-edits";
+import { applyOverrides, fetchJson, loadOverrides, type Overrides } from "@/lib/catalog-overrides";
 import { searchMatch } from "@/lib/search-match";
 
 // Data comes from small per-course files built by
 // scripts/build-papers-split.mjs — a visitor downloads only the course they
 // pick (tens of KB) instead of the whole 13MB archive.
 type CourseIndexEntry = { course: string; slug: string; count: number };
-type SubjectOverride = {
-  course: string;
-  subjectKey: string;
-  displayName: string | null;
-  semesterOverride: number | null;
-  hidden: boolean;
-  courseOverride: string | null;
-};
-type Overrides = { subjects: Map<string, SubjectOverride>; papers: PaperEdit[]; list: SubjectOverride[] };
 
 function yearStart(value: string) {
   return Number(value.match(/\d{4}/)?.[0] ?? 0);
@@ -76,52 +68,6 @@ function cleanNote(p: CatalogPaper) {
     .replace(/\[[SKAR]\]\s*(Shivaji|Kalindi|ANDC|Ramanujan)\s*\|?\s*/gi, "")
     .replace(/^\|\s*/, "")
     .trim();
-}
-
-async function fetchJson<T>(url: string, fallback: T): Promise<T> {
-  try {
-    const res = await fetch(url);
-    if (!res.ok) return fallback;
-    return (await res.json()) as T;
-  } catch {
-    return fallback;
-  }
-}
-
-// Admin edits from Admin → Papers archive (rename/combine/move/hide a
-// subject; edit, add, re-link or hide a single paper), layered on the
-// static files.
-async function loadOverrides(): Promise<Overrides> {
-  const [subjects, papers] = await Promise.all([
-    fetchJson<SubjectOverride[]>("/api/catalog-overrides", []),
-    fetchJson<PaperEdit[]>("/api/catalog-paper-overrides", []),
-  ]);
-  const list = Array.isArray(subjects) ? subjects : [];
-  return {
-    list,
-    subjects: new Map(list.map((o) => [`${o.course}\u0000${o.subjectKey}`, o])),
-    papers: Array.isArray(papers) ? papers : [],
-  };
-}
-
-function applyOverrides(raw: CatalogPaper[], overrides: Overrides): CatalogPaper[] {
-  const out: CatalogPaper[] = [];
-  for (const p of raw) {
-    const override = overrides.subjects.get(`${p.course}\u0000${canonicalSubjectKey(p.subject)}`);
-    if (override?.hidden) continue;
-    let paper = p;
-    if (override) {
-      paper = {
-        ...paper,
-        originalSubject: p.subject,
-        subject: override.displayName || p.subject,
-        course: override.courseOverride || p.course,
-        semester: override.semesterOverride != null ? String(override.semesterOverride) : p.semester,
-      };
-    }
-    out.push(paper);
-  }
-  return out;
 }
 
 type SearchHit = { course: string; key: string; label: string; count: number };
