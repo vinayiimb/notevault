@@ -4,6 +4,7 @@
 import { useMemo, useRef, useState } from "react";
 import { FileArrowUp, FilePdf } from "@phosphor-icons/react/dist/ssr";
 import { uploadResourceAction } from "@/lib/actions";
+import { readPdfWithOcr } from "@/lib/pdf-ocr-client";
 import type { AcademicProgram as Program } from "@/lib/academic-types";
 
 type Stage = "upload" | "processing" | "editor";
@@ -182,55 +183,10 @@ export function AdminRestoreClient({ programs }: { programs: Program[] }) {
     setSaveResult(null);
 
     try {
-      const pdfjsLib = await import("pdfjs-dist");
-      pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
-
-      const buffer = await file.arrayBuffer();
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise;
-      const numPages = pdf.numPages;
-
-      let worker: Awaited<ReturnType<typeof import("tesseract.js").createWorker>> | null = null;
-      let ocrFailed = false;
-
-      let fullText = "";
-      for (let i = 1; i <= numPages; i++) {
-        setStageLabel(`Reading page ${i} of ${numPages}...`);
-        setProgress(Math.round(((i - 1) / numPages) * 95));
-
-        const page = await pdf.getPage(i);
-        const content = await page.getTextContent();
-        const nativeText = content.items
-          .map((item) => ("str" in item ? item.str : ""))
-          .join(" ")
-          .replace(/\s+/g, " ")
-          .trim();
-
-        let pageText = nativeText;
-        if (nativeText.length < 40) {
-          if (!worker && !ocrFailed) {
-            setStageLabel("Loading OCR engine...");
-            try {
-              const Tesseract = await import("tesseract.js");
-              worker = await Tesseract.createWorker("eng");
-            } catch {
-              ocrFailed = true;
-            }
-          }
-          if (worker) {
-            const viewport = page.getViewport({ scale: 2.5 });
-            const canvas = document.createElement("canvas");
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            const ctx = canvas.getContext("2d")!;
-            await page.render({ canvasContext: ctx, viewport, canvas }).promise;
-            const { data } = await worker.recognize(canvas);
-            pageText = data.text.trim();
-          }
-        }
-        fullText += pageText + "\n\n";
-      }
-
-      if (worker) await worker.terminate();
+      const fullText = await readPdfWithOcr(file, (label, percent) => {
+        setStageLabel(label);
+        setProgress(percent);
+      });
 
       setProgress(100);
       setRawText(fullText.replace(/\n{3,}/g, "\n\n").trim());

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { CurrencyInr, FileArrowUp, Files, Flag, Gear, GraduationCap, NotePencil, SignOut } from "@phosphor-icons/react/dist/ssr";
+import { ChartBar, CurrencyInr, FileArrowUp, Files, Flag, Gear, GraduationCap, NotePencil, SignOut } from "@phosphor-icons/react/dist/ssr";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 
@@ -52,6 +52,13 @@ export default async function AdminDashboardLayout({
           >
             <FileArrowUp size={16} />
             OCR upload
+          </Link>
+          <Link
+            href="/admin/pyq-analyser"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <ChartBar size={16} />
+            PYQ Analyser
           </Link>
           <Link
             href="/admin/features"

@@ -27,6 +27,8 @@ const MODEL = process.env.GROQ_MODEL ?? "openai/gpt-oss-120b";
 // request (prompt + this completion budget, combined) at 8000 tokens total —
 // go over and the request is rejected outright, not just throttled.
 const MAX_TOKENS = 2000;
+// The other free model that supports strict json_schema output.
+const FALLBACK_MODEL = "openai/gpt-oss-20b";
 
 export type AiResult<T> = { ok: true; data: T } | { ok: false; error: string };
 
@@ -99,7 +101,9 @@ Return the fully preserved, better-structured Markdown for this fragment.`;
 async function callStructured<S extends z.ZodType>(
   schema: S,
   system: string,
-  userContent: string
+  userContent: string,
+  maxTokens = MAX_TOKENS,
+  model = MODEL,
 ): Promise<AiResult<z.infer<S>>> {
   const client = getClient();
   if (!client) {
@@ -111,8 +115,8 @@ async function callStructured<S extends z.ZodType>(
 
   try {
     const response = await client.chat.completions.create({
-      model: MODEL,
-      max_tokens: MAX_TOKENS,
+      model,
+      max_tokens: maxTokens,
       messages: [
         { role: "system", content: system },
         { role: "user", content: userContent },
@@ -149,6 +153,8 @@ async function callStructured<S extends z.ZodType>(
       return { ok: false, error: "AI request failed: the API key is invalid." };
     }
     if (err instanceof Groq.RateLimitError) {
+      // Free-tier limits are per model: fall back to the smaller free model once.
+      if (model !== FALLBACK_MODEL) return callStructured(schema, system, userContent, maxTokens, FALLBACK_MODEL);
       return { ok: false, error: "AI is rate-limited right now. Try again shortly." };
     }
     if (err instanceof Groq.APIConnectionError) {
@@ -821,4 +827,33 @@ export async function generateStructuredNote(sourceText: string, context: NoteCo
     return { ok: false, error: "The generated note didn't match the expected structure. Try again." };
   }
   return { ok: true, data: parsed.data };
+}
+
+// ---------- PYQ Analyser: split a paper into tagged questions ----------
+
+const PaperQuestionsSchema = z.object({
+  questions: z.array(
+    z.object({
+      questionNumber: z.string().describe('As printed, e.g. "3", "3(a)". Empty string if none.'),
+      section: z.string().describe('e.g. "Section A". Empty string if the paper has no sections.'),
+      questionText: z.string().describe("The full question exactly as printed, OCR slips fixed"),
+      marks: z.number().describe("Marks printed for this question; 0 if not printed"),
+      topics: z.array(z.string()).describe("1-3 short syllabus topic names this question tests"),
+      difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
+    }),
+  ),
+});
+export type PaperQuestions = z.infer<typeof PaperQuestionsSchema>;
+
+/** Admin-only. `text` is one chunk of a paper (the caller splits long papers). */
+export async function extractPaperQuestions(text: string, subjectName: string, knownTopics: string[]) {
+  if (!(await getSession())) return UNAUTHORIZED;
+  const system = `You split Delhi University previous-year question papers into individual questions for a topic-wise analyser.
+Return every question and sub-question that a student must answer, one entry each. "(a)"/"(b)" parts become separate entries numbered like "2(a)". Keep an "OR" alternative as its own entry.
+Skip instructions, cover-page lines, roll-number boxes, college names and Hindi translations of English questions.
+Copy question wording faithfully; only fix obvious OCR slips. Never answer the questions.
+Tag topics with short syllabus-style names (e.g. "Elasticity of Demand", not "Economics").${
+    knownTopics.length ? ` Reuse these existing topic names whenever one fits: ${knownTopics.slice(0, 80).join("; ")}.` : ""
+  }`;
+  return callStructured(PaperQuestionsSchema, system, `Subject: ${subjectName}\n\nPAPER TEXT\n----------\n${text}\n----------`, 4000);
 }

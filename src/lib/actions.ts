@@ -2506,8 +2506,8 @@ export async function updateQuestionAction(formData: FormData) {
   const difficulty =
     difficultyRaw === "EASY" || difficultyRaw === "MEDIUM" || difficultyRaw === "HARD" ? difficultyRaw : null;
 
-  if (!questionText || !answerText) {
-    throw new Error("Question and answer are required.");
+  if (!questionText) {
+    throw new Error("Question text is required.");
   }
 
   let rawBlocks: unknown;

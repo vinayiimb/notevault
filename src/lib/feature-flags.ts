@@ -21,6 +21,7 @@ export interface Feature {
 
 export const FEATURES: Feature[] = [
   { key: "exam-kit", label: "Exam Kit", href: "/tools/exam-kit", desc: "Generate practice questions", menu: "sidebar", defaultStatus: "live" },
+  { key: "pyq-analyser", label: "PYQ Analyser", href: "/papers/analyser", desc: "Topic-wise PYQ analysis", menu: "others", defaultStatus: "live" },
   { key: "datesheet", label: "Datesheet", href: "/exam-help/datesheet", desc: "Official DU exam datesheet, by course", menu: "others", defaultStatus: "live" },
   { key: "result-doctor", label: "Result Doctor", href: "/tools/result-doctor", desc: "Analyse your marksheet", menu: "others", defaultStatus: "live" },
   { key: "blog", label: "Blog", href: "/blog", desc: "Latest DU updates", menu: "others", defaultStatus: "live" },
