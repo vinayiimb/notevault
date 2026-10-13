@@ -27,6 +27,7 @@ export default async function CheckoutPage({ searchParams }: { searchParams: Pro
         upiPayeeName={settings.upiPayeeName}
         upiQrUrl={settings.upiQrUrl}
         defaultEmail={email}
+        razorpayEnabled={!!process.env.RAZORPAY_KEY_ID && !!process.env.RAZORPAY_KEY_SECRET}
       />
     </div>
   );

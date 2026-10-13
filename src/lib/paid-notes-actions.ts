@@ -1,11 +1,11 @@
 "use server";
 
-import { randomInt, randomUUID } from "node:crypto";
+import { randomUUID } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { clearLoginFailures, getSession, hashPassword, isLoginLocked, loginThrottleKey, recordLoginFailure, verifyPassword } from "@/lib/auth";
+import { clearLoginFailures, generatePassword, getSession, hashPassword, isLoginLocked, loginThrottleKey, recordLoginFailure, verifyPassword } from "@/lib/auth";
 import { deleteByUrl, putBytes } from "@/lib/storage";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
 import { STUDENT_COOKIE, STUDENT_COOKIE_OPTIONS, signStudentSession } from "@/lib/paid-notes";
@@ -96,10 +96,42 @@ async function requireAdmin() {
   if (!(await getSession())) throw new Error("Unauthorized");
 }
 
-// 10 chars, no look-alikes (0/O, 1/l/I) — easy to read off WhatsApp.
-function generatePassword() {
-  const alphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
-  return Array.from({ length: 10 }, () => alphabet[randomInt(alphabet.length)]).join("");
+// ---------- Razorpay (auto-approved) ----------
+
+// Shared by the checkout verify endpoint and the webhook: turn a captured
+// Razorpay payment into an APPROVED Purchase + NotesAccount, same shape as a
+// manually-approved UPI purchase. Idempotent on razorpayOrderId so whichever
+// of the two call sites gets there first wins; the other is a no-op.
+export async function completeRazorpayPurchase(input: {
+  orderId: string;
+  paymentId: string;
+  email: string;
+  phone: string;
+  items: string[];
+  amount: number;
+}): Promise<void> {
+  const existing = await prisma.purchase.findUnique({ where: { razorpayOrderId: input.orderId } });
+  if (existing) return;
+
+  const account = await prisma.notesAccount.findUnique({ where: { email: input.email } });
+  await prisma.$transaction(async (tx) => {
+    await tx.purchase.create({
+      data: {
+        email: input.email,
+        phone: input.phone,
+        utr: input.paymentId,
+        amount: input.amount,
+        items: input.items,
+        status: "APPROVED",
+        reviewedAt: new Date(),
+        provider: "razorpay",
+        razorpayOrderId: input.orderId,
+      },
+    });
+    if (!account) {
+      await tx.notesAccount.create({ data: { email: input.email, passwordHash: await hashPassword(generatePassword()) } });
+    }
+  });
 }
 
 export type ApproveResult = FormResult & { email?: string; phone?: string; password?: string; existingAccount?: boolean };

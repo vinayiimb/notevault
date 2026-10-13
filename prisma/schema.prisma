@@ -795,20 +795,23 @@ enum PurchaseStatus {
   REJECTED
 }
 
-// One UPI payment a student submitted (email + UTR) for one or more
-// subjects' notes. Approving it unlocks `items` for the NotesAccount with
-// the same email (created on first approval) — see src/lib/paid-notes.ts.
+// One payment a student submitted (UPI: email + UTR, manually approved) or
+// Razorpay (auto-approved from a verified webhook) for one or more subjects'
+// notes. Approving it unlocks `items` for the NotesAccount with the same
+// email (created on first approval) — see src/lib/paid-notes.ts.
 model Purchase {
-  id         String         @id @default(cuid())
-  email      String
-  phone      String
-  utr        String         @unique
-  amount     Int
-  items      String[] // "programmeSlug/subjectSlug"
-  status     PurchaseStatus @default(PENDING)
-  adminNote  String?
-  createdAt  DateTime       @default(now())
-  reviewedAt DateTime?
+  id                String         @id @default(cuid())
+  email             String
+  phone             String
+  utr               String         @unique // UPI UTR, or Razorpay payment id when provider = "razorpay"
+  amount            Int
+  items             String[] // "programmeSlug/subjectSlug"
+  status            PurchaseStatus @default(PENDING)
+  adminNote         String?
+  provider          String         @default("upi") // "upi" | "razorpay"
+  razorpayOrderId   String?        @unique
+  createdAt         DateTime       @default(now())
+  reviewedAt        DateTime?
 
   @@index([status, createdAt])
   @@index([email])

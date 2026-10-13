@@ -27,6 +27,14 @@ export async function verifyPassword(password: string, hash: string) {
   return bcrypt.compare(password, hash);
 }
 
+// 10 chars, no look-alikes (0/O, 1/l/I) — easy to read off WhatsApp.
+// Web Crypto, not node:crypto: middleware imports this file and runs on edge.
+export function generatePassword() {
+  const alphabet = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+  const bytes = crypto.getRandomValues(new Uint32Array(10));
+  return Array.from(bytes, (n) => alphabet[n % alphabet.length]).join("");
+}
+
 export function signSession(payload: SessionPayload) {
   return jwt.sign(payload, jwtSecret(), { expiresIn: "7d" });
 }

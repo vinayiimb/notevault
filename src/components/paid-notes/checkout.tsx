@@ -1,11 +1,19 @@
 "use client";
 
 import { useActionState, useMemo, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Script from "next/script";
 import { ArrowRight, BookOpenText, Check, CheckCircle, Copy, Infinity as InfinityIcon, Star, Trophy, X } from "@phosphor-icons/react";
 import type { NotesCatalogProgramme } from "@/lib/paid-notes";
 import { PAID_FEATURES, PLANS, itemKey, planFor, upiPayLink } from "@/lib/paid-notes-pricing";
 import { submitPaymentAction, type FormResult } from "@/lib/paid-notes-actions";
+
+declare global {
+  interface Window {
+    Razorpay: new (options: Record<string, unknown>) => { open: () => void };
+  }
+}
 
 const card = "rounded-3xl bg-surface p-6 shadow-xs ring-1 ring-border/60 sm:p-8";
 const inputClass =
@@ -20,6 +28,7 @@ export function PaidNotesCheckout({
   upiPayeeName,
   upiQrUrl,
   defaultEmail,
+  razorpayEnabled,
 }: {
   catalog: NotesCatalogProgramme[];
   owned: string[];
@@ -29,6 +38,7 @@ export function PaidNotesCheckout({
   upiPayeeName: string | null;
   upiQrUrl: string | null;
   defaultEmail: string | null;
+  razorpayEnabled: boolean;
 }) {
   const ownedSet = useMemo(() => new Set(owned), [owned]);
   const nameOf = useMemo(() => {
@@ -47,6 +57,12 @@ export function PaidNotesCheckout({
   const [copied, setCopied] = useState(false);
   const [state, formAction, pending] = useActionState<FormResult, FormData>(submitPaymentAction, {});
   const payRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
+  const [rzpLoaded, setRzpLoaded] = useState(false);
+  const [rzpBusy, setRzpBusy] = useState(false);
+  const [rzpError, setRzpError] = useState<string | null>(null);
+  const [rzpEmail, setRzpEmail] = useState(defaultEmail ?? "");
+  const [rzpPhone, setRzpPhone] = useState("");
 
   const current = catalog.find((p) => p.slug === programme);
   const remaining = plan.subjects - selected.length;
@@ -72,6 +88,48 @@ export function PaidNotesCheckout({
     await navigator.clipboard.writeText(upiId).catch(() => {});
     setCopied(true);
     setTimeout(() => setCopied(false), 1500);
+  }
+
+  async function payWithRazorpay() {
+    setRzpError(null);
+    if (!rzpEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(rzpEmail)) return setRzpError("Enter a valid email.");
+    if (!/^[6-9]\d{9}$/.test(rzpPhone.replace(/\D/g, "").slice(-10))) return setRzpError("Enter a valid 10-digit WhatsApp number.");
+    setRzpBusy(true);
+    try {
+      const orderRes = await fetch("/api/razorpay/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: rzpEmail, phone: rzpPhone, items: selected }),
+      });
+      const order = await orderRes.json();
+      if (!orderRes.ok) throw new Error(order.error ?? "Could not start payment.");
+
+      const rzp = new window.Razorpay({
+        key: order.keyId,
+        order_id: order.orderId,
+        amount: order.amount * 100,
+        currency: "INR",
+        name: "DU PYQ Online",
+        description: `${plan.name} · ${selected.map((k) => nameOf.get(k)).join(", ")}`,
+        prefill: { email: rzpEmail, contact: rzpPhone },
+        theme: { color: "#16a34a" },
+        handler: async (response: { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string }) => {
+          const verifyRes = await fetch("/api/razorpay/verify", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(response),
+          }).catch(() => null);
+          if (verifyRes?.ok) router.push("/account");
+          else setRzpError("Payment received — finishing setup is taking a moment, check /account shortly.");
+        },
+        modal: { ondismiss: () => setRzpBusy(false) },
+      });
+      rzp.open();
+    } catch (err) {
+      setRzpError(err instanceof Error ? err.message : "Could not start payment.");
+    } finally {
+      setRzpBusy(false);
+    }
   }
 
   if (state.ok) {
@@ -225,7 +283,46 @@ export function PaidNotesCheckout({
       {/* Payment */}
       {paying && (
         <div ref={payRef} className={`${card} scroll-mt-24`}>
-          <h2 className="font-semibold">Pay ₹{plan.price} by UPI</h2>
+          <h2 className="font-semibold">Pay ₹{plan.price}</h2>
+          {razorpayEnabled ? (
+          <>
+          <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" onLoad={() => setRzpLoaded(true)} />
+          <label className="mt-4 block text-xs font-medium text-muted" htmlFor="rzp-email">Gmail (this becomes your login)</label>
+          <input
+            id="rzp-email"
+            type="email"
+            value={rzpEmail}
+            onChange={(e) => setRzpEmail(e.target.value)}
+            placeholder="you@gmail.com"
+            className={`mt-1.5 ${inputClass}`}
+          />
+          <label className="mt-3 block text-xs font-medium text-muted" htmlFor="rzp-phone">WhatsApp number</label>
+          <input
+            id="rzp-phone"
+            type="tel"
+            inputMode="tel"
+            value={rzpPhone}
+            onChange={(e) => setRzpPhone(e.target.value)}
+            placeholder="98765 43210"
+            className={`mt-1.5 ${inputClass}`}
+          />
+          {rzpError && <p className="mt-3 text-sm text-red-600">{rzpError}</p>}
+          <button
+            type="button"
+            disabled={!rzpLoaded || rzpBusy}
+            onClick={payWithRazorpay}
+            className="mt-5 flex min-h-13 w-full items-center justify-center rounded-2xl bg-green-600 text-base font-semibold text-white transition hover:bg-green-700 disabled:opacity-60"
+          >
+            {rzpBusy ? "Opening…" : `Pay ₹${plan.price} with card / UPI / netbanking`}
+          </button>
+          <p className="mt-3 text-center text-xs text-muted">
+            Access unlocks instantly after payment. By paying you agree to our{" "}
+            <Link href="/terms-of-service" className="underline hover:text-foreground">Terms</Link> and{" "}
+            <Link href="/refund-policy" className="underline hover:text-foreground">Refund Policy</Link>.
+          </p>
+          </>
+          ) : (
+          <>
           {upiQrUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={upiQrUrl} alt="UPI QR code" className="mx-auto mt-5 size-56 rounded-2xl border border-border bg-white object-contain p-2" />
@@ -276,6 +373,8 @@ export function PaidNotesCheckout({
               <Link href="/refund-policy" className="underline hover:text-foreground">Refund Policy</Link>.
             </p>
           </form>
+          </>
+          )}
         </div>
       )}
     </Shell>
