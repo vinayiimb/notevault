@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { verifyWebhookSignature } from "@/lib/razorpay";
+import { getRazorpayOrder, verifyWebhookSignature } from "@/lib/razorpay";
 import { completeRazorpayPurchase } from "@/lib/paid-notes-actions";
 
 // Durable backstop for /api/razorpay/verify: Razorpay calls this
@@ -18,9 +18,14 @@ export async function POST(request: NextRequest) {
   if (event.event !== "payment.captured") return NextResponse.json({ ok: true });
 
   const payment = event.payload?.payment?.entity;
-  const notes = payment?.notes;
-  if (!payment?.order_id || !payment?.id || !notes?.email || !notes.items) {
-    return NextResponse.json({ ok: true }); // nothing we can act on; ack so Razorpay stops retrying
+  if (!payment?.order_id || !payment?.id) return NextResponse.json({ ok: true });
+
+  // email/items live on the order's notes, not the payment's.
+  const order = await getRazorpayOrder(payment.order_id);
+  if (!order) return NextResponse.json({ error: "Order lookup failed." }, { status: 502 }); // non-2xx → Razorpay retries
+  const notes = order.notes;
+  if (!notes?.email || !notes.items) {
+    return NextResponse.json({ ok: true }); // not one of our checkout orders; ack so Razorpay stops retrying
   }
 
   await completeRazorpayPurchase({
