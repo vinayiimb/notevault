@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { prisma } from "@/lib/prisma";
-import { isBundle, parseYears, type AnalyserQuestion } from "@/lib/pyq-analyser";
+import { isBundle, parseYears, sectionAnswer, type AnalyserQuestion } from "@/lib/pyq-analyser";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { PyqAnalyserClient, type AnalyserSubject } from "@/components/pyq-analyser/pyq-analyser-client";
 
@@ -56,20 +56,26 @@ async function loadQuestions(subjectId: string): Promise<AnalyserQuestion[]> {
     },
     orderBy: [{ repeatCount: "desc" }, { createdAt: "asc" }],
   });
-  return rows.map((q) => ({
-    id: q.id,
-    number: q.questionNumber,
-    text: q.questionText,
-    // Bundles are fetched on demand (/api/pyq-answer), not shipped with the page.
-    answer: isBundle(q.answerText) ? "" : q.answerText,
-    bundle: isBundle(q.answerText),
-    marks: q.marks,
-    years: parseYears(q.years),
-    section: q.section,
-    topics: q.topics,
-    difficulty: q.difficulty,
-    repeatCount: q.repeatCount,
-  }));
+  return rows.map((q) => {
+    // section.q bundles (even ones saved before they were stored as plain
+    // answers) render natively; other bundles are fetched on demand
+    // (/api/pyq-answer), not shipped with the page.
+    const answer = sectionAnswer(q.answerText) ?? q.answerText;
+    const bundle = isBundle(answer);
+    return {
+      id: q.id,
+      number: q.questionNumber,
+      text: q.questionText,
+      answer: bundle ? "" : answer,
+      bundle,
+      marks: q.marks,
+      years: parseYears(q.years),
+      section: q.section,
+      topics: q.topics,
+      difficulty: q.difficulty,
+      repeatCount: q.repeatCount,
+    };
+  });
 }
 
 export default async function PyqAnalyserPage({ searchParams }: { searchParams: Promise<{ subject?: string }> }) {

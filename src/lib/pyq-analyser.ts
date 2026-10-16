@@ -303,6 +303,28 @@ export function inlineBundleAssets(html: string, files: Record<string, string>):
     });
 }
 
+/**
+ * A section.q answer is plain static HTML, so it renders natively in the
+ * site's own solution style (SolutionMarkdown) rather than in an iframe with
+ * the bundle's CSS: only its diagrams and flowcharts keep their own look.
+ * Lines are unindented (4 spaces would become a markdown code block).
+ */
+export function tidyHtmlAnswer(html: string): string {
+  return html
+    .split("\n")
+    .map((l) => l.trimStart())
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+/** A saved section.q bundle → its answer HTML (already without heading, question and unit); null for any other answer. */
+export function sectionAnswer(answer: string): string | null {
+  if (!isBundle(answer)) return null;
+  const m = answer.match(/<section\b[^>]*\bclass=["'][^"']*\bq\b[^"']*["'][^>]*>([\s\S]*)<\/section>/i);
+  return m ? tidyHtmlAnswer(m[1]) : null;
+}
+
 /** "CLIMATOLOGY — QUESTION 1(a)" → { group, questionNumber }; the <h2> of a section.q bundle. */
 export function parseQuestionHeading(text: string): { group: string; questionNumber: string } | null {
   const m = text.replace(/\s+/g, " ").trim().match(/^(.+?)\s+[—–-]\s+QUESTION\s+(.+)$/i);
@@ -358,7 +380,7 @@ Course: ${s.course} · Semester ${s.semester} · NEP (UGCF 2022) syllabus${/^(19
 I will paste the question paper after this message. Solve EVERY question — every sub-part and every OR alternative.
 
 Return ONE complete, self-contained HTML file (<!DOCTYPE html> … </html>) for the whole paper. Software splits it into questions, so follow this structure exactly:
-1. <head>: all CSS in a single <style> block — clean white exam-sheet style, readable on phones (no horizontal scrolling; wide tables sit in <div class="tw"> and scroll inside it). Include CSS for every diagram class below. Load libraries only from https://cdn.jsdelivr.net/npm/ (for example KaTeX + its auto-render for formulas). No other external files, no images, no web fonts.
+1. <head>: all CSS in a single <style> block — clean white exam-sheet style, readable on phones (no horizontal scrolling; wide tables sit in <div class="tw"> and scroll inside it). Include CSS for every diagram class below. No JavaScript, no external files, no images, no web fonts (the site shows the answers in its own style; only the diagram classes keep their look).
 2. <body><div class="wrap">, then one section per question, sub-part and OR alternative, in this exact shape:
    <section class="q" id="q1a">
    <h2>${head} — QUESTION 1(a)</h2>
@@ -367,9 +389,9 @@ Return ONE complete, self-contained HTML file (<!DOCTYPE html> … </html>) for 
    … the complete answer …
    </section>
    Use the number exactly as printed: 1(a), 1(b), 2, 3(c). Mark alternatives like: QUESTION 1(a) OR
-3. Answers: numbered <h3> step headings (1. Meaning, 2. Explanation, 3. Diagram …), length to suit the marks (a 9–15 mark answer ≈ 500–900 words), formulas with KaTeX (\\( … \\) inline, \\[ … \\] display, final answers in \\boxed{}), every numerical step shown, HTML tables, and a final <p class="concl"><strong>Conclusion:</strong> …</p>.
+3. Answers: numbered <h3> step headings (1. Meaning, 2. Explanation, 3. Diagram …), length to suit the marks (a 9–15 mark answer ≈ 500–900 words), formulas as plain HTML in <div class="formula"> (<sub>/<sup>, fractions as <span class="frac"><span>top</span><span>bottom</span></span>, final answers in <span class="boxed">…</span>), every numerical step shown, HTML tables inside <div class="tw">, and a final <p class="concl"><strong>Conclusion:</strong> …</p>.
 4. ${DIAGRAM_RULES}
 5. Colours: white answer cards, near-black text, light-grey table borders. Diagram colours only from the classes above.
-6. Each section is shown ON ITS OWN, so any JavaScript must initialise whatever is on the page on DOMContentLoaded and never depend on another section existing.
+6. Each section is shown ON ITS OWN, so never refer to another section.
 7. Nothing outside the sections except an optional <header> and contents list (they are dropped): no footer, web links, citations or college names.`;
 }

@@ -17,6 +17,7 @@ import {
   solvedBundlePrompt,
   solvedPaperPrompt,
   stripLabel,
+  tidyHtmlAnswer,
   type LibraryDiagram,
 } from "@/lib/pyq-analyser";
 import { drawEconDiagram } from "@/lib/ai";
@@ -114,20 +115,17 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
       const unit = sec.getAttribute("data-unit") ?? stripLabel(unitEl?.textContent ?? "");
       // Question, number and unit show in the analyser's own header, so they leave the answer.
       for (const el of [qEl, unitEl, h]) el?.remove();
-      // Keep the section's wrappers (e.g. <div class="wrap">) so the bundle's layout CSS still applies.
-      let doc: Element = clone;
-      for (let p = sec.parentElement; p && p !== dom.body; p = p.parentElement) {
-        const shell = p.cloneNode(false) as Element;
-        shell.appendChild(doc);
-        doc = shell;
-      }
+      // section.q answers are static HTML: saved as a normal answer so they render in the
+      // site's solution style (diagrams keep their classes). data-question bundles may
+      // carry scripts (charts, KaTeX), so they stay whole documents in a sandboxed frame.
+      const answerText = h ? tidyHtmlAnswer(clone.innerHTML) : bundleDocument(head, clone.outerHTML, bodyScripts);
       return {
         key,
         group: parsed?.group ?? "",
         questionNumber: sec.getAttribute("data-question") ?? parsed?.questionNumber ?? "",
         section: "",
         questionText,
-        answerText: bundleDocument(head, doc.outerHTML, bodyScripts),
+        answerText,
         marks: 0,
         topics: unit,
         difficulty: null,

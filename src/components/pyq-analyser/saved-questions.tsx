@@ -9,7 +9,7 @@ import {
   savedQuestionsAction,
   updateSavedQuestionAction,
 } from "@/lib/pyq-analyser-actions";
-import { groupUploads, isBundle } from "@/lib/pyq-analyser";
+import { groupUploads, isBundle, sectionAnswer } from "@/lib/pyq-analyser";
 import { SolutionMarkdown } from "./solution-markdown";
 import { SolutionBundle } from "./solution-bundle";
 
@@ -93,7 +93,9 @@ export function SavedQuestions({ catalog, refresh }: { catalog: CatalogInput | n
     setEditing(q.id);
     setPreview(false);
     setDraft(null);
-    const answerText = await questionAnswerAction(q.id);
+    // An old section.q bundle opens as its plain answer; saving stores it that way.
+    const raw = await questionAnswerAction(q.id);
+    const answerText = sectionAnswer(raw) ?? raw;
     setDraft({
       questionNumber: q.questionNumber ?? "",
       section: q.section ?? "",

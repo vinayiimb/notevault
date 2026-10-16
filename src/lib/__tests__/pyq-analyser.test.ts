@@ -187,3 +187,14 @@ test("saved questions: duplicates and uploads", async () => {
   assert.ok(!dup.has("b") && !dup.has("a") && !dup.has("or"), "sub-parts and OR alternatives are not duplicates");
   assert.deepEqual(groupUploads(qs).map((u) => u.map((q) => q.id)), [["a", "b", "c"], ["a2", "c2", "or"]]);
 });
+
+test("section.q answers render natively, other bundles stay framed", async () => {
+  const { sectionAnswer, tidyHtmlAnswer, bundleDocument, solvedBundlePrompt } = await import("@/lib/pyq-analyser");
+  const saved = bundleDocument("<style>h3{border-left:4px solid blue}</style>", '<div class="wrap"><section class="q" id="q2">\n    <h3>1. Meaning</h3>\n\n\n\n<svg class="diagram flow"><rect class="n"/></svg>\n</section></div>');
+  assert.equal(sectionAnswer(saved), '<h3>1. Meaning</h3>\n\n<svg class="diagram flow"><rect class="n"/></svg>', "no bundle CSS, no indentation");
+  assert.equal(sectionAnswer(bundleDocument("", '<section data-question="1(a)"><canvas></canvas></section>')), null);
+  assert.equal(sectionAnswer("### 1. Meaning"), null);
+  assert.equal(tidyHtmlAnswer("    <p>x</p>"), "<p>x</p>", "4-space indent would be a code block");
+  const p = solvedBundlePrompt({ course: "B.A. (Hons) Geography", semester: 3, subject: "Climatology", upc: null, paperType: null, year: "2025" });
+  assert.ok(p.includes('class="frac"') && !p.includes("KaTeX"));
+});

@@ -61,7 +61,7 @@
 
 /* Geography/science diagram + flowchart system (climatology_solved_answers.html):
    svg.diagram shapes and svg.flow boxes, same classes in text answers and bundles. */
-.pyq-solution .pyq-svg svg.diagram, .pyq-solution .pyq-svg svg.flow { max-width: 680px; border: 1px solid #dbe2ee; border-radius: 10px; }
+.pyq-solution .pyq-svg svg.diagram, .pyq-solution .pyq-svg svg.flow { max-width: 680px; }
 .pyq-solution .pyq-svg text.b { font-weight: 700; }
 .pyq-solution .pyq-svg text.r { fill: #b91c1c; }
 .pyq-solution .pyq-svg text.bl { fill: #1d4ed8; }
@@ -89,6 +89,16 @@
 .pyq-solution .pyq-svg svg.flow rect.g { fill: #ecfdf5; stroke: #10b981; }
 .pyq-solution .pyq-svg svg.flow rect.r { fill: #fef2f2; stroke: #ef4444; }
 .pyq-solution .pyq-svg svg.flow rect.p { fill: #f5f3ff; stroke: #8b5cf6; }
+
+/* Plain-HTML answers (section.q uploads): formulas, fractions, captions and the
+   conclusion in the same plain exam-sheet style — no tinted boxes. */
+.pyq-solution .formula { margin: .9em 0; text-align: center; font-size: 1.05em; overflow-x: auto; }
+.pyq-solution .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 .3em; }
+.pyq-solution .frac > span:first-child { border-bottom: 1.5px solid currentColor; padding: 0 .3em .1em; }
+.pyq-solution .frac > span:last-child { padding: .1em .3em 0; }
+.pyq-solution .boxed { display: inline-block; border: 1.5px solid #111418; padding: .1em .7em; border-radius: 4px; font-weight: 600; }
+.pyq-solution .caption { font-size: .85em; color: var(--muted); text-align: center; margin-top: .2em; }
+.pyq-solution .tw { overflow-x: auto; }
 
 /* Zoomed diagram: let it grow past the inline max-width. */
 .pyq-zoom-body svg { max-width: none !important; width: 100% !important; }
