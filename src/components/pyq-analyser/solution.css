@@ -56,8 +56,39 @@
 .pyq-solution .pyq-svg .purple { stroke: #7a3ee6; }
 .pyq-solution .pyq-svg .gray { stroke: #98a2b3; }
 .pyq-solution .pyq-svg .dot { fill: #182230; }
-.pyq-solution .pyq-svg .guide { stroke: #98a2b3; stroke-width: 1; stroke-dasharray: 4 4; }
+.pyq-solution .pyq-svg .guide { fill: none; stroke: #98a2b3; stroke-width: 1; stroke-dasharray: 4 4; }
 .pyq-solution .pyq-svg figcaption { font-size: .85em; color: var(--muted); text-align: center; }
+
+/* Geography/science diagram + flowchart system (climatology_solved_answers.html):
+   svg.diagram shapes and svg.flow boxes, same classes in text answers and bundles. */
+.pyq-solution .pyq-svg svg.diagram, .pyq-solution .pyq-svg svg.flow { max-width: 680px; border: 1px solid #dbe2ee; border-radius: 10px; }
+.pyq-solution .pyq-svg text.b { font-weight: 700; }
+.pyq-solution .pyq-svg text.r { fill: #b91c1c; }
+.pyq-solution .pyq-svg text.bl { fill: #1d4ed8; }
+.pyq-solution .pyq-svg .sea { fill: #e6f2fb; }
+.pyq-solution .pyq-svg .land { fill: #e8e0c6; stroke: #a39a78; stroke-width: 1.5; }
+.pyq-solution .pyq-svg .rock { fill: #d6d3d1; stroke: #78716c; stroke-width: 1.5; }
+.pyq-solution .pyq-svg .warm { fill: #fee2e2; }
+.pyq-solution .pyq-svg .cold { fill: #dbeafe; }
+.pyq-solution .pyq-svg .cloud { fill: #fff; stroke: #94a3b8; stroke-width: 1.5; }
+.pyq-solution .pyq-svg .rain { fill: none; stroke: #2563eb; stroke-width: 1.6; stroke-dasharray: 4 4; }
+.pyq-solution .pyq-svg .ring { fill: none; stroke: #7c3aed; stroke-width: 8; opacity: .75; }
+.pyq-solution .pyq-svg .eye { fill: #fff; stroke: #374151; stroke-dasharray: 4 3; stroke-width: 1.5; }
+.pyq-solution .pyq-svg .parcel { fill: #fde68a; stroke: #b45309; stroke-width: 1.5; }
+.pyq-solution .pyq-svg .tri { fill: #2563eb; }
+.pyq-solution .pyq-svg .semi { fill: #dc2626; }
+.pyq-solution .pyq-svg .z-a { fill: #bbf7d0; stroke: #fff; stroke-width: 2; }
+.pyq-solution .pyq-svg .z-b { fill: #fde68a; stroke: #fff; stroke-width: 2; }
+.pyq-solution .pyq-svg .z-c { fill: #bfdbfe; stroke: #fff; stroke-width: 2; }
+.pyq-solution .pyq-svg .z-d { fill: #ddd6fe; stroke: #fff; stroke-width: 2; }
+.pyq-solution .pyq-svg .z-e { fill: #e5e7eb; stroke: #fff; stroke-width: 2; }
+.pyq-solution .pyq-svg svg.flow text { text-anchor: middle; }
+.pyq-solution .pyq-svg svg.flow .link { fill: none; stroke: #475569; stroke-width: 1.7; }
+.pyq-solution .pyq-svg svg.flow rect { stroke-width: 1.5; }
+.pyq-solution .pyq-svg svg.flow rect.n { fill: #eff6ff; stroke: #3b82f6; }
+.pyq-solution .pyq-svg svg.flow rect.g { fill: #ecfdf5; stroke: #10b981; }
+.pyq-solution .pyq-svg svg.flow rect.r { fill: #fef2f2; stroke: #ef4444; }
+.pyq-solution .pyq-svg svg.flow rect.p { fill: #f5f3ff; stroke: #8b5cf6; }
 
 /* Zoomed diagram: let it grow past the inline max-width. */
 .pyq-zoom-body svg { max-width: none !important; width: 100% !important; }

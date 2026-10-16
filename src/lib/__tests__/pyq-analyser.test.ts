@@ -153,3 +153,19 @@ test("bundles: detection, asset inlining and per-question documents", async () =
   const doc = bundleDocument("<style>x</style>", '<section data-question="1(a)">A</section>');
   assert.ok(isBundle(doc) && doc.includes('<head><meta charset="utf-8">') && doc.includes("<section"));
 });
+
+test("section.q bundles: question heading, labels, diagram CSS and prompts", async () => {
+  const { parseQuestionHeading, stripLabel, bundleDocument, solvedBundlePrompt, solvedPaperPrompt } = await import("@/lib/pyq-analyser");
+  assert.deepEqual(parseQuestionHeading("CLIMATOLOGY — QUESTION 1(a)"), { group: "CLIMATOLOGY", questionNumber: "1(a)" });
+  assert.deepEqual(parseQuestionHeading(" BUSINESS ECONOMICS (HONS.) –  QUESTION 3(b) OR "), { group: "BUSINESS ECONOMICS (HONS.)", questionNumber: "3(b) OR" });
+  assert.equal(parseQuestionHeading("1. Meaning"), null);
+  assert.equal(stripLabel(" Question:  Write short notes on (a) Humidity"), "Write short notes on (a) Humidity");
+  assert.equal(stripLabel("Unit II — Atmospheric Moisture"), "Unit II — Atmospheric Moisture");
+  const doc = bundleDocument("<style>.own{}</style>", "<section></section>");
+  assert.ok(doc.indexOf("svg.flow rect.n") < doc.indexOf(".own{}"), "bundle's own CSS comes after and wins");
+  const s = { course: "B.A. (Hons) Geography", semester: 3, subject: "Climatology", upc: "2292102301", paperType: "DSC", year: "2025" };
+  const bundle = solvedBundlePrompt(s);
+  assert.ok(bundle.includes("<h2>CLIMATOLOGY — QUESTION 1(a)</h2>") && bundle.includes('class="qtext"') && bundle.includes('class="diagram flow"'));
+  const text = solvedPaperPrompt(s);
+  assert.ok(text.includes("## CLIMATOLOGY — QUESTION 1(a)") && text.includes("never Mermaid") && !text.includes("```mermaid"));
+});

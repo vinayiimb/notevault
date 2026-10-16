@@ -222,10 +222,7 @@ OUTPUT FORMAT (software imports it — follow it exactly):
    - Length to suit the marks (a 9–15 mark answer ≈ 500–900 words), in simple exam language, ending with a "Conclusion:" paragraph.
    - Formulas in LaTeX: inline \\( … \\), display \\[ … \\]. Show every numerical step and box the final answer with \\boxed{…}.
    - Tables as Markdown pipe tables.
-   - Flowcharts as \`\`\`mermaid code blocks.
-   - Every diagram as ONE inline <svg> (no images, no links), placed where it belongs, with no blank lines inside it, followed by one line telling the student what to draw. Use this exact style:
-     <svg class="diagram" viewBox="0 0 440 300"><path class="axis" d="M55 25V250H405"/><text x="18" y="22">Price</text><text x="335" y="280">Quantity</text><path class="curve blue" d="M95 55L365 220"/><text x="370" y="225">D</text><text x="42" y="265">O</text></svg>
-     Classes: axis = axes · curve + blue/green/red/purple = curves (red for the new or shifted curve) · dash = dashed · guide = dotted guide line · dot = point (<circle class="dot" r="4">). Label every axis, curve, equilibrium point and axis value with Unicode subscripts (D₁, S₂, P₁, Qₑ, E₁). Make sure points sit exactly where curves cross.
+${DIAGRAM_RULES.replace(/^/gm, "   ")}
 5. Write nothing before the first ## line and nothing after the last answer: no introduction, no web links, no citations, no college names, no images.
 
 Example of one question:
@@ -269,13 +266,52 @@ export function inlineBundleAssets(html: string, files: Record<string, string>):
     });
 }
 
+/** "CLIMATOLOGY — QUESTION 1(a)" → { group, questionNumber }; the <h2> of a section.q bundle. */
+export function parseQuestionHeading(text: string): { group: string; questionNumber: string } | null {
+  const m = text.replace(/\s+/g, " ").trim().match(/^(.+?)\s+[—–-]\s+QUESTION\s+(.+)$/i);
+  return m ? { group: m[1].trim(), questionNumber: m[2].trim() } : null;
+}
+
+/** Drops a leading "Question:" / "Unit tag:" label. */
+export function stripLabel(text: string): string {
+  return text.replace(/\s+/g, " ").trim().replace(/^(question|unit tag)\s*:\s*/i, "");
+}
+
+// The diagram + flowchart system (climatology_solved_answers.html). Put first
+// in every bundle's <head>, so diagrams render even if the bundle's own CSS
+// leaves a class out; the bundle's CSS comes after and wins.
+export const BUNDLE_DIAGRAM_CSS = `svg.diagram{display:block;width:100%;max-width:680px;height:auto;margin:12px auto 4px;background:#fff;border:1px solid #dbe2ee;border-radius:10px}
+svg.diagram text{font:12.5px "Segoe UI",system-ui,Arial,sans-serif;fill:#1f2937}
+svg.diagram text.b{font-weight:700}svg.diagram text.r{fill:#b91c1c}svg.diagram text.bl{fill:#1d4ed8}
+svg.diagram .axis{stroke:#111827;stroke-width:2;fill:none;stroke-linecap:round}
+svg.diagram .curve{fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+svg.diagram .blue{stroke:#2563eb}svg.diagram .green{stroke:#16a34a}svg.diagram .red{stroke:#dc2626}svg.diagram .purple{stroke:#7c3aed}svg.diagram .gray{stroke:#6b7280}
+svg.diagram .dash{stroke-dasharray:8 5}svg.diagram .guide{fill:none;stroke:#6b7280;stroke-width:1.3;stroke-dasharray:2 4}svg.diagram .dot{fill:#111827}
+svg.diagram .sea{fill:#e6f2fb}svg.diagram .land{fill:#e8e0c6;stroke:#a39a78;stroke-width:1.5}svg.diagram .rock{fill:#d6d3d1;stroke:#78716c;stroke-width:1.5}
+svg.diagram .warm{fill:#fee2e2}svg.diagram .cold{fill:#dbeafe}svg.diagram .cloud{fill:#fff;stroke:#94a3b8;stroke-width:1.5}
+svg.diagram .rain{fill:none;stroke:#2563eb;stroke-width:1.6;stroke-dasharray:4 4}svg.diagram .ring{fill:none;stroke:#7c3aed;stroke-width:8;opacity:.75}
+svg.diagram .eye{fill:#fff;stroke:#374151;stroke-dasharray:4 3;stroke-width:1.5}svg.diagram .parcel{fill:#fde68a;stroke:#b45309;stroke-width:1.5}
+svg.diagram .tri{fill:#2563eb}svg.diagram .semi{fill:#dc2626}
+svg.diagram .z-a{fill:#bbf7d0;stroke:#fff;stroke-width:2}svg.diagram .z-b{fill:#fde68a;stroke:#fff;stroke-width:2}svg.diagram .z-c{fill:#bfdbfe;stroke:#fff;stroke-width:2}svg.diagram .z-d{fill:#ddd6fe;stroke:#fff;stroke-width:2}svg.diagram .z-e{fill:#e5e7eb;stroke:#fff;stroke-width:2}
+svg.flow text{font-size:12.5px;text-anchor:middle}svg.flow .link{fill:none;stroke:#475569;stroke-width:1.7}svg.flow rect{stroke-width:1.5}
+svg.flow rect.n{fill:#eff6ff;stroke:#3b82f6}svg.flow rect.g{fill:#ecfdf5;stroke:#10b981}svg.flow rect.r{fill:#fef2f2;stroke:#ef4444}svg.flow rect.p{fill:#f5f3ff;stroke:#8b5cf6}`;
+
 /** One question's standalone document: the bundle's <head> plus that question's section. */
 export function bundleDocument(head: string, section: string, bodyScripts = ""): string {
-  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">${head}</head><body>${section}${bodyScripts}</body></html>`;
+  return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>${BUNDLE_DIAGRAM_CSS}</style>${head}</head><body>${section}${bodyScripts}</body></html>`;
 }
+
+// Shared by both prompts: the diagram + flowchart system, with one real example of each.
+const DIAGRAM_RULES = `DIAGRAMS — every diagram is ONE inline <svg> (no images, no links, no blank lines inside it), placed where it belongs, followed by <p class="caption"> (or, in text answers, one line) telling the student what to draw.
+- Diagrams and charts: <svg class="diagram" viewBox="0 0 480 310" role="img" aria-label="what it shows">. Classes: axis = axes · curve + blue/green/red/purple/gray = curves (red for the new or shifted curve) · dash = dashed · guide = dotted guide line · dot = point (<circle class="dot" r="4">) · sea, land, rock, warm, cold, cloud, rain, ring, eye, parcel = filled shapes for maps and cross-sections · tri / semi = cold-front triangles / warm-front semicircles · z-a … z-e = zones · <text class="b"> bold, "r" red, "bl" blue. Label every axis, curve, point, zone and value (Unicode subscripts: D₁, S₂, Qₑ).
+  Example: <svg class="diagram" viewBox="0 0 440 300" role="img" aria-label="Demand curve"><path class="axis" d="M55 25V250H405"/><text x="18" y="22">Price</text><text x="335" y="280">Quantity</text><path class="curve blue" d="M95 55L365 220"/><text x="370" y="225">D</text><text x="42" y="265">O</text></svg>
+- Flowcharts (never Mermaid): <svg class="diagram flow">. Boxes are <rect class="n|g|r|p" rx="9" height="36"> (n = blue step, g = green result, r = red problem, p = purple key idea) with a centred <text> inside; arrows are <path class="link" marker-end="url(#ID-k)"> using straight H/V lines. Put the arrowhead markers in <defs> with ids unique to that flowchart (fl1-k, fl2-k …).
+  Example: <svg class="diagram flow" viewBox="0 0 260 130" role="img" aria-label="Flowchart of condensation"><defs><marker id="fl1-k" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#374151"/></marker></defs><path class="link" d="M130 48V82" marker-end="url(#fl1-k)"/><rect class="n" x="30" y="12" width="200" height="36" rx="9"/><text x="130" y="34.5">Moist air rises and cools</text><rect class="g" x="45" y="82" width="170" height="36" rx="9"/><text x="130" y="104.5">Condensation</text></svg>
+- Make sure points sit exactly where curves cross, arrows end on box edges and no text overlaps.`;
 
 /** The bundle variant of the prompt: one self-contained HTML file for the whole paper. */
 export function solvedBundlePrompt(s: PromptSubject): string {
+  const head = s.subject.toUpperCase();
   const code = [s.paperType, s.upc && `UPC ${s.upc}`].filter(Boolean).join(", ");
   return `You are a Delhi University (DU) examiner and topper writing complete, exam-ready solved answers, and a front-end developer.
 
@@ -285,11 +321,18 @@ Course: ${s.course} · Semester ${s.semester} · NEP (UGCF 2022) syllabus${/^(19
 I will paste the question paper after this message. Solve EVERY question — every sub-part and every OR alternative.
 
 Return ONE complete, self-contained HTML file (<!DOCTYPE html> … </html>) for the whole paper. Software splits it into questions, so follow this structure exactly:
-1. <head>: all CSS in a single <style> block — clean white exam-sheet style, readable on phones (no horizontal scrolling; wide tables scroll inside their own box). Load libraries only from https://cdn.jsdelivr.net/npm/ (for example KaTeX + its auto-render for formulas, Chart.js for charts). No other external files, no images, no web fonts.
-2. <body>: one <section data-question="1(a)" data-unit="Unit 1 — <unit name from the official DU syllabus>"> for each question, sub-part and OR alternative. Use the number exactly as printed: 1(a), 1(b), 1(a) OR, 2 …
-3. The first child of every section: <p data-question-text>the full question exactly as printed</p>. Then the complete answer.
-4. Answers: numbered step headings, length to suit the marks (a 9–15 mark answer ≈ 500–900 words), formulas with KaTeX (\\( … \\) inline, \\[ … \\] display, final answers in \\boxed{}), every numerical step shown, HTML tables, every economics diagram as inline <svg> with labelled axes, curves (shifted curve dashed or in red), equilibrium points and axis values, charts as <canvas> drawn with Chart.js, and a final "Conclusion".
-5. Colours: white background, near-black text, light-grey table headers and borders. No sky-blue or tinted boxes. In diagrams use blue/green for the original curves and red (or dashed) for the shifted one; chart bars and lines in dark grey (#374151) unless a second series is needed.
-6. Each section is shown ON ITS OWN, so all JavaScript must initialise whatever is on the page on DOMContentLoaded and never depend on another section existing.
-7. Nothing outside the sections: no site header, navigation, footer, introduction, web links, citations or college names.`;
+1. <head>: all CSS in a single <style> block — clean white exam-sheet style, readable on phones (no horizontal scrolling; wide tables sit in <div class="tw"> and scroll inside it). Include CSS for every diagram class below. Load libraries only from https://cdn.jsdelivr.net/npm/ (for example KaTeX + its auto-render for formulas). No other external files, no images, no web fonts.
+2. <body><div class="wrap">, then one section per question, sub-part and OR alternative, in this exact shape:
+   <section class="q" id="q1a">
+   <h2>${head} — QUESTION 1(a)</h2>
+   <p class="qtext"><span class="qlabel">Question:</span> the full question exactly as printed</p>
+   <span class="unit">Unit II — <unit name from the official DU syllabus of this paper></span>
+   … the complete answer …
+   </section>
+   Use the number exactly as printed: 1(a), 1(b), 2, 3(c). Mark alternatives like: QUESTION 1(a) OR
+3. Answers: numbered <h3> step headings (1. Meaning, 2. Explanation, 3. Diagram …), length to suit the marks (a 9–15 mark answer ≈ 500–900 words), formulas with KaTeX (\\( … \\) inline, \\[ … \\] display, final answers in \\boxed{}), every numerical step shown, HTML tables, and a final <p class="concl"><strong>Conclusion:</strong> …</p>.
+4. ${DIAGRAM_RULES}
+5. Colours: white answer cards, near-black text, light-grey table borders. Diagram colours only from the classes above.
+6. Each section is shown ON ITS OWN, so any JavaScript must initialise whatever is on the page on DOMContentLoaded and never depend on another section existing.
+7. Nothing outside the sections except an optional <header> and contents list (they are dropped): no footer, web links, citations or college names.`;
 }

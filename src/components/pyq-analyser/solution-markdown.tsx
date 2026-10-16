@@ -40,11 +40,13 @@ const MONO = { light: mono(false), dark: mono(true) };
 // Admin-supplied coded SVG diagrams (the Business Economics diagram library):
 // shapes, text and presentation attributes only — no style, href, <use>,
 // <foreignObject> or event handlers, which the base schema already drops.
-const SVG_TAGS = ["svg", "g", "path", "line", "polyline", "polygon", "circle", "ellipse", "rect", "text", "tspan"];
+// <defs>/<marker> + marker-end draw the arrowheads in svg.flow flowcharts.
+const SVG_TAGS = ["svg", "g", "path", "line", "polyline", "polygon", "circle", "ellipse", "rect", "text", "tspan", "defs", "marker"];
 const SVG_ATTRS = [
   "className", "viewBox", "d", "x", "y", "x1", "y1", "x2", "y2", "cx", "cy", "r", "rx", "ry", "width", "height", "points",
   "fill", "fillOpacity", "stroke", "strokeWidth", "strokeDasharray", "strokeLinecap", "strokeLinejoin", "opacity",
   "textAnchor", "dominantBaseline", "fontSize", "fontWeight", "transform", "dx", "dy",
+  "id", "refX", "refY", "markerWidth", "markerHeight", "orient", "markerStart", "markerEnd", "role", "ariaLabel",
 ];
 const schema = {
   ...contentSanitizeSchema,
@@ -54,9 +56,11 @@ const schema = {
 
 // A bare <svg> pasted in an answer becomes its own HTML block (blank lines
 // inside it would otherwise end the block and leak markup as text).
+// rehype-sanitize prefixes every id with "user-content-", so marker
+// references get the same prefix or the arrowheads vanish.
 function wrapSvgs(md: string) {
   return md.replace(/(<figure class="pyq-svg">)?(<svg[\s\S]*?<\/svg>)/g, (_, fig, svg: string) => {
-    const tight = svg.replace(/\n\s*\n/g, "\n");
+    const tight = svg.replace(/\n\s*\n/g, "\n").replace(/url\(#(?!user-content-)/g, "url(#user-content-");
     return fig ? fig + tight : `\n\n<figure class="pyq-svg">${tight}</figure>\n\n`;
   });
 }

@@ -12,9 +12,11 @@ import {
   bundleDocument,
   inlineBundleAssets,
   isBundle,
+  parseQuestionHeading,
   parseSolvedText,
   solvedBundlePrompt,
   solvedPaperPrompt,
+  stripLabel,
   type LibraryDiagram,
 } from "@/lib/pyq-analyser";
 import { drawEconDiagram } from "@/lib/ai";
@@ -91,25 +93,41 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
     readBundle(inlineBundleAssets(await main.text(), assets), `${main.name}${all.length > 1 ? ` + ${all.length - 1} file${all.length > 2 ? "s" : ""}` : ""}`);
   }
 
+  // Two layouts: <section data-question="1(a)" data-unit> + <p data-question-text>,
+  // or <section class="q"><h2>SUBJECT — QUESTION 1(a)</h2><p class="qtext"> + <span class="unit">.
   function readBundle(html: string, source: string) {
     const dom = new DOMParser().parseFromString(html, "text/html");
     const head = dom.head.innerHTML;
     const bodyScripts = [...dom.body.children].filter((el) => el.tagName === "SCRIPT").map((el) => el.outerHTML).join("");
-    const sections = [...dom.querySelectorAll<HTMLElement>("[data-question]")];
+    const heading = (sec: Element) => sec.querySelector("h1, h2, h3");
+    let sections = [...dom.querySelectorAll<HTMLElement>("[data-question]")];
+    if (!sections.length) sections = [...dom.querySelectorAll<HTMLElement>("section")].filter((sec) => parseQuestionHeading(heading(sec)?.textContent ?? ""));
     const found: Row[] = sections.map((sec, key) => {
       const clone = sec.cloneNode(true) as HTMLElement;
-      const qEl = clone.querySelector("[data-question-text]");
-      const questionText = (qEl?.textContent ?? sec.getAttribute("data-question-text") ?? "").replace(/\s+/g, " ").trim();
-      qEl?.remove();
+      const h = sec.hasAttribute("data-question") ? null : heading(clone);
+      const parsed = h && parseQuestionHeading(h.textContent ?? "");
+      const qEl = clone.querySelector("[data-question-text], .qtext");
+      const unitEl = clone.querySelector(".unit");
+      const questionText = stripLabel(qEl?.textContent ?? sec.getAttribute("data-question-text") ?? "");
+      const unit = sec.getAttribute("data-unit") ?? stripLabel(unitEl?.textContent ?? "");
+      // Question, number and unit show in the analyser's own header, so they leave the answer.
+      for (const el of [qEl, unitEl, h]) el?.remove();
+      // Keep the section's wrappers (e.g. <div class="wrap">) so the bundle's layout CSS still applies.
+      let doc: Element = clone;
+      for (let p = sec.parentElement; p && p !== dom.body; p = p.parentElement) {
+        const shell = p.cloneNode(false) as Element;
+        shell.appendChild(doc);
+        doc = shell;
+      }
       return {
         key,
-        group: "",
-        questionNumber: sec.getAttribute("data-question") ?? "",
+        group: parsed?.group ?? "",
+        questionNumber: sec.getAttribute("data-question") ?? parsed?.questionNumber ?? "",
         section: "",
         questionText,
-        answerText: bundleDocument(head, clone.outerHTML, bodyScripts),
+        answerText: bundleDocument(head, doc.outerHTML, bodyScripts),
         marks: 0,
-        topics: sec.getAttribute("data-unit") ?? "",
+        topics: unit,
         difficulty: null,
       };
     });
@@ -118,11 +136,12 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
       found.push({ key: 0, group: "", questionNumber: "", section: "", questionText: "", answerText: html, marks: 0, topics: "", difficulty: null });
     }
     setRows(found);
+    setGroup(found[0].group);
     setMessage({
       ok: true,
       text: sections.length
         ? `Bundle read: ${found.length} questions (${source}). Preview each, then save.`
-        : "No <section data-question> found, so the whole bundle is one solution — type its question text below, then save.",
+        : "No question sections found (<section data-question> or <h2>… — QUESTION 1(a)</h2>), so the whole bundle is one solution — type its question text below, then save.",
     });
   }
   const [library, setLibrary] = useState<LibraryDiagram[]>([]);
