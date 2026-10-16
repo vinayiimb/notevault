@@ -22,6 +22,7 @@ import {
 import { drawEconDiagram } from "@/lib/ai";
 import { SolutionMarkdown } from "./solution-markdown";
 import { SolutionBundle } from "./solution-bundle";
+import { SavedQuestions } from "./saved-questions";
 import { applyOverrides, fetchJson, loadOverrides, type Overrides } from "@/lib/catalog-overrides";
 import { applyPaperEdits } from "@/lib/paper-edits";
 import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
@@ -77,6 +78,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
   const [rows, setRows] = useState<Row[]>([]);
   const [group, setGroup] = useState("");
   const [previewKey, setPreviewKey] = useState<number | null>(null);
+  const [savedVersion, setSavedVersion] = useState(0);
   const [copied, setCopied] = useState(false);
   const [promptKind, setPromptKind] = useState<"markdown" | "bundle">("markdown");
   const bundleRef = useRef<HTMLInputElement>(null);
@@ -363,6 +365,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
           difficulty: r.difficulty,
         })),
       });
+      setSavedVersion((v) => v + 1);
       const saved = new Set(shown.map((r) => r.key));
       const left = rows.filter((r) => !saved.has(r.key));
       setRows(left);
@@ -672,6 +675,12 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
           </ul>
         </div>
       )}
+
+      <SavedQuestions
+        key={subject?.key ?? ""}
+        refresh={savedVersion}
+        catalog={subject ? { courseSlug, course: courseName, semester: subject.semester, subject: subject.name, upc: subject.upc, paperType: subject.paperType } : null}
+      />
     </div>
   );
 }

@@ -68,6 +68,43 @@ export function findRepeat<T extends { questionText: string }>(text: string, exi
   return best;
 }
 
+// ---------- Saved-question management (admin) ----------
+
+const norm = (s: string) => s.toLowerCase().replace(/\s+/g, " ").trim();
+
+/**
+ * Same question saved twice: identical text, or same printed number and a
+ * repeat-level match. Returns duplicate id → the id it duplicates (the one
+ * with the longest answer, oldest on a tie), which is the one to keep.
+ */
+export function findDuplicates<T extends { id: string; questionNumber: string | null; questionText: string; answerLength: number; createdAt: Date | string }>(qs: T[]): Map<string, string> {
+  const order = [...qs].sort((a, b) => b.answerLength - a.answerLength || +new Date(a.createdAt) - +new Date(b.createdAt));
+  const keep: T[] = [];
+  const dupOf = new Map<string, string>();
+  for (const q of order) {
+    const same = keep.find(
+      (k) => norm(k.questionText) === norm(q.questionText) || (!!q.questionNumber && norm(k.questionNumber ?? "") === norm(q.questionNumber) && similarity(k.questionText, q.questionText) >= REPEAT_THRESHOLD),
+    );
+    if (same) dupOf.set(q.id, same.id);
+    else keep.push(q);
+  }
+  return dupOf;
+}
+
+/** Questions saved by one upload are created seconds apart; a gap over `gapMs` starts a new upload. Oldest upload first. */
+export function groupUploads<T extends { createdAt: Date | string }>(qs: T[], gapMs = 2 * 60_000): T[][] {
+  const sorted = [...qs].sort((a, b) => +new Date(a.createdAt) - +new Date(b.createdAt));
+  const out: T[][] = [];
+  let last = -Infinity;
+  for (const q of sorted) {
+    const t = +new Date(q.createdAt);
+    if (t - last > gapMs || !out.length) out.push([]);
+    out[out.length - 1].push(q);
+    last = t;
+  }
+  return out;
+}
+
 export function tally(values: string[][]): { key: string; count: number }[] {
   const counts = new Map<string, number>();
   for (const list of values) for (const v of new Set(list)) counts.set(v, (counts.get(v) ?? 0) + 1);

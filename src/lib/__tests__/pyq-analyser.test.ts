@@ -169,3 +169,21 @@ test("section.q bundles: question heading, labels, diagram CSS and prompts", asy
   const text = solvedPaperPrompt(s);
   assert.ok(text.includes("## CLIMATOLOGY — QUESTION 1(a)") && text.includes("never Mermaid") && !text.includes("```mermaid"));
 });
+
+test("saved questions: duplicates and uploads", async () => {
+  const { findDuplicates, groupUploads } = await import("@/lib/pyq-analyser");
+  const t = (min: number) => new Date(Date.UTC(2026, 9, 16, 22, min));
+  const qs = [
+    { id: "a", questionNumber: "1(a)", questionText: "Write short notes on any two of the following: (a) Humidity", answerLength: 900, createdAt: t(0) },
+    { id: "b", questionNumber: "1(b)", questionText: "Write short notes on any two of the following: (b) Evapotranspiration", answerLength: 900, createdAt: t(0) },
+    { id: "c", questionNumber: "2", questionText: "Briefly discuss the classification of clouds.", answerLength: 0, createdAt: t(0) },
+    { id: "a2", questionNumber: "1(a)", questionText: "write short notes on any two of the following:  (a) humidity", answerLength: 100, createdAt: t(30) },
+    { id: "c2", questionNumber: "2", questionText: "Discuss briefly the classification of clouds", answerLength: 5000, createdAt: t(31) },
+    { id: "or", questionNumber: "2 OR", questionText: "Explain the classification of clouds with examples of each type.", answerLength: 10, createdAt: t(31) },
+  ];
+  const dup = findDuplicates(qs);
+  assert.equal(dup.get("a2"), "a", "same text, shorter answer → duplicate of the first");
+  assert.equal(dup.get("c"), "c2", "same number + re-worded: keep the one with the answer");
+  assert.ok(!dup.has("b") && !dup.has("a") && !dup.has("or"), "sub-parts and OR alternatives are not duplicates");
+  assert.deepEqual(groupUploads(qs).map((u) => u.map((q) => q.id)), [["a", "b", "c"], ["a2", "c2", "or"]]);
+});

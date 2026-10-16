@@ -5,7 +5,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { extractPaperQuestions } from "@/lib/ai";
-import { findRepeat, parseYears } from "@/lib/pyq-analyser";
+import { findDuplicates, findRepeat, isBundle, parseYears } from "@/lib/pyq-analyser";
 import { slugify } from "@/lib/utils";
 
 async function requireAdmin() {
@@ -26,13 +26,23 @@ const CatalogSubjectSchema = z.object({
  * questions hang off a DB Subject. Reuse the Subject with the same UPC, else
  * create Program → Term → Subject the first time a paper is saved for it.
  */
-export async function ensureCatalogSubjectAction(input: z.infer<typeof CatalogSubjectSchema>) {
-  await requireAdmin();
-  const c = CatalogSubjectSchema.parse(input);
+async function findCatalogSubject(c: z.infer<typeof CatalogSubjectSchema>) {
   if (c.upc) {
     const byUpc = await prisma.subject.findFirst({ where: { upc: c.upc, mergedIntoId: null }, select: { id: true } });
     if (byUpc) return byUpc.id;
   }
+  const bySlug = await prisma.subject.findFirst({
+    where: { slug: slugify(c.subject) || "subject", term: { order: c.semester, program: { slug: c.courseSlug } } },
+    select: { id: true },
+  });
+  return bySlug?.id ?? null;
+}
+
+export async function ensureCatalogSubjectAction(input: z.infer<typeof CatalogSubjectSchema>) {
+  await requireAdmin();
+  const c = CatalogSubjectSchema.parse(input);
+  const found = await findCatalogSubject(c);
+  if (found) return found;
   const program = await prisma.program.upsert({
     where: { slug: c.courseSlug },
     create: { slug: c.courseSlug, name: c.course, level: "COLLEGE" },
@@ -97,7 +107,13 @@ export async function savePaperQuestionsAction(input: z.infer<typeof SaveSchema>
 
   let created = 0;
   let merged = 0;
+  // The same question twice in one upload is saved once (an OR alternative
+  // has different text, so it still gets its own row).
+  const seen = new Set<string>();
   for (const q of questions) {
+    const sig = `${q.questionNumber}|${q.questionText}`.toLowerCase().replace(/\s+/g, " ");
+    if (seen.has(sig)) continue;
+    seen.add(sig);
     const match = findRepeat(q.questionText, existing);
     if (match) {
       const years = parseYears(`${match.years ?? ""},${year}`);
@@ -137,4 +153,91 @@ export async function savePaperQuestionsAction(input: z.infer<typeof SaveSchema>
 
   revalidatePath("/papers/analyser");
   return { created, merged };
+}
+
+// ---------- Saved questions: list, edit, delete (Admin → PYQ Analyser) ----------
+
+export async function savedQuestionsAction(input: z.infer<typeof CatalogSubjectSchema>) {
+  await requireAdmin();
+  const subjectId = await findCatalogSubject(CatalogSubjectSchema.parse(input));
+  if (!subjectId) return { subjectId: null, questions: [] };
+  const rows = await prisma.question.findMany({
+    where: { subjectId },
+    orderBy: { createdAt: "asc" },
+    select: { id: true, questionNumber: true, section: true, questionText: true, answerText: true, marks: true, topics: true, difficulty: true, years: true, repeatCount: true, createdAt: true },
+  });
+  // Answers can be ~1.5 MB bundles: send only their size; the editor loads one on demand.
+  const questions = rows.map(({ answerText, ...q }) => ({ ...q, answerLength: answerText.length, bundle: isBundle(answerText) }));
+  const dupOf = findDuplicates(questions);
+  return { subjectId, questions: questions.map((q) => ({ ...q, duplicateOf: dupOf.get(q.id) ?? null })) };
+}
+
+export async function questionAnswerAction(id: string) {
+  await requireAdmin();
+  const q = await prisma.question.findUnique({ where: { id }, select: { answerText: true } });
+  return q?.answerText ?? "";
+}
+
+const UpdateSchema = z.object({
+  id: z.string().min(1),
+  questionNumber: z.string().trim().max(30),
+  section: z.string().trim().max(60),
+  questionText: z.string().trim().min(5),
+  answerText: z.string().max(1_500_000),
+  marks: z.number().int().min(0).max(100),
+  topics: z.array(z.string().trim().min(1)).max(6),
+  difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).nullable(),
+  years: z.string().max(200),
+});
+
+export async function updateSavedQuestionAction(input: z.infer<typeof UpdateSchema>) {
+  await requireAdmin();
+  const q = UpdateSchema.parse(input);
+  const years = parseYears(q.years);
+  await prisma.question.update({
+    where: { id: q.id },
+    data: {
+      questionNumber: q.questionNumber || null,
+      section: q.section || null,
+      questionText: q.questionText,
+      answerText: q.answerText,
+      marks: q.marks || null,
+      topics: q.topics,
+      difficulty: q.difficulty,
+      years: years.join(",") || null,
+      repeatCount: Math.max(years.length, 1),
+      isRepeated: years.length > 1,
+    },
+  });
+  revalidatePath("/papers/analyser");
+}
+
+export async function deleteSavedQuestionsAction(ids: string[]) {
+  await requireAdmin();
+  const list = z.array(z.string().min(1)).min(1).max(500).parse(ids);
+  const { count } = await prisma.question.deleteMany({ where: { id: { in: list } } });
+  revalidatePath("/papers/analyser");
+  return count;
+}
+
+/** Deletes every duplicate of the subject; the kept question gets their years. */
+export async function removeDuplicatesAction(subjectId: string) {
+  await requireAdmin();
+  const rows = await prisma.question.findMany({
+    where: { subjectId: z.string().min(1).parse(subjectId) },
+    select: { id: true, questionNumber: true, questionText: true, answerText: true, years: true, createdAt: true },
+  });
+  const dupOf = findDuplicates(rows.map((r) => ({ ...r, answerLength: r.answerText.length })));
+  const byId = new Map(rows.map((r) => [r.id, r]));
+  const yearsOf = new Map<string, string>();
+  for (const [dup, keep] of dupOf) yearsOf.set(keep, `${yearsOf.get(keep) ?? byId.get(keep)?.years ?? ""},${byId.get(dup)?.years ?? ""}`);
+  await prisma.$transaction([
+    ...[...yearsOf].map(([id, raw]) => {
+      const years = parseYears(raw);
+      return prisma.question.update({ where: { id }, data: { years: years.join(",") || null, repeatCount: Math.max(years.length, 1), isRepeated: years.length > 1 } });
+    }),
+    prisma.question.deleteMany({ where: { id: { in: [...dupOf.keys()] } } }),
+  ]);
+  revalidatePath("/papers/analyser");
+  return dupOf.size;
 }
