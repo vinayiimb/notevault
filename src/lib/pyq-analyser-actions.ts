@@ -12,6 +12,25 @@ async function requireAdmin() {
   if (!(await getSession())) throw new Error("Unauthorized");
 }
 
+// Production hides the message of anything a server action throws (the admin
+// only sees "React error #441"), so the save path returns its errors instead.
+type Failure = { ok: false; error: string };
+function readableError(e: unknown): string {
+  if (e instanceof z.ZodError)
+    return e.issues
+      .slice(0, 4)
+      .map((i) => {
+        const [, n, field] = i.path;
+        return typeof n === "number" ? `Question ${n + 1}${field ? ` (${String(field)})` : ""}: ${i.message}` : `${i.path.join(".") || "Input"}: ${i.message}`;
+      })
+      .join(" · ");
+  if (e instanceof Error) {
+    if (e.message === "Unauthorized") return "Your admin login has expired. Sign in again in a new tab, then click Save again.";
+    return e.message.split("\n").map((l) => l.trim()).filter(Boolean).at(-1) ?? e.message;
+  }
+  return String(e);
+}
+
 const CatalogSubjectSchema = z.object({
   courseSlug: z.string().regex(/^[a-z0-9-]{1,80}$/),
   course: z.string().trim().min(1).max(120),
@@ -38,7 +57,16 @@ async function findCatalogSubject(c: z.infer<typeof CatalogSubjectSchema>) {
   return bySlug?.id ?? null;
 }
 
-export async function ensureCatalogSubjectAction(input: z.infer<typeof CatalogSubjectSchema>) {
+export async function ensureCatalogSubjectAction(input: z.infer<typeof CatalogSubjectSchema>): Promise<{ ok: true; id: string } | Failure> {
+  try {
+    return { ok: true, id: await ensureCatalogSubject(input) };
+  } catch (e) {
+    console.error("[pyq-analyser] ensureCatalogSubject failed", e);
+    return { ok: false, error: readableError(e) };
+  }
+}
+
+async function ensureCatalogSubject(input: z.infer<typeof CatalogSubjectSchema>) {
   await requireAdmin();
   const c = CatalogSubjectSchema.parse(input);
   const found = await findCatalogSubject(c);
@@ -101,7 +129,16 @@ const SaveSchema = z.object({
  * another year) is merged: the year is added and the repeat count goes up,
  * which is what drives "most repeated" on the analyser.
  */
-export async function savePaperQuestionsAction(input: z.infer<typeof SaveSchema>) {
+export async function savePaperQuestionsAction(input: z.infer<typeof SaveSchema>): Promise<{ ok: true; created: number; merged: number } | Failure> {
+  try {
+    return { ok: true, ...(await savePaperQuestions(input)) };
+  } catch (e) {
+    console.error("[pyq-analyser] save failed", e);
+    return { ok: false, error: readableError(e) };
+  }
+}
+
+async function savePaperQuestions(input: z.infer<typeof SaveSchema>) {
   await requireAdmin();
   const { subjectId, year, questions } = SaveSchema.parse(input);
   const missing = questions.filter((q) => !q.years.length).length;

@@ -247,7 +247,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
   // Resolved (and created if needed) only when a paper is actually read or saved.
   async function subjectId() {
     if (!subject) throw new Error("Pick a subject first.");
-    return ensureCatalogSubjectAction({
+    const res = await ensureCatalogSubjectAction({
       courseSlug,
       course: courseName,
       semester: subject.semester,
@@ -255,6 +255,8 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
       upc: subject.upc,
       paperType: subject.paperType,
     });
+    if (!res.ok) throw new Error(res.error);
+    return res.id;
   }
   const validYear = /^(19|20)\d{2}$/.test(year);
   const chunks = useMemo(() => chunkText(text), [text]);
@@ -357,6 +359,8 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
 
   async function save() {
     setMessage(null);
+    const blank = shown.find((r) => r.questionText.trim().length < 5);
+    if (blank) return setMessage({ ok: false, text: `Question ${blank.questionNumber || shown.indexOf(blank) + 1} has no question text. Type it in (or remove that row), then save.` });
     setBusy("Saving…");
     try {
       const res = await savePaperQuestionsAction({
@@ -373,6 +377,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
           years: parseYears(r.years),
         })),
       });
+      if (!res.ok) throw new Error(res.error);
       setSavedVersion((v) => v + 1);
       const saved = new Set(shown.map((r) => r.key));
       const left = rows.filter((r) => !saved.has(r.key));
