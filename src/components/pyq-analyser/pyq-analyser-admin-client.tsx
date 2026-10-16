@@ -13,6 +13,7 @@ import {
   inlineBundleAssets,
   isBundle,
   parseQuestionHeading,
+  parseYears,
   parseSolvedText,
   solvedBundlePrompt,
   solvedPaperPrompt,
@@ -42,6 +43,7 @@ type Row = {
   marks: number;
   topics: string;
   difficulty: "EASY" | "MEDIUM" | "HARD" | null;
+  years: string; // the question's own year tag(s), "2022, 2024"; empty = the paper-year box
 };
 
 const CHUNK = 5000;
@@ -111,10 +113,12 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
       const parsed = h && parseQuestionHeading(h.textContent ?? "");
       const qEl = clone.querySelector("[data-question-text], .qtext");
       const unitEl = clone.querySelector(".unit");
+      const yearEl = clone.querySelector(".year, [data-year-text]");
       const questionText = stripLabel(qEl?.textContent ?? sec.getAttribute("data-question-text") ?? "");
       const unit = sec.getAttribute("data-unit") ?? stripLabel(unitEl?.textContent ?? "");
       // Question, number and unit show in the analyser's own header, so they leave the answer.
-      for (const el of [qEl, unitEl, h]) el?.remove();
+      const years = parseYears(sec.getAttribute("data-year") ?? stripLabel(yearEl?.textContent ?? "")).join(", ");
+      for (const el of [qEl, unitEl, yearEl, h]) el?.remove();
       // section.q answers are static HTML: saved as a normal answer so they render in the
       // site's solution style (diagrams keep their classes). data-question bundles may
       // carry scripts (charts, KaTeX), so they stay whole documents in a sandboxed frame.
@@ -129,11 +133,12 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
         marks: 0,
         topics: unit,
         difficulty: null,
+        years,
       };
     });
     if (!found.length) {
       // No markers: keep the whole page as one solution; admin types the question.
-      found.push({ key: 0, group: "", questionNumber: "", section: "", questionText: "", answerText: html, marks: 0, topics: "", difficulty: null });
+      found.push({ key: 0, group: "", questionNumber: "", section: "", questionText: "", answerText: html, marks: 0, topics: "", difficulty: null, years: "" });
     }
     setRows(found);
     setGroup(found[0].group);
@@ -258,6 +263,9 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
   // is saved to its own subject, one at a time.
   const groups = [...new Set(rows.map((r) => r.group))];
   const shown = groups.length > 1 ? rows.filter((r) => r.group === group) : rows;
+  // Questions without their own year tag take the paper-year box.
+  const untagged = shown.filter((r) => !parseYears(r.years).length).length;
+  const shownYears = [...new Set(shown.flatMap((r) => (parseYears(r.years).length ? parseYears(r.years) : validYear ? [year] : [])))].sort();
   const markerCount = shown.reduce((n, r) => n + r.answerText.split(DIAGRAM_MARKER).length - 1, 0);
 
   // One free Groq call per diagram, in order; a failed one keeps its marker
@@ -319,6 +327,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
         marks: 0,
         topics: q.unit,
         difficulty: null,
+        years: q.years.join(", "),
       }));
       setRows(found);
       setGroup(found[0].group);
@@ -333,7 +342,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
         const res = await extractQuestionsChunkAction(await subjectId(), chunks[i]);
         if (!res.ok) throw new Error(res.error);
         for (const q of res.data.questions) {
-          found.push({ ...q, key: found.length, group: "", answerText: "", topics: q.topics.join(", ") });
+          found.push({ ...q, key: found.length, group: "", answerText: "", topics: q.topics.join(", "), years: "" });
         }
       }
       setRows(found);
@@ -352,7 +361,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
     try {
       const res = await savePaperQuestionsAction({
         subjectId: await subjectId(),
-        year,
+        year: validYear ? year : "",
         questions: shown.map((r) => ({
           questionNumber: r.questionNumber.trim(),
           section: r.section.trim(),
@@ -361,6 +370,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
           marks: Math.max(0, Math.round(Number(r.marks) || 0)),
           topics: r.topics.split(",").map((t) => t.trim()).filter(Boolean).slice(0, 6),
           difficulty: r.difficulty,
+          years: parseYears(r.years),
         })),
       });
       setSavedVersion((v) => v + 1);
@@ -423,7 +433,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
           </select>
         </label>
         <label className="flex flex-col gap-1 text-xs font-medium text-muted">
-          Paper year
+          Paper year {rows.length > 0 && untagged === 0 ? "(from tags)" : "(if not tagged)"}
           <input value={year} onChange={(e) => setYear(e.target.value.trim())} inputMode="numeric" maxLength={4} className={input} />
         </label>
       </div>
@@ -567,7 +577,7 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
           )}
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4">
             <p className="text-sm font-semibold text-foreground">
-              Review {shown.length} questions · {subject?.name ?? "pick a subject"} · {year}
+              Review {shown.length} questions · {subject?.name ?? "pick a subject"} · {shownYears.join(", ") || "no year"}
             </p>
             <button
               type="button"
@@ -621,10 +631,10 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
             <button
               type="button"
               onClick={save}
-              disabled={!!busy || !validYear || !subject}
+              disabled={!!busy || (untagged > 0 && !validYear) || !subject}
               className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground transition hover:bg-accent-hover disabled:opacity-50"
             >
-              {validYear ? `Save ${shown.length} questions` : "Enter a valid year"}
+              {untagged > 0 && !validYear ? `Enter the paper year (${untagged} untagged)` : `Save ${shown.length} questions`}
             </button>
           </div>
           <ul className="divide-y divide-border">
@@ -634,7 +644,16 @@ export function PyqAnalyserAdminClient({ counts }: { counts: Record<string, numb
                 <input value={r.section} onChange={(e) => update(r.key, { section: e.target.value })} placeholder="Section" className={input} />
                 <div className="col-span-2 flex flex-col gap-2 md:col-span-1">
                   <textarea value={r.questionText} onChange={(e) => update(r.key, { questionText: e.target.value })} rows={3} className={input} />
-                  <input value={r.topics} onChange={(e) => update(r.key, { topics: e.target.value })} placeholder="Topics, comma separated" className={input} />
+                  <div className="grid grid-cols-[1fr_150px] gap-2">
+                    <input value={r.topics} onChange={(e) => update(r.key, { topics: e.target.value })} placeholder="Topics, comma separated" className={input} />
+                    <input
+                      value={r.years}
+                      onChange={(e) => update(r.key, { years: e.target.value })}
+                      placeholder={validYear ? `Year: ${year}` : "Year"}
+                      aria-label="Year(s) this question was asked"
+                      className={input}
+                    />
+                  </div>
                   <details>
                     <summary className="cursor-pointer text-xs text-muted">Answer {r.answerText ? `(${r.answerText.length.toLocaleString()} chars)` : "(none)"}</summary>
                     <textarea value={r.answerText} onChange={(e) => update(r.key, { answerText: e.target.value })} rows={10} className={`${input} mt-2 font-mono text-xs`} />

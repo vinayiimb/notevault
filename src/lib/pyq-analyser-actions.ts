@@ -74,7 +74,8 @@ export async function extractQuestionsChunkAction(subjectId: string, text: strin
 
 const SaveSchema = z.object({
   subjectId: z.string().min(1),
-  year: z.string().regex(/^(19|20)\d{2}$/),
+  // Fallback for questions with no year tag of their own.
+  year: z.string().regex(/^((19|20)\d{2})?$/),
   questions: z
     .array(
       z.object({
@@ -86,38 +87,48 @@ const SaveSchema = z.object({
         marks: z.number().int().min(0).max(100),
         topics: z.array(z.string().trim().min(1)).max(6),
         difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).nullable(),
+        // The question's own year tag(s), e.g. ["2022", "2024"]; empty = use `year`.
+        years: z.array(z.string().regex(/^(19|20)\d{2}$/)).max(20).default([]),
       }),
     )
     .min(1)
-    .max(200),
+    .max(300),
 });
 
 /**
- * Saves one paper's questions. A question that matches one already stored for
- * the subject (re-asked in another year) is merged: the year is added and the
- * repeat count goes up, which is what drives "most repeated" on the analyser.
+ * Saves questions of one or more papers (each tagged with its own year). A
+ * question that matches one already stored for the subject (re-asked in
+ * another year) is merged: the year is added and the repeat count goes up,
+ * which is what drives "most repeated" on the analyser.
  */
 export async function savePaperQuestionsAction(input: z.infer<typeof SaveSchema>) {
   await requireAdmin();
   const { subjectId, year, questions } = SaveSchema.parse(input);
-  const existing = await prisma.question.findMany({
-    where: { subjectId },
-    select: { id: true, questionText: true, answerText: true, years: true, topics: true },
-  });
+  const missing = questions.filter((q) => !q.years.length).length;
+  if (missing && !year) throw new Error(`${missing} question(s) have no year tag: enter the paper year, or add a year to each.`);
+  const existing: { id: string; questionText: string; answerText: string; years: string | null; topics: string[]; fresh?: boolean }[] =
+    await prisma.question.findMany({
+      where: { subjectId },
+      select: { id: true, questionText: true, answerText: true, years: true, topics: true },
+    });
 
   let created = 0;
   let merged = 0;
-  // The same question twice in one upload is saved once (an OR alternative
-  // has different text, so it still gets its own row).
+  // The same question twice in one upload, same year, is saved once.
   const seen = new Set<string>();
   for (const q of questions) {
-    const sig = `${q.questionNumber}|${q.questionText}`.toLowerCase().replace(/\s+/g, " ");
+    const qYears = q.years.length ? parseYears(q.years.join(",")) : [year];
+    const sig = `${q.questionNumber}|${q.questionText}|${qYears}`.toLowerCase().replace(/\s+/g, " ");
     if (seen.has(sig)) continue;
     seen.add(sig);
-    const match = findRepeat(q.questionText, existing);
+    let match = findRepeat(q.questionText, existing);
+    // A match saved earlier in this same upload for the same year is the same
+    // paper (e.g. an "OR" alternative), so it stays its own question; one from
+    // another year's paper in the upload is a repeat and merges.
+    if (match?.fresh && parseYears(match.years).some((y) => qYears.includes(y))) match = null;
     if (match) {
-      const years = parseYears(`${match.years ?? ""},${year}`);
-      const topics = [...new Set([...match.topics, ...q.topics])];
+      const years = parseYears(`${match.years ?? ""},${qYears}`);
+      const topics = [...new Set([...match.topics, ...q.topics])].slice(0, 6);
       await prisma.question.update({
         where: { id: match.id },
         data: {
@@ -130,23 +141,26 @@ export async function savePaperQuestionsAction(input: z.infer<typeof SaveSchema>
       });
       match.years = years.join(",");
       match.topics = topics;
+      if (!match.answerText) match.answerText = q.answerText;
       merged++;
     } else {
-      // Not added to `existing`: an "OR" alternative in the same paper must
-      // stay its own question. Re-saving the same paper merges as a no-op.
-      await prisma.question.create({
+      const row = await prisma.question.create({
         data: {
           subjectId,
           questionText: q.questionText,
           answerText: q.answerText,
           marks: q.marks || null,
-          years: year,
+          years: qYears.join(","),
+          repeatCount: qYears.length,
+          isRepeated: qYears.length > 1,
           questionNumber: q.questionNumber || null,
           section: q.section || null,
           topics: q.topics,
           difficulty: q.difficulty,
         },
+        select: { id: true },
       });
+      existing.push({ id: row.id, questionText: q.questionText, answerText: q.answerText, years: qYears.join(","), topics: q.topics, fresh: true });
       created++;
     }
   }

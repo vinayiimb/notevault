@@ -115,7 +115,7 @@ export function tally(values: string[][]): { key: string; count: number }[] {
 // Format:  "## BUSINESS ECONOMICS (HONS.) — QUESTION 1(a)" / "Question: …" /
 // "Unit tag: Unit 1 — …" / answer markdown until the next question or "# UNIT".
 
-export type SolvedQuestion = { group: string; questionNumber: string; questionText: string; unit: string; answer: string };
+export type SolvedQuestion = { group: string; questionNumber: string; questionText: string; unit: string; years: string[]; answer: string };
 
 export const DIAGRAM_MARKER = "<!-- diagram -->";
 
@@ -145,11 +145,12 @@ export function parseSolvedText(text: string): SolvedQuestion[] {
   const flush = () => {
     if (!cur) return;
     const body = cur.lines.join("\n");
-    const q = body.match(/^Question:\s*([\s\S]*?)(?=^Unit tag:|^#{1,4}\s|\n\s*\n)/m);
+    const q = body.match(/^Question:\s*([\s\S]*?)(?=^Unit tag:|^Years?:|^#{1,4}\s|\n\s*\n)/m);
     const unit = body.match(/^Unit tag:\s*(.+)$/m)?.[1].trim() ?? "";
+    const years = parseYears(body.match(/^Years?:\s*(.+)$/m)?.[1]);
     let answer = body;
     if (q) answer = answer.replace(q[0], "");
-    answer = answer.replace(/^Unit tag:.*$/m, "");
+    answer = answer.replace(/^Unit tag:.*$/m, "").replace(/^Years?:.*$/m, "");
     // ChatGPT's hot-linked web images (third-party diagrams on expiring
     // URLs) become a hidden DIAGRAM_MARKER for the admin's "Draw diagrams"
     // step; the source line under each is dropped, the "Draw …" text stays.
@@ -161,7 +162,7 @@ export function parseSolvedText(text: string): SolvedQuestion[] {
       .replace(/\n{3,}/g, "\n\n")
       .trim();
     if (q && q[1].trim()) {
-      out.push({ group: cur.group, questionNumber: cur.questionNumber, questionText: q[1].trim(), unit, answer: normalizeMath(answer) });
+      out.push({ group: cur.group, questionNumber: cur.questionNumber, questionText: q[1].trim(), unit, years, answer: normalizeMath(answer) });
     }
     cur = null;
   };
@@ -244,9 +245,9 @@ export function solvedPaperPrompt(s: PromptSubject): string {
   return `You are a Delhi University (DU) examiner and topper writing complete, exam-ready solved answers.
 
 Paper: ${s.subject}${code ? ` (${code})` : ""}
-Course: ${s.course} · Semester ${s.semester} · NEP (UGCF 2022) syllabus${/^(19|20)\d{2}$/.test(s.year) ? ` · Exam year ${s.year}` : ""}
+Course: ${s.course} · Semester ${s.semester} · NEP (UGCF 2022) syllabus${/^(19|20)\d{2}$/.test(s.year) ? ` · If a paper does not show its year, use ${s.year}` : ""}
 
-I will paste the question paper after this message. Solve EVERY question — every sub-part and every OR alternative.
+I will paste the question paper(s) after this message — one paper or several years of this paper together. Solve EVERY question of every paper — every sub-part and every OR alternative.
 
 OUTPUT FORMAT (software imports it — follow it exactly):
 1. Start each question with its own line:
@@ -254,6 +255,7 @@ OUTPUT FORMAT (software imports it — follow it exactly):
    Use the number exactly as printed: 1(a), 1(b), 2, 3(c). Mark alternatives like: QUESTION 1(a) OR
 2. Next line: Question: <the full question exactly as printed, on one paragraph>
 3. Blank line, then: Unit tag: Unit N — <unit name from the official DU syllabus of this paper>
+   Next line: Year: <the exam year printed on the paper this question comes from, e.g. Year: 2024>. With several papers, every question gets the year of its own paper; if the same question is asked in more than one of the pasted papers, write it once with all its years: Year: 2022, 2024
 4. Then the full answer in Markdown:
    - Steps as ### headings: ### 1. Meaning, ### 2. Explanation, ### 3. Formula, ### 4. Diagram … (never use # or ## inside an answer)
    - Length to suit the marks (a 9–15 mark answer ≈ 500–900 words), in simple exam language, ending with a "Conclusion:" paragraph.
@@ -268,6 +270,7 @@ Example of one question:
 Question: <question text>
 
 Unit tag: Unit 1 — <unit name>
+Year: 2024
 
 ### 1. Meaning
 …
@@ -331,9 +334,9 @@ export function parseQuestionHeading(text: string): { group: string; questionNum
   return m ? { group: m[1].trim(), questionNumber: m[2].trim() } : null;
 }
 
-/** Drops a leading "Question:" / "Unit tag:" label. */
+/** Drops a leading "Question:" / "Unit tag:" / "Year:" label. */
 export function stripLabel(text: string): string {
-  return text.replace(/\s+/g, " ").trim().replace(/^(question|unit tag)\s*:\s*/i, "");
+  return text.replace(/\s+/g, " ").trim().replace(/^(question|unit tag|years?)\s*:\s*/i, "");
 }
 
 // The diagram + flowchart system (climatology_solved_answers.html). Put first
@@ -375,9 +378,9 @@ export function solvedBundlePrompt(s: PromptSubject): string {
   return `You are a Delhi University (DU) examiner and topper writing complete, exam-ready solved answers, and a front-end developer.
 
 Paper: ${s.subject}${code ? ` (${code})` : ""}
-Course: ${s.course} · Semester ${s.semester} · NEP (UGCF 2022) syllabus${/^(19|20)\d{2}$/.test(s.year) ? ` · Exam year ${s.year}` : ""}
+Course: ${s.course} · Semester ${s.semester} · NEP (UGCF 2022) syllabus${/^(19|20)\d{2}$/.test(s.year) ? ` · If a paper does not show its year, use ${s.year}` : ""}
 
-I will paste the question paper after this message. Solve EVERY question — every sub-part and every OR alternative.
+I will paste the question paper(s) after this message — one paper or several years of this paper together. Solve EVERY question of every paper — every sub-part and every OR alternative.
 
 Return ONE complete, self-contained HTML file (<!DOCTYPE html> … </html>) for the whole paper. Software splits it into questions, so follow this structure exactly:
 1. <head>: all CSS in a single <style> block — clean white exam-sheet style, readable on phones (no horizontal scrolling; wide tables sit in <div class="tw"> and scroll inside it). Include CSS for every diagram class below. No JavaScript, no external files, no images, no web fonts (the site shows the answers in its own style; only the diagram classes keep their look).
@@ -386,9 +389,11 @@ Return ONE complete, self-contained HTML file (<!DOCTYPE html> … </html>) for 
    <h2>${head} — QUESTION 1(a)</h2>
    <p class="qtext"><span class="qlabel">Question:</span> the full question exactly as printed</p>
    <span class="unit">Unit II — <unit name from the official DU syllabus of this paper></span>
+   <span class="year">2024</span>
    … the complete answer …
    </section>
    Use the number exactly as printed: 1(a), 1(b), 2, 3(c). Mark alternatives like: QUESTION 1(a) OR
+   <span class="year"> holds the exam year printed on the paper the question comes from. With several papers, every question gets the year of its own paper (ids must stay unique, e.g. q2024-1a); if the same question is asked in more than one of the pasted papers, write it once with all its years: <span class="year">2022, 2024</span>
 3. Answers: numbered <h3> step headings (1. Meaning, 2. Explanation, 3. Diagram …), length to suit the marks (a 9–15 mark answer ≈ 500–900 words), formulas as plain HTML in <div class="formula"> (<sub>/<sup>, fractions as <span class="frac"><span>top</span><span>bottom</span></span>, final answers in <span class="boxed">…</span>), every numerical step shown, HTML tables inside <div class="tw">, and a final <p class="concl"><strong>Conclusion:</strong> …</p>.
 4. ${DIAGRAM_RULES}
 5. Colours: white answer cards, near-black text, light-grey table borders. Diagram colours only from the classes above.

@@ -198,3 +198,31 @@ test("section.q answers render natively, other bundles stay framed", async () =>
   const p = solvedBundlePrompt({ course: "B.A. (Hons) Geography", semester: 3, subject: "Climatology", upc: null, paperType: null, year: "2025" });
   assert.ok(p.includes('class="frac"') && !p.includes("KaTeX"));
 });
+
+test("year tags: read per question from text and labels, asked for in both prompts", async () => {
+  const { parseSolvedText, stripLabel, solvedPaperPrompt, solvedBundlePrompt } = await import("@/lib/pyq-analyser");
+  const text = `## CLIMATOLOGY — QUESTION 1(a)
+Question: Write a short note on humidity.
+
+Unit tag: Unit II — Atmospheric Moisture
+Year: 2022, 2024
+
+### 1. Meaning
+Humidity is water vapour in air.
+
+## CLIMATOLOGY — QUESTION 2
+Question: Discuss the classification of clouds.
+
+Unit tag: Unit II — Atmospheric Moisture
+
+### 1. Meaning
+Clouds are …`;
+  const [a, b] = parseSolvedText(text);
+  assert.deepEqual(a.years, ["2022", "2024"]);
+  assert.ok(!a.answer.includes("Year:") && a.answer.startsWith("### 1. Meaning"));
+  assert.deepEqual(b.years, [], "untagged → uses the paper-year box");
+  assert.equal(stripLabel("Year: 2025"), "2025");
+  const s = { course: "B.A. (Hons) Geography", semester: 3, subject: "Climatology", upc: null, paperType: null, year: "2025" };
+  assert.ok(solvedPaperPrompt(s).includes("Year: 2022, 2024") && solvedBundlePrompt(s).includes('<span class="year">2024</span>'));
+  assert.ok(!solvedPaperPrompt(s).includes("Exam year 2025"), "the box year is only a fallback now");
+});
