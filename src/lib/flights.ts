@@ -61,6 +61,9 @@ export class FlightError extends Error {
   }
 }
 
+// Prices move by the minute, so keep our own cache short. SerpApi serves repeats from its cache for free (up to ~1h old);
+// set SERPAPI_NO_CACHE=1 to always pull fresh fares at the cost of one free-quota search per unique query.
+const FRESH_MS = 15 * 60e3;
 const PER_IP_DAY = 15;
 const spend = new Map<string, number>();
 function budget(ip: string) {
@@ -86,7 +89,7 @@ async function serp(params: Record<string, string>, ip: string) {
   await quotaLeft(key);
   budget(ip);
   const u = new URL("https://serpapi.com/search.json");
-  u.search = new URLSearchParams({ engine: "google_flights", hl: "en", ...params, api_key: key }).toString();
+  u.search = new URLSearchParams({ engine: "google_flights", hl: "en", ...params, api_key: key, ...(process.env.SERPAPI_NO_CACHE === "1" && { no_cache: "true" }) }).toString();
   const j = await fetch(u, { signal: AbortSignal.timeout(60_000) }).then((r) => r.json()).catch(() => ({ error: "Bad response" }));
   if (j.error && !/hasn't returned any results/i.test(j.error)) throw new FlightError("Flight search is temporarily unavailable. Please try again.");
   return j;
@@ -172,11 +175,12 @@ function base(p: Query & { from: string[]; to: string[] }) {
 
 export async function searchFlights(p: ReturnType<typeof parseQuery>, ip: string) {
   const params = base(p);
-  return cached("s:" + JSON.stringify(params), 3600e3, async () => {
+  return cached("s:" + JSON.stringify(params), FRESH_MS, async () => {
     const j = await serp(params, ip);
     const pi = j.price_insights;
     return {
       currency: p.currency,
+      fetchedAt: String(j.search_metadata?.created_at ?? "").replace(" UTC", "Z").replace(" ", "T") || null,
       calendar: {},
       roundTrip: !!p.ret,
       flights: flightsOf(j, p.from, p.to, p.depart),
@@ -188,7 +192,7 @@ export async function searchFlights(p: ReturnType<typeof parseQuery>, ip: string
 /** Round trips: the return flights that go with a chosen outbound. */
 export async function returnFlights(p: ReturnType<typeof parseQuery>, token: string, ip: string) {
   const params = { ...base(p), departure_token: token };
-  return cached("r:" + JSON.stringify(params), 3600e3, async () => ({ currency: p.currency, flights: flightsOf(await serp(params, ip), p.to, p.from, p.ret) }));
+  return cached("r:" + JSON.stringify(params), FRESH_MS, async () => ({ currency: p.currency, flights: flightsOf(await serp(params, ip), p.to, p.from, p.ret) }));
 }
 
 export async function bookingOptions(p: ReturnType<typeof parseQuery>, token: string, ip: string) {

@@ -142,7 +142,8 @@ function render() {
   $('#tabs').innerHTML = tab('best', 'Best', best, best && `${fmtDur(best.minutes)} · ${stopsText(best.stops)}`) + tab('price', 'Cheapest', cheap, `${fmtDur(cheap.minutes)} · ${stopsText(cheap.stops)}`) + tab('fast', 'Fastest', fast, `${fmtDur(fast.minutes)} · ${stopsText(fast.stops)}`);
   const sorters = {best: (a, b) => (b.best || 0) - (a.best || 0) || a.price - b.price, price: (a, b) => a.price - b.price, fast: (a, b) => a.minutes - b.minutes || a.price - b.price};
   list.sort(sorters[F.sort]);
-  $('#count').textContent = `${list.length} of ${flights.length} flights`;
+  const at = F.data.fetchedAt && new Date(F.data.fetchedAt);
+  $('#count').textContent = `${list.length} of ${flights.length} flights` + (at && !isNaN(at) ? ` · fares fetched ${at.toLocaleTimeString('en-IN', {hour: 'numeric', minute: '2-digit'})}` : '');
   $('#list').innerHTML = list.map(f => card(f, flights.indexOf(f), {cheap: f === cheap, fast: f === fast, currency})).join('')
     || `<div class="unavail"><h2 style="font-size:24px">No flights match these filters.</h2><p class="row"><button class="btn ghost" type="button" onclick="document.getElementById('f-reset').click()">Clear filters</button></p></div>`;
 }
