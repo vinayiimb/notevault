@@ -73,6 +73,10 @@ const nextConfig: NextConfig = {
       },
     ];
   },
+  async rewrites() {
+    // /flights is a self-contained page (its own CSS/JS) copied from the Insta Global flight portal.
+    return [{ source: "/flights", destination: "/flights-app/index.html" }];
+  },
   async redirects() {
     return [
       // Full Archive hub removed 2026-10-09 (its ~120MB in-memory catalogue cost Railway RAM); /papers replaces it.

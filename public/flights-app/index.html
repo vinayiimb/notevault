@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Cheap flights: compare fares &amp; book | DU PYQ Online</title>
+<meta name="description" content="Search live flight fares from Google Flights and book on the airline or travel site of your choice.">
+<meta property="og:title" content="Cheap flights: compare fares &amp; book | DU PYQ Online"><meta property="og:description" content="Search live flight fares from Google Flights and book on the airline or travel site of your choice.">
+<meta name="theme-color" content="#ffffff">
+<meta name="robots" content="noindex,follow"><link rel="canonical" href="https://www.dupyq.online/flights"><link rel="stylesheet" href="/flights-app/flights.css"><link rel="preconnect" href="https://www.gstatic.com">
+</head>
+<body>
+<header class="nav"><div class="wrap">
+  <a class="logo" href="/"><i>DU</i>DU PYQ Online</a>
+  <nav class="links" aria-label="Main"><a href="/papers">Papers</a><a href="/notes">Notes</a><a href="/flights" aria-current=page>Flights</a></nav>
+  <details class="menu"><summary aria-label="Menu">☰</summary><nav><a href="/papers">Papers</a><a href="/notes">Notes</a><a href="/flights" aria-current=page>Flights</a></nav></details>
+</div></header>
+<main>
+<section class="hero" style="padding-bottom:56px"><div class="wrap">
+  <span class="eyebrow">Flights · Compare airlines &amp; agencies</span>
+  <h1 style="font-size:clamp(44px,8vw,88px)">Find the <span class="grad">lowest fare.</span></h1>
+  <p class="lead">Compare fares, pick the cheapest day, and book in a few taps.</p>
+  <form class="search" id="ai-form" style="margin-top:32px">
+    <input id="ai-q" placeholder="Try: Delhi to Dubai next Friday, non-stop" aria-label="Describe your trip" autocomplete="off">
+    <button class="btn" type="submit"><span>Search</span></button>
+  </form>
+  <p class="small muted" id="ai-msg" style="margin-top:10px;min-height:20px" aria-live="polite"></p>
+  <form class="fform" id="f-form" autocomplete="off">
+    <div class="ff"><label for="f-from">From</label><input id="f-from" placeholder="City or airport" required><ul class="sugg" role="listbox" hidden></ul></div>
+    <button class="swap" type="button" id="f-swap" aria-label="Swap origin and destination">⇄</button>
+    <div class="ff"><label for="f-to">To</label><input id="f-to" placeholder="City or airport" required><ul class="sugg" role="listbox" hidden></ul></div>
+    <div class="ff"><label for="f-depart">Depart</label><input id="f-depart" type="date" required></div>
+    <div class="ff"><label for="f-return">Return <small>(optional)</small></label><input id="f-return" type="date"></div>
+    <div class="ff opts2"><label class="addon"><input type="checkbox" id="f-direct"> Non-stop only</label>
+      <select id="f-cur" aria-label="Currency"><option value="inr">₹ INR</option><option value="aed">AED</option><option value="usd">$ USD</option></select></div>
+    <button class="btn lg" type="submit">Search flights</button>
+  </form>
+  <p class="small" id="f-msg" style="color:#b42318;margin-top:10px;min-height:20px" role="alert"></p>
+  <div class="quick"><button class="chip" type="button" data-route="DEL|Delhi|DXB|Dubai" data-country="United Arab Emirates">Delhi → Dubai</button><button class="chip" type="button" data-route="BOM|Mumbai|DXB|Dubai" data-country="United Arab Emirates">Mumbai → Dubai</button><button class="chip" type="button" data-route="DEL|Delhi|BKK|Bangkok" data-country="Thailand">Delhi → Bangkok</button><button class="chip" type="button" data-route="BLR|Bengaluru|SIN|Singapore" data-country="Singapore">Bengaluru → Singapore</button><button class="chip" type="button" data-route="DXB|Dubai|@LON|London" data-country="United Kingdom">Dubai → London</button><button class="chip" type="button" data-route="DEL|Delhi|MCT|Muscat" data-country="Oman">Delhi → Muscat</button></div>
+</div></section>
+<section class="alt" id="results" hidden style="padding:0 0 72px">
+  <div class="rsum"><div class="wrap"><div><b id="rs-route"></b><small id="rs-meta"></small></div><button class="btn ghost" type="button" id="rs-edit">Modify search</button></div></div>
+  <div class="wrap" style="padding-top:24px">
+    <div id="calwrap" hidden><h2 style="font-size:24px;margin-bottom:12px">Cheapest days this month</h2><div class="cal" id="cal"></div></div>
+    <p class="protect" id="insight" hidden style="font-size:15px;margin:0 0 12px"></p>
+        <div class="rgrid">
+      <aside class="filters" id="filters" aria-label="Filters">
+        <div class="fhead"><h3>Filters</h3><button type="button" class="linkbtn" id="f-reset">Reset all</button></div>
+        <div id="fbody"></div>
+        <button class="btn block fapply" type="button" id="f-apply">Show flights</button>
+      </aside>
+      <div>
+        <div class="tabs" id="tabs" role="tablist" aria-label="Sort flights"></div>
+        <div class="rbar"><span class="muted small" id="count"></span><button class="chip ffbtn" type="button" id="f-open">Filters</button></div>
+        <div id="list" class="flist"></div>
+        <p class="fine" style="text-align:left;margin-top:20px">Fares are the latest found and may change. The seller confirms the final price before you pay.</p>
+      </div>
+    </div>
+  </div>
+</section>
+<section><div class="wrap"><div class="cols3">
+  <div class="box"><h3>Lowest fare, first</h3><p>We compare fares across airlines and agencies and show the cheapest day of the month.</p></div>
+  <div class="box"><h3>Secure checkout</h3><p>You pay on the airline's or travel site's own booking page. We never take payment.</p></div>
+  <div class="box"><h3>Live Google Flights data</h3><p>The same fares you would see on Google Flights, with the cheapest and fastest options picked out for you.</p></div>
+</div></div></section>
+<dialog id="review" class="review-dlg" aria-labelledby="rv-title">
+  <div class="rv-head"><h2 id="rv-title">Review your flight</h2><button type="button" id="rv-close" aria-label="Close">✕</button></div>
+  <div id="rv-body"></div>
+  <a class="btn lg block" id="rv-go" href="#" rel="noopener">Continue to secure booking →</a>
+  <p class="fine">You'll enter passenger details and pay on the seller's page. The final price is confirmed there.</p>
+</dialog>
+</main>
+<footer><div class="wrap"><div class="flegal"><p>Fares come live from Google Flights and can change. The airline or travel site confirms the final price before you pay. DU PYQ Online does not sell tickets or take payment.</p><p>© 2026 DU PYQ Online. <a href="/">Home</a> · <a href="/privacy-policy">Privacy</a> · <a href="/terms">Terms</a></p></div></div></footer>
+<script src="/flights-app/flights.js"></script>
+</body>
+</html>
