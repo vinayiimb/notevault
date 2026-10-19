@@ -63,3 +63,21 @@ test("JAM cutoff data is internally consistent", () => {
 test("syllabus units match the unit tags used by the questions", () => {
   assert.deepEqual(JAM_EN_SYLLABUS.map((s) => s.unit), [...JAM_UNITS]);
 });
+
+import { buildMockTests, markQuestion, scoreMock } from "@/lib/jam-mock";
+test("mock tests: unique ids, full papers are 100 marks / 180 min, JAM marking", () => {
+  const all = fs.readdirSync(dir).filter((f) => f.endsWith(".md")).flatMap((f) => parseJamPaper(f.replace(".md", ""), fs.readFileSync(path.join(dir, f), "utf8")));
+  const tests = buildMockTests(all);
+  assert.equal(new Set(tests.map((t) => t.id)).size, tests.length);
+  for (const t of tests.filter((t) => t.kind === "full")) assert.deepEqual([t.questionIds.length, t.marks, t.minutes], [60, 100, 180], t.id);
+  assert.equal(tests.filter((t) => t.kind === "topic").reduce((n, t) => n + t.questionIds.length, 0), all.length);
+
+  const mcq2 = { type: "MCQ" as const, key: "B", marks: 2 };
+  assert.deepEqual(markQuestion(mcq2, { picked: ["A"], nat: "" }), { result: "wrong", marks: -2 / 3 });
+  assert.deepEqual(markQuestion({ type: "MSQ", key: "A,C", marks: 2 }, { picked: ["A"], nat: "" }), { result: "wrong", marks: 0 });
+  assert.deepEqual(markQuestion({ type: "NAT", key: "all", marks: 1 }, undefined), { result: "bonus", marks: 1 });
+  assert.deepEqual(markQuestion(mcq2, { picked: [], nat: "" }), { result: "skipped", marks: 0 });
+  const paper = all.filter((q) => q.year === "2025");
+  const perfect = Object.fromEntries(paper.map((q) => [q.id, { picked: q.type === "NAT" ? [] : q.key.split(","), nat: q.type === "NAT" ? q.key.split(/\.\.| or /)[0] : "" }]));
+  assert.equal(scoreMock(paper, perfect).score, 100);
+});

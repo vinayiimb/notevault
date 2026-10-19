@@ -4,6 +4,7 @@ const TABS = [
   { href: "/jameco", label: "PYQ Analyser" },
   { href: "/jameco/syllabus", label: "Syllabus" },
   { href: "/jameco/cutoff", label: "Cutoffs" },
+  { href: "/jameco/mock", label: "Mock Tests" },
 ] as const;
 
 /** Switches between the IIT JAM Economics pages. */
