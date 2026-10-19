@@ -6,11 +6,7 @@ import {
   ArrowCounterClockwise,
   ArrowLeft,
   ArrowRight,
-  Calculator,
   CheckCircle,
-  Clock,
-  FileText,
-  Info,
   MinusCircle,
   SquaresFour,
   X,
@@ -60,17 +56,42 @@ function clock(sec: number) {
 
 const negative = (q: JamQuestion) => (q.type === "MCQ" ? `−${q.marks === 1 ? "⅓" : "⅔"}` : "0");
 
-/** Palette chip: green "up" pentagon answered, red "down" pentagon not answered, purple circle marked. */
+/** Palette chip in the JAM/TCS CBT style: green chamfered = answered, orange shield = not answered, grey = not visited, purple circle = marked. */
 function StatusChip({ status, children, className = "" }: { status: Status; children: React.ReactNode; className?: string }) {
-  const base = `relative flex items-center justify-center text-sm font-semibold ${className}`;
-  if (status === "answered") return <span className={`${base} bg-emerald-500 text-white`} style={{ clipPath: "polygon(0 26%, 50% 0, 100% 26%, 100% 100%, 0 100%)" }}>{children}</span>;
-  if (status === "not_answered") return <span className={`${base} bg-red-500 text-white`} style={{ clipPath: "polygon(0 0, 100% 0, 100% 74%, 50% 100%, 0 74%)" }}>{children}</span>;
-  if (status === "not_visited") return <span className={`${base} rounded-lg border border-border bg-surface-muted text-foreground`}>{children}</span>;
+  const base = `relative flex items-center justify-center ${className}`;
+  if (status === "answered")
+    return (
+      <span className={`${base} bg-gradient-to-b from-[#6cc04a] to-[#3f9a2b] text-white`} style={{ clipPath: "polygon(0 22%, 22% 0, 78% 0, 100% 22%, 100% 100%, 0 100%)" }}>
+        {children}
+      </span>
+    );
+  if (status === "not_answered")
+    return (
+      <span className={`${base} bg-gradient-to-b from-[#f0672d] to-[#c9400f] text-white`} style={{ clipPath: "polygon(0 0, 100% 0, 100% 72%, 50% 100%, 0 72%)" }}>
+        {children}
+      </span>
+    );
+  if (status === "not_visited")
+    return <span className={`${base} rounded-[3px] border border-[#b9b9b9] bg-gradient-to-b from-[#f7f7f7] to-[#dcdcdc] text-[#111] shadow-[0_1px_1px_rgba(0,0,0,0.15)]`}>{children}</span>;
   return (
-    <span className={`${base} rounded-full bg-violet-600 text-white`}>
+    <span className={`${base} !w-auto mx-auto aspect-square rounded-full bg-gradient-to-b from-[#7d55b3] to-[#5a3590] text-white`}>
       {children}
-      {status === "answered_marked" && <span className="absolute -bottom-0.5 -right-0.5 size-2.5 rounded-full border-2 border-surface bg-emerald-500" />}
+      {status === "answered_marked" && <span className="absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-white bg-[#3f9a2b]" />}
     </span>
+  );
+}
+
+/** Plain candidate silhouette, like the photo slot on the JAM CBT screen. */
+function CandidateAvatar() {
+  return (
+    <svg viewBox="0 0 96 96" className="size-[92px] shrink-0" aria-hidden>
+      <rect width="96" height="96" fill="#eef2f7" />
+      <circle cx="48" cy="36" r="17" fill="#f2c7a5" />
+      <path d="M31 33c0-12 8-19 17-19s17 7 17 19c-3-6-9-9-17-9s-14 3-17 9z" fill="#6b3f22" />
+      <path d="M14 96c2-20 15-31 34-31s32 11 34 31z" fill="#2f6fd6" />
+      <path d="M41 65h14l-7 14z" fill="#fff" />
+      <path d="M47 68h2l2 16-3 4-3-4z" fill="#1e4aa0" />
+    </svg>
   );
 }
 
@@ -312,171 +333,152 @@ export function JamMockCbt({ test, questions }: { test: MockTest; questions: Jam
   const pick = (label: string) =>
     setDraft((d) => ({ ...d, picked: q.type === "MCQ" ? [label] : d.picked.includes(label) ? d.picked.filter((l) => l !== label) : [...d.picked, label].sort() }));
 
+  const shortTitle = test.kind === "full" ? `JAM ${test.year}` : test.kind === "section" ? test.title.replace(" · Section", " Section") : test.title;
+  const topBtn = "shrink-0 whitespace-nowrap px-2 py-1 text-[13px] text-white hover:underline sm:px-3 sm:text-[15px]";
+  const cbtBtn = "h-10 rounded-[3px] border border-[#c9c9c9] bg-white px-3 text-[15px] text-[#222] shadow-[0_1px_1px_rgba(0,0,0,0.06)] hover:bg-[#f3f3f3] sm:px-5 sm:text-[17px]";
+
   const paletteBody = (
     <>
-      <ul className="grid grid-cols-2 gap-x-3 gap-y-3 border-b border-border p-4 text-xs text-muted">
+      <ul className="grid grid-cols-2 gap-x-2 gap-y-3 px-3 py-4 text-[13px] leading-tight text-[#333]">
         {STATUS_INFO.map((s) => (
           <li key={s.status} className={`flex items-center gap-2 ${s.status === "answered_marked" ? "col-span-2" : ""}`}>
-            <StatusChip status={s.status} className="size-7 shrink-0 text-xs">
+            <StatusChip status={s.status} className="h-[30px] w-[34px] shrink-0 text-[14px]">
               {counts[s.status]}
             </StatusChip>
             {s.label}
           </li>
         ))}
       </ul>
-      <p className="bg-violet-600 px-4 py-2 text-sm font-semibold text-white">{section.label}</p>
-      <div className="min-h-0 flex-1 overflow-y-auto p-4">
-        <p className="mb-3 text-sm font-semibold text-foreground">Choose a question</p>
-        <div className="grid grid-cols-5 gap-2.5">
+      <p className="bg-[#4a87f5] px-3 py-1 text-[19px] text-white">JAM Economics Mocks</p>
+      <div className="min-h-0 flex-1 overflow-y-auto px-3 py-2.5">
+        <p className="mb-3 text-[16px] font-semibold text-[#111]">Choose a Question</p>
+        <div className="grid grid-cols-4 gap-x-3 gap-y-3.5">
           {inSection.map(({ qq, i }) => (
-            <button key={qq.id} type="button" onClick={() => goTo(i)} aria-label={`Question ${i + 1}`} aria-current={i === live.idx} className={`rounded-lg p-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 ${i === live.idx ? "ring-2 ring-foreground" : ""}`}>
-              <StatusChip status={statusOf(qq.id)} className="h-10 w-full">
+            <button key={qq.id} type="button" onClick={() => goTo(i)} aria-label={`Question ${i + 1}`} aria-current={i === live.idx} className="focus:outline-none">
+              <StatusChip status={statusOf(qq.id)} className="h-[44px] w-full text-[18px]">
                 {i + 1}
               </StatusChip>
             </button>
           ))}
         </div>
       </div>
-      <div className="border-t border-border p-4">
-        <button type="button" onClick={() => setModal("submit")} className="w-full rounded-xl bg-violet-600 py-2.5 text-sm font-semibold text-white hover:bg-violet-700">
-          Submit test
+      <div className="flex justify-center bg-[#dce7f8] py-2.5">
+        <button type="button" onClick={() => setModal("submit")} className="h-11 rounded-[3px] bg-[#8ab4f8] px-4 text-[19px] text-white hover:bg-[#6a9ff5]">
+          Submit
         </button>
       </div>
     </>
   );
 
   return (
-    <div className="fixed inset-0 z-[70] flex flex-col bg-background text-foreground">
-      <header className="flex h-12 shrink-0 items-center gap-3 bg-zinc-900 px-3 text-white sm:px-4">
-        <span className="min-w-0 truncate text-sm font-semibold text-amber-300 sm:text-base">{test.title}</span>
-        <nav className="ml-auto flex items-center gap-1 text-sm">
-          {(
-            [
-              ["instructions", "Instructions", Info],
-              ["paper", "Question Paper", FileText],
-            ] as const
-          ).map(([m, label, Icon]) => (
-            <button key={m} type="button" onClick={() => setModal(m)} className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-zinc-200 hover:bg-white/10 hover:text-white" aria-label={label}>
-              <Icon size={18} />
-              <span className="hidden md:inline">{label}</span>
-            </button>
-          ))}
-          <button type="button" onClick={() => setCalc(true)} className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-zinc-200 hover:bg-white/10 hover:text-white" aria-label="Calculator">
-            <Calculator size={18} />
-            <span className="hidden md:inline">Calculator</span>
-          </button>
-          <button type="button" onClick={() => setPalette(true)} className="flex items-center gap-1.5 rounded-lg px-2 py-1.5 text-zinc-200 hover:bg-white/10 lg:hidden" aria-label="Question palette">
-            <SquaresFour size={18} />
-          </button>
-        </nav>
+    <div className="fixed inset-0 z-[70] flex flex-col bg-white text-[#111] dark:bg-background dark:text-foreground">
+      <header className="flex h-8 shrink-0 items-center bg-[#1f2a3d]">
+        <span className="min-w-0 flex-1 truncate px-2.5 text-[17px] text-[#f6b026] sm:text-[19px]">{shortTitle}</span>
+        <button type="button" onClick={() => setModal("instructions")} className={topBtn}>
+          <span className="hidden sm:inline">View </span>Instructions
+        </button>
+        <button type="button" onClick={() => setModal("paper")} className={`${topBtn} hidden sm:block`}>
+          Question Paper
+        </button>
+        <button type="button" onClick={() => setCalc(true)} className={topBtn}>
+          Calculator
+        </button>
+        <button type="button" onClick={() => setPalette(true)} className={`${topBtn} lg:hidden`} aria-label="Question palette">
+          <SquaresFour size={18} />
+        </button>
       </header>
 
       <div className="flex min-h-0 flex-1">
         <main className="flex min-w-0 flex-1 flex-col">
-          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 border-b border-border px-3 py-2 sm:px-4">
-            <div className="flex gap-1 overflow-x-auto">
+          <div className="flex h-[30px] shrink-0 items-center justify-between border-b border-[#e5e5e5] px-2.5 text-[16px] sm:text-[18px]">
+            <span>Sections</span>
+            <span className={left < 300 ? "text-red-600" : ""}>Time Left: {clock(left)}</span>
+          </div>
+          <div className="flex shrink-0 items-end justify-between gap-2 px-2.5 pt-1">
+            <div className="flex">
               {sections.map((s) => (
                 <button
                   key={s.id}
                   type="button"
                   onClick={() => goTo(questions.findIndex((qq) => qq.type === s.type))}
-                  className={`shrink-0 rounded-lg px-3 py-1.5 text-sm font-medium transition ${s.type === q.type ? "bg-violet-600 text-white" : "text-muted hover:bg-surface-muted hover:text-foreground"}`}
+                  className={`h-[44px] border border-[#e3e3e3] px-2.5 text-[18px] sm:text-[19px] ${s.type === q.type ? "border-[#4a87f5] bg-[#4a87f5] text-white" : "bg-white text-[#111] hover:bg-[#f3f3f3]"}`}
                 >
-                  <span className="sm:hidden">{s.type}</span>
-                  <span className="hidden sm:inline">{s.label}</span>
+                  {s.type}
                 </button>
               ))}
             </div>
-            <span className={`ml-auto flex items-center gap-1.5 rounded-lg px-3 py-1.5 font-mono text-sm font-semibold tabular-nums ${left < 300 ? "bg-red-50 text-red-700" : "bg-surface-muted text-foreground"}`}>
-              <Clock size={16} /> {clock(left)}
+            <span className="pb-1.5 text-[14px] sm:text-[18px]">Time Spent (Question): {clock(live.saved[q.id]?.time ?? 0)}</span>
+          </div>
+          <p className="mt-1 shrink-0 bg-[#4a87f5] px-2.5 py-0.5 text-[18px] text-white sm:text-[19px]">JAM Economics Mock</p>
+          <div className="flex shrink-0 items-center gap-3 border-b border-[#e0e0e0] px-2.5 py-1 text-[15px]">
+            <b className="font-bold">Question No. {live.idx + 1}</b>
+            <span className="ml-auto text-[13px] text-[#555]">
+              {test.kind === "topic" ? `JAM ${q.year} · ` : ""}Marks: +{q.marks} · Negative: {negative(q)}
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2 border-b border-border px-3 py-2.5 text-sm sm:px-4">
-            <span className="font-semibold">Question {live.idx + 1}</span>
-            <span className="text-muted">of {questions.length}</span>
-            <span className="ml-auto flex flex-wrap items-center gap-1.5 text-xs">
-              {test.kind === "topic" && <span className="rounded-full bg-surface-muted px-2.5 py-1 text-muted">JAM {q.year}</span>}
-              <span className="rounded-full bg-surface-muted px-2.5 py-1 font-medium">{q.type}</span>
-              <span className="rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-700">+{q.marks}</span>
-              <span className="rounded-full bg-red-50 px-2.5 py-1 font-medium text-red-700">{negative(q)}</span>
-            </span>
-          </div>
-
-          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-8 sm:py-6">
-            <div className="mx-auto max-w-4xl">
-              <div className="pyq-paper">
-                <SolutionMarkdown key={`q-${q.id}`} content={q.stem} />
-              </div>
-              {q.type === "NAT" ? (
-                <label className="mt-6 block max-w-xs">
-                  <span className="text-xs font-medium text-muted">Your answer (number)</span>
-                  <input
-                    value={draft.nat}
-                    onChange={(e) => /^-?\d*\.?\d*$/.test(e.target.value) && setDraft({ ...draft, nat: e.target.value })}
-                    inputMode="decimal"
-                    autoComplete="off"
-                    className="mt-1.5 w-full rounded-xl border border-border bg-surface px-4 py-3 font-mono text-lg focus:border-violet-500 focus:outline-none focus:ring-2 focus:ring-violet-200"
-                  />
-                </label>
-              ) : (
-                <div className="mt-6 space-y-2.5" role={q.type === "MCQ" ? "radiogroup" : "group"}>
-                  {q.type === "MSQ" && <p className="text-xs text-muted">Select all correct options.</p>}
-                  {q.options.map((o) => {
-                    const on = draft.picked.includes(o.label);
-                    return (
-                      <button
-                        key={o.label}
-                        type="button"
-                        role={q.type === "MCQ" ? "radio" : "checkbox"}
-                        aria-checked={on}
-                        onClick={() => pick(o.label)}
-                        className={`flex w-full items-start gap-3 rounded-2xl border px-4 py-3 text-left transition ${on ? "border-violet-500 bg-violet-50/60 ring-1 ring-violet-500" : "border-border hover:border-foreground/30 hover:bg-surface-muted"}`}
-                      >
-                        <span
-                          className={`mt-0.5 flex size-6 shrink-0 items-center justify-center border-2 text-xs font-bold ${q.type === "MCQ" ? "rounded-full" : "rounded-md"} ${on ? "border-violet-600 bg-violet-600 text-white" : "border-border text-muted"}`}
-                        >
-                          {o.label}
-                        </span>
-                        <OptionText text={o.text} />
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
+          <div className="min-h-0 flex-1 overflow-y-auto px-4 py-5 sm:px-7">
+            <div className="text-[17px] leading-[1.65] [&_.nt-root]:!bg-transparent [&_.pyq-solution]:!text-[17px]">
+              <SolutionMarkdown key={`q-${q.id}`} content={q.stem} />
             </div>
+            {q.type === "NAT" ? (
+              <input
+                value={draft.nat}
+                onChange={(e) => /^-?\d*\.?\d*$/.test(e.target.value) && setDraft({ ...draft, nat: e.target.value })}
+                inputMode="decimal"
+                autoComplete="off"
+                aria-label="Numerical answer"
+                className="mt-5 h-10 w-56 border border-[#9a9a9a] bg-white px-2 text-[17px] text-[#111] focus:outline-none focus:ring-1 focus:ring-[#4a87f5]"
+              />
+            ) : (
+              <div className="mt-4 space-y-1.5">
+                {q.options.map((o) => (
+                  <label key={o.label} className="flex cursor-pointer items-center gap-3 py-1 text-[17px]">
+                    <input
+                      type={q.type === "MCQ" ? "radio" : "checkbox"}
+                      name={`opt-${q.id}`}
+                      checked={draft.picked.includes(o.label)}
+                      onChange={() => pick(o.label)}
+                      className="size-[15px] shrink-0 accent-[#4a87f5]"
+                    />
+                    <OptionText text={o.text} />
+                  </label>
+                ))}
+              </div>
+            )}
           </div>
 
-          <footer className="grid shrink-0 grid-cols-2 gap-2 border-t border-border bg-surface px-3 py-2.5 sm:flex sm:items-center sm:px-4">
-            <button type="button" onClick={markNext} className="rounded-xl border border-border px-3 py-2.5 text-sm font-medium hover:bg-surface-muted">
+          <footer className="grid shrink-0 grid-cols-2 gap-2 border-t border-[#e5e5e5] bg-white px-3 py-2.5 sm:flex sm:items-center sm:gap-2.5 sm:px-4 dark:bg-background">
+            <button type="button" onClick={markNext} className={cbtBtn}>
               <span className="sm:hidden">Mark &amp; Next</span>
               <span className="hidden sm:inline">Mark for Review &amp; Next</span>
             </button>
-            <button type="button" onClick={clear} className="rounded-xl border border-border px-3 py-2.5 text-sm font-medium hover:bg-surface-muted">
+            <button type="button" onClick={clear} className={cbtBtn}>
               Clear Response
             </button>
-            <button
-              type="button"
-              onClick={() => goTo(Math.max(live.idx - 1, 0))}
-              disabled={live.idx === 0}
-              className="flex items-center justify-center gap-1.5 rounded-xl border border-border px-4 py-2.5 text-sm font-medium hover:bg-surface-muted disabled:opacity-40 sm:ml-auto"
-            >
-              <ArrowLeft size={14} /> Previous
+            <button type="button" onClick={() => goTo(Math.max(live.idx - 1, 0))} disabled={live.idx === 0} className={`${cbtBtn} disabled:opacity-60 sm:ml-auto`}>
+              Previous
             </button>
-            <button type="button" onClick={saveNext} className="flex items-center justify-center gap-1.5 rounded-xl bg-violet-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-violet-700">
-              Save &amp; Next <ArrowRight size={14} />
+            <button type="button" onClick={saveNext} className="h-10 rounded-[3px] bg-[#3d82f6] px-5 text-[15px] text-white hover:bg-[#2f6fe0] sm:text-[17px]">
+              Save &amp; Next
             </button>
           </footer>
         </main>
 
-        <aside className="hidden w-80 shrink-0 flex-col border-l border-border bg-surface lg:flex">{paletteBody}</aside>
+        <aside className="hidden w-[272px] shrink-0 flex-col lg:flex">
+          <div className="flex h-[120px] shrink-0 items-center gap-4 px-4">
+            <CandidateAvatar />
+            <span className="text-[17px] leading-snug">Candidate</span>
+          </div>
+          <div className="flex min-h-0 flex-1 flex-col border-l-[5px] border-t-[5px] border-[#c6d4e8]">{paletteBody}</div>
+        </aside>
       </div>
 
       {palette && (
         <div className="fixed inset-0 z-10 flex justify-end bg-black/40 lg:hidden" onClick={() => setPalette(false)}>
-          <aside className="flex h-full w-[min(20rem,88vw)] flex-col bg-surface" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between border-b border-border px-4 py-3">
-              <span className="font-semibold">Questions</span>
+          <aside className="flex h-full w-[min(18rem,88vw)] flex-col bg-white text-[#111]" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between bg-[#1f2a3d] px-3 py-2 text-white">
+              <span className="text-[15px]">Question Palette</span>
               <button type="button" onClick={() => setPalette(false)} aria-label="Close">
                 <X size={18} />
               </button>
