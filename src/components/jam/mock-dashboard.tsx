@@ -76,7 +76,7 @@ export function JamMockDashboard({ tests }: { tests: MockTest[] }) {
         <section className={`${card} flex flex-col p-5 sm:p-8 lg:h-[30rem]`}>
           <div className="flex flex-wrap items-center gap-3">
             <h2 className="text-lg font-semibold text-foreground">Topic Test</h2>
-            <span title="Every past JAM question on one syllabus topic, timed at 1.8 minutes per mark like the real paper." className="text-muted">
+            <span title="Every past JAM question on one syllabus topic. Submit each answer to check it and see the solution." className="text-muted">
               <Info size={18} aria-label="About topic tests" />
             </span>
             <label className="relative">

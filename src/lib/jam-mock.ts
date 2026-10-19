@@ -111,9 +111,10 @@ export function readAttempts(): MockAttempt[] {
   }
 }
 
+/** Insert or replace by id (topic tests re-save after every answer). */
 export function saveAttempt(a: MockAttempt) {
   try {
     // ponytail: newest 100 attempts kept in this browser; move to the DB if logged-in history is wanted.
-    localStorage.setItem(ATTEMPTS_KEY, JSON.stringify([a, ...readAttempts()].slice(0, 100)));
+    localStorage.setItem(ATTEMPTS_KEY, JSON.stringify([a, ...readAttempts().filter((x) => x.id !== a.id)].slice(0, 100)));
   } catch {}
 }

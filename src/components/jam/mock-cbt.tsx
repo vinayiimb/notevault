@@ -553,7 +553,7 @@ export function JamMockCbt({ test, questions }: { test: MockTest; questions: Jam
   );
 }
 
-function Result({ test, questions, attempt, onRetake }: { test: MockTest; questions: JamQuestion[]; attempt: MockAttempt; onRetake: () => void }) {
+export function Result({ test, questions, attempt, onRetake }: { test: MockTest; questions: JamQuestion[]; attempt: MockAttempt; onRetake: () => void }) {
   const [filter, setFilter] = useState<MockResult | "all">("all");
   const [pos, setPos] = useState(0);
   const marked = questions.map((q, i) => ({ q, i, ...markQuestion(q, attempt.responses[q.id]) }));

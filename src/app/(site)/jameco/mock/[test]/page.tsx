@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { loadJamQuestions } from "@/lib/jam-economics-data";
 import { buildMockTests } from "@/lib/jam-mock";
 import { JamMockCbt } from "@/components/jam/mock-cbt";
+import { JamTopicTest } from "@/components/jam/mock-topic";
 
 // One static page per test (5 papers × full + 3 sections, plus every topic).
 export const dynamicParams = false;
@@ -31,5 +32,6 @@ export async function generateMetadata({ params }: { params: Promise<{ test: str
 
 export default async function JamMockTestPage({ params }: { params: Promise<{ test: string }> }) {
   const { test, questions } = load((await params).test);
-  return <JamMockCbt test={test} questions={questions} />;
+  // Topic tests are untimed practice; full and sectional mocks use the CBT console.
+  return test.kind === "topic" ? <JamTopicTest test={test} questions={questions} /> : <JamMockCbt test={test} questions={questions} />;
 }
