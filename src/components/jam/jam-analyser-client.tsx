@@ -95,15 +95,20 @@ export function JamAnalyserClient({ questions }: { questions: JamQuestion[] }) {
     pillsRef.current?.querySelector<HTMLElement>(`[data-i="${idx}"]`)?.scrollIntoView({ block: "nearest", inline: "center" });
   }, [idx]);
 
+  // ← / A previous, → / D next, S shows the solution (not while typing).
+  const currentId = current?.id;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if ((e.target as HTMLElement)?.closest("input, textarea, select")) return;
-      if (e.key === "ArrowRight") setIdx((i) => Math.min(i + 1, filtered.length - 1));
-      if (e.key === "ArrowLeft") setIdx((i) => Math.max(i - 1, 0));
+      if (e.metaKey || e.ctrlKey || e.altKey || (e.target as HTMLElement)?.closest("input, textarea, select")) return;
+      const key = e.key.toLowerCase();
+      if (key === "arrowright" || key === "d") setIdx((i) => Math.min(i + 1, filtered.length - 1));
+      else if (key === "arrowleft" || key === "a") setIdx((i) => Math.max(i - 1, 0));
+      else if (key === "s" && currentId)
+        setAttempts((a) => ({ ...a, [currentId]: { ...(a[currentId] ?? { picked: [], nat: "" }), reveal: true } }));
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [filtered.length]);
+  }, [filtered.length, currentId]);
 
   // Each facet counts questions matching every *other* filter, so options never dead-end.
   const facet = (key: keyof Filters, values: (q: JamQuestion) => string[]) =>
@@ -405,6 +410,10 @@ export function JamAnalyserClient({ questions }: { questions: JamQuestion[] }) {
               >
                 <ArrowLeft size={14} /> Previous
               </button>
+              <span className="hidden text-xs text-muted sm:block">
+                Keys: <kbd className="font-sans font-medium text-foreground">A</kbd>/← previous · <kbd className="font-sans font-medium text-foreground">D</kbd>/→ next ·{" "}
+                <kbd className="font-sans font-medium text-foreground">S</kbd> solution
+              </span>
               <button
                 type="button"
                 onClick={() => setIdx((i) => Math.min(i + 1, filtered.length - 1))}
