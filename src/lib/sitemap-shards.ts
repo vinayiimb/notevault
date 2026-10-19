@@ -60,6 +60,8 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: EntryFreq }[]
   { path: "/previous-year-papers", priority: 0.9, changefreq: "daily" },
   { path: "/papers", priority: 0.9, changefreq: "daily" },
   { path: "/jameco", priority: 0.8, changefreq: "monthly" },
+  { path: "/jameco/syllabus", priority: 0.7, changefreq: "monthly" },
+  { path: "/jameco/cutoff", priority: 0.7, changefreq: "monthly" },
   { path: "/notes", priority: 0.8, changefreq: "weekly" },
   { path: "/skill-enhancement-courses", priority: 0.7, changefreq: "weekly" },
   { path: "/value-addition-courses", priority: 0.7, changefreq: "weekly" },

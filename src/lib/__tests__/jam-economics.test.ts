@@ -40,3 +40,26 @@ test("checkAnswer: MSQ needs the exact set, NAT uses ranges and alternatives", (
   assert.equal(checkAnswer({ type: "MCQ", key: "all" }, "A"), null);
   assert.equal(keyLabel({ type: "NAT", key: "4 or 600" }), "4 or 600");
 });
+
+// Cutoff data: OBC-NCL/EWS = 90% and SC/ST/PwD = 50% of General (from the unrounded General
+// mark, so allow ±0.01 against the displayed one); the category counts in the official reports
+// add up to the qualified total (PwD overlaps).
+import { JAM_EN_CUTOFFS } from "@/data/jam-economics/cutoffs";
+import { JAM_EN_SYLLABUS } from "@/data/jam-economics/syllabus";
+test("JAM cutoff data is internally consistent", () => {
+  const near = (a: number, b: number) => Math.abs(a - b) <= 0.0101;
+  for (const d of JAM_EN_CUTOFFS) {
+    if (d.cutoff) {
+      assert.ok(near(d.cutoff.gen * 0.9, d.cutoff.obc), `${d.year} obc`);
+      assert.ok(near(d.cutoff.gen * 0.5, d.cutoff.sc), `${d.year} sc`);
+    }
+    if (d.qualifiedBy && d.candidates) {
+      const { GEN, EWS, SC, ST } = d.qualifiedBy;
+      assert.equal(GEN + EWS + d.qualifiedBy["OBC-NCL"] + SC + ST, d.candidates.qualified, `${d.year} qualified total`);
+    }
+  }
+});
+
+test("syllabus units match the unit tags used by the questions", () => {
+  assert.deepEqual(JAM_EN_SYLLABUS.map((s) => s.unit), [...JAM_UNITS]);
+});

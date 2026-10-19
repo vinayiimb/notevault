@@ -76,6 +76,14 @@ export function JamAnalyserClient({ questions }: { questions: JamQuestion[] }) {
   const [showDistribution, setShowDistribution] = useState(false);
   const pillsRef = useRef<HTMLDivElement>(null);
 
+  // Deep links from the syllabus page: /jameco?unit=…&topic=…&year=…&type=…
+  useEffect(() => {
+    const p = new URLSearchParams(window.location.search);
+    const list = (k: string) => p.getAll(k).filter(Boolean);
+    const patch: Partial<Filters> = { units: list("unit"), topics: list("topic"), years: list("year"), types: list("type") };
+    if (Object.values(patch).some((v) => v && v.length)) Promise.resolve().then(() => setFilters((f) => ({ ...f, ...patch })));
+  }, []);
+
   const set = (patch: Partial<Filters>) => {
     setFilters((f) => ({ ...f, ...patch }));
     setIdx(0);
