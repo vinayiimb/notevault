@@ -1,4 +1,5 @@
 import { LoginForm } from "@/components/admin/login-form";
+import { GoogleSignInButton } from "@/components/paid-notes/google-sign-in-button";
 
 export default async function AdminLoginPage({
   searchParams,
@@ -14,6 +15,8 @@ export default async function AdminLoginPage({
         <h1 className="text-lg font-semibold">Admin sign in</h1>
         <p className="mt-1 text-sm text-muted">Manage DU PYQ Online content.</p>
         <div className="mt-6">
+          <GoogleSignInButton admin next={nextPath} />
+          <p className="my-4 text-center text-xs text-muted">or use a password</p>
           <LoginForm nextPath={nextPath} />
         </div>
       </div>

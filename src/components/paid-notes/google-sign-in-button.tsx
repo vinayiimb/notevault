@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { FIREBASE_CONFIG, googleSignInEnabled } from "@/lib/firebase-config";
 import { googleSignInAction } from "@/lib/paid-notes-actions";
+import { adminGoogleSignInAction } from "@/lib/actions";
 
 // Google's official four-colour "G".
 function GoogleG() {
@@ -16,7 +17,7 @@ function GoogleG() {
   );
 }
 
-export function GoogleSignInButton({ next = "", label = "Continue with Google" }: { next?: string; label?: string }) {
+export function GoogleSignInButton({ next = "", label = "Continue with Google", admin = false }: { next?: string; label?: string; admin?: boolean }) {
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   if (!googleSignInEnabled) return null;
@@ -36,7 +37,7 @@ export function GoogleSignInButton({ next = "", label = "Continue with Google" }
       // Our own cookie is the session from here on; Firebase's isn't needed.
       await signOut(auth).catch(() => {});
       startTransition(async () => {
-        const res = await googleSignInAction(idToken, next);
+        const res = await (admin ? adminGoogleSignInAction : googleSignInAction)(idToken, next);
         if (res?.error) setError(res.error);
       });
     } catch (err) {

@@ -4,6 +4,8 @@ import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { FIREBASE_CONFIG, googleSignInEnabled } from "@/lib/firebase-config";
+import { verifyFirebaseIdToken } from "@/lib/firebase-token";
 import { MERGE_TARGET_SEP } from "@/lib/archive-customize-constants";
 import {
   saveUploadedFile,
@@ -358,6 +360,22 @@ export async function loginAction(_prevState: unknown, formData: FormData) {
       ? requestedPath
       : "/admin";
   redirect(safePath);
+}
+
+// "Continue with Google" on /admin/login. Only a verified Google account whose
+// email already has an Admin row gets in — nobody is auto-created.
+export async function adminGoogleSignInAction(idToken: string, next: string): Promise<{ error?: string }> {
+  if (!googleSignInEnabled) return { error: "Google sign-in isn't set up yet." };
+  let email: string;
+  try {
+    ({ email } = await verifyFirebaseIdToken(idToken, FIREBASE_CONFIG.projectId));
+  } catch {
+    return { error: "Google sign-in failed. Please try again." };
+  }
+  const admin = await prisma.admin.findUnique({ where: { email } });
+  if (!admin) return { error: `${email} isn't an admin. Ask the owner to add it.` };
+  await createSessionCookie({ adminId: admin.id, email: admin.email, name: admin.name });
+  redirect((next === "/admin" || next.startsWith("/admin/")) && !next.startsWith("//") ? next : "/admin");
 }
 
 export async function logoutAction() {
