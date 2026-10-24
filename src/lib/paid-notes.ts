@@ -36,7 +36,10 @@ export async function getPaymentSettings(): Promise<PaymentSettings> {
       upiPayeeName: s?.upiPayeeName || null,
       upiQrUrl: s?.upiQrUrl || null,
     };
-    return { ...settings, active: settings.paywallEnabled && !!(settings.upiId || settings.upiQrUrl) };
+    // Razorpay keys count as "a way to pay" too, so clearing the old UPI
+    // fields can't silently switch the paywall off.
+    const canPay = !!(settings.upiId || settings.upiQrUrl || process.env.RAZORPAY_KEY_ID);
+    return { ...settings, active: settings.paywallEnabled && canPay };
   } catch {
     // DB down or the migration not applied yet — fail open (notes stay
     // free) rather than locking every note behind a broken checkout.

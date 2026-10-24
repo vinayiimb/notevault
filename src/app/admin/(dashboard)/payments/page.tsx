@@ -19,22 +19,26 @@ const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text
 
 export default async function AdminPaymentsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
   const { status: rawStatus } = await searchParams;
-  const status: Status = STATUSES.includes(rawStatus as Status) ? (rawStatus as Status) : "PENDING";
+  const counts = await prisma.purchase.groupBy({ by: ["status"], _count: { _all: true } });
+  const countOf = (s: Status) => counts.find((c) => c.status === s)?._count._all ?? 0;
+  // Razorpay payments are auto-approved, so with nothing pending the useful
+  // landing tab is Approved, not an empty Pending list.
+  const status: Status = STATUSES.includes(rawStatus as Status)
+    ? (rawStatus as Status)
+    : countOf("PENDING") > 0 ? "PENDING" : "APPROVED";
 
-  const [settings, purchases, counts] = await Promise.all([
+  const [settings, purchases] = await Promise.all([
     getPaymentSettings(),
     prisma.purchase.findMany({ where: { status }, orderBy: { createdAt: status === "PENDING" ? "asc" : "desc" }, take: 200 }),
-    prisma.purchase.groupBy({ by: ["status"], _count: { _all: true } }),
   ]);
-  const countOf = (s: Status) => counts.find((c) => c.status === s)?._count._all ?? 0;
   const names = await describeItems([...new Set(purchases.flatMap((p) => p.items))]);
 
   return (
     <div className="p-8">
       <h1 className="text-2xl font-semibold">Payments</h1>
       <p className="mt-1 text-sm text-muted">
-        Students pay by UPI and submit their UTR. Check it in your UPI app, then approve — that creates their login
-        (Gmail + password) and unlocks the subjects they paid for.
+        Razorpay payments are approved automatically and show under Approved. Manual UPI payments (UTR) wait here
+        for you: check the UTR in your UPI app, then approve to create their login and unlock their subjects.
       </p>
 
       {/* Setup */}
@@ -136,7 +140,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
                   <p className="text-xs text-muted">{p.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</p>
                 </div>
                 <dl className="mt-2 grid grid-cols-[90px_1fr] gap-x-3 gap-y-1 text-sm">
-                  <dt className="text-muted">UTR</dt>
+                  <dt className="text-muted">{p.provider === "razorpay" ? "Razorpay" : "UTR"}</dt>
                   <dd className="font-mono">{p.utr}</dd>
                   <dt className="text-muted">Email</dt>
                   <dd className="break-all">{p.email}</dd>

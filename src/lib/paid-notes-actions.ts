@@ -114,24 +114,35 @@ export async function completeRazorpayPurchase(input: {
   if (existing) return;
 
   const account = await prisma.notesAccount.findUnique({ where: { email: input.email } });
-  await prisma.$transaction(async (tx) => {
-    await tx.purchase.create({
-      data: {
-        email: input.email,
-        phone: input.phone,
-        utr: input.paymentId,
-        amount: input.amount,
-        items: input.items,
-        status: "APPROVED",
-        reviewedAt: new Date(),
-        provider: "razorpay",
-        razorpayOrderId: input.orderId,
-      },
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.purchase.create({
+        data: {
+          email: input.email,
+          phone: input.phone,
+          utr: input.paymentId,
+          amount: input.amount,
+          items: input.items,
+          status: "APPROVED",
+          reviewedAt: new Date(),
+          provider: "razorpay",
+          razorpayOrderId: input.orderId,
+        },
+      });
+      if (!account) {
+        await tx.notesAccount.upsert({
+          where: { email: input.email },
+          create: { email: input.email, passwordHash: await hashPassword(generatePassword()) },
+          update: {},
+        });
+      }
     });
-    if (!account) {
-      await tx.notesAccount.create({ data: { email: input.email, passwordHash: await hashPassword(generatePassword()) } });
-    }
-  });
+  } catch (err) {
+    // verify + webhook land together: the loser hits the unique order/payment
+    // id. The winner already recorded it, so that's success, not a 500.
+    if ((err as { code?: string }).code === "P2002") return;
+    throw err;
+  }
 }
 
 export type ApproveResult = FormResult & { email?: string; phone?: string; password?: string; existingAccount?: boolean };
