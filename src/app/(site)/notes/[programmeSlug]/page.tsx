@@ -13,7 +13,7 @@ export const dynamicParams = true;
 // ISR, not force-dynamic — keeps this off Vercel's serverless function
 // count (same reasoning as /subjects/[id] and /browse/college) while still
 // picking up newly-deployed notes without a full redeploy.
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export async function generateMetadata({
   params,

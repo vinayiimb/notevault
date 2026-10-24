@@ -15,7 +15,7 @@ export const dynamicParams = true;
 // function count (see the same fix on /subjects/[id]) while still
 // re-checking the database regularly so newly-deployed or edited notes
 // show up without a full redeploy.
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export async function generateMetadata({
   params,

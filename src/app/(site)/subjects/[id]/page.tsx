@@ -25,13 +25,13 @@ export function generateStaticParams() {
   return [];
 }
 export const dynamicParams = true;
-// ISR: re-check the database every 60 seconds so new/updated subjects
+// ISR: re-check the database every hour so new/updated subjects
 // (and stale 404s for IDs that didn't exist at first visit) are refreshed.
 // We cannot use `dynamic = "force-dynamic"` because that would make this
 // route a serverless function, pushing us past Vercel Hobby's 12-function
 // limit.  `revalidate` keeps the route as ISR (doesn't count as a function)
 // while still preventing permanent stale caches.
-export const revalidate = 60;
+export const revalidate = 3600;
 
 export async function generateMetadata({
   params,

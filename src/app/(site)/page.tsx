@@ -18,8 +18,8 @@ export const metadata: Metadata = {
 // updateSiteSettingsAction already calls revalidatePath("/") on save, which
 // should purge this immediately — this is a safety net in case that signal
 // is ever missed or delayed, so an edited headline/subtitle self-corrects
-// within a minute instead of looking permanently stuck on old cached text.
-export const revalidate = 60;
+// within the hour instead of looking permanently stuck on old cached text.
+export const revalidate = 3600;
 
 export default async function HomePage() {
   const [programs, siteSettings] = await Promise.all([

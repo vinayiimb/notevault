@@ -6,7 +6,7 @@ import { defaultFlags, resolveFlags, type FeatureFlagMap } from "@/lib/feature-f
 // briefly instead of hitting Neon on each request. Held on globalThis because
 // the server action and the API route are separate bundles with separate
 // module state — a plain module variable couldn't be cleared by the action.
-const TTL_MS = 30_000;
+const TTL_MS = 5 * 60_000;
 const store = globalThis as unknown as { featureFlagCache?: { flags: FeatureFlagMap; at: number } | null };
 
 export async function getFeatureFlags(): Promise<FeatureFlagMap> {
