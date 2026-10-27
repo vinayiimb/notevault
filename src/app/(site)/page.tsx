@@ -128,6 +128,40 @@ export default async function HomePage() {
         {/* Practice / Learn / Revise — animated feature mock-ups */}
         <FeatureShowcase />
 
+        {/* Repeated-question analyses — internal links to our most useful, original pages */}
+        <section className="mt-16 max-w-4xl mx-auto text-sm leading-relaxed">
+          <h2 className="font-display text-lg font-bold text-foreground">Most repeated questions, by subject</h2>
+          <p className="mt-2 text-muted">
+            We put every available paper for a subject side by side and counted which topics came back.
+          </p>
+          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <li>
+              <Link href="/blog/du-bcom-hons-financial-accounting-most-repeated-questions" className="block rounded-xl border border-border/70 bg-surface p-4 text-foreground transition hover:border-brand/40">
+                <span className="font-semibold">B.Com (Hons) Financial Accounting</span>
+                <span className="mt-1 block text-xs text-muted">Numericals that repeat with new numbers</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-bcom-hons-business-laws-most-repeated-questions" className="block rounded-xl border border-border/70 bg-surface p-4 text-foreground transition hover:border-brand/40">
+                <span className="font-semibold">B.Com (Hons) Business Laws</span>
+                <span className="mt-1 block text-xs text-muted">Topics that came in all 3 NEP papers</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-environmental-science-aec-most-repeated-questions" className="block rounded-xl border border-border/70 bg-surface p-4 text-foreground transition hover:border-brand/40">
+                <span className="font-semibold">Environmental Science (AEC)</span>
+                <span className="mt-1 block text-xs text-muted">17 papers, abbreviations and true/false with answers</span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-business-communication-sec-most-repeated-questions" className="block rounded-xl border border-border/70 bg-surface p-4 text-foreground transition hover:border-brand/40">
+                <span className="font-semibold">Business Communication (SEC)</span>
+                <span className="mt-1 block text-xs text-muted">What changed in the 2026 papers</span>
+              </Link>
+            </li>
+          </ul>
+        </section>
+
         {/* About / Informational Description section */}
         <section className="mt-16 border-t border-border/60 pt-12 text-sm text-muted leading-relaxed max-w-4xl mx-auto">
           <h3 className="font-display text-lg font-bold text-foreground mb-4">

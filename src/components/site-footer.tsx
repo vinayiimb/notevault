@@ -93,6 +93,11 @@ export function SiteFooter() {
             <h4 className="text-xs font-bold uppercase tracking-wider text-muted">More & Support</h4>
             <ul className="mt-3 space-y-2 text-xs">
               <li>
+                <Link href="/about" className="text-muted hover:text-accent transition">
+                  About us
+                </Link>
+              </li>
+              <li>
                 <Link href="/blog" className="text-muted hover:text-accent transition">
                   Blog
                 </Link>
@@ -126,7 +131,7 @@ export function SiteFooter() {
             <Link href="/privacy-policy" className="hover:text-accent transition">Privacy</Link>
             <Link href="/terms-of-service" className="hover:text-accent transition">Terms</Link>
             <Link href="/refund-policy" className="hover:text-accent transition">Refund</Link>
-            <Link href="/feedback" className="hover:text-accent transition">Contact</Link>
+            <Link href="/contact" className="hover:text-accent transition">Contact</Link>
           </nav>
         </div>
       </div>

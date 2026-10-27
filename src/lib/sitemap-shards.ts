@@ -77,6 +77,8 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: EntryFreq }[]
   { path: "/tools/exam-kit", priority: 0.4, changefreq: "monthly" },
   { path: "/tools/du-paper-code-finder", priority: 0.5, changefreq: "monthly" },
   { path: "/blog", priority: 0.5, changefreq: "weekly" },
+  { path: "/about", priority: 0.4, changefreq: "monthly" },
+  { path: "/contact", priority: 0.4, changefreq: "monthly" },
   { path: "/resources", priority: 0.5, changefreq: "monthly" },
 ];
 
