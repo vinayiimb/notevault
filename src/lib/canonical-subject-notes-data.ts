@@ -44,14 +44,31 @@ export async function findCanonicalSubject(programmeSlug: string, subjectSlug: s
   return { programme, subject };
 }
 
+// `next build` prerenders /notes, and Railway's build can't always reach Neon. A throw there fails the
+// whole deploy (7a5d423 did exactly that), so at build time fall back to an empty read; ISR regenerates
+// the page within `revalidate`. At runtime keep throwing so Next serves the last good page.
+async function readOrBuildFallback<T>(read: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await read();
+  } catch (err) {
+    if (process.env.NEXT_PHASE !== "phase-production-build") throw err;
+    console.warn("Database unavailable during build, using empty notes data:", err instanceof Error ? err.message : err);
+    return fallback;
+  }
+}
+
 // Admin-chosen programmes shown on /notes (comma-separated slugs in SiteSettings).
 // Deliberately not getSiteSettings(): that one swallows DB errors and returns
 // defaults, which here means "no filter" and lists all 118 programmes.
 export async function getNotesFeaturedSlugs() {
-  const settings = await prisma.siteSettings.findUnique({
-    where: { id: "singleton" },
-    select: { notesFeaturedProgrammes: true },
-  });
+  const settings = await readOrBuildFallback(
+    () =>
+      prisma.siteSettings.findUnique({
+        where: { id: "singleton" },
+        select: { notesFeaturedProgrammes: true },
+      }),
+    null,
+  );
   return settings?.notesFeaturedProgrammes?.split(",").map((s) => s.trim()).filter(Boolean) ?? [];
 }
 
@@ -59,10 +76,14 @@ export async function getProgrammesWithNotesStatus(featuredSlugs?: string[]) {
   // Let a DB failure throw. This feeds ISR pages (/notes), and swallowing it
   // here rendered "Notes coming soon" for every programme, which ISR then cached
   // until the next revalidate. A throw makes Next keep the last good page.
-  const counts = await prisma.canonicalSubjectNote.groupBy({
-    by: ["programmeSlug"],
-    _count: { _all: true },
-  });
+  const counts = await readOrBuildFallback(
+    () =>
+      prisma.canonicalSubjectNote.groupBy({
+        by: ["programmeSlug"],
+        _count: { _all: true },
+      }),
+    [],
+  );
   const countMap = new Map(counts.map((c) => [c.programmeSlug, c._count._all]));
 
   let list = await programmeList();
