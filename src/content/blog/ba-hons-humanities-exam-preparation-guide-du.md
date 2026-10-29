@@ -1,5 +1,6 @@
 ---
 title: "BA Hons Humanities Exam Prep Guide: How to Write Long Answers"
+seoTitle: "BA Hons Humanities Exam Prep: Writing Long Answers"
 description: "A comprehensive guide for Delhi University BA Hons students (Political Science, History, Sociology, English) on how to tackle subjective exams, structure essays, and quote scholars."
 slug: "ba-hons-humanities-exam-preparation-guide-du"
 author: "DU PYQ Online Team"

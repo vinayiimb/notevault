@@ -16,7 +16,7 @@ export function FeatureCards() {
               <h3 className="font-bold text-lg text-gray-900 tracking-tight">ALL PYQ</h3>
             </div>
             <p className="text-sm text-gray-500 leading-relaxed mb-6">
-              Browse 29,000+ Delhi University question papers across all 118 programmes in interactive PDF.
+              Browse 16,000+ Delhi University question papers across all 118 programmes in interactive PDF.
             </p>
           </div>
           <Link

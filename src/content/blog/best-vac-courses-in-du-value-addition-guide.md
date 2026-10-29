@@ -1,5 +1,6 @@
 ---
 title: "VAC Full Form in DU: Value Addition Course — Easiest VAC Options & PYQs"
+seoTitle: "VAC Full Form in DU: Value Addition Course & PYQs"
 description: "VAC full form in DU is Value Addition Course: a 2-credit paper under UGCF. The easiest VAC courses in DU, grading pattern, and free VAC previous year papers."
 slug: "best-vac-courses-in-du-value-addition-guide"
 author: "DU PYQ Online Team"

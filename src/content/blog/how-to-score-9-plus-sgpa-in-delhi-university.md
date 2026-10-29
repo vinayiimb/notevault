@@ -1,5 +1,6 @@
 ---
 title: "How to Score 9+ SGPA in Delhi University Semester Exams: Ultimate Guide"
+seoTitle: "How to Score 9+ SGPA in Delhi University Exams"
 description: "An advanced blueprint for Delhi University students aiming for a 9.0+ SGPA, detailing internal assessment optimization, class participation, and answer booklet strategy."
 slug: "how-to-score-9-plus-sgpa-in-delhi-university"
 author: "DU PYQ Online Team"

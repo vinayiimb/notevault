@@ -1,5 +1,6 @@
 ---
 title: "DU Academic Calendar and Prep Timeline: When to Start Studying"
+seoTitle: "DU Academic Calendar and Prep Timeline"
 description: "A semester timeline guide for Delhi University students, mapping out key stages from class commencement to mid-semester assessments and final theory examinations."
 slug: "du-academic-calendar-and-preparation-timeline"
 author: "DU PYQ Online Team"

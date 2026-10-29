@@ -4,7 +4,7 @@ import { InfoPage } from "@/components/legal/info-page";
 import { HELPDESK_DISPLAY, HELPDESK_WHATSAPP, Section } from "@/components/legal/legal-page";
 
 export const metadata: Metadata = {
-  title: "Contact & Helpdesk — Report a Wrong or Missing DU Paper",
+  title: "Contact Helpdesk: Report a Missing DU Paper",
   description:
     "Reach the DU PYQ Online helpdesk on WhatsApp, report a wrong or missing question paper, get help with a notes purchase, or request a paper we don't have yet.",
   alternates: { canonical: "/contact" },

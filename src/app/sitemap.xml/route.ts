@@ -1,4 +1,4 @@
-import { listShardNames, renderSitemapIndex, dataFileLastModified } from "@/lib/sitemap-shards";
+import { listShardNames, renderSitemapIndex } from "@/lib/sitemap-shards";
 
 // Static index — the shard set only changes when the data file changes.
 export const dynamic = "force-static";
@@ -10,7 +10,7 @@ export const revalidate = 86400;
  */
 export async function GET() {
   const [names] = await Promise.all([listShardNames()]);
-  const xml = renderSitemapIndex(names, dataFileLastModified());
+  const xml = renderSitemapIndex(names);
   return new Response(xml, {
     headers: {
       "Content-Type": "application/xml; charset=utf-8",

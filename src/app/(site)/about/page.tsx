@@ -4,9 +4,9 @@ import { InfoPage } from "@/components/legal/info-page";
 import { Section } from "@/components/legal/legal-page";
 
 export const metadata: Metadata = {
-  title: "About Us — How We Source and Organise DU Question Papers",
+  title: "About Us: How We Source DU Question Papers",
   description:
-    "DU PYQ Online is an independent archive of Delhi University previous year question papers, organised by course, semester and subject. Here is where the papers come from and how we analyse them.",
+    "An independent archive of Delhi University previous year question papers, organised by course, semester and subject. How we source and analyse them.",
   alternates: { canonical: "/about" },
 };
 
@@ -53,7 +53,8 @@ export default function AboutPage() {
           </li>
           <li>
             <strong>Exam guides</strong> for each semester, covering passing rules, course types (DSC, DSE, GE, AEC, SEC,
-            VAC) and how to plan revision. See the <Link href="/blog" className="text-brand hover:underline">blog</Link>.
+            VAC) and how to plan revision. See the <Link href="/blog" className="text-brand hover:underline">blog</Link>,
+            or the <Link href="/faq" className="text-brand hover:underline">short answers on the FAQ page</Link>.
           </li>
           <li>
             <strong>Study notes</strong> for selected subjects. Reading the papers is free; some notes are paid.

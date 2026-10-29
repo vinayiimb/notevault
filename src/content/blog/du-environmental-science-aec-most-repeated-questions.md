@@ -1,5 +1,6 @@
 ---
 title: "DU Environmental Science (AEC): Most Repeated Questions from 17 Past Papers"
+seoTitle: "DU Environmental Science (AEC): Most Repeated Questions"
 description: "We compared 17 distinct DU Environmental Science: Theory into Practice (I) papers from Nov-Dec 2023 to May-Jun 2026. These topics, abbreviations and true/false statements keep coming back, with answers."
 slug: "du-environmental-science-aec-most-repeated-questions"
 author: "DU PYQ Online Team"

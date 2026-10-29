@@ -1,5 +1,6 @@
 ---
 title: "DU B.Com (Hons) Business Laws: Most Repeated Questions in Sem 1 PYQs"
+seoTitle: "DU B.Com (Hons) Business Laws: Most Repeated Questions"
 description: "We compared every NEP/UGCF B.Com (Hons) Business Laws paper (UPC 2412081102) — March 2023, Dec 2023 and Dec 2024. These topics came in all three exams, with answer pointers."
 slug: "du-bcom-hons-business-laws-most-repeated-questions"
 author: "DU PYQ Online Team"

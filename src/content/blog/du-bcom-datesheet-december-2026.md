@@ -1,5 +1,6 @@
 ---
 title: "DU B.Com (Hons) & B.Com Datesheet December 2026: Semester 1, 3, 5 & 7 Exam Dates"
+seoTitle: "DU B.Com Datesheet December 2026: Sem 1, 3, 5, 7"
 description: "Delhi University B.Com (Hons) and B.Com (Prog) datesheet for the December 2026 semester exams — every paper's date, time and paper code for Semester 1, 3, 5 and 7, plus your SEC, VAC, GE and AEC dates and the PYQs for each paper."
 slug: "du-bcom-datesheet-december-2026"
 author: "DU PYQ Online Team"

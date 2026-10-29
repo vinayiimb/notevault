@@ -1,5 +1,6 @@
 ---
 title: "DU Admit Card Download Guide: How to Get Your Hall Ticket Online"
+seoTitle: "DU Admit Card Download: Get Your Hall Ticket Online"
 description: "Step-by-step guide to downloading your Delhi University semester exam admit card from the official DU portal, including troubleshooting tips for common errors."
 slug: "du-admit-card-download-guide-hall-ticket"
 author: "DU PYQ Online Team"

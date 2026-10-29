@@ -14,7 +14,7 @@ export function FeatureShowcase() {
     <section className="mx-auto mt-20 flex max-w-6xl flex-col gap-24 px-4 sm:mt-28 sm:gap-32 sm:px-6">
       <Row
         eyebrow="Practice"
-        title="29,000+ Question Papers"
+        title="16,000+ Question Papers"
         body={
           <>
             Every DU previous year paper, organised by course, semester and subject — across{" "}

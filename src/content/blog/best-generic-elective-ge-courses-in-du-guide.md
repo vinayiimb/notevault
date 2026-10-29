@@ -1,5 +1,6 @@
 ---
 title: "Best Generic Elective (GE) Courses in DU: Complete Selection Guide"
+seoTitle: "Best Generic Elective (GE) Courses in DU"
 description: "How to choose the best Generic Elective (GE) in Delhi University to maximize your CGPA, explore new disciplines, and build a stronger academic profile."
 slug: "best-generic-elective-ge-courses-in-du-guide"
 author: "DU PYQ Online Team"

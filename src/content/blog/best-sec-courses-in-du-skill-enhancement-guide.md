@@ -1,5 +1,6 @@
 ---
 title: "SEC Full Form in DU: Skill Enhancement Course — Best SEC Options & PYQs"
+seoTitle: "SEC Full Form in DU: Skill Enhancement Course & PYQs"
 description: "SEC full form in DU is Skill Enhancement Course: a 2-credit practical skill paper under UGCF. The best and easiest SEC courses in DU, how they're graded, and free SEC previous year papers."
 slug: "best-sec-courses-in-du-skill-enhancement-guide"
 author: "DU PYQ Online Team"

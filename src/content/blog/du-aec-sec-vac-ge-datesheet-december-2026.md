@@ -1,5 +1,6 @@
 ---
 title: "DU AEC, SEC, VAC & GE Datesheet December 2026: Exam Dates for Semester 1, 3, 5 & 7"
+seoTitle: "DU AEC, SEC, VAC & GE Datesheet December 2026"
 description: "When are your DU AEC, SEC, VAC and GE exams in December 2026? Dates and times for every semester from the official datesheet: SEC from 5 Dec, VAC on 21 Dec, GE 19–26 Dec, AEC (EVS and languages) on 26 and 28 Dec. Links to each paper's PYQs."
 slug: "du-aec-sec-vac-ge-datesheet-december-2026"
 author: "DU PYQ Online Team"

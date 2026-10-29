@@ -1,5 +1,6 @@
 ---
 title: "DU Internal Assessment Marks: How They Work and How to Maximize Them"
+seoTitle: "DU Internal Assessment Marks: How to Maximize Them"
 description: "A detailed breakdown of Delhi University's internal assessment system — attendance marks, class tests, assignments, and strategies to secure full IA marks every semester."
 slug: "du-internal-assessment-marks-how-to-maximize"
 author: "DU PYQ Online Team"

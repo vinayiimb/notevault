@@ -10,6 +10,7 @@ import { NotesMarkdown } from "@/components/content/notes/notes-markdown";
 import { ContentTocSidebar } from "@/components/content/notes/toc-sidebar";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { ArticleJsonLd } from "@/components/seo/article-jsonld";
+import { OG_IMAGES, SITE_NAME, TWITTER_IMAGES, clampDescription, fitTitle } from "@/lib/seo";
 
 export function generateStaticParams() {
   return getAllBlogPosts().map((post) => ({ slug: post.slug }));
@@ -24,22 +25,26 @@ export async function generateMetadata({
   const post = getBlogPostBySlug(slug);
   if (!post) return {};
 
+  const shortTitle = post.seoTitle ?? post.title;
+  const description = clampDescription(post.description);
   return {
-    title: post.title,
-    description: post.description,
+    title: fitTitle(`${shortTitle} | ${SITE_NAME}`, shortTitle),
+    description,
     alternates: { canonical: `/blog/${post.slug}` },
     keywords: post.keywords,
     openGraph: {
       type: "article",
-      title: post.title,
-      description: post.description,
+      title: shortTitle,
+      description,
       publishedTime: post.publishedAt,
       modifiedTime: post.updatedAt ?? post.publishedAt,
+      images: OG_IMAGES,
     },
     twitter: {
       card: "summary_large_image",
-      title: post.title,
-      description: post.description,
+      title: shortTitle,
+      description,
+      images: TWITTER_IMAGES,
     },
   };
 }

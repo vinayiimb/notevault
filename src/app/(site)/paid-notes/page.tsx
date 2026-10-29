@@ -102,7 +102,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
             price={0}
             cta={{ href: "/papers", label: "Try now" }}
             groups={[
-              { title: "Question papers", items: ["All DU PYQs (29,000+)", "Open, view & download"] },
+              { title: "Question papers", items: ["All DU PYQs (16,000+)", "Open, view & download"] },
               { title: "Notes", items: ["Free preview of every subject (~30%)"] },
             ]}
           />
@@ -124,7 +124,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
                     ...PAID_FEATURES,
                   ],
                 },
-                { title: "Also free", items: ["All DU PYQs (29,000+)"] },
+                { title: "Also free", items: ["All DU PYQs (16,000+)"] },
               ]}
             />
           ))}

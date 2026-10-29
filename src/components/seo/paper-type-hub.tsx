@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Stack } from "@phosphor-icons/react/dist/ssr";
 import { getPaperTypeHub } from "@/lib/du-pyp-seo";
-import { absoluteUrl, collectionPageJsonLd, type Faq } from "@/lib/seo";
+import { absoluteUrl, collectionPageJsonLd, OG_IMAGES, type Faq } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { FaqBlock } from "@/components/seo/faq-block";
@@ -26,7 +26,7 @@ export function paperTypeMetadata(type: HubType) {
     title,
     description,
     alternates: { canonical: t.path },
-    openGraph: { title, description, url: absoluteUrl(t.path), type: "website" as const },
+    openGraph: { title, description, url: absoluteUrl(t.path), type: "website" as const, images: OG_IMAGES },
   };
 }
 

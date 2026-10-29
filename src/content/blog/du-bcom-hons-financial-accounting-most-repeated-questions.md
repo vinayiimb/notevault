@@ -1,5 +1,6 @@
 ---
 title: "DU B.Com (Hons) Financial Accounting: Repeated Questions and Numericals (Sem 1)"
+seoTitle: "DU B.Com (Hons) Financial Accounting Repeated Questions"
 description: "We compared three NEP/UGCF B.Com (Hons) Financial Accounting papers (UPC 2412081103). The same theory questions and numerical types came back, often with only the names and numbers changed."
 slug: "du-bcom-hons-financial-accounting-most-repeated-questions"
 author: "DU PYQ Online Team"

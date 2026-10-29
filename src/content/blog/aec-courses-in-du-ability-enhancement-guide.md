@@ -1,5 +1,6 @@
 ---
 title: "AEC Full Form in DU: Ability Enhancement Course — Subjects, Credits & PYQs"
+seoTitle: "AEC Full Form in DU: Ability Enhancement Course & PYQs"
 description: "AEC full form in DU is Ability Enhancement Course: the compulsory 2-credit language / EVS paper under UGCF. What you study in AEC, how it's graded, and free AEC previous year papers."
 slug: "aec-courses-in-du-ability-enhancement-guide"
 author: "DU PYQ Online Team"

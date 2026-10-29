@@ -1,5 +1,6 @@
 ---
 title: "Understanding the NEP Structure under DU UGCF: Credits & Electives Explained"
+seoTitle: "NEP Structure under DU UGCF: Credits & Electives"
 description: "A clear guide to Delhi University's Undergraduate Curriculum Framework (UGCF) based on the National Education Policy (NEP), explaining DSC, DSE, GE, SEC, and VAC courses."
 slug: "understanding-nep-under-du-ugcf-structure"
 author: "DU PYQ Online Team"

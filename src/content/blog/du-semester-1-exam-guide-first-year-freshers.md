@@ -1,5 +1,6 @@
 ---
 title: "DU Semester 1 Exam Guide: First-Year Preparation Tips for Freshers"
+seoTitle: "DU Semester 1 Exam Guide: Tips for First-Year Freshers"
 description: "A complete survival guide for Delhi University first-year students facing their first semester exams — what to expect, how to study, and how to avoid common fresher mistakes."
 slug: "du-semester-1-exam-guide-first-year-freshers"
 author: "DU PYQ Online Team"

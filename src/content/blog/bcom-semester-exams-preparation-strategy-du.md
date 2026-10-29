@@ -1,5 +1,6 @@
 ---
 title: "B.Com Semester Exams Preparation Strategy: Ace DU Commerce Papers"
+seoTitle: "B.Com Semester Exam Preparation Strategy for DU"
 description: "A comprehensive revision and study strategy designed specifically for Delhi University B.Com Hons and B.Com Program students, focusing on balancing numerical practice and theory."
 slug: "bcom-semester-exams-preparation-strategy-du"
 author: "DU PYQ Online Team"

@@ -1,5 +1,6 @@
 ---
 title: "Last-Minute Revision Hacks for Delhi University Exams: Panic to Passing"
+seoTitle: "Last-Minute Revision Hacks for Delhi University Exams"
 description: "An actionable 3-day survival guide for Delhi University students starting exam preparation at the last minute, focusing on the 80/20 rule, PYQs, and high-yield questions."
 slug: "last-minute-revision-hacks-delhi-university-exams"
 author: "DU PYQ Online Team"

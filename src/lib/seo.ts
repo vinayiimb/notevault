@@ -7,6 +7,40 @@ export function absoluteUrl(path: string): string {
   return `${SITE_URL}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+// A page that sets its own `openGraph` replaces the root layout's one wholesale,
+// image included — so every page-level openGraph must carry these itself, or
+// WhatsApp/Telegram previews of that page have no image.
+export const OG_IMAGES = [
+  {
+    url: "/opengraph-image.png",
+    width: 1200,
+    height: 630,
+    alt: `${SITE_NAME} — Delhi University Previous Year Question Papers`,
+  },
+];
+export const TWITTER_IMAGES = ["/twitter-image.png"];
+
+/**
+ * Google shows ~60 characters of a title. Returns the first candidate that fits
+ * (list them longest-first), or the last one if none does. `absolute` skips the
+ * layout's " | DU PYQ Online" template, so put the brand in a candidate to keep it.
+ */
+export function fitTitle(...candidates: string[]): { absolute: string } {
+  return { absolute: candidates.find((c) => c.length <= 60) ?? candidates[candidates.length - 1] };
+}
+
+/** Meta descriptions truncate near 160 characters: cut at a sentence end if one fits, else at a comma, else at a word. */
+export function clampDescription(text: string, max = 160): string {
+  if (text.length <= max) return text;
+  const head = text.slice(0, max - 1);
+  const ends = [...head.matchAll(/[.!?](?=\s+[A-Z])/g)].map((m) => (m.index ?? 0) + 1);
+  const lastEnd = ends[ends.length - 1];
+  if (lastEnd && lastEnd >= 110) return head.slice(0, lastEnd);
+  const comma = Math.max(head.lastIndexOf(","), head.lastIndexOf(";"), head.lastIndexOf(":"));
+  if (comma >= 110) return `${head.slice(0, comma)}…`;
+  return `${head.slice(0, head.lastIndexOf(" "))}…`;
+}
+
 export function organizationJsonLd() {
   return {
     "@context": "https://schema.org",
@@ -14,12 +48,23 @@ export function organizationJsonLd() {
     "@id": `${SITE_URL}/#organization`,
     "name": SITE_NAME,
     "url": `${SITE_URL}/`,
+    "description":
+      "Free archive of Delhi University previous year question papers, organised by course, semester and subject. An independent project, not affiliated with the University of Delhi.",
     "logo": {
       "@type": "ImageObject",
       "url": `${SITE_URL}/logo.png`,
       "width": 512,
       "height": 512
+    },
+    // Same WhatsApp helpdesk number that /contact publishes.
+    "contactPoint": {
+      "@type": "ContactPoint",
+      "contactType": "customer support",
+      "telephone": "+91-93761-80015",
+      "url": "https://wa.me/919376180015",
+      "areaServed": "IN"
     }
+    // sameAs (Reddit / YouTube / Instagram profiles the owner controls) is still to add.
   };
 }
 
@@ -37,15 +82,8 @@ export function websiteJsonLd() {
     "description": "Free Delhi University previous year question papers, notes, syllabus and answer keys.",
     "publisher": {
       "@id": `${SITE_URL}/#organization`
-    },
-    "potentialAction": {
-      "@type": "SearchAction",
-      "target": {
-        "@type": "EntryPoint",
-        "urlTemplate": `${SITE_URL}/search?q={search_term_string}`
-      },
-      "query-input": "required name=search_term_string"
     }
+    // No SearchAction: /search is robots-disallowed and noindex, and Google retired the sitelinks search box.
   };
 }
 
@@ -140,15 +178,20 @@ const ORDINAL = ["", "1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"];
 
 export function programmePapersMetadata(name: string, slug: string, paperCount: number, subjectCount: number) {
   // Front-loads the query shape students use: "du bcom hons pyq".
-  const title = `DU ${name} PYQ – Previous Year Question Papers PDF, All Semesters`;
-  const description =
-    `Delhi University ${name}${typedName(name)} previous year question papers — ${paperCount.toLocaleString("en-IN")} papers across ${subjectCount} subjects, organised by subject. View or download the original PDFs.`;
+  const title = fitTitle(
+    `DU ${name} PYQ – Question Papers PDF, All Semesters | ${SITE_NAME}`,
+    `DU ${name} PYQ – Question Papers PDF, All Semesters`,
+    `DU ${name} PYQ – Question Papers PDF`,
+  );
+  const description = clampDescription(
+    `Delhi University ${name}${typedName(name)} previous year question papers: ${paperCount.toLocaleString("en-IN")} papers across ${subjectCount} subjects. View or download the original PDFs.`,
+  );
   const canonical = `/papers/${slug}`;
   return {
     title,
     description,
     alternates: { canonical },
-    openGraph: { title, description, url: absoluteUrl(canonical), type: "website" as const },
+    openGraph: { title: title.absolute, description, url: absoluteUrl(canonical), type: "website" as const, images: OG_IMAGES },
   };
 }
 
@@ -159,19 +202,24 @@ export function programmeSemesterMetadata(
   opts: { subjectCount: number; paperCount: number; years: string[] },
 ) {
   // Matches "du bcom sem 1 pyq" and "bcom 1st sem question paper du".
-  const title = `DU ${name} Sem ${semester} PYQ – ${ORDINAL[semester] ?? semester} Semester Question Papers PDF`;
+  const head = `DU ${name} Sem ${semester} PYQ`;
+  const title = fitTitle(
+    `${head} – ${ORDINAL[semester] ?? semester} Semester Question Papers | ${SITE_NAME}`,
+    `${head} – ${ORDINAL[semester] ?? semester} Semester Question Papers`,
+    `${head} – Question Papers`,
+  );
   const yearSpan =
     opts.years.length > 1 ? `${opts.years[opts.years.length - 1]}–${opts.years[0]}` : opts.years[0];
-  const description =
-    `DU ${name}${typedName(name)} Sem ${semester} PYQ: every Semester ${semester} previous year question paper — ` +
-    `${opts.subjectCount} subjects, ${opts.paperCount} papers${yearSpan ? ` (${yearSpan})` : ""}. ` +
-    `Every subject with its DSC/DSE/GE/SEC papers, view or download the original PDFs.`;
+  const description = clampDescription(
+    `DU ${name}${typedName(name)} Sem ${semester} PYQ: ${opts.subjectCount} subjects, ${opts.paperCount} papers${yearSpan ? ` (${yearSpan})` : ""}. ` +
+      `Subject-wise question papers with the original PDFs, free, no login.`,
+  );
   const canonical = `/papers/${slug}/semester-${semester}`;
   return {
     title,
     description,
     alternates: { canonical },
-    openGraph: { title, description, url: absoluteUrl(canonical), type: "website" as const },
+    openGraph: { title: title.absolute, description, url: absoluteUrl(canonical), type: "website" as const, images: OG_IMAGES },
   };
 }
 
@@ -185,19 +233,26 @@ export function subjectPapersMetadata(
   const ROMAN: Record<string, string> = { I: "1", II: "2", III: "3", IV: "4", V: "5", VI: "6", VII: "7", VIII: "8" };
   const sems = (opts.semesters ?? []).map((r) => ROMAN[r] ?? r);
   const semPart = sems.length === 1 ? ` (Semester ${sems[0]})` : "";
-  const title = `${subjectName} PYQ${sems.length === 1 ? ` Sem ${sems[0]}` : ""} | DU ${programmeName} Previous Year Question Papers PDF`;
+  const head = `${subjectName} PYQ${sems.length === 1 ? ` Sem ${sems[0]}` : ""}`;
+  const title = fitTitle(
+    `${head}: DU ${programmeName} Question Papers | ${SITE_NAME}`,
+    `${head}: DU ${programmeName} Question Papers`,
+    `${head} – DU ${programmeName} Papers`,
+    `${head} – DU ${programmeName}`,
+  );
   const yearSpan =
     opts.years && opts.years.length > 1 ? `${opts.years[opts.years.length - 1]}–${opts.years[0]}` : opts.years?.[0];
-  const description =
-    `${subjectName}${semPart} previous year question papers for Delhi University ${programmeName}. ` +
-    `${opts.paperCount} paper${opts.paperCount === 1 ? "" : "s"}${yearSpan ? ` from ${yearSpan}` : ""}` +
-    `${opts.paperCode ? `, paper code ${opts.paperCode}` : ""}. Original PDFs, no login.`;
+  const description = clampDescription(
+    `${subjectName}${semPart} PYQ for Delhi University ${programmeName}: ` +
+      `${opts.paperCount} paper${opts.paperCount === 1 ? "" : "s"}${yearSpan ? ` from ${yearSpan}` : ""}` +
+      `${opts.paperCode ? `, paper code ${opts.paperCode}` : ""}. Original PDFs, no login.`,
+  );
   const canonical = `/papers/${slugPath}`;
   return {
     title,
     description,
     alternates: { canonical },
-    openGraph: { title, description, url: absoluteUrl(canonical), type: "website" as const },
+    openGraph: { title: title.absolute, description, url: absoluteUrl(canonical), type: "website" as const, images: OG_IMAGES },
   };
 }
 
@@ -213,7 +268,7 @@ export function paperCodeMetadata(code: string, subjectNames: string[], paperCou
     title,
     description,
     alternates: { canonical },
-    openGraph: { title, description, url: absoluteUrl(canonical), type: "website" as const },
+    openGraph: { title, description, url: absoluteUrl(canonical), type: "website" as const, images: OG_IMAGES },
   };
 }
 
@@ -226,18 +281,23 @@ export function individualPaperMetadata(p: {
   paperCode?: string | null;
 }) {
   const when = [p.session, p.year].filter(Boolean).join(" ");
-  const title =
-    `${p.subjectName} Question Paper${p.year ? ` ${p.year}` : ""} PDF | ${p.programmeName} DU`;
-  const description =
-    `Delhi University ${p.programmeName} — ${p.subjectName} previous year question paper${when ? ` (${when})` : ""}` +
-    `${p.paperCode ? `, paper code ${p.paperCode}` : ""}. ` +
-    `View the original PDF, download it, or browse other years for the same subject.`;
+  const head = `${p.subjectName} Question Paper${p.year ? ` ${p.year}` : ""}`;
+  const title = fitTitle(
+    `${head} PDF | ${p.programmeName} DU`,
+    `${head} – ${p.programmeName} DU`,
+    head,
+  );
+  const description = clampDescription(
+    `${p.subjectName} question paper${when ? ` (${when})` : ""} for DU ${p.programmeName}` +
+      `${p.paperCode ? `, paper code ${p.paperCode}` : ""}. ` +
+      `View or download the original PDF and browse other years.`,
+  );
   const canonical = `/paper/${p.slug}`;
   return {
     title,
     description,
     alternates: { canonical },
-    openGraph: { title, description, url: absoluteUrl(canonical), type: "article" as const },
+    openGraph: { title: title.absolute, description, url: absoluteUrl(canonical), type: "article" as const, images: OG_IMAGES },
   };
 }
 

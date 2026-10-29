@@ -1,5 +1,6 @@
 ---
 title: "DU Business Communication (SEC): What Changed in 2026 and the Topics That Keep Repeating"
+seoTitle: "DU Business Communication SEC: What Changed in 2026"
 description: "We compared 26 distinct DU Business Communication (SEC) papers, Nov-Dec 2023 to May-Jun 2026. The 2026 papers switched to scenario questions. Here is what repeats, what changed, and how to answer."
 slug: "du-business-communication-sec-most-repeated-questions"
 author: "DU PYQ Online Team"

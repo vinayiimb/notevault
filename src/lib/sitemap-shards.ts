@@ -1,6 +1,4 @@
 import "server-only";
-import fs from "node:fs";
-import path from "node:path";
 import { absoluteUrl } from "@/lib/seo";
 import { getAllBlogPosts } from "@/lib/blog";
 import {
@@ -44,16 +42,10 @@ export interface SitemapEntry {
   priority?: number;
 }
 
-/** Real mtime of the data file — used for JSON-derived URLs instead of now(). */
-function dataFileLastModified(): string {
-  try {
-    return fs
-      .statSync(path.join(process.cwd(), "public", "data", "du-question-bank-full-mapped.json"))
-      .mtime.toISOString();
-  } catch {
-    return new Date("2026-01-01").toISOString();
-  }
-}
+// lastmod is only emitted where there is a real change date (blog posts). The question-bank
+// JSON has no per-row dates, and the data file's mtime is the deploy time on Railway, so using
+// it made every URL "modified now" after each push — Google learns to ignore lastmod when that
+// happens. Omitting it is honest; add a date here only when the data carries a real one.
 
 const STATIC_ROUTES: { path: string; priority: number; changefreq: EntryFreq }[] = [
   { path: "/", priority: 1, changefreq: "daily" },
@@ -78,6 +70,7 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: EntryFreq }[]
   { path: "/tools/du-paper-code-finder", priority: 0.5, changefreq: "monthly" },
   { path: "/blog", priority: 0.5, changefreq: "weekly" },
   { path: "/about", priority: 0.4, changefreq: "monthly" },
+  { path: "/faq", priority: 0.6, changefreq: "monthly" },
   { path: "/contact", priority: 0.4, changefreq: "monthly" },
   { path: "/resources", priority: 0.5, changefreq: "monthly" },
 ];
@@ -103,8 +96,6 @@ function sliceFor(urls: SitemapUrl[], shard: string, prefix: string): SitemapUrl
 
 /** Entries for one shard. Returns null for an unknown shard name. */
 export async function getShardEntries(shard: string): Promise<SitemapEntry[] | null> {
-  const dataMtime = dataFileLastModified();
-
   if (shard === "static") {
     return STATIC_ROUTES.map((r) => ({
       loc: absoluteUrl(r.path),
@@ -126,7 +117,7 @@ export async function getShardEntries(shard: string): Promise<SitemapEntry[] | n
     const urls = await getIndexableProgrammeUrls();
     return urls.map((u) => ({
       loc: absoluteUrl(u.path),
-      lastmod: (u.lastModified ?? new Date(dataMtime)).toISOString?.() ?? dataMtime,
+      lastmod: u.lastModified?.toISOString(),
       changefreq: "weekly",
       priority: 0.8,
     }));
@@ -136,7 +127,6 @@ export async function getShardEntries(shard: string): Promise<SitemapEntry[] | n
     const urls = await getIndexableProgrammeSemesterUrls();
     return urls.map((u) => ({
       loc: absoluteUrl(u.path),
-      lastmod: dataMtime,
       changefreq: "weekly",
       priority: 0.75,
     }));
@@ -146,7 +136,6 @@ export async function getShardEntries(shard: string): Promise<SitemapEntry[] | n
     const all = await getIndexableSubjectUrls();
     return sliceFor(all, shard, "subjects-").map((u) => ({
       loc: absoluteUrl(u.path),
-      lastmod: dataMtime,
       changefreq: "monthly",
       priority: 0.7,
     }));
@@ -156,7 +145,6 @@ export async function getShardEntries(shard: string): Promise<SitemapEntry[] | n
     const all = await getIndexablePaperCodeUrls();
     return sliceFor(all, shard, "paper-codes-").map((u) => ({
       loc: absoluteUrl(u.path),
-      lastmod: dataMtime,
       changefreq: "monthly",
       priority: 0.6,
     }));
@@ -166,7 +154,6 @@ export async function getShardEntries(shard: string): Promise<SitemapEntry[] | n
     const all = await getIndexablePaperUrls();
     return sliceFor(all, shard, "papers-").map((u) => ({
       loc: absoluteUrl(u.path),
-      lastmod: dataMtime,
       changefreq: "yearly",
       priority: 0.5,
     }));
@@ -191,14 +178,12 @@ export function renderUrlset(entries: SitemapEntry[]): string {
   return `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</urlset>\n`;
 }
 
-export function renderSitemapIndex(shardNames: string[], lastmod: string): string {
+export function renderSitemapIndex(shardNames: string[], lastmod?: string): string {
   const body = shardNames
     .map(
       (name) =>
-        `<sitemap><loc>${xmlEscape(absoluteUrl(`/sitemaps/${name}.xml`))}</loc><lastmod>${lastmod}</lastmod></sitemap>`,
+        `<sitemap><loc>${xmlEscape(absoluteUrl(`/sitemaps/${name}.xml`))}</loc>${lastmod ? `<lastmod>${lastmod}</lastmod>` : ""}</sitemap>`,
     )
     .join("\n");
   return `<?xml version="1.0" encoding="UTF-8"?>\n<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${body}\n</sitemapindex>\n`;
 }
-
-export { dataFileLastModified };

@@ -1,5 +1,6 @@
 ---
 title: "How to Use DU Previous Year Question Papers for Semester Exams"
+seoTitle: "How to Use DU Previous Year Question Papers"
 description: "A practical, step-by-step method for turning Delhi University previous year question papers into a semester revision plan — how to find them, read the pattern, and practice under exam conditions."
 slug: "how-to-use-du-previous-year-question-papers"
 author: "DU PYQ Online Team"

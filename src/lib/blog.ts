@@ -3,6 +3,8 @@ import blogManifest from "@/data/blog-manifest.json";
 
 export type BlogPostFrontmatter = {
   title: string;
+  /** Shorter <title> (≤ ~55 chars) when `title` is too long for a search result; the H1 stays `title`. */
+  seoTitle?: string;
   description: string;
   slug: string;
   author: string;

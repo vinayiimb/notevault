@@ -262,9 +262,13 @@ export default async function SubjectPapersPage({
 
         <p className="mt-4 text-muted">
           {hasContent
-            ? `${subject.papers.length} previous year question paper${
-                subject.papers.length === 1 ? "" : "s"
-              } for ${subject.name} at Delhi University (${programme.name}). View or download each original PDF below.`
+            ? `${subject.name} is ${subject.paperTypes.length ? `a ${subject.paperTypes.join("/")} paper` : "a paper"}${
+                subject.semesters.length ? ` in Semester ${subject.semesters.join(", ")}` : ""
+              } of ${programme.name} at Delhi University${subject.paperCodes.length ? ` (paper code ${subject.paperCodes.join(", ")})` : ""}. ${
+                subject.papers.length
+              } previous year question paper${subject.papers.length === 1 ? "" : "s"}${
+                subject.years.length ? ` from ${subject.years.length > 1 ? `${subject.years[subject.years.length - 1]}–${subject.years[0]}` : subject.years[0]}` : ""
+              } are listed below; view or download each original PDF.`
             : `${subject.name} is part of the Delhi University ${programme.name} syllabus. No previous year question papers have been catalogued for it yet — check back later.`}
         </p>
         {hasContent && buildCoverageNote(subject) && (

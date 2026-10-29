@@ -1,5 +1,6 @@
 ---
 title: "DU Passing Criteria & Promotion Rules 2026: Pass Marks, ER & Next-Year Promotion"
+seoTitle: "DU Passing Criteria 2026: Pass Marks, ER & Promotion"
 description: "DU passing criteria explained: 40% pass marks per paper, internal assessment weightage, Essential Repeat (ER), and how many papers you can fail and still get promoted to the next year."
 slug: "du-passing-criteria-and-promotion-rules-explained"
 author: "DU PYQ Online Team"

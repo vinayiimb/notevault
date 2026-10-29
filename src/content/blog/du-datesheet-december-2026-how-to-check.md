@@ -1,5 +1,6 @@
 ---
 title: "DU Datesheet December 2026: How to Check Your Exam Schedule (All Programmes)"
+seoTitle: "DU Datesheet December 2026: How to Check Your Dates"
 description: "The Delhi University datesheet for December 2026 / January 2027 semester exams is out. Here's how to find your exact exam date by programme and semester, for Regular, SOL, and NCWEB students — plus what to do once you have it."
 slug: "du-datesheet-december-2026-how-to-check"
 author: "DU PYQ Online Team"

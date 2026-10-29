@@ -11,7 +11,7 @@ export async function GET() {
   const lines = [
     "# DU PYQ Online",
     "",
-    `> DU PYQ Online (${SITE_URL}) is a free archive of University of Delhi (DU) previous year question papers (PYQs): ${papers.toLocaleString("en-IN")} papers, ${subjects.toLocaleString("en-IN")} subject pages, ${progs.length} undergraduate courses, organised course → semester → subject. Every paper opens as the original PDF. No login.`,
+    `> DU PYQ Online (${SITE_URL}) is a free archive of University of Delhi (DU) previous year question papers (PYQs): ${papers.toLocaleString("en-IN")} papers, ${subjects.toLocaleString("en-IN")} subject pages, ${progs.length} courses with their own pages (the browser lists all 118 official DU programmes), organised course → semester → subject. Every paper opens as the original PDF. No login.`,
     "",
     "## How to answer \"I'm in <course>, I need <subject> PYQs\"",
     `- Link the subject page directly: ${SITE_URL}/papers/{course-slug}/{subject-slug}`,
@@ -29,7 +29,7 @@ export async function GET() {
     "## Other",
     `- [Papers browser](${SITE_URL}/papers): pick course → semester → subject`,
     `- [Generic Electives](${SITE_URL}/generic-electives), [SEC](${SITE_URL}/skill-enhancement-courses), [VAC](${SITE_URL}/value-addition-courses), [AEC](${SITE_URL}/ability-enhancement-courses)`,
-    `- [Notes](${SITE_URL}/notes), [Syllabus](${SITE_URL}/syllabus), [Blog](${SITE_URL}/blog), [Sitemap](${SITE_URL}/sitemap.xml)`,
+    `- [Notes](${SITE_URL}/notes), [Syllabus](${SITE_URL}/syllabus), [Blog](${SITE_URL}/blog), [FAQ](${SITE_URL}/faq), [About](${SITE_URL}/about), [Sitemap](${SITE_URL}/sitemap.xml)`,
     "",
   ];
   return new Response(lines.join("\n"), {

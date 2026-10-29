@@ -1,5 +1,6 @@
 ---
 title: "B.Sc Science Exams: How to Balance Practicals and Theory Prep in DU"
+seoTitle: "B.Sc Exams in DU: Balance Practicals and Theory Prep"
 description: "A comprehensive preparation guide for Delhi University B.Sc Hons and B.Sc Program students, focusing on practical exams, lab records, and theory paper revision."
 slug: "bsc-science-practical-and-theory-prep-tips-du"
 author: "DU PYQ Online Team"

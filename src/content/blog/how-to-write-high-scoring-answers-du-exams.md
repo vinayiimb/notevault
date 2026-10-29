@@ -1,5 +1,6 @@
 ---
 title: "How to Write High-Scoring Answers in DU Semester Exams: Expert Tips"
+seoTitle: "How to Write High-Scoring Answers in DU Exams"
 description: "Learn the secrets to writing high-scoring subjective answers in Delhi University exams, including ideal answer length, layout structure, diagrams, and time management."
 slug: "how-to-write-high-scoring-answers-du-exams"
 author: "DU PYQ Online Team"

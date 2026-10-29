@@ -125,7 +125,7 @@ export function StudyAccessShowcase() {
               </h2>
               <div className="study-access-card__divider" />
               <p className="study-access-card__copy">
-                Browse 29,000+ Delhi University question papers across all 118 programmes in interactive PDF.
+                Browse 16,000+ Delhi University question papers across all 118 programmes in interactive PDF.
               </p>
               <Link href="/papers?view=reader" className="study-access-card__small-button">
                 Open All PYQs →
