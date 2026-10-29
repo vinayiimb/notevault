@@ -44,17 +44,26 @@ export async function findCanonicalSubject(programmeSlug: string, subjectSlug: s
   return { programme, subject };
 }
 
+// Admin-chosen programmes shown on /notes (comma-separated slugs in SiteSettings).
+// Deliberately not getSiteSettings(): that one swallows DB errors and returns
+// defaults, which here means "no filter" and lists all 118 programmes.
+export async function getNotesFeaturedSlugs() {
+  const settings = await prisma.siteSettings.findUnique({
+    where: { id: "singleton" },
+    select: { notesFeaturedProgrammes: true },
+  });
+  return settings?.notesFeaturedProgrammes?.split(",").map((s) => s.trim()).filter(Boolean) ?? [];
+}
+
 export async function getProgrammesWithNotesStatus(featuredSlugs?: string[]) {
-  let countMap = new Map<string, number>();
-  try {
-    const counts = await prisma.canonicalSubjectNote.groupBy({
-      by: ["programmeSlug"],
-      _count: { _all: true },
-    });
-    countMap = new Map(counts.map((c) => [c.programmeSlug, c._count._all]));
-  } catch (err) {
-    console.warn("Database unavailable for getProgrammesWithNotesStatus, returning zero counts:", err instanceof Error ? err.message : err);
-  }
+  // Let a DB failure throw. This feeds ISR pages (/notes), and swallowing it
+  // here rendered "Notes coming soon" for every programme, which ISR then cached
+  // until the next revalidate. A throw makes Next keep the last good page.
+  const counts = await prisma.canonicalSubjectNote.groupBy({
+    by: ["programmeSlug"],
+    _count: { _all: true },
+  });
+  const countMap = new Map(counts.map((c) => [c.programmeSlug, c._count._all]));
 
   let list = await programmeList();
   if (featuredSlugs && featuredSlugs.length > 0) {

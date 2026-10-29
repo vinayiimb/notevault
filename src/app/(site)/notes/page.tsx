@@ -6,8 +6,7 @@ export const revalidate = 300;
 import type { Metadata } from "next";
 import Link from "next/link";
 import { BookOpenText, FileText, Sparkle } from "@phosphor-icons/react/dist/ssr";
-import { getProgrammesWithNotesStatus } from "@/lib/canonical-subject-notes-data";
-import { getSiteSettings } from "@/lib/data";
+import { getNotesFeaturedSlugs, getProgrammesWithNotesStatus } from "@/lib/canonical-subject-notes-data";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 
@@ -18,11 +17,7 @@ export const metadata: Metadata = {
 };
 
 export default async function NotesPage() {
-  const siteSettings = await getSiteSettings();
-  const featuredSlugs = siteSettings.notesFeaturedProgrammes
-    ?.split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
+  const featuredSlugs = await getNotesFeaturedSlugs();
   const programmes = await getProgrammesWithNotesStatus(featuredSlugs);
 
   const breadcrumbs = [
@@ -58,7 +53,7 @@ export default async function NotesPage() {
             </p>
           </div>
           <Link
-            href="/browse/college"
+            href="/papers"
             className="mt-6 text-sm font-bold text-sky-dark hover:underline"
           >
             Find compiled notes →
