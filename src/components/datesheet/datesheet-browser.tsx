@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarBlank, CircleNotch, FilePdf } from "@phosphor-icons/react/dist/ssr";
+import { CalendarBlank, CircleNotch, FilePdf, Printer } from "@phosphor-icons/react/dist/ssr";
 import type { DatesheetEntry, DatesheetProgramme } from "@/lib/datesheet-types";
 import { compareByDateTime } from "@/lib/datesheet-types";
 import { fetchProgrammeEntries } from "@/lib/datesheet-fetch-client";
+import { DatesheetPrintSheet } from "./print-sheet";
 
 type Props = {
   programmes: DatesheetProgramme[];
@@ -97,6 +98,18 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
 
   return (
     <div>
+      <DatesheetPrintSheet
+        title="DU Datesheet"
+        examSession={examSession}
+        details={[
+          { label: "Programme", value: currentProgramme?.label ?? "" },
+          ...(course !== ALL_COURSES ? [{ label: "Course", value: course }] : []),
+          ...(semester !== ALL_SEMESTERS ? [{ label: "Semester", value: semester }] : []),
+        ]}
+        entries={loading ? [] : filtered}
+        sourceUrl={currentProgramme?.sourceUrl}
+      />
+
       {/* Programme + course + semester pickers */}
       <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -172,6 +185,16 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
               <FilePdf size={16} weight="bold" />
               Official DU PDF
             </a>
+          ) : null}
+          {!loading && filtered.length > 0 ? (
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 font-semibold text-sky-dark hover:underline"
+            >
+              <Printer size={16} weight="bold" />
+              Print / Save as PDF
+            </button>
           ) : null}
         </div>
       </div>

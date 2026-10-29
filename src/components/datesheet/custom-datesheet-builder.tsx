@@ -6,6 +6,7 @@ import { CalendarBlank, MagnifyingGlass, Trash, CheckCircle, CircleNotch } from 
 import type { DatesheetEntry, DatesheetProgramme } from "@/lib/datesheet-types";
 import { CATEGORY_LABELS, compareByDateTime } from "@/lib/datesheet-types";
 import { fetchProgrammeEntries } from "@/lib/datesheet-fetch-client";
+import { DatesheetPrintSheet } from "./print-sheet";
 
 type Props = {
   programmes: DatesheetProgramme[];
@@ -207,52 +208,18 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
 
   return (
     <div className="space-y-6">
-      {/* Print-only stylesheet: printing shows exactly the "Your
-          datesheet" grid below (the actual on-screen table the student
-          built) instead of a separately-authored print layout — hide the
-          Step 1/Step 2 picker UI and the per-row action buttons, and
-          stretch the grid card to fill the page since it's the only thing
-          left on it. */}
-      <style>{`
-        @media print {
-          @page { size: landscape; margin: 1.2cm; }
-          .datesheet-picker-steps,
-          .datesheet-grid-actions,
-          .datesheet-row-action { display: none !important; }
-          .datesheet-grid-card {
-            border: none !important;
-            border-radius: 0 !important;
-            padding: 0 !important;
-            width: 100% !important;
-            max-width: none !important;
-          }
-          .datesheet-grid-scroll {
-            display: block !important;
-            overflow: visible !important;
-            border: none !important;
-            border-radius: 0 !important;
-          }
-          /* The mobile card list is screen-only — print always shows the
-             table above it (that table is only sm:block on screen, i.e.
-             hidden on a narrow phone, but print isn't a screen width and
-             should always get the table view). */
-          .datesheet-mobile-only { display: none !important; }
-          /* Landscape + full page width gives the grid room to breathe
-             whether it's 3 rows or 30 — the table just fills whatever
-             width the page gives it instead of staying pinned to its
-             on-screen 720px min-width. */
-          .datesheet-grid-table {
-            width: 100% !important;
-            min-width: 0 !important;
-            font-size: 12px;
-          }
-          .datesheet-grid-table th,
-          .datesheet-grid-table td { padding: 6px 8px !important; }
-          tr { break-inside: avoid; }
-        }
-      `}</style>
+      <DatesheetPrintSheet
+        title="My DU Datesheet"
+        examSession={examSession}
+        details={[
+          { label: "Programme", value: programmes.find((p) => p.slug === programmeSlug)?.label ?? "" },
+          ...(selectedCourse !== ALL_COURSES ? [{ label: "Course", value: selectedCourse }] : []),
+          ...(courseSemester !== ALL_SEMESTERS ? [{ label: "Semester", value: courseSemester }] : []),
+        ]}
+        entries={selectedList}
+      />
 
-      <div className="datesheet-picker-steps space-y-6">
+      <div className="space-y-6">
       {/* Step 1: Course + auto-selected Core papers */}
       <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
         <h2 className="text-lg font-bold text-foreground">1. Your course</h2>
@@ -482,11 +449,9 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
       </div>
 
       {/* Your personal datesheet — a real spreadsheet-style grid, not a
-          card list, so it actually reads like a datesheet. This is the
-          exact block that prints (see the @media print rule above): the
-          grid the student sees on screen, stretched to the page, nothing
-          re-authored separately for print. */}
-      <div className="datesheet-grid-card rounded-2xl border border-border bg-surface p-5 sm:p-6">
+          card list, so it actually reads like a datesheet. Printing uses
+          DatesheetPrintSheet above, laid out for A4. */}
+      <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <Image src="/logo.png" alt="DU PYQ Online" width={36} height={20} className="h-5 w-auto" />
@@ -496,14 +461,14 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
             <button
               type="button"
               onClick={clearAll}
-              className="datesheet-grid-actions inline-flex items-center gap-1 text-xs font-semibold text-muted hover:text-foreground"
+              className="inline-flex items-center gap-1 text-xs font-semibold text-muted hover:text-foreground"
             >
               <Trash size={14} />
               Clear all
             </button>
           )}
         </div>
-        <p className="datesheet-grid-actions mt-1 text-sm text-muted">
+        <p className="mt-1 text-sm text-muted">
           Core papers from step 1 and electives you tick in step 2 both appear here as rows,
           sorted by exam date.
         </p>
@@ -519,10 +484,8 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
           </div>
         ) : (
           <>
-            {/* Mobile: one card per paper (screen only — print always uses
-                the table below, at full landscape width, so it stays
-                hidden here via `datesheet-mobile-only`). */}
-            <ul className="datesheet-mobile-only mt-4 space-y-3 sm:hidden">
+            {/* Mobile: one card per paper; desktop/tablet: the table below. */}
+            <ul className="mt-4 space-y-3 sm:hidden">
               {selectedList.map((e) => (
                 <li key={rowKey(e)} className="rounded-xl border border-border bg-background p-3.5">
                   <div className="flex items-start justify-between gap-3">
@@ -544,7 +507,7 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
                   <button
                     type="button"
                     onClick={() => toggle(e)}
-                    className="datesheet-grid-actions mt-2 text-xs font-semibold text-muted hover:text-red-600"
+                    className="mt-2 text-xs font-semibold text-muted hover:text-red-600"
                   >
                     Remove
                   </button>
@@ -552,9 +515,8 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
               ))}
             </ul>
 
-            {/* Desktop/tablet + always for print: full table */}
-            <div className="datesheet-grid-scroll mt-4 hidden overflow-x-auto rounded-xl border border-border sm:block">
-              <table className="datesheet-grid-table w-full min-w-[720px] border-collapse text-sm">
+            <div className="mt-4 hidden overflow-x-auto rounded-xl border border-border sm:block">
+              <table className="w-full min-w-[720px] border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border bg-surface-muted text-left text-xs font-semibold uppercase tracking-wide text-muted">
                     <th className="px-4 py-3">Date</th>
@@ -563,7 +525,7 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
                     <th className="px-4 py-3">Code</th>
                     <th className="px-4 py-3">Sem</th>
                     <th className="px-4 py-3">Category</th>
-                    <th className="datesheet-grid-actions px-4 py-3" />
+                    <th className="px-4 py-3" />
                   </tr>
                 </thead>
                 <tbody>
@@ -584,7 +546,7 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
                           {e.category}
                         </span>
                       </td>
-                      <td className="datesheet-row-action whitespace-nowrap px-4 py-3 text-right">
+                      <td className="whitespace-nowrap px-4 py-3 text-right">
                         <button
                           type="button"
                           onClick={() => toggle(e)}
@@ -605,7 +567,7 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
           <button
             type="button"
             onClick={() => window.print()}
-            className="datesheet-grid-actions mt-5 min-h-11 w-full rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent-hover sm:w-auto"
+            className="mt-5 min-h-11 w-full rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground hover:bg-accent-hover sm:w-auto"
           >
             Print / Save as PDF
           </button>
