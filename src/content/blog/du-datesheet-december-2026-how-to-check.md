@@ -32,7 +32,7 @@ Every session, DU's Examination Branch publishes the datesheet as a set of progr
 - **CBCS-LOCF** — older-batch students still finishing out their programme under the previous curriculum
 - **CBCS-LOCF-SOL** — School of Open Learning students, published separately from Regular-mode papers
 
-That's **19 separate programme categories**, each its own PDF, each running into hundreds of individual paper-code entries. Finding your one exam date inside a 500-row PDF, sorted by paper code rather than by your subject name, is the actual problem most students run into — which is exactly what our datesheet tool exists to fix: we've already pulled every entry from all 19 official PDFs into one searchable, per-programme table.
+That's **40 separate programme PDFs** across the three frameworks, many running into hundreds of individual paper-code entries. Finding your one exam date inside a 500-row PDF, sorted by paper code rather than by your subject name, is the actual problem most students run into — which is exactly what our datesheet tool exists to fix: we've already pulled every entry from the official PDFs into one searchable, per-programme table, with NEP, SOL and CBCS one tap apart.
 
 ---
 

@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { CalendarBlank, CircleNotch } from "@phosphor-icons/react/dist/ssr";
-import type { DatesheetEntry, DatesheetProgramme } from "@/lib/datesheet-types";
+import { CalendarBlank, CircleNotch, FilePdf } from "@phosphor-icons/react/dist/ssr";
+import type { DatesheetEntry, DatesheetGroup, DatesheetProgramme } from "@/lib/datesheet-types";
+import { compareByDateTime } from "@/lib/datesheet-types";
 import { fetchProgrammeEntries } from "@/lib/datesheet-fetch-client";
 
 type Props = {
@@ -13,6 +14,14 @@ type Props = {
 const ALL_SEMESTERS = "all";
 const ALL_COURSES = "all";
 
+// NEP is what most students sit and is the default; SOL and CBCS are the other
+// two sections of DU's own datesheet page.
+const GROUPS: { id: DatesheetGroup; label: string; hint: string }[] = [
+  { id: "nep", label: "NEP", hint: "NEP-UGCF-2022 \u00b7 regular students of colleges" },
+  { id: "sol", label: "SOL", hint: "School of Open Learning \u00b7 NEP and CBCS sheets" },
+  { id: "cbcs", label: "CBCS", hint: "CBCS-LOCF \u00b7 2020 & 2021 admissions \u00b7 North and South Campus" },
+];
+
 function formatDate(iso: string, day: string) {
   const [y, m, d] = iso.split("-").map(Number);
   const date = new Date(y, m - 1, d);
@@ -21,7 +30,10 @@ function formatDate(iso: string, day: string) {
 }
 
 export function DatesheetBrowser({ programmes, examSession }: Props) {
-  const [programmeSlug, setProgrammeSlug] = useState(programmes[0]?.slug ?? "");
+  const [group, setGroup] = useState<DatesheetGroup>("nep");
+  const [programmeSlug, setProgrammeSlug] = useState(
+    (programmes.find((p) => p.group === "nep") ?? programmes[0])?.slug ?? ""
+  );
   const [course, setCourse] = useState<string>(ALL_COURSES);
   const [semester, setSemester] = useState<string>(ALL_SEMESTERS);
   const [entries, setEntries] = useState<DatesheetEntry[]>([]);
@@ -79,19 +91,42 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
     let rows = entries;
     if (course !== ALL_COURSES) rows = rows.filter((e) => e.subject === course);
     if (semester !== ALL_SEMESTERS) rows = rows.filter((e) => e.semester === semester);
-    return [...rows].sort((a, b) => {
-      if (a.date !== b.date) return a.date.localeCompare(b.date);
-      return a.startTime.localeCompare(b.startTime);
-    });
+    return [...rows].sort(compareByDateTime);
   }, [entries, course, semester]);
 
+  const groupProgrammes = useMemo(() => programmes.filter((p) => p.group === group), [programmes, group]);
   const currentProgramme = programmes.find((p) => p.slug === programmeSlug);
+
+  function pickGroup(next: DatesheetGroup) {
+    if (next === group) return;
+    setGroup(next);
+    setProgrammeSlug(programmes.find((p) => p.group === next)?.slug ?? "");
+    setCourse(ALL_COURSES);
+    setSemester(ALL_SEMESTERS);
+  }
 
   return (
     <div>
       {/* Programme + course + semester pickers */}
       <div className="rounded-2xl border border-border bg-surface p-5 sm:p-6">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div role="group" aria-label="Datesheet type" className="grid grid-cols-3 gap-1 rounded-xl border border-border bg-background p-1 sm:inline-grid sm:w-96">
+          {GROUPS.map((g) => (
+            <button
+              key={g.id}
+              type="button"
+              aria-pressed={group === g.id}
+              onClick={() => pickGroup(g.id)}
+              className={`min-h-11 rounded-lg px-4 text-sm font-semibold transition ${
+                group === g.id ? "bg-accent text-accent-foreground" : "text-muted hover:text-foreground"
+              }`}
+            >
+              {g.label}
+            </button>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted">{GROUPS.find((g) => g.id === group)?.hint}</p>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <label className="block">
             <span className="text-sm font-semibold text-foreground">Programme</span>
             <select
@@ -103,7 +138,7 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
               }}
               className="mt-2 min-h-11 w-full rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-accent focus:ring-2 focus:ring-accent/20"
             >
-              {programmes.map((p) => (
+              {groupProgrammes.map((p) => (
                 <option key={p.slug} value={p.slug}>
                   {p.label}
                 </option>
@@ -154,6 +189,17 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
             <CalendarBlank size={16} weight="bold" />
             {examSession} &middot; {loading ? "loading…" : `${filtered.length} paper${filtered.length === 1 ? "" : "s"}`}
           </span>
+          {currentProgramme?.sourceUrl ? (
+            <a
+              href={currentProgramme.sourceUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 font-semibold text-sky-dark hover:underline"
+            >
+              <FilePdf size={16} weight="bold" />
+              Official DU PDF
+            </a>
+          ) : null}
         </div>
       </div>
 
@@ -167,7 +213,7 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
         <div className="mt-6 rounded-2xl border border-border bg-surface p-8 text-center text-sm text-muted">
           No datesheet rows found for {currentProgramme?.label}
           {course !== ALL_COURSES ? ` — ${course}` : ""}
-          {semester !== ALL_SEMESTERS ? `, Semester ${semester}` : ""}. Check the source PDF above.
+          {semester !== ALL_SEMESTERS ? `, Semester ${semester}` : ""}. Check the official PDF above.
         </div>
       ) : (
         <>
@@ -182,9 +228,11 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
                     <p className="text-sm font-semibold text-foreground">{formatDate(e.date, e.day)}</p>
                     <p className="text-xs text-muted">{e.startTime}</p>
                   </div>
-                  <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
-                    {e.category}
-                  </span>
+                  {e.category !== "OTHER" ? (
+                    <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
+                      {e.category}
+                    </span>
+                  ) : null}
                 </div>
                 <p className="mt-2 text-sm text-foreground">
                   {e.subject ? <span className="text-muted">{e.subject} &middot; </span> : null}
@@ -227,9 +275,11 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
                     <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted">{e.paperCode}</td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted">{e.semester ?? "—"}</td>
                     <td className="whitespace-nowrap px-4 py-3">
-                      <span className="inline-flex rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
-                        {e.category}
-                      </span>
+                      {e.category !== "OTHER" ? (
+                        <span className="inline-flex rounded-full bg-accent-soft px-2.5 py-1 text-xs font-semibold text-accent">
+                          {e.category}
+                        </span>
+                      ) : null}
                     </td>
                   </tr>
                 ))}
@@ -241,7 +291,7 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
 
       <p className="mt-4 text-xs text-muted">
         Datesheet is tentative and sourced from the official University of Delhi notification (
-        {examSession}). Always cross-check dates on the linked source PDF before your exam.
+        {examSession}). Always cross-check dates on the linked official PDF before your exam.
       </p>
     </div>
   );

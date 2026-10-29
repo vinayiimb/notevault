@@ -1,8 +1,9 @@
 import fs from "fs";
 import path from "path";
+import { compareByDateTime } from "./datesheet-types";
 import type { DatesheetEntry, DatesheetManifest } from "./datesheet-types";
 
-export type { DatesheetEntry, DatesheetProgramme, DatesheetManifest } from "./datesheet-types";
+export type { DatesheetEntry, DatesheetGroup, DatesheetProgramme, DatesheetManifest } from "./datesheet-types";
 export { CATEGORY_LABELS } from "./datesheet-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data", "datesheet");
@@ -42,8 +43,5 @@ export function getSemestersForProgramme(slug: string): string[] {
 }
 
 export function sortByDateTime(entries: DatesheetEntry[]): DatesheetEntry[] {
-  return [...entries].sort((a, b) => {
-    if (a.date !== b.date) return a.date.localeCompare(b.date);
-    return a.startTime.localeCompare(b.startTime);
-  });
+  return [...entries].sort(compareByDateTime);
 }

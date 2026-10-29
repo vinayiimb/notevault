@@ -8,16 +8,16 @@ import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 export const metadata: Metadata = {
   title: "DU Datesheet December 2026",
   description:
-    "Official Delhi University semester exam datesheet for B.A., B.Com, B.Sc. and all NEP-UGCF programmes. Search by course and semester, with source PDFs linked.",
+    "Official Delhi University semester exam datesheet for B.A., B.Com, B.Sc. and all NEP-UGCF programmes, plus SOL and CBCS sheets. Search by course and semester, with official PDFs linked.",
   alternates: { canonical: "/exam-help/datesheet" },
 };
 
 export default function DatesheetPage() {
   // Only the manifest (programme list, a few KB) is loaded server-side.
   // Each programme's actual rows (up to ~780KB for the largest file) are
-  // fetched client-side on demand by DatesheetBrowser — shipping all 19
-  // files' 7,000+ rows (6.7MB) on every page load was slow enough on
-  // mobile data to look like the page had crashed.
+  // fetched client-side on demand by DatesheetBrowser — shipping every
+  // programme's 10,000+ rows on each page load was slow enough on mobile
+  // data to look like the page had crashed.
   const manifest = getDatesheetManifest();
 
   const breadcrumbs = [
@@ -37,7 +37,8 @@ export default function DatesheetPage() {
         </h1>
         <p className="mt-3 text-base text-muted">
           Official University of Delhi semester exam datesheet, extracted from the Controller of
-          Examinations&apos; notifications. Pick your programme and semester to see your full exam schedule.
+          Examinations&apos; notifications. NEP sheets open first; switch to SOL or CBCS if that is your
+          scheme, then pick your programme and semester to see your full exam schedule.
         </p>
       </div>
 

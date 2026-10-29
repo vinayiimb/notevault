@@ -28,6 +28,7 @@ All B.Com (Hons) papers start at **9:30 AM**.
 | Date | Paper | Paper code | PYQs |
 |---|---|---|---|
 | Mon, 7 Dec 2026 | Management Principles and Applications (DSC) | 2412081101 | [PYQs](/papers/bcom-hons/management-principles-and-applications) |
+| Fri, 11 Dec 2026 | Business Laws (DSC) | 2412081102 | [PYQs](/papers/bcom-hons/business-laws) |
 | Mon, 14 Dec 2026 | Financial Accounting (DSC) | 2412081103 | [PYQs](/papers/bcom-hons/financial-accounting) |
 
 ### Semester 3 — B.Com (Hons)
@@ -103,6 +104,7 @@ B.Com (Prog) papers start at **2:30 PM**, except Semester 7, which is at **9:30 
 | Wed, 16 Dec 2026 | DSE: Auditing | 2413090006 | [PYQs](/papers/bcom-p/auditing) |
 | Wed, 16 Dec 2026 | DSE: Business Tax Procedures and Management | 2413090007 | [PYQs](/papers/bcom-p/business-tax-procedures-and-management) |
 | Wed, 16 Dec 2026 | DSE: International Monetary and Financial Environment | 2413090008 | [PYQs](/papers/bcom-p/international-monetary-and-financial-environment) |
+| Wed, 16 Dec 2026 | DSE: Business Research Methodology | 2413080026 | — |
 
 ### Semester 7 — B.Com (Prog)
 
@@ -124,12 +126,12 @@ Core papers are only part of it. These common papers apply to every B.Com studen
 
 GE and AEC papers run in both the 9:30 AM and 2:30 PM slots depending on the paper, so check your exact paper. Paper-wise lists are in the [DU AEC, SEC, VAC & GE datesheet guide](/blog/du-aec-sec-vac-ge-datesheet-december-2026).
 
-So a **Semester 1 B.Com (Hons)** student's December looks like this: Management Principles (7 Dec) → Financial Accounting (14 Dec) → SEC (17 Dec) → VAC (21 Dec) → GE (23 Dec) → AEC (26 Dec).
+So a **Semester 1 B.Com (Hons)** student's December looks like this: Management Principles (7 Dec) → Business Laws (11 Dec) → Financial Accounting (14 Dec) → SEC (17 Dec) → VAC (21 Dec) → GE (23 Dec) → AEC (26 Dec).
 
 ## How to Use the Gaps Between Papers
 
 - **Semester 5 is front-loaded.** Income Tax (4 Dec), the SEC (5 Dec), Business Economics (9 Dec) and Management Accounting (12 Dec) come in the first nine days. Start Income Tax now: the [Income Tax Law and Practice PYQs](/papers/bcom-hons/income-tax-law-and-practice) show which computation questions come back every year.
-- **Semester 1 has a full week before Financial Accounting.** You have 7 days between Management Principles and Financial Accounting. Spend them solving [Financial Accounting past papers](/papers/bcom-hons/financial-accounting) under time limits. Reading notes won't prepare you for the numericals.
+- **Semester 1 has a week between its first and last core paper.** Management Principles is on 7 Dec, Business Laws on 11 Dec and Financial Accounting on 14 Dec. After Business Laws you have three days, so spend them solving [Financial Accounting past papers](/papers/bcom-hons/financial-accounting) under time limits. Reading notes won't prepare you for the numericals.
 - **Semester 3 has three DSCs in eight days** (8, 10 and 15 Dec). Work through [Business Mathematics PYQs](/papers/bcom-hons/business-mathematics) first, because it's the first paper and the one where practice matters most.
 - **Common papers come last.** SEC, VAC, GE and AEC fall in the second half of December, so revise them after your core papers, not before.
 

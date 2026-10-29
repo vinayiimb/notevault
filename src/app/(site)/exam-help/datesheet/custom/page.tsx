@@ -41,7 +41,10 @@ export default function CustomDatesheetPage() {
       </div>
 
       <div className="mt-8">
-        <CustomDatesheetBuilder programmes={manifest.programmes} examSession={manifest.examSession} />
+        <CustomDatesheetBuilder
+          programmes={manifest.programmes.filter((p) => p.group === "nep")}
+          examSession={manifest.examSession}
+        />
       </div>
     </div>
   );

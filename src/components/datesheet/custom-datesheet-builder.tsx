@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
 import { CalendarBlank, MagnifyingGlass, Trash, CheckCircle, CircleNotch } from "@phosphor-icons/react/dist/ssr";
 import type { DatesheetEntry, DatesheetProgramme } from "@/lib/datesheet-types";
-import { CATEGORY_LABELS } from "@/lib/datesheet-types";
+import { CATEGORY_LABELS, compareByDateTime } from "@/lib/datesheet-types";
 import { fetchProgrammeEntries } from "@/lib/datesheet-fetch-client";
 
 type Props = {
@@ -183,10 +183,7 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
   }, [allEntries, semester, category, electiveCourse, search]);
 
   const selectedList = useMemo(() => {
-    return Object.values(selected).sort((a, b) => {
-      if (a.date !== b.date) return a.date.localeCompare(b.date);
-      return a.startTime.localeCompare(b.startTime);
-    });
+    return Object.values(selected).sort(compareByDateTime);
   }, [selected]);
 
   function toggle(entry: DatesheetEntry) {
