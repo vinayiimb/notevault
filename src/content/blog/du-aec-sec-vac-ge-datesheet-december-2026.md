@@ -96,6 +96,6 @@ Semester 5 on 5 December, Semester 1 on 17 December and Semester 3 on 19 Decembe
 Semester 1 on 23 Dec, Semester 3 on 22 Dec, Semester 5 on 24 Dec, and Semester 7 on 19 and 26 Dec.
 
 **Are these dates the same for SOL students?**
-Many common papers are marked "For Regular & SOL" on the datesheet, but SOL has its own datesheet for some programmes. Check the SOL schedule on the [DU Datesheet page](/exam-help/datesheet).
+Many common papers are marked "For Regular & SOL" on the datesheet, but SOL has its own datesheet for some programmes. Check the SOL schedule on [DU's datesheet portal](https://misc.exam.du.ac.in/datesheetnd26/).
 
 Course-wise dates: [DU B.Com (Hons) & B.Com datesheet December 2026](/blog/du-bcom-datesheet-december-2026) · [how to check the DU datesheet](/blog/du-datesheet-december-2026-how-to-check).

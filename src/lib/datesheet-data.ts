@@ -3,7 +3,7 @@ import path from "path";
 import { compareByDateTime } from "./datesheet-types";
 import type { DatesheetEntry, DatesheetManifest } from "./datesheet-types";
 
-export type { DatesheetEntry, DatesheetGroup, DatesheetProgramme, DatesheetManifest } from "./datesheet-types";
+export type { DatesheetEntry, DatesheetProgramme, DatesheetManifest } from "./datesheet-types";
 export { CATEGORY_LABELS } from "./datesheet-types";
 
 const DATA_DIR = path.join(process.cwd(), "public", "data", "datesheet");

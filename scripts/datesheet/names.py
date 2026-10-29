@@ -2,8 +2,8 @@
 Clean paper / subject names for the datesheet.
 
 DU's sheets are typed in ALL CAPS with plenty of typos ("BUSSINESS", "AUTIDING",
-"ACQUISIONS") and, on the NEP sheets, Hindi whose short-i matra sits before its
-consonant ("िहंदी" for "हिंदी"). Order of preference for a paper's name:
+"ACQUISIONS") and, on the NEP sheets, Hindi that is
+only reliable after proofreading (NEP_HINDI). Order of preference for a paper's name:
 
   1. the name our own catalogues give that paper code (master syllabus, then the
      /papers catalogues) — these are curated and correctly spelt;
@@ -19,7 +19,6 @@ from collections import Counter, defaultdict
 from difflib import SequenceMatcher, get_close_matches
 from pathlib import Path
 
-from kruti import KNOWN_TITLES
 
 DATA = Path(__file__).resolve().parents[2] / "public" / "data"
 SMALL = {"a", "an", "and", "as", "at", "by", "for", "from", "in", "into", "of", "on", "or", "the", "to", "with", "via", "vs"}
@@ -66,27 +65,7 @@ def _known(low: str) -> bool:
 # a capitalised token that is just an English word ("SKILLS") is not an acronym
 ACRONYMS = {a for a in ACRONYMS if not any(f in DICT for f in {a.lower(), a.lower()[:-1]})} | {"IT", "AI", "UK", "USA"}
 ACRONYMS -= {"AUR", "APP", "COM"}
-ACRONYMS |= {"SOL", "NCWEB"}                      # Hindi "aur" and word fragments, not acronyms
-
-
-def fix_hindi_order(s: str) -> str:
-    """NEP sheets' text layer puts every short-i matra *before* its consonant cluster
-    (visual order: "िहंदी", "सिमितयां"); move each one after its cluster. Only for NEP
-    text: the CBCS Hindi (converted from Kruti Dev) is already in logical order."""
-    out = list(s)
-    i = 0
-    while i < len(out):
-        if out[i] == "ि":
-            k = i + 2 if out[i + 1:i + 2] == ["ं"] else i + 1      # "सिंहता": the anusvara belongs to स
-            if k < len(out) and out[k] in CONS:
-                j = k + 1
-                while j + 1 < len(out) and out[j] == "्" and out[j + 1] in CONS:
-                    j += 2
-                out[i:j] = out[i + 1:j] + ["ि"]
-                i = j
-                continue
-        i += 1
-    return "".join(out)
+ACRONYMS |= {"SOL", "NCWEB"}
 
 
 def _spell(word: str) -> str:
@@ -106,7 +85,9 @@ def _case(word: str, first: bool) -> str:
     if not core:
         return word
     up = core.upper()
-    if len(core) == 1:                                   # "Assamese A", "Paper B"
+    if 2 <= len(core) <= 3 and core.isalpha() and core.lower() not in SMALL and core.lower() not in DICT:
+        new = up                                          # "HR", "GST" — short non-words are acronyms
+    elif len(core) == 1:                                 # "Assamese A", "Paper B"
         new = up if (up != "A" or first or word is LAST) else "a"
     elif re.fullmatch(r"[A-Za-z]{2,}-\d+", core):                 # "RABINDRASAHITYA-1"
         new = core[:1].upper() + core[1:].lower()
@@ -133,6 +114,12 @@ TYPOS = [
     (r"\bMsmes\b", "MSMEs"), (r"\bPyton\b", "Python"), (r"\bAtheletics\b", "Athletics"),
     (r"\bPerformane\b", "Performance"), (r"\bTravelough\b", "Travelogue"), (r"\bSlving\b", "Solving"),
     (r"\bSahity 0\b", "Sahitya O"), (r"\[Rasthana Bheda", "Prasthana Bheda"),
+    (r"\bAcquisions\b", "Acquisitions"), (r"\bNuclec Acids, Aminoacides\b", "Nucleic Acids, Amino Acids"),
+    (r"\bBiolody\b", "Biology"), (r"\bDistory UO to\b", "History Up to"), (r"\bEurpoe\b", "Europe"),
+    (r"\bMacroecomonics\b", "Macroeconomics"), (r"\bNeurosicence\b", "Neuroscience"),
+    (r"\bNitraceuticals\b", "Nutraceuticals"), (r"\bProtebolomics\b", "Proteomics"), (r"\bHgharana\b", "Gharana"),
+    (r"\bAvanddha Vedyas\b", "Avanaddha Vadyas"), (r"\bMasanavi\b", "Masnavi"), (r"\bH Uman\b", "Human"),
+    (r"\bSkils\b", "Skills"),
 ]
 
 
@@ -166,6 +153,8 @@ def tidy(text: str) -> str:
         if re.match(r"[A-Z][a-z]", text):              # "Business organisation and management"
             text = re.sub(r"(?<=\s)([a-z])([a-z]{3,})\b",
                           lambda m: m.group(0) if m.group(0) in SMALL else m.group(1).upper() + m.group(2), text)
+    if text.count("(") == text.count(")") + 1 and re.search(r"\w$", text):
+        text += ")"                                     # "(Abul Fazal Bahiqi and Nizamul Mulk Tusi"
     text = re.sub(r"\(\s+", "(", text)
     text = re.sub(r"\s+([),])", r"\1", text)
     return _fix_typos(text)
@@ -180,7 +169,9 @@ def _keep_case(orig: str, fixed: str) -> str:
 
 # NEP sheets' Hindi text layer drops conjunct glyphs and scrambles word order ("'अेय' सदानंद
 # हीरानंद वाायन" for "सच्चिदानंद हीरानंद वात्स्यायन 'अज्ञेय'"), which no rule can repair. Every
-# NEP Hindi title, read off the rendered pages (2026-10-29), keyed by paper code.
+# NEP Hindi title, read off the rendered pages (2026-10-29), keyed by paper code, and
+# cross-checked against pdftotext's reading; the differences are DU's own typos, corrected
+# here (एव -> एवं, सहिंता -> संहिता, घनानद -> घनानंद, उदभव -> उद्भव).
 NEP_HINDI = dict(line.split("|", 1) for line in """
 2053100020|सच्चिदानंद हीरानंद वात्स्यायन 'अज्ञेय'
 2055092001|हिंदी गद्य विकास के विविध चरण 'क'
@@ -299,28 +290,27 @@ NEP_HINDI = dict(line.split("|", 1) for line in """
 2053200015|घनानंद
 6967001022|भारतीय भक्ति परम्परा और मानव मूल्य (for Regular & SOL)
 2053200018|कृष्णा सोबती
+2054001003|हिंदी सिनेमा और उसका अध्ययन
+2053200014|मीरा
 """.strip().splitlines())
 
-def _unknown(text: str) -> int:
-    """Words the system dictionary doesn't know (the catalogue vocabulary is not used here:
-    it contains the catalogue's own slips, like "Lincar")."""
-    def ok(w):
-        low = w.lower()
-        return any(f in DICT for f in {low, low[:-1], low[:-2], low[:-3] + "y"}) or w.upper() in ACRONYMS
-    return sum(1 for w in re.findall(r"[A-Za-z]{4,}", text) if not ok(w))
+def _real_words(text: str) -> int:
+    """Dictionary words in the name ("Auditing" counts, "Autiding" and "NAD" don't)."""
+    def ok(low):
+        forms = {low, low[:-1], low[:-2], low[:-3] + "y", low[:-3], low[:-3] + "e"}
+        return any(f in DICT for f in forms if len(f) >= 3)
+    return sum(1 for w in re.findall(r"[A-Za-z]{3,}", text) if ok(w.lower()))
 
 
-def paper_name(code: str, printed: str, visual_hindi: bool = False) -> str:
+def paper_name(code: str, printed: str) -> str:
     """Our catalogue's name for the code when it is clearly the same paper and no worse
     than DU's (some catalogue names are truncated — "Constitutional" — or carry OCR
     slips — "Lincar Algcbra"); otherwise DU's printed name, tidied."""
-    if visual_hindi and re.search(r"[\u0900-\u097F]", printed):
-        if code in NEP_HINDI:
-            return NEP_HINDI[code]
-        printed = fix_hindi_order(printed)
+    if code in NEP_HINDI and re.search(r"[\u0900-\u097F]", printed):
+        return NEP_HINDI[code]
     mine = tidy(printed)
     known = BY_CODE.get(code)
-    if not known or mine in KNOWN_TITLES:          # CBCS Hindi already proofread against the PDF
+    if not known:
         return mine
     theirs = re.sub(r"^(?:DSE|DSC|GE|SEC)-?\d*\s*[:-]\s*", "", known)              # "DSE-6: ...", "DSE-Endocrinology"
     theirs = re.sub(r"\s*\((?:DSE|DSC|GE|SEC|AEC|VAC|SBC|LOCF|CBCS|IN\w*\d\w*|for Regular\s*&\s*SOL)\)?\s*$", "", theirs, flags=re.I)
@@ -330,6 +320,14 @@ def paper_name(code: str, printed: str, visual_hindi: bool = False) -> str:
         return mine
     norm = lambda t: re.sub(r"[^a-z0-9\u0900-\u097F]", "", t.lower())
     same = SequenceMatcher(None, norm(mine), norm(theirs)).ratio() >= (0.6 if dev.search(mine) else 0.75)
-    if same and 0.85 <= len(norm(theirs)) / max(1, len(norm(mine))) <= 1.15 and _unknown(theirs) <= _unknown(mine):
+    # spelling-level only: same words in the same order, each a near match ("Autiding" ~
+    # "Auditing"); a different word means the catalogue holds another paper for this code
+    # ("Sociology of Food" vs DU's "Sociology of Law"), and DU's own name wins.
+    wm, wt = re.findall(r"\w+", mine.lower()), re.findall(r"\w+", theirs.lower())
+    spelling_only = len(wm) == len(wt) and all(
+        a == b or SequenceMatcher(None, a, b).ratio() >= (0.6 if len(a) <= 4 else 0.7) for a, b in zip(wm, wt))   # "Nad" ~ "and"
+    if re.search(r"(\b(and|of|for|the|to|&)|[-–:(,])$", mine) and norm(theirs).startswith(norm(mine)) and len(norm(theirs)) > len(norm(mine)):
+        return theirs                                  # DU's own PDF cuts it off ("Mathematics for Computing -")
+    if same and spelling_only and _real_words(theirs) > _real_words(mine):    # only when it fixes a misspelling
         return theirs
     return mine

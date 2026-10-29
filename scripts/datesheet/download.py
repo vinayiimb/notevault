@@ -1,13 +1,11 @@
 #!/usr/bin/env python3
 """
-Download every datesheet PDF linked from DU's datesheet page, keeping DU's folders
-(NEP/, "CBCS PDF SIG"/, CBCS_SOUTH/, "SOL SIG CBCS"/), ready for extract.py.
+Download the main NEP datesheet PDFs (NEP/, minus the SOL sheets) linked from DU's datesheet
+page, ready for extract.py.
 
     python3 scripts/datesheet/download.py [out folder]   (default ~/Downloads/DU_Datesheet_FINAL)
 
-DU's quirks handled here: hrefs use backslashes, and some links 404 while the file sits on
-the server under a shorter name (the NEP SOL sheets drop "_January 2026–27"), so a 404 is
-retried with that suffix removed. Every file must be a complete PDF (starts %PDF, ends %%EOF).
+DU's hrefs use backslashes; every file must be a complete PDF (starts %PDF, ends %%EOF).
 """
 import html
 import re
@@ -50,31 +48,21 @@ def main():
         html.unescape(h).replace("\\", "/").split("assets/", 1)[1]
         for h in re.findall(r'href="([^"]*\.pdf)"', page, re.I)
     ))
+    rels = [r for r in rels if r.startswith("NEP/") and "-SOL" not in r]
     print(f"{len(rels)} PDFs linked from {PAGE}")
     failed = []
     for i, rel in enumerate(rels, 1):
-        candidates = [rel]
-        short = re.sub(r" · December_January 2026–27\.pdf$", " · December 2026.pdf", rel)
-        if short != rel:
-            candidates.append(short)
-        for cand in candidates:
-            try:
-                data = fetch(url_for(cand))
-            except urllib.error.HTTPError:
-                continue
-            except RuntimeError as e:
-                print(f"{i:2d} FAIL {cand}: {e}")
-                break
-            dest = OUT / cand
-            dest.parent.mkdir(parents=True, exist_ok=True)
-            dest.write_bytes(data)
-            note = "  (DU's link 404s; used " + Path(cand).name + ")" if cand != rel else ""
-            print(f"{i:2d} ok {len(data) // 1024:6d} KB  {cand}{note}")
-            break
-        else:
-            print(f"{i:2d} MISSING on DU's server: {rel}")
+        try:
+            data = fetch(url_for(rel))
+        except (urllib.error.HTTPError, RuntimeError) as e:
+            print(f"{i:2d} FAIL {rel}: {e}")
             failed.append(rel)
-    print(f"\nsaved under {OUT}; {len(failed)} not available: {failed}")
+            continue
+        dest = OUT / rel
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        dest.write_bytes(data)
+        print(f"{i:2d} ok {len(data) // 1024:6d} KB  {rel}")
+    print(f"\nsaved under {OUT}; {len(failed)} failed: {failed}")
 
 
 if __name__ == "__main__":

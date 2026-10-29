@@ -10,14 +10,9 @@ export type DatesheetEntry = {
   category: string; // DSC | DSE | GE | SEC | SBC | VAC | AEC | OTHER
 };
 
-/** nep = NEP-UGCF-2022 regular sheets (default), sol = School of Open Learning, cbcs = CBCS-LOCF (2020 & 2021 admissions). */
-export type DatesheetGroup = "nep" | "sol" | "cbcs";
-
 export type DatesheetProgramme = {
   slug: string;
   label: string;
-  group: DatesheetGroup;
-  scheme: string; // "NEP-UGCF-2022" | "CBCS-LOCF"
   sourceFile: string;
   sourceUrl: string; // the official PDF on misc.exam.du.ac.in
   entryCount: number;

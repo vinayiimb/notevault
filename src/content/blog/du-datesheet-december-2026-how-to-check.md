@@ -33,7 +33,7 @@ Every session, DU's Examination Branch publishes the datesheet as a set of progr
 - **CBCS-LOCF** — older-batch students still finishing out their programme under the previous curriculum
 - **CBCS-LOCF-SOL** — School of Open Learning students, published separately from Regular-mode papers
 
-That's **40 separate programme PDFs** across the three frameworks, many running into hundreds of individual paper-code entries. Finding your one exam date inside a 500-row PDF, sorted by paper code rather than by your subject name, is the actual problem most students run into — which is exactly what our datesheet tool exists to fix: we've already pulled every entry from the official PDFs into one searchable, per-programme table, with NEP, SOL and CBCS one tap apart.
+That's **40 separate programme PDFs** across the three frameworks, many running into hundreds of individual paper-code entries. Finding your one exam date inside a 500-row PDF, sorted by paper code rather than by your subject name, is the actual problem most students run into — which is exactly what our datesheet tool exists to fix: we've already pulled every entry from the 17 main NEP-UGCF PDFs into one searchable, per-programme table.
 
 ---
 
@@ -72,7 +72,7 @@ A lot of the confusion around "the DU datesheet is wrong" or "I can't find my pa
 | School of Open Learning (SOL) | CBCS-LOCF-SOL | Separate SOL-specific PDF, even for the same programme name |
 | NCWEB | Listed within the relevant programme category, marked NCWEB | Same portal, NCWEB-tagged entries |
 
-If you're a SOL student searching by your programme name and not finding your paper, you're very likely looking at the Regular-mode file — search specifically for the SOL variant instead. Our datesheet browser separates these clearly by mode so you don't have to guess.
+If you're a SOL student searching by your programme name and not finding your paper, you're very likely looking at the Regular-mode file — search specifically for the SOL variant instead. Our datesheet page covers the main NEP-UGCF sheets (most of which already include SOL students); the SOL-only and CBCS-LOCF sheets are on [DU's datesheet portal](https://misc.exam.du.ac.in/datesheetnd26/).
 
 ---
 

@@ -3,15 +3,9 @@
 DU Datesheet PDF extractor.
 
 Builds public/data/datesheet/ from DU's final undergraduate datesheet PDFs
-(https://misc.exam.du.ac.in/datesheetnd26/), in three groups the site offers:
-
-  nep   NEP-UGCF-2022 regular sheets (the default)
-  sol   School of Open Learning sheets (NEP and CBCS)
-  cbcs  CBCS-LOCF sheets for 2020 & 2021 admissions (North + South Campus)
-
-NEP sheets (this file) are text PDFs; the CBCS ones are parsed by extract_cbcs.py
-and the scanned South Campus ones read from south_cbcs.txt (extract_south.py).
-Run:  python3 extract.py [folder holding NEP/, "CBCS PDF SIG"/, CBCS_SOUTH/, "SOL SIG CBCS"/]
+(https://misc.exam.du.ac.in/datesheetnd26/) — the 17 main NEP-UGCF-2022 sheets only
+(the site dropped DU's SOL and CBCS sheets on 2026-10-29).
+Run:  python3 download.py && python3 extract.py [folder holding NEP/]
 
 NEP layout: repeating blocks, each starting with a header line
 
@@ -39,51 +33,31 @@ from pathlib import Path
 
 import pdfplumber
 
-from extract_cbcs import parse_pdf as parse_cbcs
-from extract_south import parse_south
 from names import CORRECTIONS, paper_name, tidy
 
 SRC_ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.home() / "Downloads" / "DU_Datesheet_FINAL"
 OUT_DIR = Path(__file__).resolve().parents[2] / "public" / "data" / "datesheet"
 BASE_URL = "https://misc.exam.du.ac.in/datesheetnd26/assets/"
 
-NEP, CBCS = "NEP-UGCF-2022", "CBCS-LOCF"
-
-# (PDF under SRC_ROOT, slug, label, group) — in DU's own order, which is the dropdown order.
-# DU's page links the two NEP SOL sheets as "...December_January 2026–27.pdf", which 404s;
-# the files on its server are "...December 2026.pdf".
+# (PDF under SRC_ROOT, slug, label) — in DU's own order, which is the dropdown order.
 PROGRAMMES = [
-    ("NEP/B.A. (Hons) · December 2026.pdf", "ba-hons", "B.A. (Hons)", "nep"),
-    ("NEP/B.Sc. (Hons) · December 2026.pdf", "bsc-hons", "B.Sc. (Hons)", "nep"),
-    ("NEP/B.A. (Prog) · December 2026.pdf", "ba-prog", "B.A. (Prog)", "nep"),
-    ("NEP/B.Sc. (Prog) · December 2026.pdf", "bsc-prog", "B.Sc. (Prog)", "nep"),
-    ("NEP/B.Com (Hons) · December 2026.pdf", "bcom-hons", "B.Com (Hons)", "nep"),
-    ("NEP/B.Com (Prog) · December 2026.pdf", "bcom-prog", "B.Com (Prog)", "nep"),
-    ("NEP/B.A. (Vocational Studies) · December 2026.pdf", "ba-vocational", "B.A. (Vocational Studies)", "nep"),
-    ("NEP/Bachelor of Vocation (B.Voc) Banking, Financial Services & Insurance _Healthcare Management_Retail Management and IT_Software Development_Web Designing · December 2026.pdf", "bvoc", "Bachelor of Vocation (B.Voc)", "nep"),
-    ("NEP/B.Sc. (Pass) Home Science · December 2026.pdf", "bsc-home-science", "B.Sc. (Pass) Home Science", "nep"),
-    ("NEP/B.Sc. Physical Education, Health Education & Sports · December 2026.pdf", "bsc-pehes", "B.Sc. Physical Education, Health Education & Sports", "nep"),
-    ("NEP/Five Year Integrated Programme in Journalism · December 2026.pdf", "journalism-5yr", "Five Year Integrated Programme in Journalism", "nep"),
-    ("NEP/DISCIPLINE SPECIFIC ELECTIVE · December 2026.pdf", "dse", "Discipline Specific Elective (DSE)", "nep"),
-    ("NEP/Generic Elective (GE) · December 2026.pdf", "ge", "Generic Elective (GE)", "nep"),
-    ("NEP/Ability Enhancement Course (AEC) · December 2026.pdf", "aec", "Ability Enhancement Course (AEC)", "nep"),
-    ("NEP/Skill Enhancement (SEC) · December 2026.pdf", "sec", "Skill Enhancement Course (SEC)", "nep"),
-    ("NEP/Value Addition (VAC) · December 2026.pdf", "vac", "Value Addition Course (VAC)", "nep"),
-    ("NEP/SKILL BASED COURSE FOR PROGRAMME COURSE · December 2026.pdf", "sbc", "Skill Based Course for Programme Course", "nep"),
-    ("NEP/B.A. (Prog)-SOL · December 2026.pdf", "ba-prog-sol", "B.A. (Prog) - SOL (NEP)", "sol"),
-    ("NEP/B.Com (Hons)-SOL · December 2026.pdf", "bcom-hons-sol", "B.Com (Hons) - SOL (NEP)", "sol"),
-    ("SOL SIG CBCS/BA(H) 22-SEM.V-III-I.pdf", "cbcs-sol-ba-hons", "B.A. (Hons) English & Political Science - SOL (CBCS)", "sol"),
-    ("SOL SIG CBCS/BCOM H-22-Sem.V-III-I.pdf", "cbcs-sol-bcom-hons", "B.Com (Hons) - SOL (CBCS)", "sol"),
-    ("SOL SIG CBCS/BCOM-22-Sem.I-III-V.pdf", "cbcs-sol-bcom-prog", "B.Com (Prog) - SOL (CBCS)", "sol"),
-    ("SOL SIG CBCS/BAP-22-SEM.V-III-I.pdf", "cbcs-sol-ba-prog", "B.A. (Prog) - SOL (CBCS)", "sol"),
-    ("CBCS PDF SIG/BA(H) 25-SEM.I,III,V.pdf", "cbcs-ba-hons", "B.A. (Hons)", "cbcs"),
-    ("CBCS PDF SIG/BCOM H-25-Sem.I,III,V.pdf", "cbcs-bcom-hons", "B.Com (Hons)", "cbcs"),
-    ("CBCS PDF SIG/B.SC.(H) 25-SEM.I,III,V.pdf", "cbcs-bsc-hons", "B.Sc. (Hons)", "cbcs"),
-    ("CBCS PDF SIG/BSC(P)-25-Sem.I,III,V.pdf", "cbcs-bsc-prog", "B.Sc. (Prog)", "cbcs"),
-    ("CBCS PDF SIG/BCOM-25-Sem.I,III,V.pdf", "cbcs-bcom-prog", "B.Com (Prog)", "cbcs"),
-    ("CBCS PDF SIG/BAP-25-SEM.I,III,V.pdf", "cbcs-ba-prog", "B.A. (Prog)", "cbcs"),
-    ("CBCS PDF SIG/Date-Sheet Ability Enchacement 25-Sem.I,III,V.pdf", "cbcs-aecc", "Ability Enhancement Compulsory Course (AECC)", "cbcs"),
-    ("CBCS PDF SIG/Date-Sheet Generci Elective -25-Sem.I,III.pdf", "cbcs-ge", "Generic Elective (GE)", "cbcs"),
+    ("NEP/B.A. (Hons) · December 2026.pdf", "ba-hons", "B.A. (Hons)"),
+    ("NEP/B.Sc. (Hons) · December 2026.pdf", "bsc-hons", "B.Sc. (Hons)"),
+    ("NEP/B.A. (Prog) · December 2026.pdf", "ba-prog", "B.A. (Prog)"),
+    ("NEP/B.Sc. (Prog) · December 2026.pdf", "bsc-prog", "B.Sc. (Prog)"),
+    ("NEP/B.Com (Hons) · December 2026.pdf", "bcom-hons", "B.Com (Hons)"),
+    ("NEP/B.Com (Prog) · December 2026.pdf", "bcom-prog", "B.Com (Prog)"),
+    ("NEP/B.A. (Vocational Studies) · December 2026.pdf", "ba-vocational", "B.A. (Vocational Studies)"),
+    ("NEP/Bachelor of Vocation (B.Voc) Banking, Financial Services & Insurance _Healthcare Management_Retail Management and IT_Software Development_Web Designing · December 2026.pdf", "bvoc", "Bachelor of Vocation (B.Voc)"),
+    ("NEP/B.Sc. (Pass) Home Science · December 2026.pdf", "bsc-home-science", "B.Sc. (Pass) Home Science"),
+    ("NEP/B.Sc. Physical Education, Health Education & Sports · December 2026.pdf", "bsc-pehes", "B.Sc. Physical Education, Health Education & Sports"),
+    ("NEP/Five Year Integrated Programme in Journalism · December 2026.pdf", "journalism-5yr", "Five Year Integrated Programme in Journalism"),
+    ("NEP/DISCIPLINE SPECIFIC ELECTIVE · December 2026.pdf", "dse", "Discipline Specific Elective (DSE)"),
+    ("NEP/Generic Elective (GE) · December 2026.pdf", "ge", "Generic Elective (GE)"),
+    ("NEP/Ability Enhancement Course (AEC) · December 2026.pdf", "aec", "Ability Enhancement Course (AEC)"),
+    ("NEP/Skill Enhancement (SEC) · December 2026.pdf", "sec", "Skill Enhancement Course (SEC)"),
+    ("NEP/Value Addition (VAC) · December 2026.pdf", "vac", "Value Addition Course (VAC)"),
+    ("NEP/SKILL BASED COURSE FOR PROGRAMME COURSE · December 2026.pdf", "sbc", "Skill Based Course for Programme Course"),
 ]
 
 CATEGORY_MAP = [
@@ -347,6 +321,63 @@ def extract_pdf(path: Path):
     return entries
 
 
+def layout_cells(path):
+    """{paper code: [(subject, description), ...]} read from `pdftotext -layout`, whose
+    blank-line row breaks keep wrapped cells with their own row (the position-based
+    pass above lets text from a neighbouring row leak into subject/description)."""
+    import subprocess
+    txt = subprocess.run(["pdftotext", "-layout", str(path), "-"], capture_output=True, text=True, check=True).stdout
+    out, cols, last = {}, None, []
+    noise = re.compile(r"^\s*(DATE OF EXAM:|TYPE:|Printed:|\d+/\d+\s*$)")
+    for block in re.split(r"\n\s*\n", txt):
+        lines = block.split("\n")
+        for ln in lines:
+            if "SEMESTER" in ln and "DESCRIPTION" in ln and "SUBJECT" in ln:
+                cols = (ln.index("SUBJECT"), ln.index("SEMESTER"), ln.index("DESCRIPTION"))
+        if not cols:
+            continue
+        codes = re.findall(r"(?<![\d-])\d{10,12}(?![\d-])", block)
+
+        def cell(lo, hi=None, src=lines):
+            return re.sub(r"\s+", " ", " ".join(ln[lo:hi].strip() for ln in src if ln[lo:hi].strip())).strip()
+        if not codes:
+            # A row that ends a page continues at the top of the next one, right under the
+            # repeated column header ("PHYSICS (PHYSICAL" ... "SCIENCE)"): give it back.
+            # Only text sitting directly under a repeated column header counts; other code-less
+            # blocks are headings or DU's footnotes ("...shall be notified only on the website").
+            heads = [i for i, ln in enumerate(lines) if ln.split() and set(ln.split()) <= HEADER_WORDS]
+            rest = [ln for ln in lines[heads[-1] + 1:] if ln.strip() and not noise.match(ln)] if heads else []
+            if rest and last:
+                more_s, more_d = cell(cols[0] - 2, cols[1] - 1, rest), cell(cols[2] - 2, None, rest)
+                for c in last:
+                    s0, d0 = out[c][-1]
+                    out[c][-1] = (f"{s0} {more_s}".strip(), f"{d0} {more_d}".strip())
+            continue
+        subj, desc = cell(cols[0] - 2, cols[1] - 1), cell(cols[2] - 2)
+        for c in codes:
+            out.setdefault(c, []).append((subj, desc))
+        last = codes
+    return out
+
+
+HEADER_WORDS = {"DATE", "OF", "EXAM", "START", "TIME", "SUBJECT", "SEMESTER", "UNIQUE", "PAPER", "CODE", "DESCRIPTION"}
+
+
+def use_layout_text(path, entries):
+    cells = layout_cells(path)
+    seen = {}
+    for e in entries:
+        options = cells.get(e["paperCode"])
+        if not options:
+            continue
+        i = seen.get(e["paperCode"], 0)
+        seen[e["paperCode"]] = i + 1
+        subj, desc = (clean_text(t) for t in options[min(i, len(options) - 1)])
+        if desc:
+            e["subject"], e["description"] = subj, desc
+    return entries
+
+
 TIME_OK = re.compile(r"^\d{2}:\d{2} [AP]M$")
 DATE_OK = re.compile(r"^(2026-1[12]|2027-0[12])-\d\d$")
 
@@ -379,40 +410,34 @@ def main():
     total = 0
     failures = {}
 
-    def emit(slug, label, group, rel, entries, path=None):
+    def emit(slug, label, rel, entries, path):
         nonlocal total
-        for e in entries:                              # catalogue names, spelling, casing, Hindi order
-            e["description"] = paper_name(e["paperCode"], e["description"], visual_hindi=rel.startswith("NEP/"))
+        for e in entries:                              # catalogue names, spelling, casing, proofread Hindi
+            e["description"] = paper_name(e["paperCode"], e["description"])
             e["subject"] = tidy(e["subject"])
-        code_len = r"\d{10,12}" if rel.startswith("NEP/") else r"\d{8}"
-        problems = verify(path, entries, code_len)
+        problems = verify(path, entries, r"\d{10,12}")
         if problems:
             failures[slug] = problems
         (OUT_DIR / f"{slug}.json").write_text(json.dumps(entries, ensure_ascii=False, separators=(",", ":")))
-        print(f"{slug:34s} {group:5s} {len(entries):5d} rows  <- {rel}")
+        print(f"{slug:18s} {len(entries):5d} rows  <- {rel}")
         total += len(entries)
         manifest.append({
             "slug": slug,
             "label": label,
-            "group": group,
-            "scheme": NEP if rel.startswith(("NEP/",)) else CBCS,
             "sourceFile": rel.split("/", 1)[1],
             "sourceUrl": BASE_URL + urllib.parse.quote(rel),
             "entryCount": len(entries),
         })
 
     missing = []
-    for rel, slug, label, group in PROGRAMMES:
+    for rel, slug, label in PROGRAMMES:
         path = SRC_ROOT / rel
         if not path.exists():
             missing.append(rel)
             continue
-        emit(slug, label, group, rel, extract_pdf(path) if rel.startswith("NEP/") else parse_cbcs(path), path)
+        emit(slug, label, rel, use_layout_text(path, extract_pdf(path)), path)
     if missing:
         sys.exit("MISSING PDFs under %s:\n  %s" % (SRC_ROOT, "\n  ".join(missing)))
-
-    for slug, prog in parse_south().items():
-        emit(slug, prog["label"] + " · South Campus", "cbcs", "CBCS_SOUTH/" + prog["pdf"], prog["entries"])
 
     (OUT_DIR / "manifest.json").write_text(json.dumps({
         "generatedAt": date.today().isoformat(),
@@ -421,7 +446,7 @@ def main():
     }, ensure_ascii=False, indent=2))
     print(f"\nTOTAL entries: {total} in {len(manifest)} programmes")
     print("spelling fixes: " + ", ".join(f"{w}->{h} x{c}" for (w, h), c in CORRECTIONS.most_common()))
-    if failures:                       # South sheets are scans: their codes were checked by hand + OCR
+    if failures:
         for slug, problems in failures.items():
             print(f"CHECK FAILED {slug}: " + "; ".join(problems), file=sys.stderr)
         sys.exit(1)
