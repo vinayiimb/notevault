@@ -15,7 +15,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
 
   if (isDashboard) {
     return (
-      <main className="min-h-screen w-full">
+      <main className="theme-classic min-h-screen w-full">
         {children}
         <WhatsAppJoin />
       </main>
@@ -23,7 +23,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <div className="flex w-full flex-1">
+    <div className={`flex w-full flex-1 ${isPapers ? "theme-classic" : ""}`}>
       <CommandPalette />
       <WhatsAppJoin />
       {!isPapers && <SiteSidebar />}

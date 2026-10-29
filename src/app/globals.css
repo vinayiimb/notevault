@@ -6,16 +6,23 @@
 :root {
   /* Notes "Manrope" option: system rounded face (SF Rounded on Apple), else Inter. */
   --font-manrope: ui-rounded, "SF Pro Rounded", var(--font-inter);
+  /* Apple-style public site: SF Pro on Apple devices, Inter everywhere else.
+     /papers, the student dashboard and admin opt out with .theme-classic. */
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-inter), "Helvetica Neue", sans-serif;
+  --font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-inter), "Helvetica Neue", sans-serif;
+  --ease-apple: cubic-bezier(0.25, 0.1, 0.25, 1);
+  --shadow-tile: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 28px rgb(0 0 0 / 0.06);
+  --shadow-tile-hover: 0 2px 4px rgb(0 0 0 / 0.05), 0 18px 44px rgb(0 0 0 / 0.1);
   --background: #ffffff;
   --surface: #ffffff;
-  --surface-muted: #f5f5f5;
-  --foreground: #1a1a1a;
-  --muted: #6b7280;
-  --border: #ececec;
-  --accent: #5358e3;
-  --accent-hover: #4449d8;
+  --surface-muted: #f5f5f7;
+  --foreground: #1d1d1f;
+  --muted: #6e6e73;
+  --border: #e3e3e8;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
   --accent-foreground: #ffffff;
-  --accent-soft: #e9ebff;
+  --accent-soft: #e8f2fd;
   --success: #16a34a;
   --success-soft: #dcfce7;
   --warning: #ca8a04;
@@ -59,16 +66,18 @@
 }
 
 .dark {
-  --background: #09090b;
-  --surface: #18181b;
-  --surface-muted: #1f1f23;
-  --foreground: #f4f4f5;
-  --muted: #9ca3af;
-  --border: #2b2b30;
-  --accent: #6d72f0;
-  --accent-hover: #7d81f2;
-  --accent-foreground: #0a0a12;
-  --accent-soft: #23255a;
+  --shadow-tile: 0 0 0 1px rgb(255 255 255 / 0.07);
+  --shadow-tile-hover: 0 0 0 1px rgb(255 255 255 / 0.14), 0 18px 44px rgb(0 0 0 / 0.5);
+  --background: #0b0b0c;
+  --surface: #161618;
+  --surface-muted: #1d1d1f;
+  --foreground: #f5f5f7;
+  --muted: #a1a1a6;
+  --border: #2e2e32;
+  --accent: #0a84ff;
+  --accent-hover: #3b9bff;
+  --accent-foreground: #ffffff;
+  --accent-soft: #0e2a4a;
   --success: #4ade80;
   --success-soft: #113321;
   --warning: #facc15;
@@ -102,6 +111,39 @@
   --heat-5: #8a3232;
   --heat-6: #c24747;
   --heat-text: #ffb3b3;
+}
+
+/* Pre-Apple look, kept as-is where the user asked for no visual change.
+   --brand* are re-declared because var() resolves where it is declared. */
+.theme-classic {
+  --font-body: var(--font-inter);
+  --font-heading: var(--font-fraunces);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+  --surface-muted: #f5f5f5;
+  --foreground: #1a1a1a;
+  --muted: #6b7280;
+  --border: #ececec;
+  --accent: #5358e3;
+  --accent-hover: #4449d8;
+  --accent-foreground: #ffffff;
+  --accent-soft: #e9ebff;
+  --brand: var(--accent);
+  --brand-hover: var(--accent-hover);
+  --brand-foreground: var(--accent-foreground);
+  --brand-soft: var(--accent-soft);
+}
+
+.dark .theme-classic {
+  --background: #09090b;
+  --surface: #18181b;
+  --surface-muted: #1f1f23;
+  --foreground: #f4f4f5;
+  --muted: #9ca3af;
+  --border: #2b2b30;
+  --accent: #6d72f0;
+  --accent-hover: #7d81f2;
+  --accent-foreground: #0a0a12;
+  --accent-soft: #23255a;
 }
 
 @theme inline {
@@ -145,8 +187,8 @@
   --color-heat-5: var(--heat-5);
   --color-heat-6: var(--heat-6);
   --color-heat-text: var(--heat-text);
-  --font-sans: var(--font-inter);
-  --font-display: var(--font-fraunces);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
   --font-mono: var(--font-mono);
   /* Playful hand-drawn face used only for notes headings — commercial use
      requires a license from the font author, see layout.tsx. */
@@ -159,6 +201,9 @@ body {
 }
 
 html {
+  font-family: var(--font-body);
+  font-feature-settings: "kern";
+  text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
   scroll-padding-top: 7rem;
 }
@@ -451,4 +496,53 @@ body:has([data-ask-ai-launcher]) .wa-fab {
 @keyframes wa-ping {
   0% { transform: scale(1); opacity: 0.6; }
   80%, 100% { transform: scale(1.6); opacity: 0; }
+}
+
+/* Mascot (src/components/landing/mascot.tsx): idle bob, a wave every few
+   seconds, a real blink (eyelids drawn over the baked-in eyes) and a hop on
+   hover/tap. Everything is transform/opacity only. */
+@keyframes mascot-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+@keyframes mascot-wave {
+  0%, 62%, 100% { transform: rotate(0deg); }
+  68% { transform: rotate(-7deg); }
+  74% { transform: rotate(5deg); }
+  80% { transform: rotate(-5deg); }
+  86% { transform: rotate(3deg); }
+}
+@keyframes mascot-blink {
+  0%, 93%, 100% { transform: scaleY(0); }
+  95.5% { transform: scaleY(1); }
+}
+@keyframes mascot-hop {
+  0% { transform: translateY(0) scale(1, 1); }
+  20% { transform: translateY(2px) scale(1.04, 0.95); }
+  50% { transform: translateY(-16px) scale(0.98, 1.03); }
+  80% { transform: translateY(0) scale(1.02, 0.98); }
+  100% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes bubble-in {
+  from { opacity: 0; transform: translateY(6px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+.mascot-bob { animation: mascot-bob 3.2s var(--ease-apple) infinite; }
+.mascot-wave { transform-origin: 50% 100%; animation: mascot-wave 5.5s var(--ease-apple) infinite; }
+.mascot-lid { transform: scaleY(0); transform-origin: 50% 0; animation: mascot-blink 4.6s linear infinite; }
+.mascot-hop { animation: mascot-hop 0.6s var(--ease-apple); }
+.mascot-bubble { animation: bubble-in 0.4s var(--ease-apple) both; }
+
+/* Header logo: a small wiggle on hover. */
+@keyframes logo-wiggle {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-4deg); }
+  60% { transform: rotate(3deg); }
+}
+.logo-wiggle:hover img { animation: logo-wiggle 0.6s var(--ease-apple); }
+
+@media (prefers-reduced-motion: reduce) {
+  .mascot-bob, .mascot-wave, .mascot-lid, .mascot-hop, .mascot-bubble, .logo-wiggle:hover img {
+    animation: none !important;
+  }
 }

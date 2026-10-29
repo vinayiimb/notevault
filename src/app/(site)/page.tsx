@@ -1,13 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { GraduationCap } from "@phosphor-icons/react/dist/ssr";
+import { CaretRight, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { SearchBar } from "@/components/search-bar";
 import { getProgramsByLevel, getSiteSettings } from "@/lib/data";
 import { getAllDuPypProgrammes } from "@/lib/du-pyp-data";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 import { FeatureCards } from "@/components/landing/feature-cards";
 import { FeatureShowcase } from "@/components/landing/feature-showcase";
+import { Mascot } from "@/components/landing/mascot";
 
 export const metadata: Metadata = {
   title: "DU Previous Year Papers & Notes",
@@ -62,12 +63,12 @@ export default async function HomePage() {
         {/* Afterboards-style typography floating in the bright blue sky above the campuses */}
         <div className="absolute inset-x-0 top-0 z-10 mx-auto flex max-w-5xl flex-col items-center px-4 pt-22 pb-8 text-center sm:px-6 sm:pt-36 sm:pb-12 lg:pt-40 pointer-events-none">
           <div className="pointer-events-auto flex flex-col items-center w-full max-w-3xl">
-            <h1 className="w-full text-balance font-display text-[2.35rem] leading-[1.06] font-black tracking-tight text-white whitespace-pre-line drop-shadow-[0_4px_16px_rgba(0,0,0,0.25)] sm:text-5xl sm:leading-[1.04] lg:text-[4rem]">
+            <h1 className="w-full text-balance font-display text-[2.35rem] leading-[1.05] font-semibold tracking-[-0.035em] text-white whitespace-pre-line drop-shadow-[0_4px_16px_rgba(0,0,0,0.25)] sm:text-5xl sm:leading-[1.04] lg:text-[4rem]">
               Delhi University Previous Year Question Papers &amp; Notes
             </h1>
 
             {siteSettings.heroSubtitle && (
-              <div className="mt-4 sm:mt-6 hidden sm:inline-flex items-center justify-center rounded-full bg-[#0284c7]/35 hover:bg-[#0284c7]/45 backdrop-blur-md px-6 py-2.5 text-sm sm:text-base lg:text-lg font-bold text-white shadow-[0_8px_30px_rgba(2,132,199,0.25)] border border-white/35 transition-all duration-200">
+              <div className="mt-4 sm:mt-6 hidden sm:inline-flex items-center justify-center rounded-full bg-white/20 backdrop-blur-xl backdrop-saturate-150 px-6 py-2.5 text-sm sm:text-base lg:text-[17px] font-medium tracking-[-0.01em] text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.35),0_8px_30px_rgba(2,80,140,0.18)] border border-white/40">
                 <span>{siteSettings.heroSubtitle}</span>
               </div>
             )}
@@ -79,7 +80,7 @@ export default async function HomePage() {
             </div>
 
             {siteSettings.heroSearchCaption && (
-              <div className="mt-3.5 hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/30 bg-white/20 hover:bg-white/25 px-4 py-1.5 text-xs font-bold text-white backdrop-blur-md shadow-sm transition-all duration-200">
+              <div className="mt-3.5 hidden sm:inline-flex items-center gap-1.5 rounded-full border border-white/35 bg-white/15 px-4 py-1.5 text-xs font-medium text-white backdrop-blur-xl">
                 <span>💡 {siteSettings.heroSearchCaption}</span>
               </div>
             )}
@@ -90,31 +91,33 @@ export default async function HomePage() {
         <FeatureCards />
       </section>
 
-      <div className="relative z-10 mx-auto mt-4 max-w-5xl px-4 sm:mt-8 sm:px-6">
-        {/* Tier 1: Express Course & Degree Jump */}
-        <section className="relative overflow-hidden rounded-3xl border border-border/70 bg-surface p-6 shadow-[0_12px_40px_rgba(0,0,0,0.06)] backdrop-blur-sm transition-all duration-300 hover:border-brand/30 hover:shadow-[0_16px_50px_rgba(83,88,227,0.08)] sm:p-8 lg:p-10">
-          {/* Subtle decoration orbs inside card */}
-          <div aria-hidden="true" className="pointer-events-none absolute -right-24 -top-24 size-80 rounded-full bg-brand/5 blur-3xl" />
-          <div aria-hidden="true" className="pointer-events-none absolute -bottom-24 -left-24 size-80 rounded-full bg-sky/5 blur-3xl" />
-
+      <div className="relative z-10 mx-auto mt-24 max-w-5xl px-4 sm:mt-40 sm:px-6">
+        {/* Tier 1: Express Course & Degree Jump — the parrot peeks over the top edge */}
+        <div className="relative">
+          <Mascot
+            className="absolute -top-[92px] right-5 w-[112px] sm:-top-[140px] sm:right-12 sm:w-[180px]"
+            bubbleClassName="right-[96%] top-10 hidden w-max max-w-[250px] sm:block"
+            tips={[
+              "Pick your course and I'll fetch every paper.",
+              "Psst… questions repeat. Check the most repeated ones below.",
+              "Papers open right here. No login, no downloads.",
+              "Tap me for a tip!",
+            ]}
+          />
+        <section className="relative overflow-hidden rounded-[32px] bg-surface-muted p-6 sm:p-10 lg:p-12">
           <div className="relative z-10">
-            <div className="mb-6 flex flex-col justify-between gap-4 border-b border-border/60 pb-6 sm:flex-row sm:items-center">
-              <div className="flex items-center gap-4">
-                <span className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-blue-100 text-blue-600 shadow-inner">
-                  <GraduationCap size={28} weight="bold" />
-                </span>
-                <div>
-                  <h2 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
-                    Take me to my course papers
-                  </h2>
-                  <p className="mt-1 text-sm text-muted sm:text-base">
-                    Pick your degree once and jump directly into the interactive PDF archive.
-                  </p>
-                </div>
-              </div>
-              <span className="hidden shrink-0 rounded-full bg-[#edf0ff] px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-600 sm:inline-block">
-                Express Portal
+            <div className="mb-8 flex items-center gap-4">
+              <span className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-surface text-brand shadow-[var(--shadow-tile)]">
+                <GraduationCap size={26} weight="fill" />
               </span>
+              <div className="min-w-0">
+                <h2 className="font-display text-[26px] font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-[34px]">
+                  Take me to my course papers
+                </h2>
+                <p className="mt-1 text-[15px] text-muted sm:text-[17px]">
+                  Pick your degree once and jump straight into its papers.
+                </p>
+              </div>
             </div>
 
             <CourseSemesterJump
@@ -124,47 +127,52 @@ export default async function HomePage() {
             />
           </div>
         </section>
+        </div>
 
         {/* Practice / Learn / Revise — animated feature mock-ups */}
         <FeatureShowcase />
 
         {/* Repeated-question analyses — internal links to our most useful, original pages */}
-        <section className="mt-16 max-w-4xl mx-auto text-sm leading-relaxed">
-          <h2 className="font-display text-lg font-bold text-foreground">Most repeated questions, by subject</h2>
-          <p className="mt-2 text-muted">
+        <section className="mx-auto mt-28 max-w-5xl sm:mt-36">
+          <h2 className="font-display text-[28px] font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-[40px]">Most repeated questions, by subject.</h2>
+          <p className="mt-3 max-w-2xl text-[17px] leading-relaxed text-muted">
             We put every available paper for a subject side by side and counted which topics came back.
           </p>
-          <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <li>
-              <Link href="/blog/du-bcom-hons-financial-accounting-most-repeated-questions" className="block rounded-xl border border-border/70 bg-surface p-4 text-foreground transition hover:border-brand/40">
-                <span className="font-semibold">B.Com (Hons) Financial Accounting</span>
-                <span className="mt-1 block text-xs text-muted">Numericals that repeat with new numbers</span>
+              <Link href="/blog/du-bcom-hons-financial-accounting-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">B.Com (Hons) Financial Accounting</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">Numericals that repeat with new numbers</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
               </Link>
             </li>
             <li>
-              <Link href="/blog/du-bcom-hons-business-laws-most-repeated-questions" className="block rounded-xl border border-border/70 bg-surface p-4 text-foreground transition hover:border-brand/40">
-                <span className="font-semibold">B.Com (Hons) Business Laws</span>
-                <span className="mt-1 block text-xs text-muted">Topics that came in all 3 NEP papers</span>
+              <Link href="/blog/du-bcom-hons-business-laws-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">B.Com (Hons) Business Laws</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">Topics that came in all 3 NEP papers</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
               </Link>
             </li>
             <li>
-              <Link href="/blog/du-environmental-science-aec-most-repeated-questions" className="block rounded-xl border border-border/70 bg-surface p-4 text-foreground transition hover:border-brand/40">
-                <span className="font-semibold">Environmental Science (AEC)</span>
-                <span className="mt-1 block text-xs text-muted">17 papers, abbreviations and true/false with answers</span>
+              <Link href="/blog/du-environmental-science-aec-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Environmental Science (AEC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">17 papers, abbreviations and true/false with answers</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
               </Link>
             </li>
             <li>
-              <Link href="/blog/du-business-communication-sec-most-repeated-questions" className="block rounded-xl border border-border/70 bg-surface p-4 text-foreground transition hover:border-brand/40">
-                <span className="font-semibold">Business Communication (SEC)</span>
-                <span className="mt-1 block text-xs text-muted">What changed in the 2026 papers</span>
+              <Link href="/blog/du-business-communication-sec-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Business Communication (SEC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">What changed in the 2026 papers</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
               </Link>
             </li>
           </ul>
         </section>
 
         {/* About / Informational Description section */}
-        <section className="mt-16 border-t border-border/60 pt-12 text-sm text-muted leading-relaxed max-w-4xl mx-auto">
-          <h3 className="font-display text-lg font-bold text-foreground mb-4">
+        <section className="mx-auto mt-28 max-w-3xl border-t border-border pt-12 text-[15px] leading-relaxed text-muted sm:mt-36">
+          <h3 className="mb-4 font-display text-xl font-semibold tracking-[-0.02em] text-foreground">
             About DU PYQ Online Portal
           </h3>
           <p className="mb-4">

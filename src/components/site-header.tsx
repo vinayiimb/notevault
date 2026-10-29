@@ -22,17 +22,23 @@ export function SiteHeader() {
           : "sm:top-4 sm:w-[92%] sm:max-w-6xl"
       }`}
     >
-      <header className="flex h-16 sm:h-[72px] items-center justify-between gap-3 sm:gap-5 border-b border-border/60 bg-surface/95 px-4 backdrop-blur-md shadow-2xs sm:border-none sm:rounded-2xl sm:shadow-[0_8px_24px_rgba(0,0,0,.08)] sm:px-6">
+      <header className="flex h-16 sm:h-[72px] items-center justify-between gap-3 sm:gap-5 border-b border-black/[0.06] bg-surface/75 px-4 backdrop-blur-2xl backdrop-saturate-[1.8] dark:border-white/10 sm:rounded-[22px] sm:border sm:shadow-[0_1px_2px_rgba(0,0,0,0.04),0_10px_36px_rgba(0,0,0,0.08)] sm:px-6">
         <div className="flex items-center gap-3">
-          <Link href="/" className="flex shrink-0 items-center hover:opacity-90 transition">
+          {/* Transparent parrot + live text instead of /logo.png's white box,
+              so the mark sits cleanly on the glass header in both themes. */}
+          <Link href="/" aria-label="DU PYQ Online home" className="logo-wiggle flex shrink-0 items-center gap-1.5">
             <Image
-              src="/logo.png"
-              alt="DU PYQ Online"
-              width={1024}
-              height={577}
+              src="/mascot.webp"
+              alt=""
+              width={480}
+              height={435}
               priority
-              className="h-9 sm:h-11 w-auto object-contain"
+              className="h-9 sm:h-11 w-auto"
             />
+            <span className="flex flex-col text-[15px] font-extrabold leading-[0.95] tracking-[-0.02em] text-foreground sm:text-[17px]">
+              <span>DU</span>
+              <span>PYQ</span>
+            </span>
           </Link>
           {isPapers && (
             <div className="hidden sm:flex items-center gap-2 border-l border-border/70 pl-3">
@@ -57,7 +63,7 @@ export function SiteHeader() {
           <Link
             href="/login"
             aria-label="Log in"
-            className="flex h-8 sm:h-auto items-center justify-center rounded-full bg-brand px-4.5 sm:px-6 py-1.5 sm:py-2 text-xs sm:text-sm font-bold text-brand-foreground shadow-md transition hover:bg-brand-hover hover:shadow-lg active:scale-95"
+            className="flex h-8 sm:h-9 items-center justify-center rounded-full bg-brand px-4.5 sm:px-5 text-xs sm:text-sm font-medium text-brand-foreground transition hover:bg-brand-hover"
           >
             <SignIn size={15} weight="bold" className="sm:hidden mr-1" />
             <span>Login</span>

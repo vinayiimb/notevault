@@ -76,12 +76,12 @@ function Row({
   return (
     <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
       <div className={reverse ? "lg:order-2" : ""}>
-        <p className="text-base font-semibold text-foreground sm:text-lg">{eyebrow}</p>
-        <h2 className="mt-1 text-balance font-display text-4xl font-bold tracking-[-0.03em] text-foreground sm:text-5xl">{title}</h2>
-        <p className="mt-5 max-w-xl text-pretty text-base leading-relaxed text-foreground/80 sm:text-lg">{body}</p>
+        <p className="text-[17px] font-semibold tracking-[-0.01em] text-brand sm:text-[19px]">{eyebrow}</p>
+        <h2 className="mt-1.5 text-balance font-display text-[40px] font-semibold leading-[1.06] tracking-[-0.04em] text-foreground sm:text-[56px]">{title}</h2>
+        <p className="mt-5 max-w-xl text-pretty text-[17px] leading-relaxed text-muted sm:text-[19px]">{body}</p>
         <Link
           href={cta.href}
-          className="mt-7 inline-flex min-h-12 items-center gap-2 rounded-full bg-surface-muted px-6 text-base font-semibold text-foreground transition hover:bg-brand hover:text-brand-foreground"
+          className="mt-8 inline-flex min-h-11 items-center gap-1.5 rounded-full bg-brand px-6 text-[15px] font-medium text-brand-foreground hover:bg-brand-hover"
         >
           {cta.label} <ArrowRight size={18} weight="bold" />
         </Link>
@@ -110,7 +110,7 @@ function MockWindow({ title, children, bubbles }: { title: string; children: Rea
         ref={ref}
         data-play={play}
         aria-hidden="true"
-        className={`${s.mock} relative overflow-hidden rounded-[4cqw] border-2 border-brand bg-surface shadow-[0_20px_60px_rgba(83,88,227,0.15)]`}
+        className={`${s.mock} relative overflow-hidden rounded-[4cqw] border-2 border-brand bg-surface shadow-[0_24px_64px_rgba(0,60,140,0.14)]`}
         style={{ aspectRatio: "5 / 4" }}
       >
         <div className="flex h-[13%] items-center bg-brand px-[4cqw]">

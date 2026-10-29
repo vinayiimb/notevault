@@ -18,7 +18,7 @@ export default async function AdminDashboardLayout({
   }
 
   return (
-    <div className="flex min-h-[100dvh]">
+    <div className="theme-classic flex min-h-[100dvh]">
       <aside className="flex w-56 shrink-0 flex-col border-r border-border bg-surface p-4">
         <Link href="/admin/subject-notes" className="flex items-center gap-2 px-2 font-semibold">
           <span className="flex size-7 items-center justify-center rounded-lg bg-accent text-accent-foreground">
