@@ -80,6 +80,16 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
     return Array.from(set).sort();
   }, [entries]);
 
+  // Repeating the subject that nearly every row carries (B.Com (Prog) is all "Commerce")
+  // adds nothing, so the prefix is dropped for that dominant subject only.
+  const commonSubject = useMemo(() => {
+    const counts = new Map<string, number>();
+    for (const e of entries) if (e.subject) counts.set(e.subject, (counts.get(e.subject) ?? 0) + 1);
+    const [top, n] = [...counts].sort((a, b) => b[1] - a[1])[0] ?? ["", 0];
+    return n >= entries.length * 0.8 ? top : "";
+  }, [entries]);
+  const showSubject = (e: DatesheetEntry) => Boolean(e.subject) && e.subject !== commonSubject;
+
   const semesters = useMemo(() => {
     const pool = course === ALL_COURSES ? entries : entries.filter((e) => e.subject === course);
     const set = new Set<string>();
@@ -235,7 +245,7 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
                   ) : null}
                 </div>
                 <p className="mt-2 text-sm text-foreground">
-                  {e.subject ? <span className="text-muted">{e.subject} &middot; </span> : null}
+                  {showSubject(e) ? <span className="text-muted">{e.subject} &middot; </span> : null}
                   {e.description}
                 </p>
                 <p className="mt-1 text-xs text-muted">
@@ -269,7 +279,7 @@ export function DatesheetBrowser({ programmes, examSession }: Props) {
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 text-muted">{e.startTime}</td>
                     <td className="px-4 py-3 text-foreground">
-                      {e.subject ? <span className="text-muted">{e.subject} &middot; </span> : null}
+                      {showSubject(e) ? <span className="text-muted">{e.subject} &middot; </span> : null}
                       {e.description}
                     </td>
                     <td className="whitespace-nowrap px-4 py-3 font-mono text-xs text-muted">{e.paperCode}</td>

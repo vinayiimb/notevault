@@ -41,6 +41,7 @@ import pdfplumber
 
 from extract_cbcs import parse_pdf as parse_cbcs
 from extract_south import parse_south
+from names import CORRECTIONS, paper_name, tidy
 
 SRC_ROOT = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.home() / "Downloads" / "DU_Datesheet_FINAL"
 OUT_DIR = Path(__file__).resolve().parents[2] / "public" / "data" / "datesheet"
@@ -380,6 +381,9 @@ def main():
 
     def emit(slug, label, group, rel, entries, path=None):
         nonlocal total
+        for e in entries:                              # catalogue names, spelling, casing, Hindi order
+            e["description"] = paper_name(e["paperCode"], e["description"], visual_hindi=rel.startswith("NEP/"))
+            e["subject"] = tidy(e["subject"])
         code_len = r"\d{10,12}" if rel.startswith("NEP/") else r"\d{8}"
         problems = verify(path, entries, code_len)
         if problems:
@@ -416,6 +420,7 @@ def main():
         "programmes": manifest,
     }, ensure_ascii=False, indent=2))
     print(f"\nTOTAL entries: {total} in {len(manifest)} programmes")
+    print("spelling fixes: " + ", ".join(f"{w}->{h} x{c}" for (w, h), c in CORRECTIONS.most_common()))
     if failures:                       # South sheets are scans: their codes were checked by hand + OCR
         for slug, problems in failures.items():
             print(f"CHECK FAILED {slug}: " + "; ".join(problems), file=sys.stderr)
