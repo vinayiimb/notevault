@@ -209,6 +209,7 @@ export function AskAiPanel({ subject, targetId }: { subject: string; targetId: s
             whileTap={{ scale: 0.95 }}
             onClick={() => openPanel()}
             aria-label="Ask AI about these notes"
+            data-ask-ai-launcher
             className="fixed bottom-5 right-5 z-[55] flex items-center gap-2 rounded-full bg-gradient-to-r from-[#3168FF] to-[#7B4DFF] py-3 pl-4 pr-5 text-sm font-semibold text-white shadow-[0_10px_30px_-8px_rgba(49,104,255,0.7)] print:hidden"
           >
             <span className="relative flex h-5 w-5 items-center justify-center">

@@ -434,3 +434,21 @@ textarea,
     width: 85% !important;
   }
 }
+
+/* Floating WhatsApp button (src/components/whatsapp-join.tsx): bottom-right,
+   clear of the iPhone home bar, lifted above other bottom-right/bottom UI. */
+.wa-fab {
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+}
+body:has([data-ask-ai-launcher]) .wa-fab {
+  bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+}
+@media (max-width: 1023px) {
+  body:has([data-mobile-bottom-nav]) .wa-fab {
+    bottom: calc(5.25rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+@keyframes wa-ping {
+  0% { transform: scale(1); opacity: 0.6; }
+  80%, 100% { transform: scale(1.6); opacity: 0; }
+}

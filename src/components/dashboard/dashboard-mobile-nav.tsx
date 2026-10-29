@@ -56,6 +56,7 @@ export function DashboardMobileNav({
     <>
       {/* Fixed Bottom Navigation Bar */}
       <nav
+        data-mobile-bottom-nav
         className="fixed bottom-0 left-0 right-0 z-40 flex h-16 items-center justify-around border-t border-border bg-surface px-2 shadow-lg lg:hidden"
         aria-label="Mobile Navigation"
       >
