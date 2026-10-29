@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Stack } from "@phosphor-icons/react/dist/ssr";
 import { getPaperTypeHub } from "@/lib/du-pyp-seo";
-import { absoluteUrl, collectionPageJsonLd, OG_IMAGES, type Faq } from "@/lib/seo";
+import { SITE_NAME, absoluteUrl, clampDescription, collectionPageJsonLd, fitTitle, OG_IMAGES, type Faq } from "@/lib/seo";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { FaqBlock } from "@/components/seo/faq-block";
@@ -20,13 +20,19 @@ export type HubType = keyof typeof TYPES;
 
 export function paperTypeMetadata(type: HubType) {
   const t = TYPES[type];
-  const title = `${t.name} Previous Year Question Papers PDF | DU UGCF`;
-  const description = `Delhi University ${t.name} previous year question papers (UGCF / NEP 2020) — every ${type} subject with its papers by exam year. View or download the original PDFs, free.`;
+  const title = fitTitle(
+    `DU ${type} PYQ: ${t.name} Question Papers | ${SITE_NAME}`,
+    `DU ${type} PYQ: ${t.name} Question Papers`,
+    `DU ${type} PYQ: ${t.name}`,
+  );
+  const description = clampDescription(
+    `Delhi University ${t.name} previous year question papers (UGCF / NEP 2020): every ${type} subject with its papers by exam year. Original PDFs, free.`,
+  );
   return {
     title,
     description,
     alternates: { canonical: t.path },
-    openGraph: { title, description, url: absoluteUrl(t.path), type: "website" as const, images: OG_IMAGES },
+    openGraph: { title: title.absolute, description, url: absoluteUrl(t.path), type: "website" as const, images: OG_IMAGES },
   };
 }
 
