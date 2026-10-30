@@ -318,7 +318,7 @@ export default async function SubjectPapersPage({
       {questions && (
         <section className="mt-10">
           <h2 className="mb-1 text-lg font-bold text-foreground">
-            Questions from the {questions.year || "latest"} {subject.name} paper
+            What was asked in the {questions.year || "latest"} {subject.name} paper?
           </h2>
           <p className="mb-3 text-sm text-muted">
             Text of the {questions.session ? `${questions.session.replace(/-/g, " ").toLowerCase()} ` : ""}DU question
@@ -332,7 +332,7 @@ export default async function SubjectPapersPage({
 
       {hasContent && (
         <section className="mt-14 border-t border-border pt-8">
-          <h2 className="mb-4 text-xl font-bold text-foreground">Tools for this subject</h2>
+          <h2 className="mb-4 text-xl font-bold text-foreground">How can I prepare for {subject.name}?</h2>
           <ul className="grid gap-2 sm:grid-cols-2">
             <li>
               <Link
