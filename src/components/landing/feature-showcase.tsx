@@ -22,6 +22,7 @@ export function FeatureShowcase() {
             Free, no login.
           </>
         }
+        say="16,000+ papers, all free. No login!"
         cta={{ href: "/papers", label: "Browse Free Papers" }}
         mock={<PapersMock />}
       />
@@ -35,6 +36,7 @@ export function FeatureShowcase() {
             the first <Hl>30% of any subject free</Hl>, then unlock the rest from <Hl>₹{SINGLE_PRICE}</Hl>.
           </>
         }
+        say="The first 30% of every subject is free to read."
         cta={{ href: "/notes", label: "Read a Free Preview" }}
         mock={<NotesMock />}
       />
@@ -47,6 +49,7 @@ export function FeatureShowcase() {
             the metro, in the library, anywhere.
           </>
         }
+        say="Take your notes on the metro as a PDF."
         cta={{ href: "/paid-notes", label: "See Pricing" }}
         mock={<PdfMock />}
       />
@@ -65,6 +68,7 @@ function Row({
   cta,
   mock,
   reverse,
+  say,
 }: {
   eyebrow: string;
   title: string;
@@ -72,9 +76,10 @@ function Row({
   cta: { href: string; label: string };
   mock: React.ReactNode;
   reverse?: boolean;
+  say?: string;
 }) {
   return (
-    <div className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+    <div data-mascot-say={say} className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
       <div className={reverse ? "lg:order-2" : ""}>
         <p className="text-[17px] font-semibold tracking-[-0.01em] text-brand sm:text-[19px]">{eyebrow}</p>
         <h2 className="mt-1.5 text-balance font-display text-[40px] font-semibold leading-[1.06] tracking-[-0.04em] text-foreground sm:text-[56px]">{title}</h2>

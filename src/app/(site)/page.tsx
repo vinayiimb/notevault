@@ -9,6 +9,7 @@ import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 import { FeatureCards } from "@/components/landing/feature-cards";
 import { FeatureShowcase } from "@/components/landing/feature-showcase";
 import { Mascot } from "@/components/landing/mascot";
+import { FlyingMascot } from "@/components/landing/flying-mascot";
 
 export const metadata: Metadata = {
   title: "DU Previous Year Papers & Notes",
@@ -38,6 +39,7 @@ export default async function HomePage() {
 
   return (
     <div className="pb-16">
+      <FlyingMascot homeId="mascot-home" />
       <section className={`relative -mt-[92px] ${heroImage ? "" : "bg-[#34beff]"}`}>
         {heroImage ? (
           <div className="relative w-full overflow-hidden">
@@ -95,6 +97,7 @@ export default async function HomePage() {
         {/* Tier 1: Express Course & Degree Jump — the parrot peeks over the top edge */}
         <div className="relative">
           <Mascot
+            id="mascot-home"
             className="absolute -top-[92px] right-5 w-[112px] sm:-top-[140px] sm:right-12 sm:w-[180px]"
             bubbleClassName="right-[96%] top-10 hidden w-max max-w-[250px] sm:block"
             tips={[
@@ -133,7 +136,7 @@ export default async function HomePage() {
         <FeatureShowcase />
 
         {/* Repeated-question analyses — internal links to our most useful, original pages */}
-        <section className="mx-auto mt-28 max-w-5xl sm:mt-36">
+        <section data-mascot-say="These keep coming back. Don't skip them." className="mx-auto mt-28 max-w-5xl sm:mt-36">
           <h2 className="font-display text-[28px] font-semibold leading-tight tracking-[-0.03em] text-foreground sm:text-[40px]">Most repeated questions, by subject.</h2>
           <p className="mt-3 max-w-2xl text-[17px] leading-relaxed text-muted">
             We put every available paper for a subject side by side and counted which topics came back.
@@ -171,7 +174,7 @@ export default async function HomePage() {
         </section>
 
         {/* About / Informational Description section */}
-        <section className="mx-auto mt-28 max-w-3xl border-t border-border pt-12 text-[15px] leading-relaxed text-muted sm:mt-36">
+        <section data-mascot-say="Missing a paper? Tell us on Feedback." className="mx-auto mt-28 max-w-3xl border-t border-border pt-12 text-[15px] leading-relaxed text-muted sm:mt-36">
           <h3 className="mb-4 font-display text-xl font-semibold tracking-[-0.02em] text-foreground">
             About DU PYQ Online Portal
           </h3>
