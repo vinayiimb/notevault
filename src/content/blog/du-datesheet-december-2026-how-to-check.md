@@ -82,7 +82,7 @@ Finding the date is step one. Here's what matters next:
 
 1. **Cross-check against your admit card** once it's released — the admit card is the final word on your exact date, time, and seat, and should match the datesheet, but confirm before exam week. See our [Admit Card guide](https://www.dupyq.online/exam-help/admit-card) if you haven't downloaded yours yet.
 2. **Work backwards from your first exam date** to build a study schedule — our [Odd Semester Exam Preparation Roadmap](https://www.dupyq.online/blog/du-odd-semester-exams-2026-preparation-roadmap) has a week-by-week framework you can slot your real dates into.
-3. **Start solving previous year papers for your exact subjects** — the [DU PYQ archive](https://www.dupyq.online/pyq-notes) has previous years' papers organised the same way as the datesheet, by programme and semester, so once you know your papers you can go straight to practicing them.
+3. **Start solving previous year papers for your exact subjects** — the [DU PYQ archive](https://www.dupyq.online/papers) has previous years' papers organised the same way as the datesheet, by programme and semester, so once you know your papers you can go straight to practicing them.
 4. **If a paper date clashes or looks wrong**, don't assume — check the official portal directly and, if needed, raise it with your college's examination coordinator early, not the week of the exam.
 
 ---

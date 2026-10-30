@@ -69,4 +69,4 @@ If you have passed a paper but scored poorly, DU allows you to apply for an **Im
 
 ## Plan Your Strategy
 
-If you have an ER paper or want to write an improvement exam, the best starting point is practicing past exam papers. Check out the [full PYQ archive](https://www.dupyq.online/pyq-notes) to find papers sorted by subject and semester. For quick review, use the [session archive](https://www.dupyq.online/exam-sessions) to see which questions have repeated over the last few sessions.
+If you have an ER paper or want to write an improvement exam, the best starting point is practicing past exam papers. Check out the [full PYQ archive](https://www.dupyq.online/papers) to find papers sorted by subject and semester. For quick review, use the [session archive](https://www.dupyq.online/exam-sessions) to see which questions have repeated over the last few sessions.

@@ -66,7 +66,7 @@ Here is a realistic weekly time allocation for a Semester 5 student juggling aca
 ### For Analytical/Numerical Papers
 - Start solving past papers early — do not wait until the final week.
 - For derivations and proofs, practice writing them from memory. In the exam, a partially correct derivation with clear steps earns significant partial marks.
-- Use the [DU PYQ archive](https://www.dupyq.online/pyq-notes) to identify which types of problems appear most frequently.
+- Use the [DU PYQ archive](https://www.dupyq.online/papers) to identify which types of problems appear most frequently.
 
 ### For Theory-Heavy Papers
 - Create argument maps for each major topic — a visual outline showing the thesis, supporting evidence, and counter-arguments.
@@ -91,4 +91,4 @@ If you have Essential Repeat papers from Semester 3, they must be re-attempted d
 
 Semester 5 is your last odd-semester exam (in a 3-year degree). Your performance here directly impacts your final CGPA and your eligibility for honours distinctions, merit scholarships, and postgraduate admissions.
 
-Start by downloading your Semester 5 papers from the [DU PYQ archive](https://www.dupyq.online/pyq-notes) — or browse [DU papers by semester](https://www.dupyq.online/semesters) to go straight to your course's Semester 5 subject list — and build your topic-frequency table. Use the [exam kit tools](https://www.dupyq.online/tools/exam-kit) for quick revision drills alongside your career preparation.
+Start by downloading your Semester 5 papers from the [DU PYQ archive](https://www.dupyq.online/papers) — or browse [DU papers by semester](https://www.dupyq.online/semesters) to go straight to your course's Semester 5 subject list — and build your topic-frequency table. Use the [exam kit tools](https://www.dupyq.online/tools/exam-kit) for quick revision drills alongside your career preparation.

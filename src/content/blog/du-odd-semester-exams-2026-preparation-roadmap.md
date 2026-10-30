@@ -41,7 +41,7 @@ Based on DU's historical patterns, here is the projected timeline for the odd se
 ### Semester 1 (First-Year Students)
 - **Challenge:** Adapting to university-level exams for the first time.
 - **Focus:** Master the basics of your DSC papers. Semester 1 lays the foundation for everything that follows.
-- **Action:** Download Semester 1 past papers now from the [DU PYQ archive](https://www.dupyq.online/pyq-notes) and familiarize yourself with the question format.
+- **Action:** Download Semester 1 past papers now from the [DU PYQ archive](https://www.dupyq.online/papers) and familiarize yourself with the question format.
 
 ### Semester 3 (Second-Year Students)
 - **Challenge:** Significantly harder DSC papers + first DSE selection.
@@ -62,7 +62,7 @@ If you start serious preparation 8 weeks before exams (typically early October),
 ### Weeks 1–2: Audit Phase
 - Complete any pending internal assessment submissions (assignments, projects).
 - Gather all study materials: notes, readings, reference books.
-- Download past 3–5 years of papers from the [PYQ archive](https://www.dupyq.online/pyq-notes).
+- Download past 3–5 years of papers from the [PYQ archive](https://www.dupyq.online/papers).
 - Build a topic-frequency table for each paper to identify high-yield topics.
 
 ### Weeks 3–4: Foundation Phase
@@ -97,4 +97,4 @@ If you start serious preparation 8 weeks before exams (typically early October),
 
 ## Start Your Preparation
 
-Go to the [full DU PYQ archive](https://www.dupyq.online/pyq-notes) to find your semester's past papers. Use the [session-wise browser](https://www.dupyq.online/exam-sessions) to compare questions across years and identify the topics that appear in every exam session.
+Go to the [full DU PYQ archive](https://www.dupyq.online/papers) to find your semester's past papers. Use the [session-wise browser](https://www.dupyq.online/exam-sessions) to compare questions across years and identify the topics that appear in every exam session.

@@ -24,7 +24,7 @@ If you are short on time, trying to read everything will result in remembering n
 In any DU exam paper, **80% of the marks come from 20% of the syllabus**. Your goal is to find that 20% and master it.
 
 How to find the high-yield 20%:
-* Open the [DU PYQ archive](https://www.dupyq.online/pyq-notes) and pull the last three years of papers for your subject.
+* Open the [DU PYQ archive](https://www.dupyq.online/papers) and pull the last three years of papers for your subject.
 * Identify questions that repeat *exactly* or are minor variations of the same topic.
 * Focus all your remaining energy on these recurring topics. If a topic has not appeared in the past three years, skip it completely.
 
@@ -65,4 +65,4 @@ If a question appears on a topic you did not prepare for, do not leave it blank.
 
 ## Get Started Now
 
-Do not waste time worrying. Go directly to the [full PYQ archive](https://www.dupyq.online/pyq-notes) to find your subject's past papers and identify the recurring questions. If you need to practice specific formulas or definitions, check out the [exam kit page](https://www.dupyq.online/tools/exam-kit) to build quick practice sets.
+Do not waste time worrying. Go directly to the [full PYQ archive](https://www.dupyq.online/papers) to find your subject's past papers and identify the recurring questions. If you need to practice specific formulas or definitions, check out the [exam kit page](https://www.dupyq.online/tools/exam-kit) to build quick practice sets.

@@ -23,7 +23,7 @@ Working through papers also exposes gaps that reading notes alone won't show. It
 
 ## Step 1: Collect papers across multiple years, not just one
 
-A single year's paper is a sample of one. Pulling together several years for the same course, semester and subject shows the pattern rather than a one-off. Start from the [complete searchable archive](https://www.dupyq.online/pyq-notes), which lists every available paper across courses and semesters in one place, and narrow down from there.
+A single year's paper is a sample of one. Pulling together several years for the same course, semester and subject shows the pattern rather than a one-off. Start from the [complete searchable archive](https://www.dupyq.online/papers), which lists every available paper across courses and semesters in one place, and narrow down from there.
 
 If a subject spans several colleges or exam cycles, the [session-wise question paper browser](https://www.dupyq.online/exam-sessions) is often faster — it groups papers by the exam session they were set in, which is useful when a subject's paper code or title has changed slightly between years.
 
@@ -76,4 +76,4 @@ Exam tip: If two topics tie in frequency, prioritize the one that also appears a
 
 ## Where to go next
 
-Start by opening the subject's page in the [full PYQ archive](https://www.dupyq.online/pyq-notes) and pulling the last four to six years of papers. Build the topic-frequency table, rank the topics, and move into timed practice using the [exam kit](https://www.dupyq.online/tools/exam-kit) as the exam date gets closer. If a specific exam session's papers aren't showing up in search, the [session archive](https://www.dupyq.online/exam-sessions) is usually the fastest way to locate them by year and program.
+Start by opening the subject's page in the [full PYQ archive](https://www.dupyq.online/papers) and pulling the last four to six years of papers. Build the topic-frequency table, rank the topics, and move into timed practice using the [exam kit](https://www.dupyq.online/tools/exam-kit) as the exam date gets closer. If a specific exam session's papers aren't showing up in search, the [session archive](https://www.dupyq.online/exam-sessions) is usually the fastest way to locate them by year and program.

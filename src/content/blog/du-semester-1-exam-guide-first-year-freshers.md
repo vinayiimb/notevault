@@ -51,7 +51,7 @@ Since DSC and GE papers carry 4 credits each (versus 2 credits for AEC/VAC), the
 ### Weeks 1–4: Settle In and Gather Resources
 - Attend every lecture. Take handwritten notes even if slides are shared.
 - Buy or photocopy the recommended readings for each paper.
-- Download Semester 1 previous year papers from the [DU PYQ archive](https://www.dupyq.online/pyq-notes) and keep them in a folder — you will need them later. Find your exact course under [DU papers by semester](https://www.dupyq.online/semesters) to get straight to the right subject list.
+- Download Semester 1 previous year papers from the [DU PYQ archive](https://www.dupyq.online/papers) and keep them in a folder — you will need them later. Find your exact course under [DU papers by semester](https://www.dupyq.online/semesters) to get straight to the right subject list.
 
 ### Weeks 5–8: Build Conceptual Understanding
 - Focus on understanding core concepts rather than memorizing them.
@@ -82,4 +82,4 @@ Since DSC and GE papers carry 4 credits each (versus 2 credits for AEC/VAC), the
 
 ## Start Now
 
-Go to the [full DU PYQ archive](https://www.dupyq.online/pyq-notes) and search for your course's Semester 1 papers. Even if exams are weeks away, downloading them now gives you a clear picture of what to expect.
+Go to the [full DU PYQ archive](https://www.dupyq.online/papers) and search for your course's Semester 1 papers. Even if exams are weeks away, downloading them now gives you a clear picture of what to expect.

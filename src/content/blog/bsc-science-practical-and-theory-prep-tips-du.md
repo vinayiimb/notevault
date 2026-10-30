@@ -61,10 +61,10 @@ Once practicals are completed, focus entirely on theory papers.
 
 Standard reference textbooks (such as Griffiths for Electrodynamics, Clayden for Organic Chemistry, or Campbell for Biology) provide excellent conceptual depth. However, studying these textbooks from cover to cover in the final weeks before exams is inefficient.
 
-The most effective preparation method is to open the [DU PYQ archive](https://www.dupyq.online/pyq-notes) to find the past four years of papers for your course. Identify the common derivations, mechanisms, and numerical models, and use your textbooks specifically to practice those topics.
+The most effective preparation method is to open the [DU PYQ archive](https://www.dupyq.online/papers) to find the past four years of papers for your course. Identify the common derivations, mechanisms, and numerical models, and use your textbooks specifically to practice those topics.
 
 ---
 
 ## Download Past Papers
 
-You can search and filter the complete collection of [B.Sc PYQs on the DU PYQ Online catalog](https://www.dupyq.online/pyq-notes). If you need help finding papers from specific exam sessions, visit the [session-wise question paper browser](https://www.dupyq.online/exam-sessions) to quickly locate historical papers.
+You can search and filter the complete collection of [B.Sc PYQs on the DU PYQ Online catalog](https://www.dupyq.online/papers). If you need help finding papers from specific exam sessions, visit the [session-wise question paper browser](https://www.dupyq.online/exam-sessions) to quickly locate historical papers.

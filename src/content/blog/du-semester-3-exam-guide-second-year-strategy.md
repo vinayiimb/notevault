@@ -54,7 +54,7 @@ If you failed any Semester 1 papers, you must re-attempt them during Semester 3 
   - Attempting previous year questions under timed conditions.
 
 ### Phase 3: Weeks 13–16 — Exam Execution
-- Focus on the recurring question patterns you have identified from [past papers](https://www.dupyq.online/pyq-notes).
+- Focus on the recurring question patterns you have identified from [past papers](https://www.dupyq.online/papers).
 - For ER papers: allocate dedicated study slots (e.g., 2 hours daily for the ER paper, separate from your current Sem 3 revision).
 - Practice writing complete answers at exam speed — 15 pages in 3 hours requires consistent physical writing practice.
 
@@ -64,7 +64,7 @@ If you failed any Semester 1 papers, you must re-attempt them during Semester 3 
 
 When choosing your DSE, consider:
 
-1. **Past paper difficulty.** Before registering, check the [PYQ archive](https://www.dupyq.online/pyq-notes) for the DSE options available in your program. Compare the question difficulty across options.
+1. **Past paper difficulty.** Before registering, check the [PYQ archive](https://www.dupyq.online/papers) for the DSE options available in your program. Compare the question difficulty across options.
 2. **Faculty reputation.** Ask third-year seniors which DSE faculty are known for fair grading versus harsh marking.
 3. **Career alignment.** If you plan to pursue a Master's degree or competitive exams, choose a DSE that aligns with your future goals (e.g., a Commerce student aiming for CA should pick Taxation or Auditing DSEs).
 
@@ -81,4 +81,4 @@ If you have Essential Repeat papers from Semester 1:
 
 ## Get Past Papers
 
-Search for your course's Semester 3 papers in the [full DU PYQ archive](https://www.dupyq.online/pyq-notes), or use the [exam session browser](https://www.dupyq.online/exam-sessions) to find papers organized by year. You can also browse [DU papers by semester](https://www.dupyq.online/semesters) to jump straight to your course's Semester 3 subject list.
+Search for your course's Semester 3 papers in the [full DU PYQ archive](https://www.dupyq.online/papers), or use the [exam session browser](https://www.dupyq.online/exam-sessions) to find papers organized by year. You can also browse [DU papers by semester](https://www.dupyq.online/semesters) to jump straight to your course's Semester 3 subject list.

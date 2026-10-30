@@ -40,7 +40,7 @@ graph TD
   - Attend introductory lectures to understand the course structure and marking schemes.
   - Gather recommended readings, standard textbooks, and past exam papers.
   - Review the syllabus structure. Check out the [program browser](https://www.dupyq.online/browse/college) to confirm which papers apply to your semester.
-* **Prep Hack:** Download the previous three years of [question papers from the PYQ archive](https://www.dupyq.online/pyq-notes) now. Keep them in a folder to help guide your reading throughout the semester.
+* **Prep Hack:** Download the previous three years of [question papers from the PYQ archive](https://www.dupyq.online/papers) now. Keep them in a folder to help guide your reading throughout the semester.
 
 ---
 
@@ -75,4 +75,4 @@ graph TD
 
 ## Get Ahead of the Curve
 
-Do not wait for the exam schedule to be released. Go directly to the [full PYQ archive](https://www.dupyq.online/pyq-notes) to find your semester's papers, or use the [exam kit tools](https://www.dupyq.online/tools/exam-kit) to build custom practice sets for quick review.
+Do not wait for the exam schedule to be released. Go directly to the [full PYQ archive](https://www.dupyq.online/papers) to find your semester's papers, or use the [exam kit tools](https://www.dupyq.online/tools/exam-kit) to build custom practice sets for quick review.

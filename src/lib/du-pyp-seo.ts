@@ -664,6 +664,31 @@ export async function getSeoPaper(slug: string): Promise<SeoPaper | null> {
   return (await graph()).paperBySlug.get(slug) ?? null;
 }
 
+const papersByStableId = new WeakMap<object, Map<string, SeoPaper>>();
+
+/**
+ * An old /paper/ URL whose name part changed (data clean-ups rename subjects and fix mislabelled years) → the paper's
+ * current slug. Slugs END in the PDF's stable id, which never changes, so the last 1–4 hyphen segments are tried as that id.
+ * Falls back to the paper-code page when only the 10-digit UPC still matches. null = nothing left to send them to.
+ */
+export async function resolvePaperSlug(slug: string): Promise<string | null> {
+  const g = await graph();
+  let byId = papersByStableId.get(g);
+  if (!byId) {
+    byId = new Map();
+    for (const p of g.paperBySlug.values()) { const id = stablePaperId(p.fileUrl); if (!byId.has(id)) byId.set(id, p); }
+    papersByStableId.set(g, byId);
+  }
+  const parts = slug.toLowerCase().split("-");
+  for (let k = 1; k <= Math.min(4, parts.length - 1); k++) {
+    const hit = byId.get(parts.slice(-k).join("-"));
+    if (hit) return `/paper/${hit.slug}`;
+  }
+  const upc = parts.find((x) => /^\d{10}$/.test(x));
+  if (upc && g.paperCodeByCode.has(upc)) return `/paper-code/${upc}`;
+  return null;
+}
+
 /** Related subjects within the same programme (same semester first). */
 export async function getRelatedSubjects(
   programmeSlug: string,

@@ -85,4 +85,4 @@ Even though SECs carry only 2 credits, they still factor into your SGPA calculat
 
 ## Past Papers and Preparation
 
-Many SECs reuse similar project themes and exam questions year after year. Check the [DU PYQ archive](https://www.dupyq.online/pyq-notes) to find past SEC papers for your college, or browse the [program and semester structure](https://www.dupyq.online/browse/college) to confirm which SECs are available for your course.
+Many SECs reuse similar project themes and exam questions year after year. Check the [DU PYQ archive](https://www.dupyq.online/papers) to find past SEC papers for your college, or browse the [program and semester structure](https://www.dupyq.online/browse/college) to confirm which SECs are available for your course.

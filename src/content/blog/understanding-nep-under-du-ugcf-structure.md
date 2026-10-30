@@ -77,4 +77,4 @@ One of the key features of the NEP under UGCF is the flexibility of entry and ex
 
 ## Check Your Syllabus and Papers
 
-Before selecting electives, check the official guidelines and subject structures. You can find course layouts and past question papers for all core and elective subjects in the [full DU PYQ archive](https://www.dupyq.online/pyq-notes). Use the [program browser](https://www.dupyq.online/browse/college) to confirm which papers are offered under your course and semester.
+Before selecting electives, check the official guidelines and subject structures. You can find course layouts and past question papers for all core and elective subjects in the [full DU PYQ archive](https://www.dupyq.online/papers). Use the [program browser](https://www.dupyq.online/browse/college) to confirm which papers are offered under your course and semester.

@@ -48,7 +48,7 @@ DU faculty recommend standard reference books, which are excellent for conceptua
 * **Taxation:** Dr. Vinod K. Singhania or Girish Ahuja.
 
 However, reading these textbooks from cover to cover in the final weeks before exams is highly inefficient. Instead, use the **reverse study method**:
-1. Take the last 5 years of [B.Com Previous Year Question Papers](https://www.dupyq.online/pyq-notes).
+1. Take the last 5 years of [B.Com Previous Year Question Papers](https://www.dupyq.online/papers).
 2. Identify the recurring numerical models and theoretical concepts.
 3. Open your reference books *specifically* to read and practice those identified topics.
 
@@ -64,4 +64,4 @@ However, reading these textbooks from cover to cover in the final weeks before e
 
 ## Where to find past papers
 
-You can search and filter through the complete collection of [B.Com PYQs on the DU PYQ Online catalog](https://www.dupyq.online/pyq-notes). To search for papers set in specific cycles, check the [exam session archive](https://www.dupyq.online/exam-sessions), which allows you to download papers sorted by year and subject.
+You can search and filter through the complete collection of [B.Com PYQs on the DU PYQ Online catalog](https://www.dupyq.online/papers). To search for papers set in specific cycles, check the [exam session archive](https://www.dupyq.online/exam-sessions), which allows you to download papers sorted by year and subject.

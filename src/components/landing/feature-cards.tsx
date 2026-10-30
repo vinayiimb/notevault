@@ -51,7 +51,7 @@ export function FeatureCards() {
           </p>
           <div className="mt-auto flex flex-wrap items-center gap-x-5 gap-y-3 pt-6">
             <Link
-              href="/notes/premium"
+              href="/paid-notes"
               className="inline-flex min-h-10 items-center rounded-full bg-brand px-5 text-[15px] font-medium text-brand-foreground hover:bg-brand-hover"
             >
               Get full access

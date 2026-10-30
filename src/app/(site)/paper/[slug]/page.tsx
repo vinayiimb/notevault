@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { ArrowSquareOut, DownloadSimple, FileText } from "@phosphor-icons/react/dist/ssr";
 import {
   getSeoPaper,
   getSeoSubject,
+  resolvePaperSlug,
   getIndexablePaperUrls,
   isPaperSlugIndexable,
 } from "@/lib/du-pyp-seo";
@@ -54,7 +55,11 @@ export default async function IndividualPaperPage({
 }) {
   const { slug } = await params;
   const paper = await getSeoPaper(slug);
-  if (!paper) notFound();
+  if (!paper) {
+    const moved = await resolvePaperSlug(slug);
+    if (moved) permanentRedirect(moved);
+    notFound();
+  }
 
   const subjectCtx = await getSeoSubject(paper.programmeSlug, paper.subjectSlug);
   const otherYears = (subjectCtx?.subject.papers ?? []).filter((p) => p.slug !== paper.slug);

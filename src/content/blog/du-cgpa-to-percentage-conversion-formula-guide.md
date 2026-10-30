@@ -76,4 +76,4 @@ The multiplier of 9.5 is a standard conversion factor used by major boards (like
 
 ## Boost Your Grades
 
-If you are looking to boost your CGPA in the upcoming semester exams, practicing previous year papers is the most effective approach. Search the [full DU PYQ archive](https://www.dupyq.online/pyq-notes) to find past papers for your specific course and semester, or visit the [exam tools section](https://www.dupyq.online/tools/exam-kit) to build flashcards and practice sets based on recurring questions.
+If you are looking to boost your CGPA in the upcoming semester exams, practicing previous year papers is the most effective approach. Search the [full DU PYQ archive](https://www.dupyq.online/papers) to find past papers for your specific course and semester, or visit the [exam tools section](https://www.dupyq.online/tools/exam-kit) to build flashcards and practice sets based on recurring questions.

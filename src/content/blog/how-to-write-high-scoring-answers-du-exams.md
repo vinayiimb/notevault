@@ -62,4 +62,4 @@ Always end with a 4–5 line balanced conclusion or future outlook. Summarize yo
 
 ## Final Strategy
 
-Before entering the exam hall, practice writing answers to previous year questions under timed conditions. Go to the [searchable PYQ archive](https://www.dupyq.online/pyq-notes) to download past papers. Take a 15-mark question and try to outline and draft a structured 5-page answer within 25 minutes. This practice will prevent your hand from cramping during the actual exam.
+Before entering the exam hall, practice writing answers to previous year questions under timed conditions. Go to the [searchable PYQ archive](https://www.dupyq.online/papers) to download past papers. Take a 15-mark question and try to outline and draft a structured 5-page answer within 25 minutes. This practice will prevent your hand from cramping during the actual exam.

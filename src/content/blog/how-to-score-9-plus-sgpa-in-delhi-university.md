@@ -66,7 +66,7 @@ How you write your paper determines how it is graded. Follow these guidelines du
 ## 4. The PYQ Feedback Loop
 
 To score a 9+ SGPA, do not rely on passive reading. Use previous year question papers to build active recall:
-1. Download the last 5 years of past papers from the [DU PYQ archive](https://www.dupyq.online/pyq-notes).
+1. Download the last 5 years of past papers from the [DU PYQ archive](https://www.dupyq.online/papers).
 2. Set a timer for 3 hours and attempt a complete past paper in a quiet room.
 3. Grade your attempt objectively. Check for completeness, answer length, and accuracy of formulas or citations.
 4. Focus your revision on the areas where you made mistakes or struggled with timing.
@@ -75,4 +75,4 @@ To score a 9+ SGPA, do not rely on passive reading. Use previous year question p
 
 ## Access the Archive
 
-Start your preparation by downloading past papers for your course. Go to the [searchable PYQ archive](https://www.dupyq.online/pyq-notes) to find papers sorted by subject and semester, or visit the [exam tools section](https://www.dupyq.online/tools/exam-kit) to build custom practice sets.
+Start your preparation by downloading past papers for your course. Go to the [searchable PYQ archive](https://www.dupyq.online/papers) to find papers sorted by subject and semester, or visit the [exam tools section](https://www.dupyq.online/tools/exam-kit) to build custom practice sets.

@@ -84,4 +84,4 @@ VACs are scheduled alongside your regular classes. A VAC that conflicts with a D
 
 ## Find Past Papers
 
-Even for VACs, practicing past questions gives you a scoring advantage. Search the [DU PYQ archive](https://www.dupyq.online/pyq-notes) for VAC papers, or browse the [semester structure](https://www.dupyq.online/browse/college) to see which VACs are offered in your program.
+Even for VACs, practicing past questions gives you a scoring advantage. Search the [DU PYQ archive](https://www.dupyq.online/papers) for VAC papers, or browse the [semester structure](https://www.dupyq.online/browse/college) to see which VACs are offered in your program.

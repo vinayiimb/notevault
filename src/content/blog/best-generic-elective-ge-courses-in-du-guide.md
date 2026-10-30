@@ -68,7 +68,7 @@ The most common mistake is choosing a GE purely because it sounds interesting, w
 
 2. **The grading curve.** When you take a GE from another department, you are graded alongside students from *that* department — students who may have stronger fundamentals in the subject.
 
-3. **Past paper availability.** For GEs, practicing previous year papers is even more critical than for core subjects because you are less familiar with the question patterns. Always check the [DU PYQ archive](https://www.dupyq.online/pyq-notes) before finalizing your GE to confirm that past papers exist and the questions look manageable.
+3. **Past paper availability.** For GEs, practicing previous year papers is even more critical than for core subjects because you are less familiar with the question patterns. Always check the [DU PYQ archive](https://www.dupyq.online/papers) before finalizing your GE to confirm that past papers exist and the questions look manageable.
 
 ---
 
@@ -85,4 +85,4 @@ Since GEs carry 4 credits, they have exactly the same CGPA impact as your DSC pa
 
 ## Find Past GE Papers
 
-Before finalizing your elective, download past papers from the [full DU PYQ archive](https://www.dupyq.online/pyq-notes) to check the question format and difficulty. Use the [session archive](https://www.dupyq.online/exam-sessions) to compare papers across years and spot recurring patterns.
+Before finalizing your elective, download past papers from the [full DU PYQ archive](https://www.dupyq.online/papers) to check the question format and difficulty. Use the [session archive](https://www.dupyq.online/exam-sessions) to compare papers across years and spot recurring patterns.

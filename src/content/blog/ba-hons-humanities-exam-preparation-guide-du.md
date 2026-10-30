@@ -54,7 +54,7 @@ Follow this structure for all long-answer questions (12 to 15 marks):
 The weekly readings recommended by departments (often sold as "readings" at college photocopy shops or libraries) contain hundreds of pages of complex academic prose. Reading all of them in the final month before exams is practically impossible.
 
 To save time:
-1. Open the [DU PYQ archive](https://www.dupyq.online/pyq-notes) to pull the last four years of papers for your course.
+1. Open the [DU PYQ archive](https://www.dupyq.online/papers) to pull the last four years of papers for your course.
 2. Note down the 6–8 core questions that appear consistently.
 3. Locate the *specific* readings that match those core questions.
 4. Create **one page of outline notes** for each reading, containing:
@@ -76,4 +76,4 @@ Time management is the single biggest hurdle in humanities papers. Writing four 
 
 ## Get Past Papers
 
-To download past exam papers for your specific humanities course, search the [full DU PYQ archive](https://www.dupyq.online/pyq-notes). If you need help organizing papers by year, check out the [session archive](https://www.dupyq.online/exam-sessions) to quickly locate historical papers.
+To download past exam papers for your specific humanities course, search the [full DU PYQ archive](https://www.dupyq.online/papers). If you need help organizing papers by year, check out the [session archive](https://www.dupyq.online/exam-sessions) to quickly locate historical papers.

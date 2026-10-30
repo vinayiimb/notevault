@@ -69,7 +69,7 @@ AECs follow a straightforward evaluation structure:
 2. **Essay Writing:** Hindi essays follow a standard format: introduction, main points, conclusion. Keep sentences short and clear.
 
 ### For EVS
-1. **Download Past Papers:** EVS questions repeat extensively. Go to the [DU PYQ archive](https://www.dupyq.online/pyq-notes) and pull the last 3 years of EVS papers.
+1. **Download Past Papers:** EVS questions repeat extensively. Go to the [DU PYQ archive](https://www.dupyq.online/papers) and pull the last 3 years of EVS papers.
 2. **Memorize Standard Lists:** Topics like "types of solid waste," "causes of water pollution," or "the three R's (Reduce, Reuse, Recycle)" appear in almost every session.
 3. **Draw Diagrams:** Simple diagrams like the water cycle, food chain, or ecosystem structure earn bonus marks and fill space effectively.
 
@@ -85,4 +85,4 @@ AECs follow a straightforward evaluation structure:
 
 ## Past Papers and Resources
 
-To find AEC past papers for your specific college and language option, search the [full PYQ archive](https://www.dupyq.online/pyq-notes). Use the [program browser](https://www.dupyq.online/browse/college) to confirm which AECs are part of your semester structure.
+To find AEC past papers for your specific college and language option, search the [full PYQ archive](https://www.dupyq.online/papers). Use the [program browser](https://www.dupyq.online/browse/college) to confirm which AECs are part of your semester structure.

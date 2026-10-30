@@ -88,4 +88,4 @@ Admit cards are typically released **10 to 15 days before the exam start date**.
 
 ## After Getting Your Admit Card
 
-Once you have your admit card and know your exam dates, switch to focused revision using the [DU PYQ archive](https://www.dupyq.online/pyq-notes). Solve at least 2 past papers per subject under timed conditions before exam day.
+Once you have your admit card and know your exam dates, switch to focused revision using the [DU PYQ archive](https://www.dupyq.online/papers). Solve at least 2 past papers per subject under timed conditions before exam day.

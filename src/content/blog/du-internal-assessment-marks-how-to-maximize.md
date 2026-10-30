@@ -96,4 +96,4 @@ If you believe your IA marks have been calculated incorrectly, raise the issue w
 
 ## Combine IA Marks with PYQ Preparation
 
-Once your IA marks are secured, shift your focus entirely to the theory exam. Use the [DU PYQ archive](https://www.dupyq.online/pyq-notes) to practice past papers and build your topic-frequency table. The combination of high IA marks and targeted PYQ-based revision is the most reliable formula for a high SGPA.
+Once your IA marks are secured, shift your focus entirely to the theory exam. Use the [DU PYQ archive](https://www.dupyq.online/papers) to practice past papers and build your topic-frequency table. The combination of high IA marks and targeted PYQ-based revision is the most reliable formula for a high SGPA.
