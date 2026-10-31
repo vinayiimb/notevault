@@ -75,6 +75,15 @@ const CALLOUT_LABELS: Record<string, CalloutKind> = {
   "exam point": "exam-tip",
   summary: "summary",
   remember: "summary",
+  "quick revision": "summary",
+  revision: "summary",
+  keywords: "important",
+  "key words": "important",
+  "key terms": "important",
+  "memory trick": "tip",
+  mnemonic: "tip",
+  "exam strategy": "exam-tip",
+  "scoring tip": "exam-tip",
 };
 
 function labelToKind(rawLabel: string): CalloutKind | null {

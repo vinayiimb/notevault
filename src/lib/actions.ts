@@ -1,5 +1,6 @@
 "use server";
 
+import { saveCanonicalNote } from "@/lib/canonical-subject-notes-data";
 import { createHash } from "node:crypto";
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
@@ -956,21 +957,7 @@ export async function updateCanonicalSubjectNoteAction(formData: FormData) {
   const isFree = formData.get("isFree") === "on";
   if (!programmeSlug || !subjectSlug) throw new Error("Programme and subject are required.");
 
-  if (!content) {
-    await prisma.canonicalSubjectNote.deleteMany({ where: { programmeSlug, subjectSlug } });
-  } else {
-    await prisma.canonicalSubjectNote.upsert({
-      where: { programmeSlug_subjectSlug: { programmeSlug, subjectSlug } },
-      create: { programmeSlug, programme, subjectSlug, subject, content, theme, semester, isFree },
-      update: { programme, subject, content, theme, semester, isFree },
-    });
-  }
-
-  revalidatePath(`/admin/subject-notes/subject/${programmeSlug}/${subjectSlug}`);
-  revalidatePath(`/admin/subject-notes/program/${programmeSlug}`);
-  revalidatePath(`/admin/subject-notes`);
-  revalidatePath(`/notes/${programmeSlug}`);
-  revalidatePath(`/notes/${programmeSlug}/${subjectSlug}`);
+  await saveCanonicalNote({ programmeSlug, programme, subjectSlug, subject, content, theme, semester, isFree });
 }
 
 // Shared by moveSubjectsToTermAction (UI-driven) and

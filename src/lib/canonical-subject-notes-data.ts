@@ -1,4 +1,5 @@
 import "server-only";
+import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { slugify } from "@/lib/utils";
 
@@ -136,4 +137,36 @@ export async function getCanonicalNote(programmeSlug: string, subjectSlug: strin
     isFree: existing?.isFree ?? false,
     updatedAt: existing?.updatedAt ?? null,
   };
+}
+
+export const NOTE_THEMES = ["sky", "violet", "emerald", "amber"] as const;
+
+// The one place a Subject Note is written: the admin editor's server action and the
+// Paper OCR Studio import route both come through here. Empty content removes the note.
+export async function saveCanonicalNote(n: {
+  programmeSlug: string;
+  programme: string;
+  subjectSlug: string;
+  subject: string;
+  content: string;
+  theme: string;
+  semester: number | null;
+  isFree: boolean;
+}) {
+  const { programmeSlug, subjectSlug, content } = n;
+  if (!content) {
+    await prisma.canonicalSubjectNote.deleteMany({ where: { programmeSlug, subjectSlug } });
+  } else {
+    const { programme, subject, theme, semester, isFree } = n;
+    await prisma.canonicalSubjectNote.upsert({
+      where: { programmeSlug_subjectSlug: { programmeSlug, subjectSlug } },
+      create: { programmeSlug, programme, subjectSlug, subject, content, theme, semester, isFree },
+      update: { programme, subject, content, theme, semester, isFree },
+    });
+  }
+  revalidatePath(`/admin/subject-notes/subject/${programmeSlug}/${subjectSlug}`);
+  revalidatePath(`/admin/subject-notes/program/${programmeSlug}`);
+  revalidatePath(`/admin/subject-notes`);
+  revalidatePath(`/notes/${programmeSlug}`);
+  revalidatePath(`/notes/${programmeSlug}/${subjectSlug}`);
 }

@@ -33,7 +33,7 @@ export function NotesReadingChrome({
   return (
     <ContentThemeProvider subjectTheme={subjectTheme}>
       <ContentLightboxProvider>
-        <div className="nt-bg-gradient overflow-hidden rounded-2xl border" style={{ borderColor: "var(--nt-border)" }}>
+        <div className="nt-bg-gradient overflow-hidden rounded-none border-x-0 border-y sm:rounded-2xl sm:border" style={{ borderColor: "var(--nt-border)" }}>
           <ContentReadingProgress />
           <ContentReadingHeader title={title} targetId={ARTICLE_ID} downloadable={downloadable} />
           <div className="nt-shell" data-toc={headings.length > 0}>

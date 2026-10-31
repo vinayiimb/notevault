@@ -45,9 +45,11 @@ export function CanonicalNotesEditor({
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
+  // A dropped file goes straight to the published-look preview: that is what the admin wants to check.
   async function loadMarkdownFile(file: File) {
     setContent(await file.text());
     setSaved(false);
+    setEditorMode("preview");
   }
 
   function insertBlock(block: string) {
@@ -106,7 +108,20 @@ export function CanonicalNotesEditor({
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border">
+      <div
+        className={`overflow-hidden rounded-xl border ${dragOver ? "border-accent" : "border-border"}`}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
+        onDragLeave={() => setDragOver(false)}
+        onDrop={(e) => {
+          e.preventDefault();
+          setDragOver(false);
+          const file = e.dataTransfer.files?.[0];
+          if (file) loadMarkdownFile(file);
+        }}
+      >
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border bg-surface-muted/55 px-3 py-2">
           <div className="flex items-center gap-1" role="tablist" aria-label="Notes editor view">
             <button
@@ -162,17 +177,6 @@ export function CanonicalNotesEditor({
               setContent(e.target.value);
               setSaved(false);
             }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setDragOver(true);
-            }}
-            onDragLeave={() => setDragOver(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setDragOver(false);
-              const file = e.dataTransfer.files?.[0];
-              if (file) loadMarkdownFile(file);
-            }}
             rows={22}
             placeholder="Write notes here, or drag and drop a .md file…"
             className={`block w-full resize-y border-0 px-4 py-3 font-mono text-sm leading-6 outline-none ${
@@ -180,7 +184,7 @@ export function CanonicalNotesEditor({
             }`}
           />
         ) : (
-          <div className="max-h-[760px] min-h-72 overflow-y-auto bg-background p-4 sm:p-6">
+          <div className="max-h-[820px] min-h-72 overflow-y-auto bg-surface-muted/40 p-3 sm:p-5">
             {content.trim() ? (
               <NotesRenderer content={content} theme={resolveNotesTheme(theme)} resolvedTheme={null} />
             ) : (

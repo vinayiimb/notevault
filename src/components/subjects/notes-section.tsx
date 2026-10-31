@@ -77,8 +77,8 @@ export function NotesSection({
     : findNotesLabTheme(LEGACY_NOTES_THEME_TO_PRESET[resolvedNotesTheme]).dark;
 
   return (
-    <div className="relative mt-4 ml-[50%] w-screen -translate-x-1/2 px-4 sm:px-6">
-      <div className="mx-auto w-[95%] max-w-[1900px]">
+    <div className="relative mt-4 ml-[50%] w-screen -translate-x-1/2 px-0 sm:px-6">
+      <div className="mx-auto w-full max-w-[1900px] sm:w-[95%]">
         <div className="mt-3">
           {paywall ? (
             <GatedNotes

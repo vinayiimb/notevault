@@ -23,6 +23,23 @@ export const contentSanitizeSchema: Schema = {
     "kbd",
     "sup",
     "sub",
+    // Exam diagrams (flowcharts, demand/supply curves) are written as inline <svg> by the Paper OCR Studio and the PYQ
+    // Analyser. Only drawing shapes, text and arrow markers — no <style>, <script>, <use>, <image> or <foreignObject>.
+    "svg",
+    "g",
+    "path",
+    "rect",
+    "circle",
+    "ellipse",
+    "line",
+    "polyline",
+    "polygon",
+    "text",
+    "tspan",
+    "defs",
+    "marker",
+    "title",
+    "desc",
   ],
   attributes: {
     ...defaultSchema.attributes,
@@ -39,8 +56,24 @@ export const contentSanitizeSchema: Schema = {
     mark: ["className"],
     table: [...(defaultSchema.attributes?.table ?? []), "className"],
     img: [...(defaultSchema.attributes?.img ?? []), "className", "loading", "width", "height"],
+    // hast property names (camelCase), as parse5 produces them for SVG. No style, href or event handlers.
+    svg: ["className", "viewBox", "role", "ariaLabel", "width", "height"],
+    g: ["className", "transform"],
+    path: ["className", "d", "fill", "markerEnd", "markerStart", "transform"],
+    rect: ["className", "x", "y", "width", "height", "rx", "ry", "fill", "transform"],
+    circle: ["className", "cx", "cy", "r", "fill"],
+    ellipse: ["className", "cx", "cy", "rx", "ry", "fill", "transform"],
+    line: ["className", "x1", "y1", "x2", "y2", "markerEnd"],
+    polyline: ["className", "points", "fill", "markerEnd"],
+    polygon: ["className", "points", "fill"],
+    text: ["className", "x", "y", "dx", "dy", "textAnchor", "transform"],
+    tspan: ["className", "x", "y", "dx", "dy"],
+    marker: ["id", "viewBox", "refX", "refY", "markerWidth", "markerHeight", "orient"],
     "*": [...(defaultSchema.attributes?.["*"] ?? []), "id", "className"],
   },
+  // The default prefixes every id ("user-content-…") against DOM clobbering, which would break a flowchart's
+  // marker-end="url(#fl1-k)". Notes are admin-written, so ids stay as written.
+  clobber: ["ariaDescribedBy", "ariaLabelledBy", "name"],
   protocols: {
     ...defaultSchema.protocols,
     src: ["http", "https"],
