@@ -57,8 +57,13 @@ def fetch(folder_id):
     raise RuntimeError(f"{folder_id}: {err}")
 
 
+# Extra public folders crawled into the same tree: (folder id, path prefix inside DRIVE_FOLDER's layout).
+# Papers that failed to upload into the main folder (Drive was full) were re-uploaded here.
+EXTRA_FOLDERS = [("1Ahdh06BFolU15hL6b7M8Mj5ckZkQAq2V", "1 - Verified (Official Syllabus)/")]
+
+
 def crawl():
-    files, folders, frontier = [], 0, [(DRIVE_FOLDER, "")]
+    files, folders, frontier = [], 0, [(DRIVE_FOLDER, "")] + EXTRA_FOLDERS
     with ThreadPoolExecutor(8) as pool:
         while frontier:
             pages = list(pool.map(lambda f: (f[1], fetch(f[0])), frontier))
@@ -72,6 +77,8 @@ def crawl():
                     elif path.lower().endswith(".pdf"):
                         files.append({"path": path, "id": fid})
             print(f"folders={folders} files={len(files)} next={len(frontier)}", flush=True)
+    seen = set()  # one entry per path: the same paper can sit in two of the folders
+    files = [f for f in files if not (f["path"].lower() in seen or seen.add(f["path"].lower()))]
     MANIFEST.write_text(json.dumps(files, ensure_ascii=False, indent=0))
     print(f"wrote {MANIFEST} ({len(files)} files)")
 
