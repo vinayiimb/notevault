@@ -165,6 +165,10 @@
 .nt-prose ol > li + li { margin-top: .4rem; }
 .nt-prose ol > li::marker { color: var(--nt-primary); font-weight: 700; }
 
+/* a callout written as a bullet ("- **Example:** …") is a card; it does not also get a bullet */
+.nt-prose ul > li:has(> .nt-card) { padding-left: 0; }
+.nt-prose ul > li:has(> .nt-card)::before { content: none; }
+
 /* Task lists (GFM) */
 .nt-prose li:has(> input[type="checkbox"]) { list-style: none; padding-left: 1.6rem; }
 .nt-prose li:has(> input[type="checkbox"])::before { content: none; }
@@ -312,7 +316,7 @@
   box-shadow: var(--nt-shadow);
   margin: 1.1rem 0;
 }
-.nt-card-head { display: flex; align-items: center; gap: .5rem; font-weight: 700; color: var(--nt-card-color, var(--nt-primary)); margin-bottom: .35rem; }
+.nt-card-head { display: flex; align-items: center; gap: .5rem; font-weight: 700; font-size: .72rem; letter-spacing: .07em; text-transform: uppercase; color: var(--nt-card-color, var(--nt-primary)); margin-bottom: .4rem; }
 .nt-card-head svg { flex: none; }
 
 .nt-card.definition { --nt-card-bg: color-mix(in srgb, var(--nt-info) 8%, var(--nt-surface)); --nt-card-border: color-mix(in srgb, var(--nt-info) 35%, var(--nt-border)); --nt-card-color: var(--nt-info); }
@@ -346,6 +350,32 @@
 .nt-prose svg.flow text { font-size: 12.5px; text-anchor: middle; } .nt-prose svg.flow .link { fill: none; stroke: #475569; stroke-width: 1.7; } .nt-prose svg.flow rect { stroke-width: 1.5; }
 .nt-prose svg.flow rect.n { fill: #eff6ff; stroke: #3b82f6; } .nt-prose svg.flow rect.g { fill: #ecfdf5; stroke: #10b981; } .nt-prose svg.flow rect.r { fill: #fef2f2; stroke: #ef4444; } .nt-prose svg.flow rect.p { fill: #f5f3ff; stroke: #8b5cf6; }
 .nt-prose p.caption { text-align: center; color: var(--nt-text-muted); font-size: .85em; margin-top: .25rem; }
+
+/* ---------- Icon cards (```cards block) and the hero portrait ---------- */
+
+.nt-cards { margin: 1.25rem 0; padding: .85rem; border: 1px solid var(--nt-border); border-radius: calc(var(--nt-radius) + 4px); background: var(--nt-surface); box-shadow: var(--nt-shadow); }
+.nt-cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr)); gap: .7rem; }
+/* 4 to 6 cards need narrower columns, or the last one is left alone on a second row */
+.nt-cards[data-count="4"] .nt-cards-grid, .nt-cards[data-count="5"] .nt-cards-grid, .nt-cards[data-count="6"] .nt-cards-grid { grid-template-columns: repeat(auto-fit, minmax(8.25rem, 1fr)); }
+.nt-tile { --tile: var(--nt-primary); display: grid; justify-items: center; align-content: start; gap: .4rem; text-align: center; padding: 1rem .85rem 1.1rem; border-radius: var(--nt-radius); cursor: default; outline: none;
+  border: 1px solid color-mix(in srgb, var(--tile) 22%, var(--nt-border));
+  background: linear-gradient(180deg, color-mix(in srgb, var(--tile) 9%, var(--nt-surface)), var(--nt-surface));
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.nt-tile:nth-child(2n) { --tile: var(--nt-secondary); }
+.nt-tile:nth-child(3n) { --tile: var(--nt-success); }
+.nt-tile:nth-child(4n) { --tile: var(--nt-warning); }
+.nt-tile:hover, .nt-tile:focus-visible { transform: translateY(-3px); border-color: var(--tile); box-shadow: 0 10px 24px -12px color-mix(in srgb, var(--tile) 55%, transparent); }
+.nt-tile-icon { display: grid; place-items: center; width: 2.6rem; height: 2.6rem; border-radius: 999px; color: var(--tile); background: color-mix(in srgb, var(--tile) 15%, var(--nt-surface)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--tile) 25%, transparent); }
+.nt-tile-emoji { font-size: 1.25rem; line-height: 1; }
+.nt-prose .nt-tile-title { display: block; margin: .15rem 0 0 !important; font-size: 1rem; letter-spacing: -.01em; color: var(--nt-text); text-transform: none; }
+.nt-tile-tag { font-size: .66rem; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; padding: .15rem .55rem; border-radius: 999px; color: var(--tile); background: color-mix(in srgb, var(--tile) 12%, var(--nt-surface)); }
+.nt-tile-text { margin: 0 !important; font-size: .85em; line-height: 1.45; color: var(--nt-text-muted); }
+.nt-cards-note { margin: .75rem 0 0 !important; text-align: center; font-size: .85em; color: var(--nt-text-muted); }
+/* a small portrait at the start of an answer, with the intro text beside it */
+.nt-figure.hero { float: left; width: 7.25rem; margin: .15rem 1.1rem .6rem 0; }
+.nt-figure.hero img { aspect-ratio: 4 / 5; object-fit: cover; border-radius: calc(var(--nt-radius) + 2px); }
+.nt-figure.hero figcaption { font-size: .62rem; line-height: 1.25; font-style: normal; text-align: left; }
+.nt-prose h4.nt-step { clear: both; }
 
 /* ---------- Math (KaTeX) ---------- */
 
@@ -556,6 +586,14 @@ mark.nt-search-hit-active { background: var(--nt-warning); color: var(--nt-backg
   .nt-table { font-size: .82em; }
   .nt-table thead th { padding: .5rem .7rem; font-size: .68rem; }
   .nt-table td { padding: .55rem .7rem; }
+}
+
+@media (max-width: 640px) {
+  .nt-cards { padding: .6rem; }
+  .nt-cards-grid { grid-template-columns: 1fr 1fr; gap: .5rem; }
+  .nt-cards-grid > .nt-tile:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .nt-tile { padding: .8rem .6rem .9rem; }
+  .nt-figure.hero { width: 5.5rem; margin-right: .8rem; }
 }
 
 @media print {

@@ -71,13 +71,13 @@ export function useLightbox() {
 // react-markdown's `img` renderer only gets src/alt/title — captions and
 // left/right alignment both ride on the standard Markdown title syntax:
 // ![alt](src "caption | align-left"), since GFM has no native caption or
-// alignment syntax for images.
+// alignment syntax for images. "hero" is a small rounded portrait that the text beside it wraps around.
 export function NoteImage({ src, alt, title }: { src?: string; alt?: string; title?: string }) {
   const { open } = useLightbox();
   if (!src) return null;
 
   const [caption, alignToken] = (title ?? "").split("|").map((s) => s.trim());
-  const align = alignToken === "align-left" ? "align-left" : alignToken === "align-right" ? "align-right" : "";
+  const align = alignToken === "align-left" ? "align-left" : alignToken === "align-right" ? "align-right" : alignToken === "hero" ? "hero" : "";
 
   return (
     <figure className={`nt-figure ${align}`}>

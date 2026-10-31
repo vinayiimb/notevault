@@ -14,12 +14,19 @@ import { ContentMermaidBlock } from "./mermaid-block";
 import { ContentCodeBlock } from "./code-block";
 import { NoteImage } from "./note-image";
 import { DataChart } from "@/components/subjects/data-chart";
+import { InfoCards } from "./info-cards";
 
 // Drops a leading "Q1. " / "3. " etc. from the first text child, keeping any inline formatting after it.
 function stripLead(children: React.ReactNode, re: RegExp): React.ReactNode {
   const parts = Children.toArray(children);
   if (typeof parts[0] === "string") parts[0] = parts[0].replace(re, "");
   return parts;
+}
+
+// react-markdown gives the paragraph renderer the element it made from `components.img`, so the "lone image" check below has to
+// compare against THIS component (comparing against NoteImage never matched, and the <figure> ended up inside a <p>).
+function MarkdownImg({ src, alt, title }: { src?: string | Blob; alt?: string; title?: string }) {
+  return <NoteImage src={typeof src === "string" ? src : undefined} alt={alt} title={title} />;
 }
 
 // A question heading. On a phone the text is held to two lines (CSS) and a tap shows the rest.
@@ -61,13 +68,24 @@ export function NotesMarkdown({ content }: { content: string }) {
   // the same allocator function extractContentHeadings
   // (src/lib/content/toc.ts) uses on the raw source, so anchors always
   // agree with the sidebar TOC.
-  const slugFor = createSlugAllocator();
+  const allocate = createSlugAllocator();
+  const assigned = new Map<number, string>();
+  // A heading asks for its id by its position in the source, so asking again (React calls renderers twice in dev, and a
+  // re-render may repeat a call) returns the same id instead of the next free one ("x", then "x-1"): ids then match the
+  // server's HTML and the TOC. Without a position it falls back to plain allocation.
+  const slugFor = (text: string, node?: { position?: { start?: { offset?: number } } }): string => {
+    const at = node?.position?.start?.offset;
+    if (at == null) return allocate(text);
+    let slug = assigned.get(at);
+    if (slug === undefined) { slug = allocate(text); assigned.set(at, slug); }
+    return slug;
+  };
 
   const components: Components = {
-    h1: ({ children }) => <h1 id={slugFor(flattenToText(children))}>{children}</h1>,
-    h2: ({ children }) => {
+    h1: ({ node, children }) => <h1 id={slugFor(flattenToText(children), node)}>{children}</h1>,
+    h2: ({ node, children }) => {
       const text = flattenToText(children);
-      const id = slugFor(text);
+      const id = slugFor(text, node);
       const unit = UNIT_HEAD.exec(text);
       if (!unit) return <h2 id={id}>{children}</h2>;
       return (
@@ -77,16 +95,16 @@ export function NotesMarkdown({ content }: { content: string }) {
         </h2>
       );
     },
-    h3: ({ children }) => {
+    h3: ({ node, children }) => {
       const text = flattenToText(children);
-      const id = slugFor(text);
+      const id = slugFor(text, node);
       const q = Q_HEAD.exec(text);
       if (!q) return <h3 id={id}>{children}</h3>;
       return <QuestionHeading id={id} no={q[1]}>{stripLead(children, Q_HEAD)}</QuestionHeading>;
     },
-    h4: ({ children }) => {
+    h4: ({ node, children }) => {
       const text = flattenToText(children);
-      const id = slugFor(text);
+      const id = slugFor(text, node);
       const step = STEP_HEAD.exec(text);
       if (!step) return <h4 id={id}>{children}</h4>;
       return (
@@ -96,7 +114,7 @@ export function NotesMarkdown({ content }: { content: string }) {
         </h4>
       );
     },
-    h5: ({ children }) => <h5 id={slugFor(flattenToText(children))}>{children}</h5>,
+    h5: ({ node, children }) => <h5 id={slugFor(flattenToText(children), node)}>{children}</h5>,
 
     // "Asked 4× · 2020, 2022 · 19 marks" becomes a row of chips; any other quote stays a quote.
     blockquote: ({ children }) => {
@@ -123,7 +141,7 @@ export function NotesMarkdown({ content }: { content: string }) {
       const onlyChild = Children.toArray(children).filter(
         (child) => !(typeof child === "string" && child.trim() === ""),
       );
-      if (onlyChild.length === 1 && isValidElement(onlyChild[0]) && onlyChild[0].type === NoteImage) {
+      if (onlyChild.length === 1 && isValidElement(onlyChild[0]) && onlyChild[0].type === MarkdownImg) {
         return <>{children}</>;
       }
 
@@ -167,7 +185,7 @@ export function NotesMarkdown({ content }: { content: string }) {
       );
     },
 
-    img: ({ src, alt, title }) => <NoteImage src={typeof src === "string" ? src : undefined} alt={alt} title={title} />,
+    img: MarkdownImg,
 
     table: ({ children }) => (
       <div className="nt-table-wrap">
@@ -189,6 +207,7 @@ export function NotesMarkdown({ content }: { content: string }) {
       const language = /language-(\w+)/.exec(className ?? "")?.[1] ?? "";
       if (language === "mermaid") return <ContentMermaidBlock chart={raw} />;
       if (language === "chart") return <DataChart source={raw} />;
+      if (language === "cards") return <InfoCards source={raw} />;
       return <ContentCodeBlock language={language} code={raw} />;
     },
   };

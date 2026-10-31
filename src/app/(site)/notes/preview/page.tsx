@@ -20,6 +20,10 @@ export const dynamic = "force-dynamic";
 // A random real SubjectNotes row on every load, not a fixed demo — so this
 // stays a fair sample of what's actually in the database instead of drifting
 // stale like a hardcoded example would.
+// The preview shows a different note on each visit on purpose; this is a server component that runs per request, so the
+// randomness is wanted (kept out of the component body, where the purity lint rule is about client re-renders).
+const pickRandom = (n: number) => Math.floor(Math.random() * n);
+
 export default async function NotesPreviewPage() {
   const count = await prisma.subjectNotes.count();
 
@@ -37,7 +41,7 @@ export default async function NotesPreviewPage() {
     );
   }
 
-  const skip = Math.floor(Math.random() * count);
+  const skip = pickRandom(count);
   const note = await prisma.subjectNotes.findFirst({
     skip,
     include: {

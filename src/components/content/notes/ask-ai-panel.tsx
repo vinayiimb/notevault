@@ -84,9 +84,9 @@ export function AskAiPanel({ subject, targetId }: { subject: string; targetId: s
   // Cycle the "thinking" label while waiting for the first token.
   const waiting = busy && messages[messages.length - 1]?.content === "";
   useEffect(() => {
-    if (!waiting) return setTick(0);
+    if (!waiting) return;
     const id = setInterval(() => setTick((t) => t + 1), 1400);
-    return () => clearInterval(id);
+    return () => { clearInterval(id); setTick(0); }; // reset when the wait ends (setting state in the effect body itself is what the lint rule forbids)
   }, [waiting]);
 
   useEffect(() => {
