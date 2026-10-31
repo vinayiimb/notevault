@@ -22,6 +22,9 @@ export type CatalogPaper = {
   // Drive catalog: true = matched to the current syllabus (/papers),
   // false = /papers/noncore.
   verified?: boolean;
+  // Set by scripts/build-papers-split.mjs on /papers: a core (DSC) paper per
+  // the DU datesheet, listed before the other papers.
+  core?: boolean;
   matchStatus?: "Exact" | "Strong" | "Review" | "Unmatched";
   matchConfidence?: number;
   semesterCheck?: string;

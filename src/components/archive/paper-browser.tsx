@@ -101,6 +101,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
   const [initialized, setInitialized] = useState(false);
   const [isMobileFilterOpen, setIsMobileFilterOpen] = useState(false);
   const [showEarlier, setShowEarlier] = useState(false);
+  const [showOther, setShowOther] = useState(false);
   const inFlight = useRef(new Set<string>());
 
   // 1. Tiny course list + admin overrides — nothing else loads up front.
@@ -244,6 +245,8 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
       .map(([key, { labels, papers }]) => ({
         key,
         label: preferredSubjectLabel(labels),
+        core: papers.some((p) => p.core),
+        upc: papers.find((p) => p.upc)?.upc ?? "",
         papers: papers.sort(
           (a, b) => yearStart(b.yearRange) - yearStart(a.yearRange) || cleanNote(a).localeCompare(cleanNote(b)),
         ),
@@ -265,6 +268,19 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
   const subject = subjects.find((s) => s.key === subjectKey) ?? null;
   const earlierOpen =
     showEarlier || nepSubjects.length === 0 || subjectSearch.trim() !== "" || (subject !== null && isEarlier(subject));
+  // /papers: the semester's core (DSC) papers first, in paper-code order (the
+  // syllabus order); everything else sits behind a toggle. Not shown for a
+  // semester with no core papers.
+  const coreSubjects = nepSubjects
+    .filter((s) => s.core)
+    .sort((a, b) => a.upc.localeCompare(b.upc) || a.label.localeCompare(b.label));
+  const otherSubjects = nepSubjects.filter((s) => !s.core);
+  const groupCore = !noncore && coreSubjects.length > 0;
+  const otherOpen = showOther || subjectSearch.trim() !== "" || (subject !== null && !subject.core);
+  const otherTypes = [...new Set(otherSubjects.flatMap((s) => s.papers.flatMap((p) => (p.paperType ?? "").split("/"))))]
+    .filter((t) => t && t !== "DSC")
+    .sort();
+  const otherLabel = otherTypes.length ? `Other papers (${otherTypes.join(", ")})` : "Other papers";
   const openPaper = subject?.papers.find((p) => p.id === openPaperId) ?? null;
 
   function pickCourse(name: string) {
@@ -274,6 +290,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
     setSubjectKey(null);
     setOpenPaperId(null);
     setSubjectSearch("");
+    setShowOther(false);
     if (next) setActiveTab("semester");
   }
   function pickSemester(key: string) {
@@ -281,6 +298,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
     setSubjectKey(null);
     setOpenPaperId(null);
     setSubjectSearch("");
+    setShowOther(false);
     if (key !== semester) setActiveTab("subject");
   }
   function pickSubject(key: string) {
@@ -433,7 +451,12 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
                   <ListSkeleton />
                 ) : (
                   <>
-                    {nepSubjects.map((s) => (
+                    {groupCore && (
+                      <p className="px-2.5 pb-0.5 pt-1 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                        Core papers (DSC)
+                      </p>
+                    )}
+                    {(groupCore ? coreSubjects : nepSubjects).map((s) => (
                       <FilterCheckbox
                         key={s.key}
                         checked={subjectKey === s.key}
@@ -442,6 +465,31 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
                         onClick={() => pickSubject(s.key)}
                       />
                     ))}
+                    {groupCore && otherSubjects.length > 0 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setShowOther((v) => !v)}
+                          aria-expanded={otherOpen}
+                          className="mt-2 flex w-full items-center gap-2 rounded-lg border border-dashed border-border px-2 py-1.5 text-left text-xs font-semibold text-muted transition hover:bg-surface-muted hover:text-foreground"
+                        >
+                          <span className="min-w-0 flex-1">{otherLabel}</span>
+                          <span className="shrink-0 text-[11px]">
+                            {otherSubjects.length} {otherOpen ? "▴" : "▾"}
+                          </span>
+                        </button>
+                        {otherOpen &&
+                          otherSubjects.map((s) => (
+                            <FilterCheckbox
+                              key={s.key}
+                              checked={subjectKey === s.key}
+                              label={s.label}
+                              count={s.papers.length}
+                              onClick={() => pickSubject(s.key)}
+                            />
+                          ))}
+                      </>
+                    )}
                     {earlierSubjects.length > 0 && (
                       <>
                         <button

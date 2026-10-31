@@ -8,7 +8,7 @@
 //   public/data/papers/drive-ids.json      — Drive file ids /api/papers-zip may fetch
 //   public/data/papers/noncore/…           — same three files for /papers/noncore
 // Generated at build time (prebuild); the output is gitignored.
-import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -29,11 +29,30 @@ function slugify(input) {
 
 rmSync(OUT, { recursive: true, force: true });
 
+// The DU datesheet (public/data/datesheet) says which papers are a semester's
+// core (DSC) papers; /papers lists those first (`core: true`). Where the
+// datesheet has no entry for a paper code (even semesters) the paper's own DSC
+// tag decides.
+const DATESHEET = path.join(root, "public/data/datesheet");
+const dsCategories = new Map(); // paper code -> Set of datesheet categories
+for (const f of readdirSync(DATESHEET)) {
+  if (!f.endsWith(".json") || f === "manifest.json") continue;
+  const entries = JSON.parse(readFileSync(path.join(DATESHEET, f), "utf8"));
+  for (const e of Array.isArray(entries) ? entries : []) {
+    dsCategories.set(e.paperCode, (dsCategories.get(e.paperCode) ?? new Set()).add(e.category));
+  }
+}
+function isCore(p) {
+  const cats = p.upc ? dsCategories.get(p.upc) : null;
+  return cats ? cats.has("DSC") : /\bDSC\b/.test(p.paperType ?? "");
+}
+
 // /papers/noncore (papers not in the current syllabus) is split the same way
 // into public/data/papers/noncore/.
 const driveIds = [];
 function split(source, out, extra = []) {
   const papers = [...JSON.parse(readFileSync(source, "utf8")), ...extra];
+  if (out === OUT) for (const p of papers) if (isCore(p)) p.core = true;
   const byCourse = new Map();
   for (const p of papers) {
     const list = byCourse.get(p.course) ?? [];
