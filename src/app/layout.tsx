@@ -64,6 +64,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "./",
   },
+  // Icons live in /public (not app/), so Next doesn't inject these itself.
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: "/apple-icon.png",
+  },
   openGraph: {
     siteName: SITE_NAME,
     type: "website",

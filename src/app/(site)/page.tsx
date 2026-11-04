@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
 import { CaretRight, GraduationCap } from "@phosphor-icons/react/dist/ssr";
@@ -43,10 +44,16 @@ export default async function HomePage() {
       <section className={`relative -mt-[92px] ${heroImage ? "" : "bg-[#34beff]"}`}>
         {heroImage ? (
           <div className="relative w-full overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            {/* The admin upload can be a 1.7MB PNG on R2; next/image serves it as
+                WebP and the width/height reserve space so the page doesn't jump. */}
+            <Image
               src={heroImage}
               alt="DU PYQ Online – Delhi University Colleges & Archive"
+              width={1402}
+              height={1122}
+              sizes="100vw"
+              loading="eager"
+              fetchPriority="high"
               className="hero-image-fade block h-[620px] w-full object-cover object-top sm:h-auto sm:max-h-none sm:object-contain"
             />
             <div aria-hidden="true" className="hero-image-overlay absolute inset-0" />
