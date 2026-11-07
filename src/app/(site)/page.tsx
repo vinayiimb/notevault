@@ -148,7 +148,7 @@ export default async function HomePage() {
           <p className="mt-3 max-w-2xl text-[17px] leading-relaxed text-muted">
             We put every available paper for a subject side by side and counted which topics came back.
           </p>
-          <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <li>
               <Link href="/blog/du-bcom-hons-financial-accounting-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
                 <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">B.Com (Hons) Financial Accounting</span>
@@ -174,6 +174,41 @@ export default async function HomePage() {
               <Link href="/blog/du-business-communication-sec-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
                 <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Business Communication (SEC)</span>
                 <span className="mt-1.5 block text-[13px] leading-snug text-muted">What changed in the 2026 papers</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-social-media-marketing-sec-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Social Media Marketing (SEC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">27 papers: the SMM plan and the three metrics</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-personal-financial-planning-sec-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Personal Financial Planning (SEC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">The portfolio numerical that keeps returning</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-environmental-science-ii-aec-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Environmental Science II (AEC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">True/false statements that repeat, with answers</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-financial-literacy-vac-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Financial Literacy (VAC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">The tax-regime numerical is in 12 of 17 papers</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-constitutional-values-fundamental-duties-vac-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Constitutional Values (VAC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">Fundamental Duties is in 15 of 16 papers</span>
                 <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
               </Link>
             </li>

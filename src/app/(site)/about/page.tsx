@@ -48,8 +48,13 @@ export default function AboutPage() {
             mark which topics came back, in how many papers, and how they were worded. Examples:{" "}
             <Link href="/blog/du-bcom-hons-business-laws-most-repeated-questions" className="text-brand hover:underline">B.Com (Hons) Business Laws</Link>,{" "}
             <Link href="/blog/du-bcom-hons-financial-accounting-most-repeated-questions" className="text-brand hover:underline">B.Com (Hons) Financial Accounting</Link>,{" "}
-            <Link href="/blog/du-environmental-science-aec-most-repeated-questions" className="text-brand hover:underline">Environmental Science (AEC)</Link> and{" "}
-            <Link href="/blog/du-business-communication-sec-most-repeated-questions" className="text-brand hover:underline">Business Communication (SEC)</Link>.
+            <Link href="/blog/du-environmental-science-aec-most-repeated-questions" className="text-brand hover:underline">Environmental Science I</Link>,{" "}
+            <Link href="/blog/du-environmental-science-ii-aec-most-repeated-questions" className="text-brand hover:underline">Environmental Science II (AEC)</Link>,{" "}
+            <Link href="/blog/du-business-communication-sec-most-repeated-questions" className="text-brand hover:underline">Business Communication</Link>,{" "}
+            <Link href="/blog/du-social-media-marketing-sec-most-repeated-questions" className="text-brand hover:underline">Social Media Marketing</Link>,{" "}
+            <Link href="/blog/du-personal-financial-planning-sec-most-repeated-questions" className="text-brand hover:underline">Personal Financial Planning (SEC)</Link>,{" "}
+            <Link href="/blog/du-financial-literacy-vac-most-repeated-questions" className="text-brand hover:underline">Financial Literacy</Link> and{" "}
+            <Link href="/blog/du-constitutional-values-fundamental-duties-vac-most-repeated-questions" className="text-brand hover:underline">Constitutional Values and Fundamental Duties (VAC)</Link>.
           </li>
           <li>
             <strong>Exam guides</strong> for each semester, covering passing rules, course types (DSC, DSE, GE, AEC, SEC,
