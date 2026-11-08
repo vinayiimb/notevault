@@ -3,7 +3,15 @@
 import { useActionState, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { CaretUpDown, Check, WhatsappLogo } from "@phosphor-icons/react";
 import { submitNoteLeadAction, type LeadResult } from "@/lib/note-lead-actions";
-import { LEAD_PHONE_KEY, LEAD_SEMESTERS, LEAD_STORAGE_KEY, type LeadCourse, type LeadSource, type LeadSubject } from "@/lib/note-leads";
+import {
+  ANY_SUBJECT,
+  LEAD_PHONE_KEY,
+  LEAD_SEMESTERS,
+  LEAD_STORAGE_KEY,
+  type LeadCourse,
+  type LeadSource,
+  type LeadSubject,
+} from "@/lib/note-leads";
 
 const HELP_WHATSAPP = "919376180015";
 
@@ -84,6 +92,7 @@ export function LeadForm({
   variant = "full",
   submitLabel = "Get notes on WhatsApp",
   stacked = false,
+  subjectRequired = true,
   onSuccess,
 }: {
   courses: LeadCourse[];
@@ -96,6 +105,8 @@ export function LeadForm({
   submitLabel?: string;
   /** Inline variant: keep the button under the fields even on wide screens (narrow sheets). */
   stacked?: boolean;
+  /** Full variant: false lets a student ask for a whole course without naming the subject. */
+  subjectRequired?: boolean;
   onSuccess?: (r: LeadResult) => void;
 }) {
   const uid = useId();
@@ -139,18 +150,21 @@ export function LeadForm({
   };
 
   if (state.ok) {
+    const anySubject = state.subject === ANY_SUBJECT;
     const ready = state.hasNotes;
-    const text = encodeURIComponent(`Hi! I need ${state.subject ?? "notes"} notes from DU PYQ Online.`);
+    const text = encodeURIComponent(`Hi! I need ${anySubject ? "" : (state.subject ?? "")} notes from DU PYQ Online.`.replace("  ", " "));
     return (
       <div role="status" className="py-6 text-center">
         <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-success text-white">
           <Check size={28} weight="bold" />
         </span>
         <h3 className="mt-4 text-[22px] font-semibold tracking-[-0.02em]">
-          {ready ? "Thanks! We'll send your notes on WhatsApp." : "Got it. We'll message you."}
+          {ready ? "Thanks! We'll send your notes on WhatsApp." : anySubject ? "Thanks! We'll message you on WhatsApp." : "Got it. We'll message you."}
         </h3>
         <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed text-muted">
-          {ready
+          {anySubject
+            ? "We'll ask which subject you need, then send the notes, solved answers and exam tips."
+            : ready
             ? `We'll message you shortly with the ${state.subject ?? ""} notes, solved answers and exam tips.`.replace("  ", " ")
             : `${state.subject ?? "These"} notes aren't published yet. We'll WhatsApp you the moment they're ready.`}
         </p>
@@ -240,6 +254,9 @@ export function LeadForm({
   return (
     <form action={formAction} onSubmit={onSubmit} className="flex flex-col gap-3">
       {hidden}
+      {/* Printed names, for PYQ-page courses/subjects that aren't a notes subject. */}
+      <input type="hidden" name="programmeName" value={courses.find((c) => c.slug === course)?.name ?? ""} />
+      <input type="hidden" name="subjectName" value={list?.find((s) => s.slug === subject)?.name ?? ""} />
       <div className={group}>
         <Select
           id={`${uid}-course`}
@@ -267,8 +284,8 @@ export function LeadForm({
           id={`${uid}-subject`}
           label="Subject"
           name="subject"
-          required
-          disabled={!course || !list}
+          required={subjectRequired}
+          disabled={!course || (subjectRequired && !list)}
           value={subject}
           onChange={(e) => {
             setSubject(e.target.value);
@@ -276,8 +293,16 @@ export function LeadForm({
             if (known) setSemester(String(known));
           }}
         >
-          <option value="" disabled>
-            {!course ? "Select a course first" : !list ? "Loading subjects…" : "Select your subject"}
+          <option value="" disabled={subjectRequired}>
+            {!course
+              ? "Select a course first"
+              : !subjectRequired
+              ? list
+                ? "Not sure yet (optional)"
+                : "Loading subjects…"
+              : !list
+              ? "Loading subjects…"
+              : "Select your subject"}
           </option>
           {ready.length > 0 && (
             <optgroup label="Notes ready">

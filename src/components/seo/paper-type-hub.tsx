@@ -8,6 +8,7 @@ import { FaqBlock } from "@/components/seo/faq-block";
 import { ShareButtons } from "@/components/seo/share-buttons";
 import { SampleQuestions } from "@/components/seo/sample-questions";
 import { getSampleQuestions } from "@/lib/subject-questions";
+import { NotesPromptAnyCourse } from "@/components/notes-leads/notes-prompt-any";
 
 const TYPES = {
   AEC: { path: "/ability-enhancement-courses", name: "Ability Enhancement Courses (AEC)", blurb: "language and communication papers" },
@@ -68,6 +69,7 @@ export async function PaperTypeHub({ type }: { type: HubType }) {
   ];
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
+      <NotesPromptAnyCourse />
       <BreadcrumbJsonLd items={breadcrumbs} />
       <script
         type="application/ld+json"

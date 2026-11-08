@@ -1,6 +1,15 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { formatLeadPhone, leadWhatsAppText, parseLeadPhone, parseLeadSemester, parseLeadSource } from "../note-leads";
+import {
+  ANY_SUBJECT,
+  formatLeadPhone,
+  isPaperSource,
+  leadWhatsAppText,
+  parseLeadPhone,
+  parseLeadSemester,
+  parseLeadSource,
+  singleSemester,
+} from "../note-leads";
 
 test("phone: any common Indian format normalises to 91XXXXXXXXXX", () => {
   for (const raw of ["98765 43210", "+91 98765-43210", "09876543210", "919876543210", " 9876543210 "]) {
@@ -37,4 +46,25 @@ test("admin WhatsApp text mentions what they asked for and differs by readiness"
   for (const t of [ready, soon]) assert.ok(t.includes("Micro") && t.includes("Sem 3"));
   assert.notEqual(ready, soon);
   assert.ok(!leadWhatsAppText({ ...base, semester: null, hasNotes: true }).includes("Sem"));
+});
+
+test("source: the PYQ page source is accepted and counts as a paper source", () => {
+  assert.equal(parseLeadSource("pyq-page"), "pyq-page");
+  assert.ok(isPaperSource("pyq-page") && isPaperSource("paper-pdf"));
+  assert.ok(!isPaperSource("notes-hub") && !isPaperSource("note-page"));
+});
+
+test("singleSemester: only a page about exactly one semester prefills it", () => {
+  assert.equal(singleSemester(["1"]), 1);
+  assert.equal(singleSemester(["3", "3", 3]), 3);
+  assert.equal(singleSemester(["1", "3"]), null);
+  assert.equal(singleSemester([]), null);
+  assert.equal(singleSemester(["I", "x", null]), null);
+  assert.equal(singleSemester(undefined), null);
+});
+
+test("admin WhatsApp text for a course-level ask asks which subject", () => {
+  const t = leadWhatsAppText({ subject: ANY_SUBJECT, programme: "B.A. Eco", semester: 3, hasNotes: false });
+  assert.ok(t.includes("B.A. Eco") && t.includes("Sem 3") && /which subject/i.test(t));
+  assert.ok(!t.includes(ANY_SUBJECT));
 });

@@ -29,6 +29,8 @@ import { ShareButtons } from "@/components/seo/share-buttons";
 import { ProgrammeSemesterView } from "@/components/seo/programme-semester-view";
 import { getSemesterGuidePost, getPyqUsageGuidePost } from "@/lib/blog";
 import { getSubjectQuestions, getSampleQuestions } from "@/lib/subject-questions";
+import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
+import { singleSemester } from "@/lib/note-leads";
 
 /**
  * One sentence of genuinely subject-specific coverage detail, built only
@@ -188,6 +190,14 @@ export default async function SubjectPapersPage({
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
       <BreadcrumbJsonLd items={breadcrumbs} />
+      {hasContent && (
+        <NotesPrompt
+          source="pyq-page"
+          course={{ name: programme.name, slug: programme.slug }}
+          subject={subject.name}
+          semester={singleSemester(subject.semesters)}
+        />
+      )}
       {hasContent && (
         <script
           type="application/ld+json"

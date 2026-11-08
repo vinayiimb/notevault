@@ -6,7 +6,7 @@ import { ArrowSquareOut, DownloadSimple, FileZip, FilePdf, Funnel, MagnifyingGla
 import { CopyButton } from "@/components/pyq/copy-button";
 import { CgpaLoader } from "@/components/archive/cgpa-loader";
 import { NotesNudge } from "@/components/paid-notes/notes-nudge";
-import { PaperNotesPrompt } from "@/components/notes-leads/paper-notes-prompt";
+import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
 import { semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
 import { applyPaperEdits } from "@/lib/paper-edits";
@@ -693,7 +693,7 @@ function PaperPanel({
 
   return (
     <>
-      <PaperNotesPrompt paperId={openPaper?.id ?? null} course={course} subject={subjectLabel} semester={openPaper?.semester ?? null} />
+      <NotesPrompt source="paper-pdf" paperId={openPaper?.id ?? null} course={{ name: course }} subject={subjectLabel} semester={openPaper?.semester ?? null} />
       <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 shadow-2xs sm:p-5">
         <div className="min-w-0 flex-1 basis-full sm:basis-0">
           <span className="inline-block rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent">

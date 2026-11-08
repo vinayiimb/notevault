@@ -3,6 +3,7 @@ import { getAllDuPypProgrammes, getGroupedDuPypProgrammes, getTotalDuPypCount } 
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { DuPypBrowser } from "@/components/pyp/du-pyp-browser";
+import { NotesPromptAnyCourse } from "@/components/notes-leads/notes-prompt-any";
 
 export const metadata: Metadata = {
   title: "DU Previous Year Papers (PYP) — All Programmes",
@@ -25,6 +26,7 @@ export default async function DuPypPage() {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+      <NotesPromptAnyCourse />
       <BreadcrumbJsonLd items={breadcrumbs} />
       <VisibleBreadcrumb items={breadcrumbs} />
 

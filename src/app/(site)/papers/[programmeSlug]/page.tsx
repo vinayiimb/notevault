@@ -25,6 +25,7 @@ import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { FaqBlock } from "@/components/seo/faq-block";
 import { ShareButtons } from "@/components/seo/share-buttons";
+import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
 
 // Content is derived from a static JSON catalog that changes at most a few
 // times a week (new exam sessions). Rebuild pages daily; render on demand
@@ -106,6 +107,7 @@ export default async function ProgrammePapersPage({
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-6 sm:px-6 sm:py-8">
       <BreadcrumbJsonLd items={breadcrumbs} />
+      <NotesPrompt source="pyq-page" course={{ name: programme.name, slug: programme.slug }} subjects={sortedSubjects.map((s) => s.name)} />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

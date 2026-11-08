@@ -15,6 +15,8 @@ import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PaperCard } from "@/components/seo/paper-card";
 import { FaqBlock } from "@/components/seo/faq-block";
 import { ShareButtons } from "@/components/seo/share-buttons";
+import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
+import { singleSemester } from "@/lib/note-leads";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -76,6 +78,12 @@ export default async function IndividualPaperPage({
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-6 sm:px-6 sm:py-8">
       <BreadcrumbJsonLd items={breadcrumbs} />
+      <NotesPrompt
+        source="pyq-page"
+        course={{ name: paper.programmeName, slug: paper.programmeSlug }}
+        subject={paper.subjectName}
+        semester={singleSemester(paper.semesters)}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(learningResourceJsonLd(paper)) }}

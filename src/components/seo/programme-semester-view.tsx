@@ -8,6 +8,7 @@ import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { FaqBlock } from "@/components/seo/faq-block";
 import { ShareButtons } from "@/components/seo/share-buttons";
+import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
 
 // Human-readable label for a paper-type code, reused by the auto-generated
 // subject-mix summary below (SEO copy) and the grouped section headings.
@@ -96,6 +97,12 @@ export function ProgrammeSemesterView({
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
       <BreadcrumbJsonLd items={breadcrumbs} />
+      <NotesPrompt
+        source="pyq-page"
+        course={{ name: data.programme.name, slug: data.programme.slug }}
+        subjects={data.subjects.map((s) => s.name)}
+        semester={data.semester}
+      />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

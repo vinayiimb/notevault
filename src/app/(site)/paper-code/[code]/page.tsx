@@ -10,6 +10,8 @@ import { paperCodeMetadata, collectionPageJsonLd, absoluteUrl } from "@/lib/seo"
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PaperCard } from "@/components/seo/paper-card";
+import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
+import { singleSemester } from "@/lib/note-leads";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -64,6 +66,14 @@ export default async function PaperCodePage({
   return (
     <div className="mx-auto w-full max-w-3xl px-4 py-6 sm:px-6 sm:py-8">
       <BreadcrumbJsonLd items={breadcrumbs} />
+      {pc.placements[0] && (
+        <NotesPrompt
+          source="pyq-page"
+          course={{ name: pc.placements[0].programmeName, slug: pc.placements[0].programmeSlug }}
+          subject={pc.placements[0].subjectName}
+          semester={singleSemester(pc.semesters)}
+        />
+      )}
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{

@@ -4,9 +4,18 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
-import { findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
+import { findCanonicalProgramme, findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
 import { slugify } from "@/lib/utils";
-import { LEAD_STATUSES, parseLeadPhone, parseLeadSemester, parseLeadSource, type LeadStatusName } from "@/lib/note-leads";
+import {
+  ANY_SUBJECT,
+  ANY_SUBJECT_SLUG,
+  LEAD_STATUSES,
+  isPaperSource,
+  parseLeadPhone,
+  parseLeadSemester,
+  parseLeadSource,
+  type LeadStatusName,
+} from "@/lib/note-leads";
 
 export type LeadResult = { ok?: boolean; error?: string; subject?: string; hasNotes?: boolean };
 
@@ -34,25 +43,41 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
   const phone = parseLeadPhone(String(formData.get("phone") ?? ""));
   const semester = parseLeadSemester(formData.get("semester"));
   const source = parseLeadSource(formData.get("source"));
-  const found = await findCanonicalSubject(String(formData.get("programme") ?? ""), String(formData.get("subject") ?? ""));
-  // /papers names subjects as printed on the paper, which isn't always a notes subject. A student
-  // opening such a paper is still a lead, so keep it under the names they were looking at.
+  const programmeIn = String(formData.get("programme") ?? "");
+  const subjectIn = String(formData.get("subject") ?? "");
+  // The PYQ pages name courses and subjects as printed on the papers, which isn't always a notes
+  // subject. A student on those pages is still a lead, so keep them under the names they were looking at.
   const typed = (key: string) => String(formData.get(key) ?? "").trim().slice(0, 120);
-  const paperTarget =
-    !found && source === "paper-pdf" && typed("programmeName") && typed("subjectName")
-      ? { programme: typed("programmeName"), subject: typed("subjectName") }
-      : null;
-  if (!found && !paperTarget) return { error: "Pick your course and subject." };
+  const anySubject = source === "pyq-page" && !subjectIn; // "I need notes for this course", subject not picked
+
+  let target: { programmeSlug: string; programmeName: string; subjectSlug: string; subjectName: string } | null = null;
+  if (anySubject) {
+    const programme = await findCanonicalProgramme(programmeIn);
+    const name = programme?.name ?? (isPaperSource(source) ? typed("programmeName") : "");
+    if (name) {
+      target = { programmeSlug: programme?.slug ?? slugify(name), programmeName: name, subjectSlug: ANY_SUBJECT_SLUG, subjectName: ANY_SUBJECT };
+    }
+  } else {
+    const found = await findCanonicalSubject(programmeIn, subjectIn);
+    if (found) {
+      target = { programmeSlug: found.programme.slug, programmeName: found.programme.name, subjectSlug: subjectIn, subjectName: found.subject };
+    } else if (isPaperSource(source) && typed("programmeName") && typed("subjectName")) {
+      target = {
+        programmeSlug: slugify(typed("programmeName")),
+        programmeName: typed("programmeName"),
+        subjectSlug: slugify(typed("subjectName")),
+        subjectName: typed("subjectName"),
+      };
+    }
+  }
+  if (!target) return { error: anySubject ? "Pick your course." : "Pick your course and subject." };
   if (!semester) return { error: "Pick your semester." };
   if (!phone) return { error: "Enter a valid 10-digit mobile number." };
 
   const ip = (await headers()).get("x-forwarded-for")?.split(",").pop()?.trim() ?? "local";
   if (throttled(ip)) return { error: "Too many requests. Please try again in a few minutes." };
 
-  const programmeSlug = found ? found.programme.slug : slugify(paperTarget!.programme);
-  const programmeName = found ? found.programme.name : paperTarget!.programme;
-  const subjectName = found ? found.subject : paperTarget!.subject;
-  const subjectSlug = found ? String(formData.get("subject")) : slugify(paperTarget!.subject);
+  const { programmeSlug, programmeName, subjectSlug, subjectName } = target;
   let hasNotes = false;
   try {
     hasNotes = (await prisma.canonicalSubjectNote.count({ where: { programmeSlug, subjectSlug, NOT: { content: "" } } })) > 0;

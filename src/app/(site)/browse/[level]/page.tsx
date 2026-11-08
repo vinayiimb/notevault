@@ -14,6 +14,7 @@ import { getProgramsByLevel } from "@/lib/data";
 import { levelLabel } from "@/lib/utils";
 import { CourseSemesterJump } from "@/components/browse/course-semester-jump";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
+import { NotesPromptAnyCourse } from "@/components/notes-leads/notes-prompt-any";
 
 // School (Class 12) is out of scope for now — a separate site is planned for it later.
 const LEVEL_MAP: Record<string, "SCHOOL" | "COLLEGE"> = {
@@ -68,6 +69,7 @@ export default async function BrowseLevelPage({
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+      <NotesPromptAnyCourse />
       <BreadcrumbJsonLd
         items={[
           { name: "Home", url: "/" },

@@ -10,6 +10,7 @@ const SOURCE_LABEL: Record<string, string> = {
   "notes-list": "Clicked a note",
   "note-page": "Note page card",
   "paper-pdf": "Opened a free paper",
+  "pyq-page": "Landed on a papers page",
 };
 const STATUS_ACTIONS: { status: LeadStatusName; label: string }[] = [
   { status: "CONTACTED", label: "Contacted" },
