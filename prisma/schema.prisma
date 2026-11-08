@@ -855,6 +855,36 @@ model Promoter {
   createdAt    DateTime @default(now())
 }
 
+enum LeadStatus {
+  NEW
+  CONTACTED
+  CONVERTED
+  DROPPED
+}
+
+// A student who asked for notes through the lead form on /notes (course,
+// semester, subject, phone). The admin follows up personally from
+// /admin/leads. `hasNotes` records whether notes existed when they asked,
+// so requests for subjects without notes read as demand, not as a miss.
+model NoteLead {
+  id            String     @id @default(cuid())
+  phone         String // 91XXXXXXXXXX
+  programmeSlug String
+  programme     String
+  semester      Int?
+  subjectSlug   String
+  subject       String
+  hasNotes      Boolean    @default(false)
+  source        String // "notes-hub" | "notes-list" | "note-page"
+  status        LeadStatus @default(NEW)
+  adminNote     String?
+  createdAt     DateTime   @default(now())
+  contactedAt   DateTime?
+
+  @@index([status, createdAt])
+  @@index([phone])
+}
+
 // Learned filename/title -> subject associations for Bulk Upload. When an
 // admin manually assigns a subject to a paper the filename-matching heuristic
 // couldn't place, we remember it (keyed by a normalized title with trailing

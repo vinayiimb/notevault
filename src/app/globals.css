@@ -566,3 +566,38 @@ body:has([data-ask-ai-launcher]) .wa-fab {
   }
   .mascot-fly { transition: opacity 0.4s ease; }
 }
+
+/* Lead sheet (notes): slides up like an iOS sheet, backdrop fades in. */
+@keyframes lead-sheet-in { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes lead-backdrop-in { from { opacity: 0; } to { opacity: 1; } }
+.lead-sheet[open] { animation: lead-sheet-in 0.45s var(--ease-apple); }
+.lead-sheet[open]::backdrop { animation: lead-backdrop-in 0.3s var(--ease-apple); }
+@media (prefers-reduced-motion: reduce) {
+  .lead-sheet[open], .lead-sheet[open]::backdrop { animation: none; }
+}
+
+/* Puts the Apple palette back inside a .theme-classic page (/papers keeps its
+   own look; only the notes prompt that opens on top of it is Apple-styled). */
+.apple-scope {
+  --font-body: -apple-system, BlinkMacSystemFont, "SF Pro Text", var(--font-inter), "Helvetica Neue", sans-serif;
+  --font-heading: -apple-system, BlinkMacSystemFont, "SF Pro Display", var(--font-inter), "Helvetica Neue", sans-serif;
+  font-family: var(--font-body);
+  --surface-muted: #f5f5f7;
+  --foreground: #1d1d1f;
+  --muted: #6e6e73;
+  --border: #e3e3e8;
+  --accent: #0071e3;
+  --accent-hover: #0077ed;
+  --accent-foreground: #ffffff;
+  --brand: var(--accent);
+  --brand-hover: var(--accent-hover);
+  --brand-foreground: var(--accent-foreground);
+}
+.dark .apple-scope {
+  --surface-muted: #1d1d1f;
+  --foreground: #f5f5f7;
+  --muted: #a1a1a6;
+  --border: #2e2e32;
+  --accent: #0a84ff;
+  --accent-hover: #3b9bff;
+}

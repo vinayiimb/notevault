@@ -6,6 +6,7 @@ import { previewOf } from "@/lib/paid-notes-pricing";
 import { NotesSection } from "@/components/subjects/notes-section";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
+import { NoteLeadCard } from "@/components/notes-leads/lead-card";
 
 export function generateStaticParams() {
   return [];
@@ -63,6 +64,11 @@ export default async function CanonicalSubjectNotePage({
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <VisibleBreadcrumb items={breadcrumbs} />
+
+      <NoteLeadCard
+        course={{ slug: programmeSlug, name: note.programmeName }}
+        subject={{ slug: subjectSlug, name: note.subjectName, hasNotes: true, semester: note.semester }}
+      />
 
       <NotesSection 
         content={preview}

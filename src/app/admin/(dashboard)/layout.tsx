@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChartBar, CurrencyInr, FileArrowUp, Files, Flag, Gear, GraduationCap, NotePencil, SignOut } from "@phosphor-icons/react/dist/ssr";
+import { ChartBar, CurrencyInr, FileArrowUp, Files, Flag, Gear, GraduationCap, NotePencil, SignOut, UsersThree } from "@phosphor-icons/react/dist/ssr";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
+import { prisma } from "@/lib/prisma";
 
 
 
@@ -16,6 +17,9 @@ export default async function AdminDashboardLayout({
   if (!session) {
     redirect("/admin/login");
   }
+
+  // Badge on the Leads link. A missing table (migration not applied yet) must never break the admin.
+  const newLeads = await prisma.noteLead.count({ where: { status: "NEW" } }).catch(() => 0);
 
   return (
     <div className="theme-classic flex min-h-[100dvh]">
@@ -66,6 +70,18 @@ export default async function AdminDashboardLayout({
           >
             <Flag size={16} />
             Features
+          </Link>
+          <Link
+            href="/admin/leads"
+            className="flex items-center gap-2 rounded-lg px-2 py-2 text-foreground/80 transition hover:bg-surface-muted hover:text-foreground"
+          >
+            <UsersThree size={16} />
+            Leads
+            {newLeads > 0 && (
+              <span className="ml-auto rounded-full bg-accent px-1.5 text-[11px] font-semibold leading-5 text-accent-foreground">
+                {newLeads}
+              </span>
+            )}
           </Link>
           <Link
             href="/admin/payments"
