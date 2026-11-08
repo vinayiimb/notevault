@@ -1,5 +1,5 @@
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import Link from 'next/link';
 
 interface Props {
   params: Promise<{ slug?: string; id?: string; code?: string; number?: string }>;
@@ -17,10 +17,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const resolvedParams = await params;
+  const slug = resolvedParams.slug;
   return (
-    <div className="container mx-auto px-4 py-24 min-h-screen">
-      <h1 className="text-4xl font-bold mb-6">Question Bank</h1>
-      <p className="text-gray-600">This page is part of the new SEO architecture. Dynamic data integration pending.</p>
+    <div className="rounded-[22px] bg-surface-muted px-6 py-16 text-center">
+      <h2 className="text-[22px] font-semibold tracking-[-0.02em] text-foreground">Question Bank</h2>
+      <p className="mx-auto mt-2 max-w-md text-[15px] text-muted">
+        This section is coming soon. Meanwhile, the past papers and most repeated questions for this subject are available.
+      </p>
+      <div className="mt-6 flex flex-wrap justify-center gap-2">
+        <Link href={`/subject/${slug}/pyq`} className="rounded-full bg-brand px-5 py-2.5 text-[15px] font-semibold text-brand-foreground transition-colors duration-300 hover:bg-brand-hover">
+          Previous year papers
+        </Link>
+        <Link href={`/subject/${slug}/important-questions`} className="rounded-full bg-surface px-5 py-2.5 text-[15px] font-semibold text-foreground ring-1 ring-border transition-colors duration-300 hover:bg-background">
+          Important questions
+        </Link>
+      </div>
     </div>
   );
 }

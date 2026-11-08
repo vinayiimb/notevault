@@ -4,7 +4,6 @@ import { RelatedLinks } from "@/components/seo/related-links";
 import { generateSubjectMetadata } from "@/lib/seo";
 import { Metadata } from "next";
 import { Target, TrendingUp, AlertCircle } from "lucide-react";
-import Link from "next/link";
 
 // Explicit select, not `include`/bare findFirst: the live database is
 // missing a column (Subject.parentSubjectId) that's in schema.prisma but
@@ -46,82 +45,78 @@ export default async function SubjectImportantQuestionsPage({ params }: { params
   });
 
   return (
-    <div className="space-y-12">
+    <div>
       <section>
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <TrendingUp className="w-6 h-6 text-rose-500" />
-            Most Repeated Questions
+          <h2 className="flex items-center gap-2.5 font-display text-[24px] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground sm:text-[32px]">
+            <TrendingUp className="size-6 shrink-0 text-rose-500" />
+            Most repeated questions
           </h2>
-          <p className="text-gray-500 mt-2 max-w-2xl">
+          <p className="mt-2 max-w-2xl text-[15px] leading-relaxed text-muted sm:text-[17px]">
             These questions have appeared multiple times in past DU examinations for {subject.name}. Focusing on these topics will give you the highest return on your study time.
           </p>
         </div>
 
         {questions.length === 0 ? (
-          <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
-            <Target className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900">Analysis pending</h3>
-            <p className="text-gray-500 max-w-md mx-auto mt-2">
+          <div className="rounded-[22px] bg-surface-muted px-6 py-16 text-center">
+            <Target className="mx-auto mb-4 size-10 text-muted/60" />
+            <h3 className="text-[19px] font-semibold tracking-[-0.02em] text-foreground">Analysis pending</h3>
+            <p className="mx-auto mt-2 max-w-md text-[15px] text-muted">
               We are still analyzing the previous year papers for this subject to determine the most frequently asked questions. Check back before exams.
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
-            <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5 shrink-0" />
-              <p className="text-sm text-amber-800">
+          <div className="space-y-5">
+            <div className="flex items-start gap-3 rounded-[18px] bg-amber-500/10 p-4">
+              <AlertCircle className="mt-0.5 size-5 shrink-0 text-amber-600 dark:text-amber-400" />
+              <p className="text-[14px] leading-relaxed text-amber-800 dark:text-amber-300">
                 <strong>Disclaimer:</strong> This is a statistical analysis of past papers (10 Years), not a prediction. Delhi University can change paper patterns at any time. Do not rely solely on these questions.
               </p>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {questions.map((q, i) => (
-                <div key={q.id} className="bg-white border border-gray-200 rounded-xl p-5 md:p-6 hover:border-rose-300 hover:shadow-md transition-all">
-                  <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                <div key={q.id} className="rounded-[22px] bg-surface-muted p-5 md:p-6">
+                  <div className="flex flex-col justify-between gap-4 md:flex-row md:items-start">
                     <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-3">
-                        <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-gray-600 text-xs font-bold">
+                      <div className="mb-3 flex flex-wrap items-center gap-2">
+                        <span className="flex size-6 items-center justify-center rounded-full bg-surface text-[12px] font-semibold text-muted">
                           {i + 1}
                         </span>
-                        {q.topics.length > 0 && (
-                          <div className="flex gap-2">
-                            {q.topics.map(topic => (
-                              <span key={topic} className="text-xs font-bold bg-rose-50 text-rose-600 px-2 py-1 rounded">
-                                {topic}
-                              </span>
-                            ))}
-                          </div>
-                        )}
+                        {q.topics.map((topic) => (
+                          <span key={topic} className="rounded-full bg-rose-500/10 px-2.5 py-0.5 text-[12px] font-semibold text-rose-600 dark:text-rose-400">
+                            {topic}
+                          </span>
+                        ))}
                       </div>
-                      <h3 className="text-lg font-medium text-gray-900 leading-relaxed whitespace-pre-wrap">
+                      <h3 className="whitespace-pre-wrap text-[17px] font-medium leading-relaxed tracking-[-0.01em] text-foreground">
                         {q.questionText}
                       </h3>
                     </div>
-                    
-                    <div className="flex flex-row md:flex-col items-center md:items-end justify-between md:justify-start gap-2 shrink-0 md:w-32 bg-gray-50 md:bg-transparent p-3 md:p-0 rounded-lg md:rounded-none">
+
+                    <div className="flex shrink-0 flex-row items-center justify-between gap-2 rounded-[16px] bg-surface p-3 md:w-32 md:flex-col md:items-end md:justify-start md:bg-transparent md:p-0">
                       <div className="text-center md:text-right">
-                        <div className="text-2xl font-black text-rose-600 leading-none">{q.repeatCount}x</div>
-                        <div className="text-[10px] uppercase tracking-wider font-bold text-gray-500 mt-1">Repeated</div>
+                        <div className="text-[28px] font-semibold leading-none tracking-[-0.03em] text-rose-600 dark:text-rose-400">{q.repeatCount}x</div>
+                        <div className="mt-1 text-[11px] font-semibold uppercase tracking-wider text-muted">Repeated</div>
                       </div>
-                      
+
                       {q.years && (
-                        <div className="text-xs font-medium text-gray-500 md:text-right mt-2">
-                          <span className="block md:hidden font-bold mb-1">Years Asked:</span>
+                        <div className="text-[13px] font-medium text-muted md:mt-2 md:text-right">
+                          <span className="mb-0.5 block text-[12px] font-semibold md:hidden">Years asked</span>
                           {q.years.split(',').join(', ')}
                         </div>
                       )}
                     </div>
                   </div>
-                  
+
                   {q.answerText && q.answerText.length > 0 && (
-                    <div className="mt-4 pt-4 border-t border-gray-100">
+                    <div className="mt-4 border-t border-border/70 pt-4">
                       <details className="group">
-                        <summary className="flex items-center gap-2 text-sm font-bold text-blue-600 cursor-pointer select-none">
-                          <span className="group-open:hidden">View Solution</span>
-                          <span className="hidden group-open:inline">Hide Solution</span>
+                        <summary className="cursor-pointer select-none text-[14px] font-semibold text-brand">
+                          <span className="group-open:hidden">View solution</span>
+                          <span className="hidden group-open:inline">Hide solution</span>
                         </summary>
-                        <div className="mt-3 prose prose-sm max-w-none text-gray-700 bg-gray-50 p-4 rounded-lg">
+                        <div className="mt-3 max-w-none rounded-[16px] bg-surface p-4 text-[15px] leading-relaxed text-muted">
                           {q.answerText}
                         </div>
                       </details>
@@ -134,11 +129,11 @@ export default async function SubjectImportantQuestionsPage({ params }: { params
         )}
       </section>
 
-      <RelatedLinks 
+      <RelatedLinks
         links={[
           { title: `${subject.name} Complete PYQs`, url: `/subject/${slug}/pyq`, type: 'pyq' },
           { title: `${subject.name} Study Notes`, url: `/subject/${slug}/notes`, type: 'notes' }
-        ]} 
+        ]}
       />
     </div>
   );

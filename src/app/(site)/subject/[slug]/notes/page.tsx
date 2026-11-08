@@ -59,51 +59,50 @@ export default async function SubjectNotesPage({ params }: { params: Promise<{ s
   const totalNotes = pdfNotes.length + (hasStructuredNotes ? 1 : 0);
 
   return (
-    <div className="space-y-12">
+    <div>
       <section>
-        <div className="flex items-center justify-between mb-8">
+        <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
           <div>
-            <h2 className="text-2xl font-bold text-gray-900">Study Notes & Material</h2>
-            <p className="text-gray-500 mt-1">Complete unit-wise summaries for {subject.name}</p>
+            <h2 className="font-display text-[24px] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground sm:text-[32px]">Study notes &amp; material</h2>
+            <p className="mt-1.5 text-[15px] text-muted sm:text-[17px]">Complete unit-wise summaries for {subject.name}</p>
           </div>
-          <div className="bg-purple-50 text-purple-700 px-4 py-2 rounded-lg font-bold">
-            {totalNotes} Resources
+          <div className="rounded-full bg-violet-500/10 px-4 py-2 text-[14px] font-semibold text-violet-600 dark:text-violet-400">
+            {totalNotes} {totalNotes === 1 ? "Resource" : "Resources"}
           </div>
         </div>
 
         {totalNotes === 0 ? (
-          <div className="text-center py-16 bg-white border border-gray-200 rounded-2xl">
-            <PenTool className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-900">No notes available yet</h3>
-            <p className="text-gray-500">We are currently gathering study material for this subject.</p>
+          <div className="rounded-[22px] bg-surface-muted px-6 py-16 text-center">
+            <PenTool className="mx-auto mb-4 size-10 text-muted/60" />
+            <h3 className="text-[19px] font-semibold tracking-[-0.02em] text-foreground">No notes available yet</h3>
+            <p className="mt-1 text-[15px] text-muted">We are currently gathering study material for this subject.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
             {/* Structured/Markdown Compiled Notes (if they exist) */}
             {hasStructuredNotes && (
-              <div className="bg-gradient-to-br from-purple-50 to-white border border-purple-200 rounded-xl p-5 flex flex-col hover:shadow-md transition-all md:col-span-2">
-                <div className="flex justify-between items-start mb-4">
-                  <div className="flex items-center gap-3">
-                    <div className="bg-purple-100 p-2 rounded-lg text-purple-700">
-                      <BookOpen className="w-5 h-5" />
-                    </div>
+              <div className="flex flex-col rounded-[28px] bg-surface p-6 shadow-[var(--shadow-tile)] md:col-span-2 sm:p-7">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-[14px] bg-violet-500/10 text-violet-600 dark:text-violet-400">
+                      <BookOpen className="size-5" />
+                    </span>
                     <div>
-                      <h3 className="font-bold text-gray-900 text-lg">Official Compiled Notes</h3>
-                      <p className="text-sm text-gray-600 mt-1">Comprehensive unit-wise revision notes</p>
+                      <h3 className="text-[19px] font-semibold tracking-[-0.02em] text-foreground">Official compiled notes</h3>
+                      <p className="mt-0.5 text-[15px] text-muted">Comprehensive unit-wise revision notes</p>
                     </div>
                   </div>
-                  <span className="text-xs font-bold bg-purple-100 text-purple-700 px-2 py-1 rounded uppercase tracking-wider">
+                  <span className="hidden shrink-0 rounded-full bg-violet-500/10 px-3 py-1 text-[12px] font-semibold text-violet-600 dark:text-violet-400 sm:inline">
                     Recommended
                   </span>
                 </div>
-                
-                <div className="mt-4 pt-4 border-t border-purple-100 flex justify-end">
-                  <Link 
-                    href={`/notes/${programmeSlug}/${subject.slug}`} 
-                    className="flex items-center gap-2 bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-purple-700 transition-colors"
+
+                <div className="mt-5 flex justify-end">
+                  <Link
+                    href={`/notes/${programmeSlug}/${subject.slug}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-brand px-6 py-2.5 text-[15px] font-semibold text-brand-foreground transition-colors duration-300 hover:bg-brand-hover"
                   >
-                    Read Notes <ArrowRight className="w-4 h-4" />
+                    Read notes <ArrowRight className="size-4" />
                   </Link>
                 </div>
               </div>
@@ -111,29 +110,21 @@ export default async function SubjectNotesPage({ params }: { params: Promise<{ s
 
             {/* PDF Notes */}
             {pdfNotes.map((note) => (
-              <div key={note.id} className="bg-white border border-gray-200 rounded-xl p-5 flex flex-col hover:border-blue-300 hover:shadow-md transition-all">
-                <div className="flex justify-between items-start mb-4">
-                  <div>
-                    <h3 className="font-bold text-gray-900">{note.title}</h3>
-                    {note.year && <p className="text-sm text-gray-500 mt-1">Year: {note.year}</p>}
+              <div key={note.id} className="rounded-[22px] bg-surface-muted p-5 flex flex-col transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <div className="mb-4 flex items-start justify-between gap-3">
+                  <div className="min-w-0">
+                    <h3 className="text-[17px] font-semibold tracking-[-0.02em] text-foreground">{note.title}</h3>
+                    {note.year && <p className="mt-1 text-[14px] text-muted">Year: {note.year}</p>}
                   </div>
-                  <span className="text-xs font-semibold bg-gray-100 text-gray-600 px-2 py-1 rounded">
-                    PDF
-                  </span>
+                  <span className="shrink-0 rounded-full bg-surface px-2.5 py-1 text-[12px] font-medium text-muted">PDF</span>
                 </div>
-                
-                <div className="flex items-center gap-3 mt-auto pt-4 border-t border-gray-100">
-                  <Link 
-                    href={`/pyq-notes/${note.id}`} 
-                    className="flex-1 flex items-center justify-center gap-2 bg-[#0A1128] text-white py-2 rounded-lg text-sm font-semibold hover:bg-gray-800 transition-colors"
-                  >
-                    <Eye className="w-4 h-4" /> View
+
+                <div className="mt-auto flex items-center gap-2 pt-2">
+                  <Link href={`/pyq-notes/${note.id}`} className="flex-1 inline-flex items-center justify-center gap-2 rounded-full bg-brand py-2.5 text-[14px] font-semibold text-brand-foreground transition-colors duration-300 hover:bg-brand-hover">
+                    <Eye className="size-4" /> View
                   </Link>
-                  <a 
-                    href={`/api/download/${note.id}`}
-                    className="flex items-center justify-center gap-2 bg-gray-50 text-gray-700 border border-gray-200 py-2 px-4 rounded-lg text-sm font-semibold hover:bg-gray-100 transition-colors"
-                  >
-                    <Download className="w-4 h-4" />
+                  <a href={`/api/download/${note.id}`} aria-label="Download" className="inline-flex items-center justify-center gap-2 rounded-full bg-surface px-4 py-2.5 text-[14px] font-semibold text-foreground ring-1 ring-border transition-colors duration-300 hover:bg-background">
+                    <Download className="size-4" />
                   </a>
                 </div>
               </div>
@@ -142,11 +133,11 @@ export default async function SubjectNotesPage({ params }: { params: Promise<{ s
         )}
       </section>
 
-      <RelatedLinks 
+      <RelatedLinks
         links={[
           { title: `${subject.name} PYQs`, url: `/subject/${slug}/pyq`, type: 'pyq' },
           { title: `${subject.name} Important Questions`, url: `/subject/${slug}/important-questions`, type: 'important' }
-        ]} 
+        ]}
       />
     </div>
   );

@@ -4,12 +4,13 @@
 export const revalidate = 300;
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Calendar, GraduationCap } from "@phosphor-icons/react/dist/ssr";
+import { CaretRight, Calendar, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { getProgramsByLevel, getExamSessions } from "@/lib/data";
 import { getSeoProgrammes, isProgrammeIndexable } from "@/lib/du-pyp-seo";
 import { getCatalogPaperCount } from "@/lib/du-pyp-data";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
+import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
 
 export const metadata: Metadata = {
   title: "DU Previous Year Question Papers",
@@ -36,15 +37,16 @@ export default async function PreviousYearPapersPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
       <BreadcrumbJsonLd items={breadcrumbs} />
+      <NotesPrompt source="pyq-page" courses={indexableProgrammes.map(({ slug, name }) => ({ slug, name }))} />
       <VisibleBreadcrumb items={breadcrumbs} />
 
-      <div className="max-w-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+      <div className="mt-2 max-w-3xl">
+        <h1 className="text-balance font-display text-[1.9rem] font-semibold leading-[1.06] tracking-[-0.035em] sm:text-5xl">
           DU Previous Year Question Papers
         </h1>
-        <p className="mt-3 text-base text-muted">
+        <p className="mt-3 text-[15px] leading-relaxed text-muted sm:text-[17px]">
           DU PYQ Online has {totalPapers.toLocaleString("en-IN")} Delhi University previous year
           question papers across {seoProgrammes.length} programmes and{" "}
           {subjectCount.toLocaleString("en-IN")} subjects, organised by programme, subject,
@@ -53,9 +55,9 @@ export default async function PreviousYearPapersPage() {
       </div>
 
       {/* UGCF paper-type hubs — cross-programme AEC / SEC / VAC / GE landing pages */}
-      <section className="mt-12">
-        <h2 className="text-xl font-bold text-foreground">Browse by paper type (UGCF)</h2>
-        <ul className="mt-4 flex flex-wrap gap-2">
+      <section className="mt-10 sm:mt-14">
+        <h2 className="font-display text-[24px] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground sm:text-[32px]">Browse by paper type (UGCF)</h2>
+        <ul className="mt-5 flex flex-wrap gap-2">
           {[
             ["/skill-enhancement-courses", "Skill Enhancement (SEC)"],
             ["/value-addition-courses", "Value Addition (VAC)"],
@@ -65,7 +67,7 @@ export default async function PreviousYearPapersPage() {
             <li key={href}>
               <Link
                 href={href}
-                className="inline-block rounded-xl border border-border bg-surface px-4 py-2.5 text-sm font-medium text-foreground transition hover:border-accent"
+                className="inline-block rounded-full bg-surface-muted px-4 py-2.5 text-[14px] font-medium text-foreground transition-colors duration-300 hover:bg-accent-soft hover:text-accent"
               >
                 {label}
               </Link>
@@ -75,12 +77,12 @@ export default async function PreviousYearPapersPage() {
       </section>
 
       {/* All DU programmes — crawlable index into the /papers/[programme] hierarchy */}
-      <section className="mt-12">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
-          <GraduationCap size={22} className="text-accent" />
-          All Delhi University Programmes
+      <section className="mt-14 sm:mt-16">
+        <h2 className="flex items-center gap-2.5 font-display text-[24px] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground sm:text-[32px]">
+          <GraduationCap size={26} className="shrink-0 text-accent" />
+          All Delhi University programmes
         </h2>
-        <p className="text-sm text-muted mt-1">
+        <p className="mt-2 text-[15px] text-muted sm:text-[17px]">
           {indexableProgrammes.length} programmes with previous year question papers. Open one to
           browse its subjects by semester.
         </p>
@@ -90,11 +92,12 @@ export default async function PreviousYearPapersPage() {
             <li key={p.slug}>
               <Link
                 href={`/papers/${p.slug}`}
-                className="flex items-center justify-between rounded-xl border border-border bg-surface px-4 py-3 text-sm transition hover:border-accent"
+                className="flex items-center justify-between gap-3 rounded-[18px] bg-surface-muted px-4 py-3.5 transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]"
               >
-                <span className="min-w-0 truncate font-medium text-foreground">{p.name}</span>
-                <span className="ml-2 shrink-0 text-xs text-muted">
+                <span className="min-w-0 truncate text-[15px] font-medium text-foreground">{p.name}</span>
+                <span className="flex shrink-0 items-center gap-1 text-[13px] text-muted">
                   {p.totalPapers.toLocaleString("en-IN")}
+                  <CaretRight size={12} weight="bold" className="text-brand" />
                 </span>
               </Link>
             </li>
@@ -104,28 +107,25 @@ export default async function PreviousYearPapersPage() {
 
       {/* Grid of Courses (database-backed programme pages, when populated) */}
       {programs.length > 0 && (
-      <section className="mt-16 border-t border-border/60 pt-12">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
-          <GraduationCap size={22} className="text-accent" />
-          Browse by Course
+      <section className="mt-14 sm:mt-16">
+        <h2 className="flex items-center gap-2.5 font-display text-[24px] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground sm:text-[32px]">
+          <GraduationCap size={26} className="shrink-0 text-accent" />
+          Browse by course
         </h2>
-        <p className="text-sm text-muted mt-1">Select your Delhi University programme to view semesters and subjects.</p>
+        <p className="mt-2 text-[15px] text-muted sm:text-[17px]">Select your Delhi University programme to view semesters and subjects.</p>
 
-        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
           {programs.map((program) => (
-            <div
-              key={program.id}
-              className="flex flex-col rounded-2xl border border-border bg-surface p-5 transition hover:border-accent hover:shadow-xs"
-            >
-              <h3 className="font-semibold text-foreground">{program.name}</h3>
-              {program.summary && <p className="mt-1.5 text-xs text-muted leading-relaxed">{program.summary}</p>}
-              
+            <div key={program.id} className="flex flex-col rounded-[22px] bg-surface-muted p-5">
+              <h3 className="text-[17px] font-semibold leading-snug tracking-[-0.01em] text-foreground">{program.name}</h3>
+              {program.summary && <p className="mt-1.5 text-[13px] leading-relaxed text-muted">{program.summary}</p>}
+
               <div className="mt-4 flex flex-wrap gap-1.5">
                 {program.terms.map((term) => (
                   <Link
                     key={term.id}
                     href={`/terms/${term.id}`}
-                    className="rounded-lg bg-surface-muted px-2.5 py-1 text-xs text-muted hover:bg-brand-soft hover:text-brand transition"
+                    className="rounded-full bg-surface px-3 py-1 text-[12px] text-muted transition-colors duration-300 hover:bg-accent-soft hover:text-accent"
                   >
                     {term.name}
                   </Link>
@@ -134,9 +134,9 @@ export default async function PreviousYearPapersPage() {
 
               <Link
                 href={`/programs/${program.slug}`}
-                className="mt-4 text-xs font-bold text-brand hover:underline"
+                className="mt-5 inline-flex items-center gap-0.5 text-[14px] font-medium text-brand underline-offset-4 hover:underline"
               >
-                View all semesters →
+                View all semesters <CaretRight size={12} weight="bold" />
               </Link>
             </div>
           ))}
@@ -146,25 +146,25 @@ export default async function PreviousYearPapersPage() {
 
       {/* Browse by Exam Session */}
       {sessions.length > 0 && (
-      <section className="mt-16 border-t border-border/60 pt-12">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
-          <Calendar size={22} className="text-accent" />
-          Browse by Exam Session
+      <section className="mt-14 sm:mt-16">
+        <h2 className="flex items-center gap-2.5 font-display text-[24px] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground sm:text-[32px]">
+          <Calendar size={26} className="shrink-0 text-accent" />
+          Browse by exam session
         </h2>
-        <p className="text-sm text-muted mt-1">Find semester booklets and exam papers directly inside Google Drive folders.</p>
+        <p className="mt-2 text-[15px] text-muted sm:text-[17px]">Find semester booklets and exam papers directly inside Google Drive folders.</p>
 
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {sessions.slice(0, 6).map((session) => (
             <Link
               key={session.id}
               href={`/exam-sessions/${session.id}`}
-              className="flex items-center justify-between rounded-xl border border-border bg-surface p-4 transition hover:border-accent"
+              className="flex items-center justify-between gap-3 rounded-[22px] bg-surface-muted p-5 transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]"
             >
               <div className="min-w-0">
-                <span className="text-sm font-medium text-foreground truncate block">{session.label}</span>
-                <span className="text-xs text-muted mt-0.5 block">{session._count.links} courses linked</span>
+                <span className="block truncate text-[15px] font-semibold text-foreground">{session.label}</span>
+                <span className="mt-0.5 block text-[13px] text-muted">{session._count.links} courses linked</span>
               </div>
-              <span className="text-xs font-bold text-brand hover:underline">Open →</span>
+              <CaretRight size={14} weight="bold" className="shrink-0 text-brand" />
             </Link>
           ))}
         </div>

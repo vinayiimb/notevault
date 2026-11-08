@@ -4,7 +4,7 @@
 export const revalidate = 300;
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BookOpen, Scroll } from "@phosphor-icons/react/dist/ssr";
+import { BookOpen, CaretRight, Scroll } from "@phosphor-icons/react/dist/ssr";
 import { getProgramsByLevel } from "@/lib/data";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
@@ -24,92 +24,85 @@ export default async function SyllabusPage() {
   ];
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-12">
       <BreadcrumbJsonLd items={breadcrumbs} />
       <VisibleBreadcrumb items={breadcrumbs} />
 
-      <div className="max-w-3xl">
-        <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
+      <div className="mt-2 max-w-3xl">
+        <h1 className="text-balance font-display text-[1.9rem] font-semibold leading-[1.06] tracking-[-0.035em] sm:text-5xl">
           Delhi University Course Syllabus
         </h1>
-        <p className="mt-3 text-base text-muted">
-          Browse the official Delhi University Undergraduate Curriculum Framework (UGCF) syllabus. 
+        <p className="mt-3 text-[15px] leading-relaxed text-muted sm:text-[17px]">
+          Browse the official Delhi University Undergraduate Curriculum Framework (UGCF) syllabus.
           View course structures, credits, paper types (DSC, DSE, GE, SEC, VAC, AEC), and subject listings.
         </p>
       </div>
 
-      {/* Overview Card */}
-      <section className="mt-8 rounded-2xl border border-border bg-surface p-6">
-        <h2 className="flex items-center gap-2 text-lg font-bold text-foreground">
+      {/* Overview */}
+      <section className="mt-8 rounded-[28px] bg-surface-muted p-5 sm:p-8">
+        <h2 className="flex items-center gap-2 text-[19px] font-semibold tracking-[-0.02em] text-foreground">
           <Scroll size={20} className="text-accent" />
-          Understanding DU UGCF Course Structure
+          Understanding the DU UGCF course structure
         </h2>
-        <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 text-xs text-muted">
-          <div className="p-3 bg-surface-muted rounded-xl">
-            <span className="font-bold text-foreground block mb-1">DSC (Core Course)</span>
-            Discipline Specific Core courses are compulsory modules essential to the primary program.
-          </div>
-          <div className="p-3 bg-surface-muted rounded-xl">
-            <span className="font-bold text-foreground block mb-1">DSE (Elective Course)</span>
-            Discipline Specific Elective papers offer specialized topics in the core field.
-          </div>
-          <div className="p-3 bg-surface-muted rounded-xl">
-            <span className="font-bold text-foreground block mb-1">GE (Generic Elective)</span>
-            Generic Elective courses are interdisciplinary options chosen from other programs.
-          </div>
+        <div className="mt-4 grid grid-cols-1 gap-3 text-[14px] leading-snug text-muted sm:grid-cols-2 md:grid-cols-3">
+          {[
+            ["DSC (Core Course)", "Discipline Specific Core courses are compulsory modules essential to the primary program."],
+            ["DSE (Elective Course)", "Discipline Specific Elective papers offer specialized topics in the core field."],
+            ["GE (Generic Elective)", "Generic Elective courses are interdisciplinary options chosen from other programs."],
+          ].map(([name, text]) => (
+            <div key={name} className="rounded-[18px] bg-surface p-4">
+              <span className="mb-1 block text-[15px] font-semibold text-foreground">{name}</span>
+              {text}
+            </div>
+          ))}
         </div>
       </section>
 
       {/* Program Syllabus Grid */}
-      <section className="mt-12">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
-          <BookOpen size={22} className="text-accent" />
-          Syllabus by Degree Programme
+      <section className="mt-12 sm:mt-16">
+        <h2 className="flex items-center gap-2 font-display text-[24px] font-semibold leading-[1.12] tracking-[-0.03em] sm:text-[32px]">
+          <BookOpen size={26} className="shrink-0 text-accent" />
+          Syllabus by degree programme
         </h2>
-        
-        <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
           {programs.map((program) => {
             const subjectCount = program.terms.reduce((n, t) => n + t.subjects.length, 0);
 
             return (
-              <div
-                key={program.id}
-                className="flex flex-col justify-between rounded-2xl border border-border bg-surface p-6 transition hover:border-accent"
-              >
+              <div key={program.id} className="flex flex-col justify-between rounded-[22px] bg-surface-muted p-5 sm:p-6">
                 <div>
                   <div className="flex items-start justify-between gap-4">
-                    <h3 className="font-bold text-foreground text-base sm:text-lg leading-snug">
+                    <h3 className="text-[17px] font-semibold leading-snug tracking-[-0.01em] text-foreground">
                       {program.name}
                     </h3>
-                    <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-[11px] font-bold text-accent">
+                    <span className="shrink-0 rounded-full bg-accent-soft px-2.5 py-1 text-[12px] font-semibold text-accent">
                       {subjectCount} subjects
                     </span>
                   </div>
-                  {program.summary && <p className="mt-1.5 text-xs text-muted">{program.summary}</p>}
+                  {program.summary && <p className="mt-1.5 text-[13px] text-muted">{program.summary}</p>}
 
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-4 space-y-4">
                     {program.terms.map((term) => (
-                      <div key={term.id} className="text-xs">
+                      <div key={term.id}>
                         <Link
                           href={`/terms/${term.id}`}
-                          className="font-semibold text-foreground hover:text-brand hover:underline"
+                          className="text-[14px] font-semibold text-foreground hover:text-brand"
                         >
                           {term.name}
                         </Link>
-                        <div className="mt-1 flex flex-wrap gap-1">
+                        <div className="mt-1.5 flex flex-wrap gap-1.5">
                           {term.subjects.slice(0, 4).map((sub: { id: string; name: string }) => (
                             <Link
                               key={sub.id}
                               href={`/subjects/${sub.id}`}
-                              className="rounded bg-surface-muted px-1.5 py-0.5 text-[10px] text-muted hover:bg-brand-soft hover:text-brand transition"
+                              className="rounded-full bg-surface px-2.5 py-1 text-[12px] text-muted transition-colors duration-300 hover:bg-accent-soft hover:text-accent"
                             >
                               {sub.name.length > 25 ? `${sub.name.slice(0, 22)}...` : sub.name}
                             </Link>
                           ))}
                           {term.subjects.length > 4 && (
-                            <span className="text-[10px] text-muted self-center">
-                              +{term.subjects.length - 4} more
-                            </span>
+                            <span className="self-center text-[12px] text-muted">+{term.subjects.length - 4} more</span>
                           )}
                         </div>
                       </div>
@@ -117,12 +110,12 @@ export default async function SyllabusPage() {
                   </div>
                 </div>
 
-                <div className="mt-6 pt-4 border-t border-border/40 text-right">
+                <div className="mt-6 text-right">
                   <Link
                     href={`/programs/${program.slug}`}
-                    className="text-xs font-bold text-brand hover:underline"
+                    className="inline-flex items-center gap-0.5 text-[14px] font-medium text-brand hover:underline underline-offset-4"
                   >
-                    View complete syllabus structure →
+                    View complete syllabus structure <CaretRight size={12} weight="bold" />
                   </Link>
                 </div>
               </div>

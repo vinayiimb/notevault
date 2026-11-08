@@ -1,6 +1,6 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { BookOpenText, CheckCircle, WarningCircle, Books, Files, ChartBar } from "@phosphor-icons/react/dist/ssr";
+import { CheckCircle, WarningCircle, Books, Files, ChartBar } from "@phosphor-icons/react/dist/ssr";
 import fs from "fs";
 import path from "path";
 import Link from "next/link";
@@ -39,105 +39,76 @@ export default async function CoursePage({ params }: Props) {
 
   const { title, courseType, totalCredits, upcs, structure, assessment, officialSource } = course;
 
+  const rows: [string, string | number, boolean][] = [
+    ["Total Marks", assessment.totalMarks, true],
+    [`End-term Theory Exam (${assessment.theoryDuration})`, assessment.theoryMarks, assessment.theoryMarks > 0],
+    ["Internal Assessment (IA)", assessment.internalAssess, assessment.internalAssess > 0],
+    ["Tutorial Continuous Assessment", assessment.tutorialCa, assessment.tutorialCa > 0],
+    ["Practical Continuous Assessment", assessment.practicalCa, assessment.practicalCa > 0],
+    ["End-term Practical Exam", assessment.endTermPractical, assessment.endTermPractical > 0],
+    ["Viva Voce", assessment.viva, assessment.viva > 0],
+  ];
+
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12">
       {/* Course Header */}
-      <div className="mb-8">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="inline-flex items-center rounded-md bg-accent-soft px-2.5 py-0.5 text-xs font-bold uppercase tracking-wider text-accent">
+      <div className="mb-8 sm:mb-10">
+        <div className="mb-4 flex flex-wrap items-center gap-2">
+          <span className="rounded-full bg-accent-soft px-3 py-1 text-[12px] font-semibold text-accent">
             {courseType || "General"}
           </span>
-          <span className="inline-flex items-center gap-1 rounded-md bg-green-50 px-2.5 py-0.5 text-xs font-semibold text-green-700 border border-green-200">
+          <span className="inline-flex items-center gap-1 rounded-full bg-success-soft px-3 py-1 text-[12px] font-semibold text-success">
             <CheckCircle size={14} weight="fill" />
-            Verified Source
+            Verified source
           </span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-bold tracking-tight text-foreground mb-3">{title}</h1>
-        <p className="text-sm font-medium text-muted">
-          UPC: <span className="font-bold text-foreground">{upcs.join(", ")}</span>
+        <h1 className="text-balance font-display text-[1.9rem] font-semibold leading-[1.06] tracking-[-0.035em] text-foreground sm:text-5xl">{title}</h1>
+        <p className="mt-3 text-[15px] text-muted sm:text-[17px]">
+          UPC <span className="font-semibold text-foreground">{upcs.join(", ")}</span>
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         {/* Core Info */}
-        <div className="md:col-span-2 space-y-6">
+        <div className="space-y-4 md:col-span-2">
           {/* L-T-P Structure */}
-          <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-            <h2 className="text-sm font-bold tracking-wide text-foreground uppercase mb-4 flex items-center gap-2">
-              <Books size={18} className="text-accent" />
-              Course Structure
+          <div className="rounded-[28px] bg-surface p-5 shadow-[var(--shadow-tile)] sm:p-7">
+            <h2 className="flex items-center gap-2 text-[19px] font-semibold tracking-[-0.02em] text-foreground">
+              <Books size={20} className="text-accent" />
+              Course structure
             </h2>
-            <div className="grid grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-surface-muted rounded-xl">
-                <p className="text-[10px] font-bold uppercase text-muted tracking-wider mb-1">Total</p>
-                <p className="text-2xl font-black text-foreground">{totalCredits}</p>
-                <p className="text-[10px] text-muted">Credits</p>
-              </div>
-              <div className="text-center p-3 bg-surface-muted rounded-xl">
-                <p className="text-[10px] font-bold uppercase text-muted tracking-wider mb-1">Theory</p>
-                <p className="text-2xl font-black text-foreground">{structure.theory}</p>
-              </div>
-              <div className="text-center p-3 bg-surface-muted rounded-xl">
-                <p className="text-[10px] font-bold uppercase text-muted tracking-wider mb-1">Tutorial</p>
-                <p className="text-2xl font-black text-foreground">{structure.tutorial}</p>
-              </div>
-              <div className="text-center p-3 bg-surface-muted rounded-xl">
-                <p className="text-[10px] font-bold uppercase text-muted tracking-wider mb-1">Practical</p>
-                <p className="text-2xl font-black text-foreground">{structure.practical}</p>
-              </div>
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              {[
+                ["Total", totalCredits, "Credits"],
+                ["Theory", structure.theory, ""],
+                ["Tutorial", structure.tutorial, ""],
+                ["Practical", structure.practical, ""],
+              ].map(([label, value, unit]) => (
+                <div key={String(label)} className="rounded-[18px] bg-surface-muted p-4 text-center">
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">{label}</p>
+                  <p className="mt-1 text-[28px] font-semibold leading-none tracking-[-0.03em] text-foreground">{value}</p>
+                  {unit && <p className="mt-1 text-[12px] text-muted">{unit}</p>}
+                </div>
+              ))}
             </div>
           </div>
 
           {/* Assessment Scheme */}
-          <div className="rounded-2xl border border-border bg-surface p-5 shadow-sm">
-            <h2 className="text-sm font-bold tracking-wide text-foreground uppercase mb-4 flex items-center gap-2">
-              <ChartBar size={18} className="text-brand" />
-              Assessment Scheme (Official UGCF)
+          <div className="rounded-[28px] bg-surface p-5 shadow-[var(--shadow-tile)] sm:p-7">
+            <h2 className="flex items-center gap-2 text-[19px] font-semibold tracking-[-0.02em] text-foreground">
+              <ChartBar size={20} className="text-brand" />
+              Assessment scheme (official UGCF)
             </h2>
-            <div className="space-y-3 text-sm">
-              <div className="flex justify-between items-center py-2 border-b border-border">
-                <span className="text-muted">Total Marks</span>
-                <span className="font-bold text-foreground">{assessment.totalMarks}</span>
-              </div>
-              {assessment.theoryMarks > 0 && (
-                <div className="flex justify-between items-center py-2 border-b border-border">
-                  <span className="text-muted">End-term Theory Exam ({assessment.theoryDuration})</span>
-                  <span className="font-semibold text-foreground">{assessment.theoryMarks}</span>
-                </div>
-              )}
-              {assessment.internalAssess > 0 && (
-                <div className="flex justify-between items-center py-2 border-b border-border">
-                  <span className="text-muted">Internal Assessment (IA)</span>
-                  <span className="font-semibold text-foreground">{assessment.internalAssess}</span>
-                </div>
-              )}
-              {assessment.tutorialCa > 0 && (
-                <div className="flex justify-between items-center py-2 border-b border-border">
-                  <span className="text-muted">Tutorial Continuous Assessment</span>
-                  <span className="font-semibold text-foreground">{assessment.tutorialCa}</span>
-                </div>
-              )}
-              {assessment.practicalCa > 0 && (
-                <div className="flex justify-between items-center py-2 border-b border-border">
-                  <span className="text-muted">Practical Continuous Assessment</span>
-                  <span className="font-semibold text-foreground">{assessment.practicalCa}</span>
-                </div>
-              )}
-              {assessment.endTermPractical > 0 && (
-                <div className="flex justify-between items-center py-2 border-b border-border">
-                  <span className="text-muted">End-term Practical Exam</span>
-                  <span className="font-semibold text-foreground">{assessment.endTermPractical}</span>
-                </div>
-              )}
-              {assessment.viva > 0 && (
-                <div className="flex justify-between items-center py-2 border-b border-border">
-                  <span className="text-muted">Viva Voce</span>
-                  <span className="font-semibold text-foreground">{assessment.viva}</span>
-                </div>
-              )}
-            </div>
-            <p className="text-[11px] text-muted mt-4 bg-yellow-50 p-2 rounded-lg border border-yellow-200 text-yellow-800 flex gap-2">
-              <WarningCircle size={14} className="shrink-0 mt-0.5" />
+            <ul className="mt-5 divide-y divide-border/70 overflow-hidden rounded-[18px] bg-surface-muted text-[15px]">
+              {rows.filter(([, , show]) => show).map(([label, value], i) => (
+                <li key={label} className="flex items-center justify-between gap-4 px-4 py-3">
+                  <span className="text-muted">{label}</span>
+                  <span className={i === 0 ? "font-semibold text-foreground" : "font-medium text-foreground"}>{value}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-4 flex gap-2 rounded-[14px] bg-amber-500/10 p-3 text-[13px] leading-snug text-amber-800 dark:text-amber-300">
+              <WarningCircle size={16} className="mt-0.5 shrink-0" />
               <span>Assessment marks are strictly mapped from the University-notified UGCF assessment matrix based on the L-T-P structure.</span>
             </p>
           </div>
@@ -145,28 +116,28 @@ export default async function CoursePage({ params }: Props) {
 
         {/* Action Panel */}
         <div className="space-y-4">
-          <div className="rounded-2xl border border-border bg-brand-soft/20 p-5 shadow-sm">
-            <h3 className="font-bold text-foreground mb-3 flex items-center gap-2">
-              <Files size={18} className="text-brand" />
+          <div className="rounded-[28px] bg-surface-muted p-5 sm:p-6">
+            <h3 className="flex items-center gap-2 text-[17px] font-semibold tracking-[-0.02em] text-foreground">
+              <Files size={19} className="text-brand" />
               Resources
             </h3>
-            <p className="text-xs text-muted mb-4">
+            <p className="mb-5 mt-2 text-[14px] leading-snug text-muted">
               Prepare for {title} using official DU Previous Year Papers.
             </p>
             <Link
               href={`/papers?q=${encodeURIComponent(title)}`}
-              className="flex w-full items-center justify-center rounded-xl bg-brand py-2.5 text-sm font-bold text-brand-foreground transition hover:bg-brand-hover shadow-sm"
+              className="flex w-full items-center justify-center rounded-full bg-brand py-3 text-[15px] font-semibold text-brand-foreground transition-colors duration-300 hover:bg-brand-hover"
             >
               Search PYQs
             </Link>
           </div>
 
-          <div className="rounded-2xl border border-border bg-surface-muted/50 p-5 shadow-sm text-xs text-muted">
-            <h4 className="font-bold text-foreground mb-2 text-sm">Source Provenance</h4>
+          <div className="rounded-[28px] bg-surface-muted p-5 text-[13px] leading-snug text-muted sm:p-6">
+            <h4 className="mb-2 text-[15px] font-semibold text-foreground">Source provenance</h4>
             <p className="mb-2">This course record has been extracted directly from the DU Academic Affairs official listings.</p>
             {officialSource && (
-              <a href={officialSource} target="_blank" rel="noopener noreferrer" className="text-accent hover:underline break-all block">
-                View Official Notification →
+              <a href={officialSource} target="_blank" rel="noopener noreferrer" className="block break-all font-medium text-brand hover:underline">
+                View official notification →
               </a>
             )}
           </div>
