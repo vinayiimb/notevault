@@ -26,6 +26,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: `/exam-sessions/${session.id}` },
+    robots: { index: false, follow: true },
     openGraph: { title, description },
   };
 }

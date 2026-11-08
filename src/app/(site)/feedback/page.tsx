@@ -1,5 +1,13 @@
 export const dynamic = "force-static";
+import type { Metadata } from "next";
 import { FeedbackForm } from "@/components/feedback-form";
+
+// A form, not content — and it had no title (fell back to the homepage's).
+export const metadata: Metadata = {
+  title: "Send Feedback",
+  alternates: { canonical: "/feedback" },
+  robots: { index: false, follow: true },
+};
 
 export default function FeedbackPage() {
   return (

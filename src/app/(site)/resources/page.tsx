@@ -16,6 +16,8 @@ export const metadata: Metadata = {
   description:
     "Every free DU PYQ Online resource in one place — course browsing, the full previous-year paper archive, exam sessions, study tools, and exam-prep guides.",
   alternates: { canonical: "/resources" },
+  // Link hub (~160 words); its targets are linked from the footer/nav already.
+  robots: { index: false, follow: true },
   openGraph: {
     title: "Free Delhi University Student Resources",
     description:

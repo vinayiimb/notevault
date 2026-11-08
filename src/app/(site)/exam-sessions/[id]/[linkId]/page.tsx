@@ -29,6 +29,7 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: `/exam-sessions/${link.sessionId}/${link.id}` },
+    robots: { index: false, follow: true },
     openGraph: { title, description },
   };
 }

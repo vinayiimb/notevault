@@ -42,6 +42,8 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: `/programs/${program.slug}` },
+    // Legacy duplicate of the /papers/<course> hubs; Google declined it (GSC "Crawled – not indexed").
+    robots: { index: false, follow: true },
     openGraph: { title, description },
   };
 }

@@ -11,6 +11,8 @@ export const metadata: Metadata = {
   description:
     "DU PYQ Online is a free Delhi University question paper archive. If it's helped your students, feel free to link to it — entirely optional, no strings attached.",
   alternates: { canonical: "/link-to-us" },
+  // Outreach helper for site owners, not a page students search for.
+  robots: { index: false, follow: true },
 };
 
 const HTML_SNIPPET = `<a href="${SITE_URL}/">\n  DU PYQ Online – Delhi University Previous Year Question Papers\n</a>`;

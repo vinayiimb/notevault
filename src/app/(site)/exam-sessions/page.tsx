@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   description:
     "Browse Delhi University question papers by exam session, with a Google Drive folder for every course in that session.",
   alternates: { canonical: "/exam-sessions" },
+  // Thin list of Drive folder links; not a search landing page.
+  robots: { index: false, follow: true },
 };
 
 export default async function ExamSessionsPage() {

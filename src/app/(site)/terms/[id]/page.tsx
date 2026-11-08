@@ -30,6 +30,8 @@ export async function generateMetadata({
     title,
     description,
     alternates: { canonical: `/terms/${term.id}` },
+    // Legacy duplicate of the /papers/<course>/semester-N pages.
+    robots: { index: false, follow: true },
     openGraph: { title, description },
   };
 }
