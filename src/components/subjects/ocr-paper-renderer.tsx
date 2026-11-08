@@ -161,7 +161,7 @@ export function isAiReformattedOcr(text: string) {
 
 export function FormattedOcrPaperRenderer({ text }: { text: string }) {
   const markdown = text.replace(new RegExp(`^\\s*(?:${AI_OCR_MARKER}|${LEGACY_AI_OCR_MARKER})\\s*`), "");
-  return <NotesRenderer content={markdown} theme="sky" />;
+  return <NotesRenderer content={markdown} theme="sky" look="classic" />;
 }
 
 export function OcrContents({ text }: { text: string }) {

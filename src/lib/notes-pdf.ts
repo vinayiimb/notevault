@@ -36,8 +36,7 @@ export async function downloadElementAsPdf({
   const stage = document.createElement("div");
   stage.style.cssText = `position:fixed;left:-100000px;top:0;width:${STAGE_WIDTH}px;pointer-events:none;`;
   const clone = root.cloneNode(true) as HTMLElement;
-  clone.querySelectorAll(".nt-no-print, .nt-toc-container, .nt-mermaid-toolbar, [data-pdf-skip]").forEach((el) => el.remove());
-  clone.querySelectorAll<HTMLElement>(".nt-top-grid").forEach((el) => (el.style.gridTemplateColumns = "1fr"));
+  clone.querySelectorAll(".nt-no-print, .nt-mermaid-toolbar, [data-pdf-skip]").forEach((el) => el.remove());
   stage.appendChild(clone);
   root.parentElement!.appendChild(stage);
 

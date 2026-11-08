@@ -16,7 +16,7 @@ export function ContentDownloadButton({ title }: { title: string }) {
     try {
       await downloadElementAsPdf({
         root,
-        blocks: ".nt-intro-container, .nt-prose > *",
+        blocks: ".nt-eyebrow, .nt-title-block, .nt-prose > *",
         filename: title,
         footer: `${title} · dupyq.online`,
         onProgress: setProgress,

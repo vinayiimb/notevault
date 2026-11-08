@@ -3,6 +3,7 @@ import { themeValuesToTokens, LEGACY_NOTES_THEME_TO_PRESET } from "@/lib/content
 import { findNotesLabTheme } from "@/lib/content/theme-presets";
 import { preprocessNotesMarkdown } from "@/lib/content/toc";
 import type { ThemeValues } from "@/lib/note-theme";
+import type { ContentLook } from "@/components/content/notes/theme-provider";
 
 export const NOTES_THEMES = ["sky", "violet", "emerald", "amber"] as const;
 export type NotesTheme = (typeof NOTES_THEMES)[number];
@@ -22,9 +23,13 @@ export function NotesRenderer({
   content,
   theme = "sky",
   resolvedTheme,
+  look = "apple",
 }: {
   content: string;
   theme?: NotesTheme;
+  // Every notes surface uses the Apple look; the OCR'd question-paper view opts out with "classic" (the papers pages
+  // keep their own look).
+  look?: ContentLook;
   // When set, this Note Designer theme (see src/lib/note-theme.ts) drives
   // the rendered colors/fonts; the legacy sky/violet/emerald/amber palette
   // below is only the fallback for subjects that haven't been given one.
@@ -38,5 +43,5 @@ export function NotesRenderer({
     ? themeValuesToTokens(resolvedTheme)
     : findNotesLabTheme(LEGACY_NOTES_THEME_TO_PRESET[theme]).dark;
 
-  return <NotesContent content={markdown} subjectTheme={{ light: tokens, dark: darkTokens }} />;
+  return <NotesContent content={markdown} subjectTheme={{ light: tokens, dark: darkTokens }} look={look} />;
 }

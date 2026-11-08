@@ -1,5 +1,5 @@
 import type { NotesLabColorTokens } from "@/lib/content/theme-presets";
-import { ContentThemeProvider } from "./theme-provider";
+import { ContentThemeProvider, type ContentLook } from "./theme-provider";
 import { ContentLightboxProvider } from "./note-image";
 import { NotesMarkdown } from "./notes-markdown";
 
@@ -14,13 +14,16 @@ export function NotesContent({
   content,
   subjectTheme,
   forceMode,
+  look = "classic",
 }: {
   content: string;
   subjectTheme?: { light: NotesLabColorTokens; dark: NotesLabColorTokens } | null;
   forceMode?: "light" | "dark";
+  /** "apple" = the same neutral Apple look as the main notes pages. */
+  look?: ContentLook;
 }) {
   return (
-    <ContentThemeProvider subjectTheme={subjectTheme} forceMode={forceMode}>
+    <ContentThemeProvider subjectTheme={subjectTheme} forceMode={forceMode} look={look}>
       <ContentLightboxProvider>
         <div className="nt-canvas">
           <div className="nt-sheet">

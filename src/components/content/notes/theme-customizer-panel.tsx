@@ -15,6 +15,7 @@ const COLOR_FIELDS: { key: keyof NotesLabColorTokens; label: string }[] = [
 ];
 
 const FONT_OPTIONS = [
+  { value: "system", label: "System (SF Pro on Apple devices)" },
   { value: "inter", label: "Inter (clean, body text)" },
   { value: "manrope", label: "Manrope (friendly, rounded)" },
   { value: "merriweather", label: "Merriweather (serif, long-form)" },

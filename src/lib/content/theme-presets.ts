@@ -38,6 +38,28 @@ export type NotesLabTheme = {
 
 export const NOTES_LAB_THEMES: NotesLabTheme[] = [
   {
+    // Apple's system palette: a neutral grouped canvas, white / near-black cards, one blue accent, and the system
+    // greens / oranges / purples only for meaning. The default look of every note (see theme-provider.tsx).
+    id: "apple",
+    label: "Apple",
+    description: "Clean neutral canvas, white cards and one blue accent.",
+    swatch: ["#0071e3", "#5e5ce6", "#f5f5f7"],
+    light: {
+      background: "#f5f5f7", surface: "#ffffff", surfaceMuted: "#f5f5f7", border: "#e5e5ea",
+      text: "#1d1d1f", textMuted: "#6e6e73", primary: "#0071e3", primaryText: "#ffffff",
+      secondary: "#5e5ce6", accent: "#8944ab", success: "#248a3d", warning: "#b25000",
+      error: "#d70015", info: "#0071e3", link: "#0066cc", selection: "#b9d9ff",
+      gradientFrom: "#0071e3", gradientTo: "#5e5ce6",
+    },
+    dark: {
+      background: "#000000", surface: "#1c1c1e", surfaceMuted: "#2c2c2e", border: "#2c2c2e",
+      text: "#f5f5f7", textMuted: "#a1a1a6", primary: "#2997ff", primaryText: "#000000",
+      secondary: "#7d7aff", accent: "#bf5af2", success: "#32d74b", warning: "#ff9f0a",
+      error: "#ff453a", info: "#2997ff", link: "#2997ff", selection: "#123a63",
+      gradientFrom: "#2997ff", gradientTo: "#7d7aff",
+    },
+  },
+  {
     id: "ocean",
     label: "Ocean Blue",
     description: "Deep blue, cyan accents, soft blue-white background.",

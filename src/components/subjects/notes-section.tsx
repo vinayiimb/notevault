@@ -76,31 +76,28 @@ export function NotesSection({
     ? themeValuesToTokens(resolvedTheme)
     : findNotesLabTheme(LEGACY_NOTES_THEME_TO_PRESET[resolvedNotesTheme]).dark;
 
+  // Full-bleed: the reader paints its own canvas edge to edge (the page container above is a narrow column).
   return (
-    <div className="relative mt-4 ml-[50%] w-screen -translate-x-1/2 px-0 sm:px-6">
-      <div className="mx-auto w-full max-w-[1900px] sm:w-[95%]">
-        <div className="mt-3">
-          {paywall ? (
-            <GatedNotes
-              programmeSlug={paywall.programmeSlug}
-              subjectSlug={paywall.subjectSlug}
-              title={subjectName}
-              programmeName={programmeName}
-              preview={preprocessed}
-              headings={headings}
-              subjectTheme={{ light: subjectTokens, dark: subjectTokensDark }}
-            />
-          ) : (
-            <NotesReadingChrome
-              title={subjectName}
-              programmeName={programmeName}
-              content={preprocessed}
-              headings={headings}
-              subjectTheme={{ light: subjectTokens, dark: subjectTokensDark }}
-            />
-          )}
-        </div>
-      </div>
+    <div className="relative mt-4 ml-[calc(50%-50vw)] w-screen">
+      {paywall ? (
+        <GatedNotes
+          programmeSlug={paywall.programmeSlug}
+          subjectSlug={paywall.subjectSlug}
+          title={subjectName}
+          programmeName={programmeName}
+          preview={preprocessed}
+          headings={headings}
+          subjectTheme={{ light: subjectTokens, dark: subjectTokensDark }}
+        />
+      ) : (
+        <NotesReadingChrome
+          title={subjectName}
+          programmeName={programmeName}
+          content={preprocessed}
+          headings={headings}
+          subjectTheme={{ light: subjectTokens, dark: subjectTokensDark }}
+        />
+      )}
     </div>
   );
 }

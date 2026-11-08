@@ -12,7 +12,7 @@ import {
 export type ThemeMode = "system" | "light" | "dark";
 
 export type ContentTypography = {
-  bodyFont: "inter" | "manrope" | "merriweather";
+  bodyFont: "system" | "inter" | "manrope" | "merriweather";
   fontSize: number; // px, body text
   lineHeight: number;
   paragraphSpacing: number; // rem
@@ -38,10 +38,29 @@ export const DEFAULT_TYPOGRAPHY: ContentTypography = {
   headingScale: 1,
 };
 
-const SUBJECT_THEME_ID = "subject";
-const STORAGE_KEY = "notevault:reading-prefs:v1";
+// The Apple reading look (neutral canvas, system font, 17px) is what the public notes pages use. It is opt-in per provider
+// so blog posts and PYQ solutions, which pin their own palette, keep theirs, and it keeps its own saved preferences.
+export type ContentLook = "classic" | "apple";
 
-function defaultPrefs(hasSubjectTheme: boolean): ContentReadingPrefs {
+const APPLE_TYPOGRAPHY: ContentTypography = {
+  bodyFont: "system",
+  fontSize: 17,
+  lineHeight: 1.6,
+  paragraphSpacing: 1,
+  contentWidth: 100,
+  headingScale: 1,
+};
+
+const SUBJECT_THEME_ID = "subject";
+const STORAGE_KEYS: Record<ContentLook, string> = {
+  classic: "notevault:reading-prefs:v1",
+  apple: "notevault:reading-prefs:apple:v1",
+};
+
+function defaultPrefs(hasSubjectTheme: boolean, look: ContentLook = "classic"): ContentReadingPrefs {
+  if (look === "apple") {
+    return { themeId: "apple", mode: "system", customTokens: null, typography: APPLE_TYPOGRAPHY, borderRadius: 18, shadowLevel: "small" };
+  }
   return {
     themeId: hasSubjectTheme ? SUBJECT_THEME_ID : "ocean",
     mode: "system",
@@ -57,21 +76,21 @@ function defaultPrefs(hasSubjectTheme: boolean): ContentReadingPrefs {
 // hydration-safe way to read a client-only external source (localStorage)
 // without the "setState synchronously in an effect" anti-pattern: React
 // itself manages recomputing the snapshot and re-rendering subscribers.
-let cachedRaw: Partial<ContentReadingPrefs> | null | undefined;
+const cachedRaw = new Map<ContentLook, Partial<ContentReadingPrefs> | null>();
 const listeners = new Set<() => void>();
 
-function readStoredPrefs(): Partial<ContentReadingPrefs> | null {
+function readStoredPrefs(look: ContentLook): Partial<ContentReadingPrefs> | null {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const raw = window.localStorage.getItem(STORAGE_KEYS[look]);
     return raw ? JSON.parse(raw) : null;
   } catch {
     return null;
   }
 }
 
-function getSnapshot(): Partial<ContentReadingPrefs> | null {
-  if (cachedRaw === undefined) cachedRaw = readStoredPrefs();
-  return cachedRaw;
+function getSnapshot(look: ContentLook): Partial<ContentReadingPrefs> | null {
+  if (!cachedRaw.has(look)) cachedRaw.set(look, readStoredPrefs(look));
+  return cachedRaw.get(look) ?? null;
 }
 
 function getServerSnapshot(): Partial<ContentReadingPrefs> | null {
@@ -83,10 +102,10 @@ function subscribe(callback: () => void) {
   return () => listeners.delete(callback);
 }
 
-function writeStoredPrefs(next: ContentReadingPrefs) {
-  cachedRaw = next;
+function writeStoredPrefs(look: ContentLook, next: ContentReadingPrefs) {
+  cachedRaw.set(look, next);
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    window.localStorage.setItem(STORAGE_KEYS[look], JSON.stringify(next));
   } catch {
     // Storage unavailable (private browsing, quota) — the in-memory cache
     // above still keeps the change live for this page view.
@@ -136,12 +155,15 @@ export function ContentThemeProvider({
   children,
   forceMode,
   ignoreStored = false,
+  look = "classic",
 }: {
   subjectTheme?: { light: NotesLabColorTokens; dark: NotesLabColorTokens } | null;
   children: React.ReactNode;
   forceMode?: "light" | "dark";
   /** Never apply the reader's saved theme/typography (localStorage) — for fixed-look surfaces like PYQ solutions. */
   ignoreStored?: boolean;
+  /** "apple" = the neutral Apple palette, system font and 17px text as the default (public notes pages). */
+  look?: ContentLook;
 }) {
   const hasSubjectTheme = Boolean(subjectTheme);
   const allThemes = useMemo<NotesLabTheme[]>(() => {
@@ -155,21 +177,22 @@ export function ContentThemeProvider({
       light: subjectTheme.light,
       dark: subjectTheme.dark,
     };
-    return [subjectEntry, ...builtIns];
-  }, [subjectTheme]);
+    // Under the Apple look the subject palette is an optional extra, listed after the Apple theme itself.
+    return look === "apple" ? [builtIns[0], subjectEntry, ...builtIns.slice(1)] : [subjectEntry, ...builtIns];
+  }, [subjectTheme, look]);
 
-  const initial = useMemo(() => defaultPrefs(hasSubjectTheme), [hasSubjectTheme]);
+  const initial = useMemo(() => defaultPrefs(hasSubjectTheme, look), [hasSubjectTheme, look]);
 
   // On the server (and the client's first hydration pass), the stored
   // snapshot is always null, so `prefs` equals `initial` on both sides —
   // no hydration mismatch. Once mounted, useSyncExternalStore re-renders
   // with the real stored value, same as the old effect-based approach, but
   // without a manual setState call in an effect body.
-  const stored = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
+  const stored = useSyncExternalStore(subscribe, () => getSnapshot(look), getServerSnapshot);
   const prefs: ContentReadingPrefs = useMemo(
     () =>
       stored && !ignoreStored
-        ? { ...initial, ...stored, typography: { ...DEFAULT_TYPOGRAPHY, ...stored.typography } }
+        ? { ...initial, ...stored, typography: { ...initial.typography, ...stored.typography } }
         : initial,
     [stored, initial, ignoreStored],
   );
@@ -188,12 +211,12 @@ export function ContentThemeProvider({
   }, [allThemes, prefs.themeId, prefs.customTokens, resolvedMode]);
 
   const update = useCallback((patch: Partial<ContentReadingPrefs> | ((p: ContentReadingPrefs) => ContentReadingPrefs)) => {
-    const current = cachedRaw
-      ? { ...defaultPrefs(hasSubjectTheme), ...cachedRaw, typography: { ...DEFAULT_TYPOGRAPHY, ...cachedRaw.typography } }
-      : defaultPrefs(hasSubjectTheme);
+    const base = defaultPrefs(hasSubjectTheme, look);
+    const raw = cachedRaw.get(look);
+    const current = raw ? { ...base, ...raw, typography: { ...base.typography, ...raw.typography } } : base;
     const next = typeof patch === "function" ? patch(current) : { ...current, ...patch };
-    writeStoredPrefs(next);
-  }, [hasSubjectTheme]);
+    writeStoredPrefs(look, next);
+  }, [hasSubjectTheme, look]);
 
   const setThemeId = useCallback((id: string) => update({ themeId: id }), [update]);
   const setMode = useCallback((mode: ThemeMode) => update({ mode }), [update]);
@@ -204,7 +227,7 @@ export function ContentThemeProvider({
   );
   const setBorderRadius = useCallback((px: number) => update({ borderRadius: px }), [update]);
   const setShadowLevel = useCallback((level: ContentReadingPrefs["shadowLevel"]) => update({ shadowLevel: level }), [update]);
-  const resetToDefault = useCallback(() => writeStoredPrefs(defaultPrefs(hasSubjectTheme)), [hasSubjectTheme]);
+  const resetToDefault = useCallback(() => writeStoredPrefs(look, defaultPrefs(hasSubjectTheme, look)), [hasSubjectTheme, look]);
 
   const value: Ctx = {
     prefs, resolvedMode, tokens, allThemes, hasSubjectTheme, setThemeId, setMode, setCustomTokens,
@@ -222,14 +245,15 @@ export function ContentThemeProvider({
     vars["--nt-content-width"] = `${prefs.typography.contentWidth}ch`;
     vars["--nt-heading-scale"] = String(prefs.typography.headingScale);
     vars["--nt-radius"] = `${prefs.borderRadius}px`;
-    vars["--nt-shadow"] = SHADOW_LEVELS[prefs.shadowLevel];
+    vars["--nt-shadow"] = (look === "apple" ? APPLE_SHADOW_LEVELS : SHADOW_LEVELS)[prefs.shadowLevel];
     vars["--nt-body-font"] = BODY_FONTS[prefs.typography.bodyFont];
     return vars as React.CSSProperties;
-  }, [tokens, prefs]);
+  }, [tokens, prefs, look]);
 
   return (
     <ContentThemeContext.Provider value={value}>
       <div
+        data-nt-look={look}
         data-nt-theme={prefs.themeId}
         data-nt-mode={resolvedMode}
         style={style}
@@ -248,7 +272,16 @@ const SHADOW_LEVELS: Record<ContentReadingPrefs["shadowLevel"], string> = {
   large: "0 4px 12px rgba(0,0,0,.10), 0 16px 40px rgba(0,0,0,.16)",
 };
 
+// Wider and fainter than the classic shadows: cards float a little instead of being outlined.
+const APPLE_SHADOW_LEVELS: Record<ContentReadingPrefs["shadowLevel"], string> = {
+  none: "none",
+  small: "0 1px 2px rgba(0,0,0,.04), 0 6px 20px rgba(0,0,0,.05)",
+  medium: "0 2px 4px rgba(0,0,0,.05), 0 12px 32px rgba(0,0,0,.08)",
+  large: "0 4px 8px rgba(0,0,0,.06), 0 22px 52px rgba(0,0,0,.12)",
+};
+
 const BODY_FONTS: Record<ContentTypography["bodyFont"], string> = {
+  system: "-apple-system, BlinkMacSystemFont, 'SF Pro Text', var(--font-inter), 'Helvetica Neue', ui-sans-serif, system-ui, sans-serif",
   inter: "var(--font-inter), ui-sans-serif, system-ui, sans-serif",
   manrope: "var(--font-manrope), ui-sans-serif, system-ui, sans-serif",
   merriweather: "Georgia, 'Times New Roman', serif",

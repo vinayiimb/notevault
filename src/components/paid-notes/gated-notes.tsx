@@ -55,6 +55,8 @@ export function GatedNotes({
 
   return (
     <>
+      {/* the reader below is full-bleed, so the bars above it keep to its width */}
+      <div className="mx-auto max-w-[69rem] px-4 sm:px-6">
       {adminView && (
         <p className="mb-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
           <strong className="font-semibold">Admin view:</strong> you&apos;re signed in as admin, so you see the full note.
@@ -62,7 +64,7 @@ export function GatedNotes({
         </p>
       )}
       {locked && (
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-2xl border border-brand/30 bg-brand/5 px-4 py-3">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2 rounded-2xl bg-foreground/[0.045] px-4 py-3">
           <p className="flex items-center gap-2 text-sm">
             <LockSimple size={16} weight="bold" className="shrink-0 text-brand" />
             <span>
@@ -78,6 +80,7 @@ export function GatedNotes({
           </div>
         </div>
       )}
+      </div>
       <NotesReadingChrome
         title={title}
         programmeName={programmeName}
@@ -87,9 +90,9 @@ export function GatedNotes({
         downloadable={!!full}
       />
       {locked && (
-        <div className="relative -mt-24">
+        <div className="relative -mt-24 px-4 sm:px-6">
           <div className="pointer-events-none h-24 bg-gradient-to-b from-transparent to-background" />
-          <div className="mx-auto max-w-xl rounded-2xl border border-border bg-surface p-6 text-center shadow-sm sm:p-8">
+          <div className="mx-auto max-w-xl rounded-3xl bg-surface p-6 text-center shadow-[0_1px_2px_rgba(0,0,0,.05),0_20px_50px_-14px_rgba(0,0,0,.22)] ring-1 ring-foreground/[0.06] sm:p-8">
             <span className="mx-auto flex size-11 items-center justify-center rounded-full bg-brand/10 text-brand">
               <LockSimple size={22} weight="bold" />
             </span>
