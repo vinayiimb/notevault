@@ -10,6 +10,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Unit Specific Notes`,
     description: `Comprehensive resources for Unit Specific Notes`,
+    // Placeholder tab content — keep it out of the index until it is built.
+    robots: { index: false, follow: true },
   };
 }
 

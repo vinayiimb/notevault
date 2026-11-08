@@ -10,6 +10,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title: `Question Bank`,
     description: `Comprehensive resources for Question Bank`,
+    // Placeholder tab content — keep it out of the index until it is built.
+    robots: { index: false, follow: true },
   };
 }
 

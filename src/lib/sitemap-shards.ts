@@ -68,6 +68,8 @@ const STATIC_ROUTES: { path: string; priority: number; changefreq: EntryFreq }[]
   { path: "/tools", priority: 0.5, changefreq: "monthly" },
   { path: "/tools/exam-kit", priority: 0.4, changefreq: "monthly" },
   { path: "/tools/du-paper-code-finder", priority: 0.5, changefreq: "monthly" },
+  { path: "/tools/sgpa-calculator", priority: 0.6, changefreq: "monthly" },
+  { path: "/tools/marks-calculator", priority: 0.5, changefreq: "monthly" },
   { path: "/blog", priority: 0.5, changefreq: "weekly" },
   { path: "/about", priority: 0.4, changefreq: "monthly" },
   { path: "/faq", priority: 0.6, changefreq: "monthly" },

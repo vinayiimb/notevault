@@ -1,24 +1,6 @@
-import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { permanentRedirect } from "next/navigation";
 
-interface Props {
-  params: Promise<{ slug?: string; id?: string; code?: string; number?: string }>;
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const resolvedParams = await params;
-  return {
-    title: `Internal Marks Calculator`,
-    description: `Comprehensive resources for Internal Marks Calculator`,
-  };
-}
-
-export default async function Page({ params }: Props) {
-  const resolvedParams = await params;
-  return (
-    <div className="container mx-auto px-4 py-24 min-h-screen">
-      <h1 className="text-4xl font-bold mb-6">Internal Marks Calculator</h1>
-      <p className="text-gray-600">This page is part of the new SEO architecture. Dynamic data integration pending.</p>
-    </div>
-  );
+// The Marks Planner tab handles internal assessment (was a "pending" placeholder page).
+export default function Page() {
+  permanentRedirect("/tools/marks-calculator");
 }
