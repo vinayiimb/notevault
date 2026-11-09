@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { markOrderDeliveredAction, setLeadNoteAction, setLeadStatusAction } from "@/lib/note-lead-actions";
 import { LEAD_STATUSES, formatLeadPhone, leadWhatsAppText, type LeadStatusName } from "@/lib/note-leads";
 import { NOTES_DELIVERY_HOURS, orderPlanLabel, orderWhatsAppText } from "@/lib/notes-orders";
+import { AlertsPanel } from "@/components/admin/alerts-panel";
 
 const SOURCE_LABEL: Record<string, string> = {
   "notes-hub": "Notes page form",
@@ -84,6 +85,8 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
         Students who left their number to get notes. Message them on WhatsApp (the text is pre-filled from what they
         asked for), then move them along as you talk.
       </p>
+
+      <AlertsPanel />
 
       {orders && (orders.paid.length > 0 || orders.delivered.length > 0) && (
         <section className="mt-5 max-w-3xl">
