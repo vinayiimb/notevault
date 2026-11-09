@@ -16,6 +16,25 @@ const PAPER_DELAY_MS = 1400;
 // PYQ pages reached from Google or a link: let them read before asking.
 const LANDING_DELAY_MS = 6000;
 
+// Someone who already left a number is the likeliest buyer, so they are asked again, but at most once a day.
+const KNOWN_KEY = "nv_notes_prompt_known_at";
+const KNOWN_COOLDOWN_MS = 24 * 60 * 60 * 1000;
+
+function askedRecently() {
+  try {
+    const t = Number(localStorage.getItem(KNOWN_KEY));
+    return t > 0 && Date.now() - t < KNOWN_COOLDOWN_MS;
+  } catch {
+    return false;
+  }
+}
+
+function markAsked() {
+  try {
+    localStorage.setItem(KNOWN_KEY, String(Date.now()));
+  } catch {}
+}
+
 function promptOff() {
   try {
     return sessionStorage.getItem(OFF_KEY) === "1";
@@ -39,7 +58,8 @@ const TILE = "bg-gradient-to-b from-[#3fa0ff] to-[#0071e3] text-white shadow-[0_
  *   What the form asks depends on what the page knows: subject (phone only), course (semester, an optional
  *   subject, phone) or nothing (course too).
  *
- * No / the X / Esc: closed and quiet for the rest of the visit. Once a number is left: never again.
+ * No / the X / Esc: closed and quiet for the rest of the visit. Someone who already left a number is asked again
+ * (they are the likeliest buyers), at most once a day.
  */
 export function NotesPrompt({
   source,
@@ -78,9 +98,11 @@ export function NotesPrompt({
 
   useEffect(() => {
     if (!landing && !paperId) return;
-    if (known || promptOff()) return;
+    if (promptOff() || (known && askedRecently())) return;
     const t = setTimeout(() => {
-      if (document.visibilityState === "visible") setStep((s) => s ?? "ask");
+      if (document.visibilityState !== "visible") return;
+      if (known) markAsked();
+      setStep((s) => s ?? "ask");
     }, landing ? LANDING_DELAY_MS : PAPER_DELAY_MS);
     return () => clearTimeout(t);
   }, [landing, paperId, known]);
@@ -180,7 +202,7 @@ export function NotesPrompt({
                 <BookOpenText size={32} weight="fill" />
               </span>
               <h2 id="notes-prompt-title" className="mt-5 text-[24px] font-semibold leading-tight tracking-[-0.025em]">
-                Need notes for {what}?
+                {known ? "Still need" : "Need"} notes for {what}?
               </h2>
               <p className="mx-auto mt-2 max-w-[19rem] text-[15px] leading-snug text-muted">
                 Solved answers, the most repeated questions and exam tips, sent to your WhatsApp.
