@@ -43,6 +43,14 @@ export default function PrivacyPolicyPage() {
         </p>
       </Section>
 
+      <Section title="Reading activity">
+        <p>
+          While you are signed in and reading a note you bought, we record which subject you opened and roughly how long you
+          spent reading it (counted only while the page is open and you are active). We use this to see which notes help,
+          to improve them, and to spot a login being shared. It is linked to your email and is never sold or shared.
+        </p>
+      </Section>
+
       <Section title="How we use your data">
         <ul>
           <li>To run the site and give you access to the notes you bought.</li>

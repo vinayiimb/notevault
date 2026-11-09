@@ -47,6 +47,20 @@ export async function listLiveDevices(email: string, currentId?: string | null):
   return rows.map((d) => toInfo(d, currentId));
 }
 
+/** email -> number of devices signed in now, for everyone (admin list). Null = migration not applied yet. */
+export async function liveDeviceCounts(): Promise<Map<string, number> | null> {
+  try {
+    const rows = await prisma.studentDevice.groupBy({
+      by: ["email"],
+      where: { revokedAt: null, lastSeenAt: { gte: new Date(Date.now() - DEVICE_IDLE_DAYS * DAY) } },
+      _count: { _all: true },
+    });
+    return new Map(rows.map((r) => [r.email, r._count._all]));
+  } catch {
+    return null;
+  }
+}
+
 export async function startStudentSession(email: string, opts: { replaceDeviceId?: string } = {}): Promise<StartResult> {
   const jar = await cookies();
   try {

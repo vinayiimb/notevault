@@ -8,6 +8,7 @@ import { getSession } from "@/lib/auth";
 import { getStudentEmail, getUnlockedItems } from "@/lib/paid-notes";
 import { STUDENT_PDF_DOWNLOAD, itemKey } from "@/lib/paid-notes-pricing";
 import { NotesSection } from "@/components/subjects/notes-section";
+import { ReadingTracker } from "@/components/account/reading-tracker";
 
 export const metadata: Metadata = {
   title: "Your notes",
@@ -33,6 +34,7 @@ export default async function StudentNotePage({ params }: { params: Promise<{ pr
 
   return (
     <div className="mx-auto max-w-4xl px-4 pb-12 pt-4 sm:px-6 sm:pt-8">
+      {!admin && <ReadingTracker itemKey={itemKey(programmeSlug, subjectSlug)} />}
       <Link
         href="/account"
         className="inline-flex min-h-10 items-center gap-1 rounded-full bg-foreground/[0.06] py-2 pl-2.5 pr-4 text-sm font-semibold transition hover:bg-foreground/[0.1]"

@@ -841,6 +841,37 @@ model StudentDevice {
   @@index([email, revokedAt])
 }
 
+// How long a signed-in student actually reads, per day and subject (itemKey
+// "programmeSlug/subjectSlug"). The note reader sends a batched heartbeat about
+// once a minute while the tab is visible and the student is active (see
+// src/lib/student-activity.ts); /admin/payments/students reads it back.
+model StudentActivity {
+  id      String   @id @default(cuid())
+  email   String
+  day     String // "2026-11-09", India time
+  itemKey String
+  seconds Int      @default(0)
+  opens   Int      @default(0)
+  // Furthest the student scrolled through the note that day, 0-100 (%).
+  maxScroll Int    @default(0)
+  firstAt DateTime @default(now())
+  lastAt  DateTime @default(now())
+
+  @@unique([email, day, itemKey])
+  @@index([email, lastAt])
+  @@index([lastAt])
+}
+
+// Reading seconds per student per hour of the (India) day, all-time — feeds the
+// "when do they study" chart.
+model StudentHour {
+  email   String
+  hour    Int // 0-23, India time
+  seconds Int    @default(0)
+
+  @@id([email, hour])
+}
+
 // One row per public tool/tab whose status an admin changed from its default
 // (defaults live in src/lib/feature-flags.ts). status: "live" | "soon" | "hidden".
 model FeatureFlag {
