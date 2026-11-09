@@ -60,6 +60,20 @@ export default function ToolsPage() {
             </p>
           </div>
         </Link>
+        <Link
+          href="/tools/attendance-calculator"
+          className="flex flex-col gap-4 rounded-xl border border-border bg-surface p-6 transition hover:border-accent"
+        >
+          <span className="flex size-11 items-center justify-center rounded-lg bg-accent-soft text-accent">
+            <Calculator size={22} weight="bold" />
+          </span>
+          <div>
+            <h2 className="text-lg font-medium">Attendance Calculator</h2>
+            <p className="mt-1 text-sm text-muted">
+              See your attendance percentage, how many classes you can still miss, or how many you need to reach 75%.
+            </p>
+          </div>
+        </Link>
       </div>
     </div>
   );
