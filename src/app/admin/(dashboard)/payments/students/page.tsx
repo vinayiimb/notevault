@@ -2,7 +2,9 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { describeItems, getNotesCatalog } from "@/lib/paid-notes";
-import { grantSubjectsAction, revokeSubjectAction } from "@/lib/paid-notes-actions";
+import { grantSubjectsAction, resetStudentDevicesAction, revokeSubjectAction } from "@/lib/paid-notes-actions";
+import { listLiveDevices } from "@/lib/student-devices";
+import { MAX_DEVICES } from "@/lib/student-device-policy";
 import { ResetPasswordButton } from "@/components/admin/payment-approve";
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none";
@@ -82,10 +84,11 @@ async function StudentList({ q }: { q: string }) {
 }
 
 async function StudentDetail({ email }: { email: string }) {
-  const [purchases, account, catalog] = await Promise.all([
+  const [purchases, account, catalog, devices] = await Promise.all([
     prisma.purchase.findMany({ where: { email }, orderBy: { createdAt: "desc" } }),
     prisma.notesAccount.findUnique({ where: { email }, select: { email: true } }),
     getNotesCatalog(),
+    listLiveDevices(email).catch(() => null), // null = migration not applied yet
   ]);
   const approved = purchases.filter((p) => p.status === "APPROVED");
   const unlocked = [...new Set(approved.flatMap((p) => p.items))];
@@ -110,7 +113,28 @@ async function StudentDetail({ email }: { email: string }) {
           <dd>₹{paid}</dd>
           <dt className="text-muted">Password login</dt>
           <dd>{account ? "Yes" : "No (can still use Google)"}</dd>
+          <dt className="text-muted">Devices</dt>
+          <dd>
+            {devices === null ? (
+              "Not tracked yet (device migration pending)"
+            ) : devices.length === 0 ? (
+              "None signed in"
+            ) : (
+              <span>
+                {devices.length}/{MAX_DEVICES} — {devices.map((d) => d.label).join(", ")}
+              </span>
+            )}
+          </dd>
         </dl>
+        {devices !== null && (
+          <form action={resetStudentDevicesAction} className="mt-3 flex items-center gap-3 text-xs text-muted">
+            <input type="hidden" name="email" value={email} />
+            <button type="submit" className="rounded-lg border border-border px-3 py-1.5 text-xs hover:border-red-500 hover:text-red-500">
+              Reset devices
+            </button>
+            Signs them out everywhere and clears their swap count (lost phone, hit the limit).
+          </form>
+        )}
         <div className="mt-3 border-t border-border pt-3">
           <ResetPasswordButton email={email} phone={phone} subjects={subjects} />
         </div>

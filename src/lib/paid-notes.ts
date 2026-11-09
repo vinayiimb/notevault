@@ -1,4 +1,5 @@
 import "server-only";
+import { cache } from "react";
 import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
@@ -6,6 +7,7 @@ import { getSession, jwtSecret } from "@/lib/auth";
 import { findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
 import { slugify } from "@/lib/utils";
 import { itemKey } from "@/lib/paid-notes-pricing";
+import { DEVICE_IDLE_DAYS } from "@/lib/student-device-policy";
 import raw from "../../public/data/canonical-programmes.json";
 
 // Paid subject notes: students pay by UPI, submit email + UTR, an admin
@@ -47,8 +49,9 @@ export async function getPaymentSettings(): Promise<PaymentSettings> {
   }
 }
 
-export function signStudentSession(email: string) {
-  return jwt.sign({ studentEmail: email }, jwtSecret(), { expiresIn: `${STUDENT_SESSION_DAYS}d` });
+/** `deviceId` ties the session to a StudentDevice row (see student-devices.ts); omitted only while that table is missing. */
+export function signStudentSession(email: string, deviceId?: string) {
+  return jwt.sign({ studentEmail: email, ...(deviceId && { did: deviceId }) }, jwtSecret(), { expiresIn: `${STUDENT_SESSION_DAYS}d` });
 }
 
 export const STUDENT_COOKIE_OPTIONS = {
@@ -59,15 +62,46 @@ export const STUDENT_COOKIE_OPTIONS = {
   maxAge: 60 * 60 * 24 * STUDENT_SESSION_DAYS,
 };
 
-export async function getStudentEmail(): Promise<string | null> {
+const TOUCH_EVERY_MS = 60 * 60 * 1000;
+
+// The signed-in student, re-checked against their device row on every request
+// so signing a device out (or an admin reset) takes effect at once. Sessions
+// issued before devices existed have no `did` and stay valid until they
+// expire; if the table itself is missing (migration not applied yet) the
+// signature alone is trusted, so a deploy can never lock students out.
+export const getStudentSession = cache(async (): Promise<{ email: string; deviceId: string | null } | null> => {
   try {
     const token = (await cookies()).get(STUDENT_COOKIE)?.value;
     if (!token) return null;
-    const payload = jwt.verify(token, jwtSecret()) as { studentEmail?: string };
-    return payload.studentEmail ?? null;
+    const payload = jwt.verify(token, jwtSecret()) as { studentEmail?: string; did?: string };
+    const email = payload.studentEmail;
+    if (!email) return null;
+    if (!payload.did) return { email, deviceId: null };
+    try {
+      const device = await prisma.studentDevice.findUnique({ where: { id: payload.did } });
+      const now = Date.now();
+      if (!device || device.email !== email || device.revokedAt || now - device.lastSeenAt.getTime() > DEVICE_IDLE_DAYS * 86_400_000) return null;
+      if (now - device.lastSeenAt.getTime() > TOUCH_EVERY_MS) {
+        await prisma.studentDevice.update({ where: { id: device.id }, data: { lastSeenAt: new Date(now) } }).catch(() => {});
+      }
+      return { email, deviceId: device.id };
+    } catch (err) {
+      if (isMissingTable(err)) return { email, deviceId: null };
+      throw err;
+    }
   } catch {
     return null;
   }
+});
+
+export async function getStudentEmail(): Promise<string | null> {
+  return (await getStudentSession())?.email ?? null;
+}
+
+/** Prisma "table/column does not exist" — the migration hasn't been applied to this database yet. */
+export function isMissingTable(err: unknown): boolean {
+  const code = (err as { code?: string } | null)?.code;
+  return code === "P2021" || code === "P2022";
 }
 
 export async function getUnlockedItems(email: string): Promise<Set<string>> {
@@ -78,18 +112,23 @@ export async function getUnlockedItems(email: string): Promise<Set<string>> {
   return new Set(purchases.flatMap((p) => p.items));
 }
 
-export async function canReadFullNote(programmeSlug: string, subjectSlug: string): Promise<boolean> {
+export type NoteAccess = "free" | "admin" | "owner" | "locked";
+
+// Why (or whether) this visitor may read the full note: "free" = the paywall
+// is off or the note is free for everyone, "admin", "owner" = a signed-in
+// student with an approved purchase, "locked" = preview only.
+export async function getNoteAccess(programmeSlug: string, subjectSlug: string): Promise<NoteAccess> {
   const settings = await getPaymentSettings();
-  if (!settings.active) return true;
-  if (await getSession()) return true; // admins always see everything
+  if (!settings.active) return "free";
+  if (await getSession()) return "admin"; // admins always see everything
   const note = await prisma.canonicalSubjectNote.findUnique({
     where: { programmeSlug_subjectSlug: { programmeSlug, subjectSlug } },
     select: { isFree: true },
   });
-  if (note?.isFree) return true; // admin opted this subject out of the paywall
+  if (note?.isFree) return "free"; // admin opted this subject out of the paywall
   const email = await getStudentEmail();
-  if (!email) return false;
-  return (await getUnlockedItems(email)).has(itemKey(programmeSlug, subjectSlug));
+  if (!email) return "locked";
+  return (await getUnlockedItems(email)).has(itemKey(programmeSlug, subjectSlug)) ? "owner" : "locked";
 }
 
 // Paid-only perks (e.g. "Download all" ZIPs, which cost Railway egress): an

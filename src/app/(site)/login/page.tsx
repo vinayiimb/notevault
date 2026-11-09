@@ -19,11 +19,11 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center px-4 py-16 sm:px-6">
-      <h1 className="text-center font-display text-3xl font-bold tracking-[-0.03em]">Log in to your account</h1>
+      <h1 className="text-center font-display text-3xl font-bold tracking-[-0.03em]">Student login</h1>
       <p className="mt-3 text-center text-sm text-muted">
         {googleSignInEnabled
-          ? "Continue with your Gmail — or use the password we sent you on WhatsApp."
-          : "Use your Gmail and the password we sent you on WhatsApp."}
+          ? "Log in with the Gmail you bought with — your notes open in your dashboard. Works on up to 2 devices."
+          : "Use your Gmail and the password we sent you on WhatsApp. Works on up to 2 devices."}
       </p>
       {googleSignInEnabled && (
         <div className="mt-8">

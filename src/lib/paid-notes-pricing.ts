@@ -22,13 +22,20 @@ export function planFor(subjects: number): Plan {
   return PLANS.find((p) => p.subjects === subjects) ?? PLANS[0];
 }
 
+// Whether signed-in students get a "Download PDF" button. Off on purpose: a
+// PDF is the one thing that can be forwarded to a whole class, which is how a
+// single sale turns into zero. Notes are read inside the student dashboard,
+// on up to 2 devices. Admins always see the button. Flip this to bring it back
+// (the marketing list below follows it).
+export const STUDENT_PDF_DOWNLOAD = false;
+
 // What every paid plan includes, per subject.
 export const PAID_FEATURES = [
   "Complete unit-wise notes",
   "Full worked answers to PYQs",
   "Diagrams, tables & flowcharts",
-  "Download as PDF",
-  "Sign in on any device",
+  ...(STUDENT_PDF_DOWNLOAD ? ["Download as PDF"] : []),
+  "Read on your phone and laptop (2 devices)",
 ] as const;
 
 export function priceFor(count: number): number {

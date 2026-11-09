@@ -25,6 +25,7 @@ export function NotesSection({
   structuredJson,
   resolvedTheme,
   paywall,
+  downloadable,
 }: {
   content: string;
   theme: string;
@@ -35,6 +36,8 @@ export function NotesSection({
   resolvedTheme?: ThemeValues | null;
   // Set when `content` is only the free preview of a paid note.
   paywall?: { programmeSlug: string; subjectSlug: string };
+  // Show the "Download PDF" button (default yes). The student dashboard turns it off, see STUDENT_PDF_DOWNLOAD.
+  downloadable?: boolean;
 }) {
   // format defaults to MARKDOWN and structuredJson stays null for every note
   // created before this feature existed — this branch only ever fires for
@@ -96,6 +99,7 @@ export function NotesSection({
           content={preprocessed}
           headings={headings}
           subjectTheme={{ light: subjectTokens, dark: subjectTokensDark }}
+          downloadable={downloadable}
         />
       )}
     </div>

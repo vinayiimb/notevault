@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Suspense } from "react";
+import { Suspense, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { SignIn } from "@phosphor-icons/react/dist/ssr";
 import { BookOpenText } from "@phosphor-icons/react";
@@ -13,6 +13,13 @@ import { MobileNavMenu, SiteNavigation } from "@/components/site-navigation";
 export function SiteHeader() {
   const pathname = usePathname();
   const isPapers = pathname === "/papers" || pathname.startsWith("/papers");
+  // Non-secret marker cookie set at student login (the real session cookie is httpOnly), so the button can read "My notes".
+  // Re-read on every render (each navigation re-renders the header); false on the server so there is no mismatch.
+  const signedIn = useSyncExternalStore(
+    () => () => {},
+    () => document.cookie.split("; ").includes("notevault_in=1"),
+    () => false,
+  );
 
   return (
     <div
@@ -62,11 +69,11 @@ export function SiteHeader() {
           {/* Student sign-in only. Admins use the direct /admin/login link. */}
           <Link
             href="/login"
-            aria-label="Log in"
+            aria-label={signedIn ? "My notes" : "Log in"}
             className="flex h-8 sm:h-9 items-center justify-center rounded-full bg-brand px-4.5 sm:px-5 text-xs sm:text-sm font-medium text-brand-foreground transition hover:bg-brand-hover"
           >
             <SignIn size={15} weight="bold" className="sm:hidden mr-1" />
-            <span>Login</span>
+            <span>{signedIn ? "My notes" : "Login"}</span>
           </Link>
           <MobileNavMenu />
         </div>

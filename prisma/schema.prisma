@@ -826,6 +826,21 @@ model NotesAccount {
   updatedAt    DateTime @updatedAt
 }
 
+// A browser or phone a student signed in on. A student may have at most 2
+// "live" devices (not revoked, seen in the last 30 days) — see
+// src/lib/student-devices.ts. The row id is the `did` claim in the student
+// session cookie, so revoking a row signs that device out at once.
+model StudentDevice {
+  id         String    @id @default(cuid())
+  email      String
+  label      String // "Chrome on iPhone"
+  createdAt  DateTime  @default(now())
+  lastSeenAt DateTime  @default(now())
+  revokedAt  DateTime?
+
+  @@index([email, revokedAt])
+}
+
 // One row per public tool/tab whose status an admin changed from its default
 // (defaults live in src/lib/feature-flags.ts). status: "live" | "soon" | "hidden".
 model FeatureFlag {

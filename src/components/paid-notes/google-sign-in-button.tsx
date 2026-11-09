@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import type { DeviceInfo } from "@/lib/student-devices";
+import { DevicePicker } from "./device-picker";
 import { FIREBASE_CONFIG, googleSignInEnabled } from "@/lib/firebase-config";
-import { googleSignInAction } from "@/lib/paid-notes-actions";
+import { googleSignInAction, type FormResult } from "@/lib/paid-notes-actions";
 import { adminGoogleSignInAction } from "@/lib/actions";
 
 // Google's official four-colour "G".
@@ -19,11 +21,21 @@ function GoogleG() {
 
 export function GoogleSignInButton({ next = "", label = "Continue with Google", admin = false }: { next?: string; label?: string; admin?: boolean }) {
   const [error, setError] = useState<string | null>(null);
+  // Kept so picking a device to replace can retry without another Google popup.
+  const [blocked, setBlocked] = useState<{ idToken: string; devices: DeviceInfo[] } | null>(null);
   const [pending, startTransition] = useTransition();
   if (!googleSignInEnabled) return null;
 
+  async function submit(idToken: string, replaceId?: string) {
+    const res: FormResult = admin ? await adminGoogleSignInAction(idToken, next) : await googleSignInAction(idToken, next, replaceId);
+    if (!res?.error) return;
+    setError(res.error);
+    setBlocked(res.devices ? { idToken, devices: res.devices } : null);
+  }
+
   async function signIn() {
     setError(null);
+    setBlocked(null);
     try {
       // Loaded on click only — keeps Firebase out of every page's bundle.
       const [{ initializeApp, getApps }, { getAuth, GoogleAuthProvider, signInWithPopup, signOut }] = await Promise.all([
@@ -36,10 +48,7 @@ export function GoogleSignInButton({ next = "", label = "Continue with Google", 
       const idToken = await result.user.getIdToken();
       // Our own cookie is the session from here on; Firebase's isn't needed.
       await signOut(auth).catch(() => {});
-      startTransition(async () => {
-        const res = await (admin ? adminGoogleSignInAction : googleSignInAction)(idToken, next);
-        if (res?.error) setError(res.error);
-      });
+      startTransition(() => submit(idToken));
     } catch (err) {
       const code = (err as { code?: string }).code ?? "";
       if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") return;
@@ -62,7 +71,16 @@ export function GoogleSignInButton({ next = "", label = "Continue with Google", 
         <GoogleG />
         {pending ? "Signing in…" : label}
       </button>
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+      {blocked ? (
+        <DevicePicker
+          devices={blocked.devices}
+          error={error ?? undefined}
+          disabled={pending}
+          onPick={(id) => startTransition(() => submit(blocked.idToken, id))}
+        />
+      ) : (
+        error && <p className="mt-2 text-sm text-red-600">{error}</p>
+      )}
     </div>
   );
 }

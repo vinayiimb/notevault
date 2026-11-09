@@ -8,7 +8,8 @@ import { prisma } from "@/lib/prisma";
 import { clearLoginFailures, generatePassword, getSession, hashPassword, isLoginLocked, loginThrottleKey, recordLoginFailure, verifyPassword } from "@/lib/auth";
 import { deleteByUrl, putBytes } from "@/lib/storage";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
-import { STUDENT_COOKIE, STUDENT_COOKIE_OPTIONS, signStudentSession } from "@/lib/paid-notes";
+import { getStudentEmail } from "@/lib/paid-notes";
+import { endCurrentStudentSession, resetStudentDevices, revokeStudentDevice, startStudentSession, type DeviceInfo } from "@/lib/student-devices";
 import { normalizeEmail, normalizePhone, normalizeUtr, priceFor } from "@/lib/paid-notes-pricing";
 import { FIREBASE_CONFIG, googleSignInEnabled } from "@/lib/firebase-config";
 import { PROMOTER_COOKIE, PROMOTER_COOKIE_OPTIONS, getPromoter, promoterUtrPrefix, signPromoterSession } from "@/lib/promoter";
@@ -16,7 +17,8 @@ import { verifyFirebaseIdToken } from "@/lib/firebase-token";
 import { notifyOwner } from "@/lib/owner-notify";
 import { paymentAlert } from "@/lib/owner-messages";
 
-export type FormResult = { ok?: boolean; error?: string };
+// `devices` is set when a sign-in is refused because both device slots are taken.
+export type FormResult = { ok?: boolean; error?: string; devices?: DeviceInfo[] };
 
 // ---------- Student ----------
 
@@ -67,7 +69,8 @@ export async function studentLoginAction(_prev: FormResult, formData: FormData):
     return { error: "Wrong email or password. Use the login we sent you on WhatsApp." };
   }
   clearLoginFailures(throttleKey);
-  (await cookies()).set(STUDENT_COOKIE, signStudentSession(account.email), STUDENT_COOKIE_OPTIONS);
+  const started = await startStudentSession(account.email, { replaceDeviceId: String(formData.get("replace") ?? "") || undefined });
+  if (!started.ok) return { error: started.error, devices: started.devices };
   // Only same-site paths — never an open redirect.
   redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/account");
 }
@@ -76,7 +79,7 @@ export async function studentLoginAction(_prev: FormResult, formData: FormData):
 // sends us the ID token; we verify it and start the same student session the
 // password login does. Any verified Google account can sign in — what it
 // unlocks is still only the approved purchases for that Gmail.
-export async function googleSignInAction(idToken: string, next: string): Promise<FormResult> {
+export async function googleSignInAction(idToken: string, next: string, replaceDeviceId?: string): Promise<FormResult> {
   if (!googleSignInEnabled) return { error: "Google sign-in isn't set up yet." };
   let email: string;
   try {
@@ -84,13 +87,23 @@ export async function googleSignInAction(idToken: string, next: string): Promise
   } catch {
     return { error: "Google sign-in failed. Please try again." };
   }
-  (await cookies()).set(STUDENT_COOKIE, signStudentSession(email), STUDENT_COOKIE_OPTIONS);
+  const started = await startStudentSession(email, { replaceDeviceId });
+  if (!started.ok) return { error: started.error, devices: started.devices };
   redirect(next.startsWith("/") && !next.startsWith("//") ? next : "/account");
 }
 
 export async function studentLogoutAction() {
-  (await cookies()).delete(STUDENT_COOKIE);
+  await endCurrentStudentSession();
   redirect("/");
+}
+
+// Account → Devices: sign one of your own other devices out.
+export async function signOutDeviceAction(formData: FormData) {
+  const email = await getStudentEmail();
+  if (!email) redirect("/login?next=/account");
+  const result = await revokeStudentDevice(email, String(formData.get("id") ?? ""));
+  revalidatePath("/account");
+  if (!result.ok) redirect(`/account?tab=devices&error=${encodeURIComponent(result.error ?? "")}`);
 }
 
 // ---------- Admin ----------
@@ -182,6 +195,15 @@ export async function resetStudentPasswordAction(_prev: ApproveResult, formData:
     update: { passwordHash: await hashPassword(password) },
   });
   return { ok: true, email, phone, password };
+}
+
+// Admin → Payments → Students: forget a student's devices (lost phone, hit the swap limit).
+export async function resetStudentDevicesAction(formData: FormData) {
+  await requireAdmin();
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  if (!email) return;
+  await resetStudentDevices(email);
+  revalidatePath("/admin/payments/students");
 }
 
 export async function rejectPurchaseAction(formData: FormData) {

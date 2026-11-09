@@ -140,7 +140,7 @@ export function PaidNotesCheckout({
           <h2 className="mt-4 text-xl font-semibold">Payment submitted</h2>
           <p className="mt-2 text-sm leading-relaxed text-muted">
             We&apos;ll verify your UPI payment (usually within a few hours) and send your login — your Gmail and a password —
-            on WhatsApp. Sign in with it to open your notes on any device.
+            on WhatsApp. Log in with it to read your notes in your student dashboard (on up to 2 devices).
           </p>
           <Link href="/login" className="mt-6 inline-block text-sm font-semibold text-brand hover:underline">
             Got the login? Sign in →

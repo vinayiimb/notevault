@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getRazorpayOrder, verifyCheckoutSignature } from "@/lib/razorpay";
 import { completeRazorpayPurchase } from "@/lib/paid-notes-actions";
-import { STUDENT_COOKIE, STUDENT_COOKIE_OPTIONS, signStudentSession } from "@/lib/paid-notes";
+import { startStudentSession } from "@/lib/student-devices";
 
 // Called by the browser right after Razorpay Checkout's success handler.
 // Verifies the payment really happened (HMAC signature, not just "the popup
@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
     amount: Number(notes.amount),
   });
 
-  const res = NextResponse.json({ ok: true });
-  res.cookies.set(STUDENT_COOKIE, signStudentSession(notes.email), STUDENT_COOKIE_OPTIONS);
-  return res;
+  // Sign them in on this device — unless both of their device slots are already in use,
+  // in which case the purchase still stands and they pick a device to replace at /login.
+  const started = await startStudentSession(notes.email);
+  return NextResponse.json({ ok: true, signedIn: started.ok });
 }

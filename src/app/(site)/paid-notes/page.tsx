@@ -72,11 +72,11 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
         <section className="mx-auto mt-8 max-w-2xl rounded-2xl border border-border bg-surface p-5">
           {owned.length > 0 && (
             <>
-              <h2 className="text-sm font-semibold">Your unlocked notes</h2>
+              <h2 className="text-sm font-semibold">Your unlocked notes · <Link href="/account" className="font-medium text-brand hover:underline">open dashboard</Link></h2>
               <ul className="mt-3 flex flex-col gap-2">
                 {owned.map((key) => (
                   <li key={key}>
-                    <Link href={`/notes/${key}`} className="text-sm font-medium text-brand hover:underline">{names[key]} →</Link>
+                    <Link href={`/account/notes/${key}`} className="text-sm font-medium text-brand hover:underline">{names[key]} →</Link>
                   </li>
                 ))}
               </ul>
