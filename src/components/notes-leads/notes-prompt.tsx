@@ -6,6 +6,7 @@ import { slugify } from "@/lib/utils";
 import { itemKey } from "@/lib/paid-notes-pricing";
 import type { LeadResult } from "@/lib/note-lead-actions";
 import { parseLeadSemester, type LeadCourse, type LeadSubject } from "@/lib/note-leads";
+import { OPEN_NOTES_EVENT, promoClickedRecently } from "@/lib/notes-promo";
 import { LeadForm, useKnownLead } from "./lead-form";
 import { NotesPurchase } from "./notes-purchase";
 
@@ -69,6 +70,7 @@ export function NotesPrompt({
   semester,
   subjects,
   courses,
+  auto = true,
 }: {
   source: "paper-pdf" | "pyq-page";
   /** /papers browser only: the paper that is open. The prompt waits for one. */
@@ -80,6 +82,8 @@ export function NotesPrompt({
   subjects?: string[];
   /** Nothing known: the courses to choose from. */
   courses?: LeadCourse[];
+  /** false: never pops up by itself; it only opens when a promo card is tapped. */
+  auto?: boolean;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -97,15 +101,22 @@ export function NotesPrompt({
   const semNumber = parseLeadSemester(semester);
 
   useEffect(() => {
-    if (!landing && !paperId) return;
-    if (promptOff() || (known && askedRecently())) return;
+    if (!auto || (!landing && !paperId)) return;
+    if (promptOff() || promoClickedRecently() || (known && askedRecently())) return;
     const t = setTimeout(() => {
-      if (document.visibilityState !== "visible") return;
+      if (document.visibilityState !== "visible" || promoClickedRecently()) return;
       if (known) markAsked();
       setStep((s) => s ?? "ask");
     }, landing ? LANDING_DELAY_MS : PAPER_DELAY_MS);
     return () => clearTimeout(t);
-  }, [landing, paperId, known]);
+  }, [auto, landing, paperId, known]);
+
+  // A promo card on the page was tapped: open straight at the form (they have already said yes).
+  useEffect(() => {
+    const open = () => setStep((s) => (s === "buy" ? s : "form"));
+    window.addEventListener(OPEN_NOTES_EVENT, open);
+    return () => window.removeEventListener(OPEN_NOTES_EVENT, open);
+  }, []);
 
   // While Razorpay's window is open the dialog steps aside (a native modal blocks clicks outside it).
   useEffect(() => {

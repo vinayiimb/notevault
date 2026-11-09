@@ -11,6 +11,8 @@ import { ContentTocSidebar } from "@/components/content/notes/toc-sidebar";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { ArticleJsonLd } from "@/components/seo/article-jsonld";
 import { OG_IMAGES, SITE_NAME, TWITTER_IMAGES, clampDescription, fitTitle } from "@/lib/seo";
+import { NotesPromoCard } from "@/components/notes-leads/notes-promo";
+import { NotesPromptAnyCourse } from "@/components/notes-leads/notes-prompt-any";
 
 export function generateStaticParams() {
   return getAllBlogPosts().map((post) => ({ slug: post.slug }));
@@ -173,6 +175,14 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
                 </ContentLightboxProvider>
               </ContentThemeProvider>
             </div>
+
+            {/* The articles are about what repeats in DU papers: the reader is exactly who wants the solved notes. */}
+            <NotesPromoCard
+              className="mt-12"
+              title="Want these answers solved for you?"
+              text="Get the solved notes and exam tips for your subject on WhatsApp, written from the same previous year papers."
+            />
+            <NotesPromptAnyCourse auto={false} />
 
             <div className="mt-12 rounded-2xl border border-indigo-100 bg-slate-50 p-6 sm:p-8">
               <h2 className="text-lg font-bold text-slate-900">Ready to start revising?</h2>

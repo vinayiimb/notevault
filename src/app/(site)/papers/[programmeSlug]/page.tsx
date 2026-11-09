@@ -26,6 +26,7 @@ import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { FaqBlock } from "@/components/seo/faq-block";
 import { ShareButtons } from "@/components/seo/share-buttons";
 import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
+import { NotesPromoCard } from "@/components/notes-leads/notes-promo";
 
 // Content is derived from a static JSON catalog that changes at most a few
 // times a week (new exam sessions). Rebuild pages daily; render on demand
@@ -146,6 +147,8 @@ export default async function ProgrammePapersPage({
           </p>
         )}
       </header>
+
+      <NotesPromoCard className="mb-8" title={`Need notes for ${programme.name}?`} />
 
       {semesterNumbers.length > 0 && (
         <nav className="mb-8" aria-label="Browse by semester">

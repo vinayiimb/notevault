@@ -13,6 +13,8 @@ import { normalizeEmail, normalizePhone, normalizeUtr, priceFor } from "@/lib/pa
 import { FIREBASE_CONFIG, googleSignInEnabled } from "@/lib/firebase-config";
 import { PROMOTER_COOKIE, PROMOTER_COOKIE_OPTIONS, getPromoter, promoterUtrPrefix, signPromoterSession } from "@/lib/promoter";
 import { verifyFirebaseIdToken } from "@/lib/firebase-token";
+import { notifyOwner } from "@/lib/owner-notify";
+import { paymentAlert } from "@/lib/owner-messages";
 
 export type FormResult = { ok?: boolean; error?: string };
 
@@ -48,6 +50,7 @@ export async function submitPaymentAction(_prev: FormResult, formData: FormData)
     }
     throw err;
   }
+  notifyOwner(paymentAlert({ phone, email, amount: priceFor(items.length), utr }));
   revalidatePath("/admin/payments");
   return { ok: true };
 }

@@ -12,6 +12,7 @@ import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { PaperCard } from "@/components/seo/paper-card";
 import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
 import { singleSemester } from "@/lib/note-leads";
+import { NotesPromoCard } from "@/components/notes-leads/notes-promo";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -146,6 +147,8 @@ export default async function PaperCodePage({
           </p>
         )}
       </header>
+
+      {pc.placements[0] && <NotesPromoCard className="mb-8" title={`Need notes for ${pc.placements[0].subjectName}?`} />}
 
       <div className="space-y-8">
         {years.map((year) => (

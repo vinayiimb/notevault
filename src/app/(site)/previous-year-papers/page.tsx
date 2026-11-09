@@ -11,6 +11,7 @@ import { getCatalogPaperCount } from "@/lib/du-pyp-data";
 import { BreadcrumbJsonLd } from "@/components/seo/breadcrumb-jsonld";
 import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
+import { NotesPromoCard } from "@/components/notes-leads/notes-promo";
 
 export const metadata: Metadata = {
   title: "DU Previous Year Question Papers",
@@ -55,6 +56,8 @@ export default async function PreviousYearPapersPage() {
       </div>
 
       {/* UGCF paper-type hubs — cross-programme AEC / SEC / VAC / GE landing pages */}
+      <NotesPromoCard className="mt-8" />
+
       <section className="mt-10 sm:mt-14">
         <h2 className="font-display text-[24px] font-semibold leading-[1.12] tracking-[-0.03em] text-foreground sm:text-[32px]">Browse by paper type (UGCF)</h2>
         <ul className="mt-5 flex flex-wrap gap-2">

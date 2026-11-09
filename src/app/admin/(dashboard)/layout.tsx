@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { ChartBar, CurrencyInr, FileArrowUp, Files, Flag, Gear, GraduationCap, NotePencil, SignOut, UsersThree } from "@phosphor-icons/react/dist/ssr";
+import { ChartBar, ChatCircleText, CurrencyInr, FileArrowUp, Files, Flag, Gear, GraduationCap, NotePencil, SignOut, UsersThree } from "@phosphor-icons/react/dist/ssr";
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -24,6 +24,7 @@ export default async function AdminDashboardLayout({
 
   // Badge on the Leads link. A missing table (migration not applied yet) must never break the admin.
   const newLeads = await prisma.noteLead.count({ where: { status: "NEW" } }).catch(() => 0);
+  const unreadFeedback = await prisma.feedback.count({ where: { read: false } }).catch(() => 0);
 
   return (
     <div className="theme-classic flex min-h-[100dvh] flex-col md:flex-row">
@@ -95,6 +96,15 @@ export default async function AdminDashboardLayout({
             {newLeads > 0 && (
               <span className="ml-auto rounded-full bg-accent px-1.5 text-[11px] font-semibold leading-5 text-accent-foreground">
                 {newLeads}
+              </span>
+            )}
+          </Link>
+          <Link href="/admin/feedback" className={navItem}>
+            <ChatCircleText size={16} />
+            Feedback
+            {unreadFeedback > 0 && (
+              <span className="ml-auto rounded-full bg-accent px-1.5 text-[11px] font-semibold leading-5 text-accent-foreground">
+                {unreadFeedback}
               </span>
             )}
           </Link>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Check, Lock, WhatsappLogo } from "@phosphor-icons/react";
-import type { LeadResult } from "@/lib/note-lead-actions";
+import { leadWantsChatAction, type LeadResult } from "@/lib/note-lead-actions";
 import { ANY_SUBJECT } from "@/lib/note-leads";
 import { NOTES_DELIVERY_TEXT, ORDER_PRICE, orderPlanLabel, type OrderPlan } from "@/lib/notes-orders";
 
@@ -245,7 +245,10 @@ export function NotesPurchase({
       </div>
       <button
         type="button"
-        onClick={() => setPhase("later")}
+        onClick={() => {
+          void leadWantsChatAction({ phone: result.phone ?? "" }).catch(() => undefined); // tells the owner on WhatsApp
+          setPhase("later");
+        }}
         className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
       >
         <WhatsappLogo size={18} weight="fill" className="text-[#25D366]" />

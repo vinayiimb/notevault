@@ -7,6 +7,8 @@ import { getSession } from "@/lib/auth";
 import { findCanonicalProgramme, findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
 import { slugify } from "@/lib/utils";
 import { notesOrdersReady } from "@/lib/notes-orders-server";
+import { notifyOwner } from "@/lib/owner-notify";
+import { chatAlert, leadAlert } from "@/lib/owner-messages";
 import {
   ANY_SUBJECT,
   ANY_SUBJECT_SLUG,
@@ -106,6 +108,8 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
           phone, programmeSlug, programme: programmeName, semester, subjectSlug, subject: subjectName, hasNotes, source,
         },
       });
+      // Tell the owner on WhatsApp (fire and forget; a failure here never touches the student's request).
+      notifyOwner(leadAlert({ phone, programme: programmeName, semester, subject: subjectName, hasNotes, source }));
     }
   } catch (err) {
     // Never block a student from their notes because the lead couldn't be saved.
@@ -113,6 +117,30 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
   }
   const canBuy = await notesOrdersReady().catch(() => false);
   return { ok: true, hasNotes, subject: subjectName, subjectSlug, programme: programmeName, programmeSlug, semester, phone, canBuy };
+}
+
+/**
+ * The student chose "Message me on WhatsApp first" in the purchase step. Only acts for a number that just left a
+ * lead (so it can't be used to send the owner arbitrary alerts): marks the lead and pings the owner.
+ */
+export async function leadWantsChatAction(input: { phone: string }): Promise<{ ok: boolean }> {
+  const phone = parseLeadPhone(String(input?.phone ?? ""));
+  if (!phone) return { ok: false };
+  const ip = (await headers()).get("x-forwarded-for")?.split(",").pop()?.trim() ?? "local";
+  if (throttled(ip)) return { ok: false };
+  try {
+    const lead = await prisma.noteLead.findFirst({
+      where: { phone, createdAt: { gt: new Date(Date.now() - 24 * 60 * 60 * 1000) } },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!lead) return { ok: false };
+    if (!lead.adminNote) await prisma.noteLead.update({ where: { id: lead.id }, data: { adminNote: "Asked you to message them first" } });
+    notifyOwner(chatAlert(lead));
+    return { ok: true };
+  } catch (err) {
+    console.error("chat request not recorded:", err);
+    return { ok: false };
+  }
 }
 
 // ---------- Admin ----------

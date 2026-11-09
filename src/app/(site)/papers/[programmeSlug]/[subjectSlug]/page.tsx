@@ -31,6 +31,7 @@ import { getSemesterGuidePost, getPyqUsageGuidePost } from "@/lib/blog";
 import { getSubjectQuestions, getSampleQuestions } from "@/lib/subject-questions";
 import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
 import { singleSemester } from "@/lib/note-leads";
+import { NotesPromoCard } from "@/components/notes-leads/notes-promo";
 
 /**
  * One sentence of genuinely subject-specific coverage detail, built only
@@ -298,6 +299,8 @@ export default async function SubjectPapersPage({
           </p>
         )}
       </header>
+
+      {hasContent && <NotesPromoCard className="mb-8" title={`Need notes for ${subject.name}?`} />}
 
       {hasContent && (
         <div className="mb-8">

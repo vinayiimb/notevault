@@ -17,6 +17,7 @@ import { FaqBlock } from "@/components/seo/faq-block";
 import { ShareButtons } from "@/components/seo/share-buttons";
 import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
 import { singleSemester } from "@/lib/note-leads";
+import { NotesPromoCard } from "@/components/notes-leads/notes-promo";
 
 export const revalidate = 86400;
 export const dynamicParams = true;
@@ -107,6 +108,8 @@ export default async function IndividualPaperPage({
           {when ? ` · ${when}` : ""}
         </p>
       </header>
+
+      <NotesPromoCard className="mb-6" title={`Need notes for ${paper.subjectName}?`} />
 
       <dl className="mb-6 grid grid-cols-2 gap-x-6 gap-y-3 rounded-xl border border-border bg-surface p-4 text-sm sm:grid-cols-3">
         <div>

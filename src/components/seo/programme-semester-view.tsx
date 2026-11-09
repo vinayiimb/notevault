@@ -9,6 +9,7 @@ import { VisibleBreadcrumb } from "@/components/seo/visible-breadcrumb";
 import { FaqBlock } from "@/components/seo/faq-block";
 import { ShareButtons } from "@/components/seo/share-buttons";
 import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
+import { NotesPromoCard } from "@/components/notes-leads/notes-promo";
 
 // Human-readable label for a paper-type code, reused by the auto-generated
 // subject-mix summary below (SEO copy) and the grouped section headings.
@@ -150,6 +151,8 @@ export function ProgrammeSemesterView({
           </p>
         )}
       </header>
+
+      <NotesPromoCard className="mb-8" title={`Need notes for ${data.programme.name} Semester ${data.semester}?`} />
 
       <div className="space-y-8">
         {orderedTypes.map((type) => (

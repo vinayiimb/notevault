@@ -10,8 +10,8 @@ export default async function AdminFeedbackPage() {
   const unreadCount = feedback.filter((f) => !f.read).length;
 
   return (
-    <div className="p-8">
-      <div className="rounded-[28px] border border-border bg-surface p-8 shadow-[0_10px_40px_rgba(15,23,42,.06)] sm:p-10">
+    <div className="p-4 sm:p-8">
+      <div className="rounded-[28px] border border-border bg-surface p-5 shadow-[0_10px_40px_rgba(15,23,42,.06)] sm:p-10">
         <h1 className="font-display text-3xl font-extrabold tracking-tight sm:text-4xl">Feedback</h1>
         <p className="mt-2 max-w-2xl text-sm text-muted">
           Everything submitted through the public{" "}

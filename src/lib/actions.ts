@@ -42,6 +42,8 @@ import type { Prisma, BulkUploadRowStatus } from "@prisma/client";
 import { DEFAULT_THEME, ThemeValuesSchema } from "@/lib/note-theme";
 import { StructuredNoteSchema } from "@/lib/note-schema";
 import { generateStructuredNote } from "@/lib/ai";
+import { notifyOwner } from "@/lib/owner-notify";
+import { feedbackAlert } from "@/lib/owner-messages";
 import { detectSourceKind, extractSourceTextFromUpload, saveSourceFile } from "@/lib/note-ingestion";
 import {
   StudyContentBlockListSchema,
@@ -3226,6 +3228,7 @@ export async function submitFeedbackAction(formData: FormData) {
   }
 
   await prisma.feedback.create({ data: { message, screenshotUrl, screenshotName } });
+  notifyOwner(feedbackAlert(message, screenshotUrl));
   revalidatePath("/admin/feedback");
   return { ok: true as const };
 }

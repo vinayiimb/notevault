@@ -7,6 +7,7 @@ import { CopyButton } from "@/components/pyq/copy-button";
 import { CgpaLoader } from "@/components/archive/cgpa-loader";
 import { NotesNudge } from "@/components/paid-notes/notes-nudge";
 import { NotesPrompt } from "@/components/notes-leads/notes-prompt";
+import { NotesPromoCard } from "@/components/notes-leads/notes-promo";
 import { semesterLabel, type CatalogPaper } from "@/lib/pyq-catalog-types";
 import { canonicalSubjectKey, preferredSubjectLabel } from "@/lib/subject-normalization";
 import { applyPaperEdits } from "@/lib/paper-edits";
@@ -593,6 +594,25 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
             onOpen={setOpenPaperId}
           />
         )}
+        {/* Before a subject is chosen the right side is mostly empty: offer the notes there. Tapping the card opens
+            the notes flow and the pop-up that follows a paper opening stays away (they were offered once). */}
+        {!subject && (
+          <>
+            <NotesPromoCard
+              className="mt-4"
+              title={course ? `Need notes for ${course}?` : "Need notes for your subject?"}
+              text="Solved answers, the most repeated questions and exam tips for any DU subject, sent on WhatsApp within 24 hours."
+            />
+            <NotesPrompt
+              source="pyq-page"
+              auto={false}
+              courses={(index ?? []).map((c) => ({ slug: c.slug, name: c.course }))}
+              course={course ? { name: course } : undefined}
+              semester={semester}
+              subjects={course && semester ? subjects.map((s) => s.label) : undefined}
+            />
+          </>
+        )}
       </main>
     </div>
   );
@@ -600,7 +620,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
 
 function Placeholder({ title, text, onMobilePick }: { title: string; text: string; onMobilePick: () => void }) {
   return (
-    <div className="flex h-[450px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface/50 p-6 text-center">
+    <div className="flex h-[300px] flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-surface/50 p-6 text-center lg:h-[450px]">
       <FilePdf size={32} weight="duotone" className="text-accent" />
       <p className="text-sm font-semibold text-foreground">{title}</p>
       <p className="max-w-sm text-xs text-muted">{text}</p>

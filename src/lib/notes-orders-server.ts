@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder, type RazorpayOrder } from "@/lib/razorpay";
 import { ORDER_PRICE, fromRazorpayNotes, parseOrderRequest, toRazorpayNotes } from "@/lib/notes-orders";
+import { notifyOwner } from "@/lib/owner-notify";
+import { orderAlert } from "@/lib/owner-messages";
 
 let readyCache: { at: number; ok: boolean } | null = null;
 
@@ -80,6 +82,9 @@ export async function recordNotesOrderFromRazorpay(order: RazorpayOrder, payment
     if ((err as { code?: string }).code === "P2002") return "recorded";
     throw err;
   }
+
+  // Only the call that actually recorded the order gets here, so the owner is told exactly once.
+  notifyOwner(orderAlert(notes));
 
   // They bought what they asked for, so those asks are no longer open leads.
   await prisma.noteLead
