@@ -54,7 +54,7 @@ export default async function SearchPage({
                 </span>
                 <div className="min-w-0">
                   <p className="font-medium">{subject.name}</p>
-                  <p className="truncate text-xs text-muted">
+                  <p className="text-xs text-muted">
                     {levelLabel(subject.term.program.level)} · {subject.term.program.name} ·{" "}
                     {subject.term.name}
                   </p>

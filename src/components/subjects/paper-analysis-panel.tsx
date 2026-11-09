@@ -90,7 +90,7 @@ export function PaperAnalysisPanel({
       )}
 
       {!analysis && !error && (
-        <div className="grid gap-px bg-border sm:grid-cols-3">
+        <div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-3">
           {VIEWS.map(({ key, label, Icon }) => (
             <div key={key} className="bg-surface p-5">
               <Icon size={20} weight="bold" className="text-accent" />

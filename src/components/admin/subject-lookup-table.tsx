@@ -55,7 +55,7 @@ export function SubjectLookupTable({ rows }: { rows: SubjectRow[] }) {
       </p>
 
       <div className="mt-3 overflow-hidden rounded-xl border border-border bg-surface">
-        <div className="max-h-[70vh] overflow-y-auto">
+        <div className="max-h-[70vh] overflow-auto">
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-surface-muted text-xs uppercase text-muted">
               <tr>

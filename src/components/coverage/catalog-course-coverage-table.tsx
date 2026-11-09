@@ -311,7 +311,7 @@ export function CatalogCourseCoverageTable({
                   Full Archive immediately. Maximum size: 25 MB.
                 </p>
 
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
                     <label htmlFor="coverage-semester-group" className="text-sm font-medium">
                       Semester group

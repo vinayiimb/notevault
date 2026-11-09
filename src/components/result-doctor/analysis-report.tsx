@@ -77,7 +77,7 @@ function TargetPlanner({ analysis }: { analysis: Analysis }) {
       <h2 className="text-lg font-semibold">Plan your target CGPA</h2>
       <p className="mt-1 text-sm text-muted">What you need to average in the semesters you have left.</p>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-3">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <label className="flex flex-col gap-1.5 text-xs font-medium text-muted" htmlFor="target-cgpa">
           Target CGPA
           <input
@@ -287,7 +287,7 @@ export function AnalysisReport({ analysis }: { analysis: Analysis }) {
         </ul>
       </section>
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         <section className={CARD}>
           <h2 className="text-lg font-semibold">By paper type</h2>
           <p className="mt-1 text-sm text-muted">Average grade point, and each type&apos;s share of your credits.</p>
@@ -320,7 +320,7 @@ export function AnalysisReport({ analysis }: { analysis: Analysis }) {
 
       <TargetPlanner analysis={analysis} />
 
-      <div className="grid gap-6 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
         {[
           { title: "Your strongest papers", papers: analysis.strongest },
           { title: "Where to focus", papers: analysis.weakest },

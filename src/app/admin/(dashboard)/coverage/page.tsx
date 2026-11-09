@@ -162,7 +162,7 @@ export default async function AdminCoveragePage({
             <p className="mt-1 text-xs text-muted">
               Edit inline to fix a wrong year or move a paper to a different subject.
             </p>
-            <div className="mt-3 overflow-hidden rounded-2xl border border-border">
+            <div className="mt-3 overflow-x-auto rounded-2xl border border-border">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-border bg-surface-muted">

@@ -14,12 +14,12 @@ export function VisibleBreadcrumb({ items }: { items: BreadcrumbItem[] }) {
       {items.map((item, index) => {
         const isLast = index === items.length - 1;
         return (
-          <div key={index} className="flex items-center gap-1.5">
+          <div key={index} className="flex min-w-0 items-center gap-1.5">
             {index > 0 && (
               <CaretRight size={11} weight="bold" className="text-muted/50 shrink-0" />
             )}
             {isLast ? (
-              <span className="font-semibold text-foreground truncate max-w-[180px] sm:max-w-xs" aria-current="page">
+              <span className="min-w-0 break-words font-semibold text-foreground" aria-current="page">
                 {item.name}
               </span>
             ) : (

@@ -167,14 +167,14 @@ export default async function ProgrammePapersPage({
 
       <section>
         <h2 className="mb-3 text-lg font-bold text-foreground">Subjects</h2>
-        <ul className="grid gap-2 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {sortedSubjects.map((s) => (
             <li key={s.slug}>
               <Link
                 href={`/papers/${programme.slug}/${s.slug}`}
                 className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50"
               >
-                <span className="min-w-0 truncate font-medium text-foreground">{s.name}</span>
+                <span className="min-w-0 break-words font-medium text-foreground">{s.name}</span>
                 <span className="ml-2 shrink-0 text-xs text-muted">
                   {s.papers.length} paper{s.papers.length === 1 ? "" : "s"}
                 </span>
@@ -189,7 +189,7 @@ export default async function ProgrammePapersPage({
       {relatedProgrammes.length > 0 && (
         <section className="mt-14 border-t border-border pt-8">
           <h2 className="mb-4 text-xl font-bold text-foreground">Related programmes</h2>
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {relatedProgrammes.map((p) => (
               <li key={p.slug}>
                 <Link

@@ -94,7 +94,7 @@ export default async function PreviousYearPapersPage() {
                 href={`/papers/${p.slug}`}
                 className="flex items-center justify-between gap-3 rounded-[18px] bg-surface-muted px-4 py-3.5 transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]"
               >
-                <span className="min-w-0 truncate text-[15px] font-medium text-foreground">{p.name}</span>
+                <span className="min-w-0 break-words text-[15px] font-medium text-foreground">{p.name}</span>
                 <span className="flex shrink-0 items-center gap-1 text-[13px] text-muted">
                   {p.totalPapers.toLocaleString("en-IN")}
                   <CaretRight size={12} weight="bold" className="text-brand" />
@@ -161,7 +161,7 @@ export default async function PreviousYearPapersPage() {
               className="flex items-center justify-between gap-3 rounded-[22px] bg-surface-muted p-5 transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]"
             >
               <div className="min-w-0">
-                <span className="block truncate text-[15px] font-semibold text-foreground">{session.label}</span>
+                <span className="block break-words text-[15px] font-semibold text-foreground">{session.label}</span>
                 <span className="mt-0.5 block text-[13px] text-muted">{session._count.links} courses linked</span>
               </div>
               <CaretRight size={14} weight="bold" className="shrink-0 text-brand" />

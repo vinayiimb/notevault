@@ -227,7 +227,7 @@ export default async function IndividualPaperPage({
           <h2 className="mb-4 text-xl font-bold text-foreground">
             Other years — {paper.subjectName}
           </h2>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {otherYears.map((p) => (
               <PaperCard key={p.slug} paper={p} />
             ))}

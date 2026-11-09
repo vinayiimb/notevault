@@ -64,7 +64,7 @@ export function VennVisual({ visual, visuals }: { visual: VennVisual; visuals: T
         })}
       </svg>
 
-      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+      <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
         {visual.sets.map((set, i) => (
           <div key={set.id} className="rounded-xl border border-border p-3">
             <p className="text-xs font-bold tracking-wide text-muted uppercase">{set.label}</p>

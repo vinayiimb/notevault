@@ -74,7 +74,7 @@ export function ManualSubjectMerge({
       </p>
 
       <div className="rounded-2xl border border-border bg-surface p-5">
-        <div className="max-h-72 overflow-y-auto rounded-xl border border-border">
+        <div className="max-h-72 overflow-auto rounded-xl border border-border">
           <table className="w-full text-left text-sm">
             <thead className="sticky top-0 border-b border-border bg-surface-muted text-xs uppercase tracking-wide text-muted">
               <tr>

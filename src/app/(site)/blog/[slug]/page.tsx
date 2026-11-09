@@ -134,7 +134,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             Blog
           </Link>
           <span aria-hidden>/</span>
-          <span className="truncate font-medium text-slate-900">{post.title}</span>
+          <span className="min-w-0 break-words font-medium text-slate-900">{post.title}</span>
         </nav>
 
         <Link
@@ -191,7 +191,7 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
             {related.length > 0 && (
               <div className="mt-12 border-t border-slate-200 pt-8">
                 <h2 className="text-lg font-bold text-slate-900">Related articles</h2>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
                   {related.map((item) => (
                     <Link
                       key={item.slug}

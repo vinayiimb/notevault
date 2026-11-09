@@ -177,7 +177,7 @@ export function TermPapersSection({ terms, papers }: { terms: Term[]; papers: Te
         </div>
       </div>
 
-      <div className="mt-6 grid gap-2 sm:grid-cols-2">
+      <div className="mt-6 grid grid-cols-1 gap-2 sm:grid-cols-2">
         {sortedTerms.map((term) => {
           const count = existingPapers.filter((p) => p.termId === term.id).length;
           return (

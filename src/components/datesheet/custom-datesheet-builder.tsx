@@ -228,7 +228,7 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
           automatically since those are compulsory.
         </p>
 
-        <div className="mt-4 grid gap-3 sm:grid-cols-3">
+        <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <label className="block">
             <span className="text-xs font-semibold text-muted">Programme</span>
             <select
@@ -354,7 +354,7 @@ export function CustomDatesheetBuilder({ programmes, examSession }: Props) {
             ))}
           </div>
 
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {electiveCourseOptions.length > 1 && (
               <label className="block">
                 <span className="text-xs font-semibold text-muted">Course / subject</span>

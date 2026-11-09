@@ -79,7 +79,7 @@ function Row({
   say?: string;
 }) {
   return (
-    <div data-mascot-say={say} className="grid items-center gap-10 lg:grid-cols-2 lg:gap-16">
+    <div data-mascot-say={say} className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-16">
       <div className={reverse ? "lg:order-2" : ""}>
         <p className="text-[17px] font-semibold tracking-[-0.01em] text-brand sm:text-[19px]">{eyebrow}</p>
         <h2 className="mt-1.5 text-balance font-display text-[40px] font-semibold leading-[1.06] tracking-[-0.04em] text-foreground sm:text-[56px]">{title}</h2>

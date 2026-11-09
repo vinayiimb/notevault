@@ -350,7 +350,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
           className="flex w-full items-center gap-2 rounded-xl border border-border bg-surface px-4 py-3.5 text-left text-sm font-semibold text-foreground shadow-sm transition hover:bg-surface-muted"
         >
           <Funnel size={18} weight="bold" className="shrink-0 text-muted" />
-          <span className="min-w-0 flex-1 truncate">
+          <span className="line-clamp-2 min-w-0 flex-1 break-words">
             {course
               ? [course, semesterName, subject?.label].filter(Boolean).join(" · ")
               : "Choose course, semester & subject"}
@@ -969,7 +969,7 @@ function FilterCheckbox({ checked, label, count, onClick }: { checked: boolean; 
           </svg>
         )}
       </span>
-      <span className="min-w-0 flex-1 truncate">{label}</span>
+      <span className="min-w-0 flex-1 break-words">{label}</span>
       <span className="shrink-0 text-[11px] text-muted">{count}</span>
     </button>
   );

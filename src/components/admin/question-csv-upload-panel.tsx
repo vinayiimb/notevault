@@ -150,7 +150,7 @@ export function QuestionCsvUploadPanel() {
 function RowResultsTable({ results }: { results: QuestionCsvRowResult[] }) {
   if (results.length === 0) return null;
   return (
-    <div className="mt-4 max-h-96 overflow-y-auto rounded-lg border border-border">
+    <div className="mt-4 max-h-96 overflow-auto rounded-lg border border-border">
       <table className="w-full text-xs">
         <thead className="sticky top-0 bg-surface-muted text-muted">
           <tr>

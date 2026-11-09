@@ -217,7 +217,7 @@ export default function CGPACalculator() {
           <p className="text-xs text-muted-foreground">
             If any subject's GP increases by 1:
           </p>
-          <div className="grid gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {subjects.map((sub) => {
               if (sub.gradePoint >= 10) return null;
               const newCgpa = simulateImprovement(subjects, sub.id, 1);

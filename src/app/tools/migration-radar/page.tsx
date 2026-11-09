@@ -67,7 +67,7 @@ export default function MigrationRadarPage() {
         </button>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
         {migrations.map((migration) => {
           let statusColor = "text-muted bg-surface-muted"; // default
           let statusText = "text-muted";

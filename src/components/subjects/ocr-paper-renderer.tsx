@@ -108,7 +108,7 @@ export function OcrPaperRenderer({ text }: { text: string }) {
           return (
             <section key={`meta-${index}`} className="rounded-2xl border border-sky/30 bg-white/70 p-5 shadow-[0_8px_24px_rgba(66,195,243,.08)] dark:bg-surface/70 sm:p-6">
               <p className="mb-4 font-display text-xl font-bold text-sky-dark">Paper details</p>
-              <div className="grid gap-x-8 gap-y-2 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2">
                 {block.lines.map((line, lineIndex) => (
                   <p key={`${lineIndex}-${line.slice(0, 14)}`} className="border-b border-sky/15 pb-2 text-sm leading-6 text-foreground/80">
                     {line}
@@ -172,7 +172,7 @@ export function OcrContents({ text }: { text: string }) {
   return (
     <nav className="mb-10 border-y border-sky/25 py-7" aria-label="Paper contents">
       <h2 className="font-display text-3xl font-bold text-sky-dark">Contents</h2>
-      <div className="mt-4 grid gap-x-8 gap-y-2 sm:grid-cols-2">
+      <div className="mt-4 grid grid-cols-1 gap-x-8 gap-y-2 sm:grid-cols-2">
         {blocks.map((block, index) => {
           const isQuestion = block.kind === "question";
           const anchor = isQuestion ? `ocr-question-${allBlocks.indexOf(block)}` : `ocr-subquestion-${allBlocks.indexOf(block)}`;

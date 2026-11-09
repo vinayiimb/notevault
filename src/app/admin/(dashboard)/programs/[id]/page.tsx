@@ -47,7 +47,7 @@ export default async function AdminProgramDetailPage({
           <h3 className="text-lg font-semibold text-foreground">Add New Semester</h3>
           <p className="mt-1 text-sm text-muted">Create a new semester for this program</p>
         </div>
-        <div className="grid gap-4 sm:grid-cols-3 sm:items-end">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 sm:items-end">
           <div className="flex flex-col gap-1.5">
             <label className="text-xs font-semibold text-muted uppercase tracking-wide">Semester Name</label>
             <input

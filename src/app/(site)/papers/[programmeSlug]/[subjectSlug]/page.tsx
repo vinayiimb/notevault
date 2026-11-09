@@ -315,7 +315,7 @@ export default async function SubjectPapersPage({
               <h2 className="mb-3 text-lg font-bold text-foreground">
                 {year === "Undated" ? "Undated papers" : `${year} question papers`}
               </h2>
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 {papersByYear.get(year)!.map((p) => (
                   <PaperCard key={p.slug} paper={p} />
                 ))}
@@ -343,7 +343,7 @@ export default async function SubjectPapersPage({
       {hasContent && (
         <section className="mt-14 border-t border-border pt-8">
           <h2 className="mb-4 text-xl font-bold text-foreground">How can I prepare for {subject.name}?</h2>
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             <li>
               <Link
                 href="/tools/internal-marks-calculator"
@@ -395,14 +395,14 @@ export default async function SubjectPapersPage({
           <h2 className="mb-4 text-xl font-bold text-foreground">
             Related subjects in {programme.name}
           </h2>
-          <ul className="grid gap-2 sm:grid-cols-2">
+          <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {related.map((s) => (
               <li key={s.slug}>
                 <Link
                   href={`/papers/${programme.slug}/${s.slug}`}
                   className="flex items-center justify-between rounded-lg border border-border bg-surface px-3 py-2.5 text-sm hover:border-accent/50"
                 >
-                  <span className="min-w-0 truncate font-medium text-foreground">{s.name}</span>
+                  <span className="min-w-0 break-words font-medium text-foreground">{s.name}</span>
                   <span className="ml-2 shrink-0 text-xs text-muted">{s.papers.length}</span>
                 </Link>
               </li>

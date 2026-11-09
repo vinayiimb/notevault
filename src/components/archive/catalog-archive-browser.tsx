@@ -394,7 +394,7 @@ export function CatalogArchiveBrowser({ papers: initialPapers = [] }: { papers?:
           </div>
         </div>
 
-        <div className="mt-6 grid gap-5 md:grid-cols-2 xl:grid-cols-5">
+        <div className="mt-6 grid grid-cols-1 gap-5 md:grid-cols-2 xl:grid-cols-5">
           <div>
             <label htmlFor="catalog-course" className="block text-sm font-semibold">
               Course
@@ -527,7 +527,7 @@ export function CatalogArchiveBrowser({ papers: initialPapers = [] }: { papers?:
         ) : null}
       </div>
 
-      <div className="mt-5 grid gap-2 rounded-2xl border border-border bg-surface p-4 text-sm sm:grid-cols-3">
+      <div className="mt-5 grid grid-cols-1 gap-2 rounded-2xl border border-border bg-surface p-4 text-sm sm:grid-cols-3">
         <p><strong className="text-accent">1.</strong> Choose a course and semester</p>
         <p><strong className="text-accent">2.</strong> Open a subject and session</p>
         <p><strong className="text-accent">3.</strong> Open the final PDF</p>

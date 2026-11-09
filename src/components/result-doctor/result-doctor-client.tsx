@@ -121,7 +121,7 @@ export function ResultDoctorClient() {
           </div>
         ) : (
           <div className="flex flex-col gap-6">
-            <ol className="grid gap-3 sm:grid-cols-3">
+            <ol className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               {STEPS.map((step, i) => (
                 <li key={step.title} className="rounded-2xl border border-border bg-surface p-5">
                   <span className="flex size-7 items-center justify-center rounded-lg bg-brand-soft text-sm font-bold text-brand">{i + 1}</span>

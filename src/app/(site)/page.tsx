@@ -148,7 +148,7 @@ export default async function HomePage() {
           <p className="mt-3 max-w-2xl text-[17px] leading-relaxed text-muted">
             We put every available paper for a subject side by side and counted which topics came back.
           </p>
-          <ul className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <ul className="mt-8 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             <li>
               <Link href="/blog/du-bcom-hons-financial-accounting-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
                 <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">B.Com (Hons) Financial Accounting</span>

@@ -110,7 +110,7 @@ function ShapeSvg({ shape, stroke, fill }: { shape: GeometryShape; stroke: strin
 export function GeometryVisual({ visual, visuals }: { visual: GeometryVisual; visuals: ThemeValues["visuals"] }) {
   return (
     <div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {visual.shapes.map((shape, i) => (
           <div key={shape.id} className="rounded-xl border border-border p-3">
             <ShapeSvg shape={shape} stroke={visuals.connectorColor} fill={visuals.nodeColors[i % visuals.nodeColors.length]} />

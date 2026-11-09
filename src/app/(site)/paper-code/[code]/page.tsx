@@ -153,7 +153,7 @@ export default async function PaperCodePage({
             <h2 className="mb-3 text-lg font-bold text-foreground">
               {year === "Undated" ? "Undated papers" : `${year} question papers`}
             </h2>
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {papersByYear.get(year)!.map((p) => (
                 <PaperCard key={p.slug} paper={p} showSubject={pc.subjectNames.length > 1} />
               ))}

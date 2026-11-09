@@ -40,7 +40,7 @@ export default async function NoteThemesPage() {
 
         <section className="mt-10">
           <SectionHeading title="Global" subtitle="Site default" />
-          <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {global.map((theme) => (
               <ThemeCard key={theme.id} theme={theme} />
             ))}
@@ -50,7 +50,7 @@ export default async function NoteThemesPage() {
         <section className="mt-10 border-t border-border pt-10">
           <SectionHeading title="Subject overrides" subtitle={`${subjectScoped.length}`} />
           {subjectScoped.length > 0 && (
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {subjectScoped.map((theme) => (
                 <ThemeCard key={theme.id} theme={theme} />
               ))}
@@ -110,7 +110,7 @@ export default async function NoteThemesPage() {
         {noteScoped.length > 0 && (
           <section className="mt-10 border-t border-border pt-10">
             <SectionHeading title="Note-specific overrides" subtitle={`${noteScoped.length}`} />
-            <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {noteScoped.map((theme) => (
                 <ThemeCard key={theme.id} theme={theme} />
               ))}

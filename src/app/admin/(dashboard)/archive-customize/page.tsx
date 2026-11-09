@@ -41,7 +41,7 @@ export default async function ArchiveCustomizePage() {
         </div>
       ) : (
         <>
-          <div className="overflow-hidden rounded-2xl border border-border bg-surface">
+          <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
             <table className="w-full text-left text-sm">
               <thead className="border-b border-border bg-surface-muted text-xs uppercase tracking-wide text-muted">
                 <tr>

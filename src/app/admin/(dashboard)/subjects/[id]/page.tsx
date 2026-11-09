@@ -71,7 +71,7 @@ export default async function AdminSubjectPage({
         <p className="mt-1 text-sm text-muted">
           Uploads match this fixed subject by UPC, official name, then approved aliases.
         </p>
-        <form action={updateSubjectIdentityAction} className="mt-4 grid gap-3 md:grid-cols-3">
+        <form action={updateSubjectIdentityAction} className="mt-4 grid grid-cols-1 gap-3 md:grid-cols-3">
           <input type="hidden" name="subjectId" value={subject.id} />
           <label className="flex flex-col gap-1.5 text-xs font-medium text-muted">
             UPC / paper code

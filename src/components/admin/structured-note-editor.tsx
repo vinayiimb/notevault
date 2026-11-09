@@ -126,7 +126,7 @@ export function StructuredNoteEditor({
         </div>
       ) : (
         <div className="flex flex-col gap-6">
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <Field label="Title">
               <input className={inputClass} value={draft.metadata.title} onChange={(e) => patchMeta({ title: e.target.value })} />
             </Field>

@@ -95,7 +95,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
           Access: <strong className="font-semibold">lifetime</strong> — no expiry, no subscription.
         </p>
         {/* gap-px over a border-coloured background = 1px dividers in every layout */}
-        <div className="grid gap-px bg-border sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-4">
           {/* Free */}
           <PlanColumn
             name="Free"
