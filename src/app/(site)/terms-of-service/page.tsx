@@ -68,8 +68,10 @@ export default function TermsPage() {
 
       <Section title="Your access">
         <p>
-          Purchased subjects stay unlocked on your account for as long as DU PYQ Online offers them — there is no subscription and
-          no expiry date. If we ever stop offering paid notes, we will give notice on the site first. We may update or improve
+          Purchased subjects stay unlocked on your account for 6 months from the date of purchase (for UPI payments, from the date
+          we verify the payment) — there is no subscription and nothing renews automatically. After that you can buy the subject
+          again. Purchases made before 9 November 2026 were sold with lifetime access and keep it, for as long as DU PYQ Online
+          offers them. If we ever stop offering paid notes, we will give notice on the site first. We may update or improve
           notes over time; your access always covers the current version.
         </p>
       </Section>

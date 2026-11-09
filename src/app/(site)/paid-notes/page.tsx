@@ -10,7 +10,7 @@ import { PAID_FEATURES, PLANS } from "@/lib/paid-notes-pricing";
 
 export const metadata: Metadata = {
   title: "Pricing – Full DU Subject Notes from ₹49",
-  description: "Unlock complete DU subject notes with full solutions — ₹49 per subject, ₹99 for 3 subjects, ₹149 for a full semester. Pay by UPI.",
+  description: "Unlock complete DU subject notes with full solutions — ₹49 per subject, ₹119 for 3 subjects, ₹199 for a whole semester (6 subjects). 6 months of access. Pay by UPI.",
   alternates: { canonical: "/paid-notes" },
 };
 
@@ -92,7 +92,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
 
       <div className="mt-12 overflow-hidden rounded-3xl border border-border bg-surface">
         <p className="border-b border-border px-6 py-4 text-sm">
-          Access: <strong className="font-semibold">lifetime</strong> — no expiry, no subscription.
+          Access: <strong className="font-semibold">6 months from purchase</strong> — one payment, no subscription.
         </p>
         {/* gap-px over a border-coloured background = 1px dividers in every layout */}
         <div className="grid grid-cols-1 gap-px bg-border sm:grid-cols-2 lg:grid-cols-4">
@@ -113,7 +113,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
               price={plan.price}
               listPrice={plan.listPrice > plan.price ? plan.listPrice : undefined}
               badge={plan.badge}
-              highlight={plan.subjects === 5}
+              highlight={plan.subjects === 6}
               cta={{ href: `/paid-notes/checkout?plan=${plan.subjects}`, label: "Buy" }}
               groups={[
                 {

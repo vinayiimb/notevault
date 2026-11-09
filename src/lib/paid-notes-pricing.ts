@@ -2,12 +2,36 @@
 // notes, shared by the checkout page, the notes paywall and the papers nudge.
 
 // Packs a student can combine. priceFor() always picks the cheapest mix, so
-// 4 subjects = 3-pack + single, 6 = 5-pack + single, etc.
+// 2 subjects = 2 singles, 4 = 3-pack + single, 5 = the 6-pack (a bigger pack
+// is allowed when it costs less), 7 = 6-pack + single, etc.
 export const PACKS = [
   { subjects: 1, price: 49, name: "Single Subject", badge: null },
-  { subjects: 3, price: 99, name: "3 Subjects", badge: "Most popular" },
-  { subjects: 5, price: 149, name: "Full Semester", badge: "Best value" },
+  { subjects: 3, price: 119, name: "3 Subjects", badge: "Most popular" },
+  { subjects: 6, price: 199, name: "Whole Semester", badge: "Best value" },
 ] as const;
+
+// Paid access lasts this long from the purchase date (not "lifetime").
+export const ACCESS_MONTHS = 6;
+
+// Purchases made before this moment were sold as "lifetime" and stay that way.
+export const EXPIRY_STARTS = new Date("2026-11-09T16:49:00Z");
+
+/**
+ * When a purchase's access ends, or null = never (old lifetime purchases, free
+ * admin/promoter grants). Counted from approval (UPI) / payment (Razorpay), so a
+ * slow manual verification never eats into the student's 6 months.
+ */
+export function accessExpiry(p: { createdAt: Date; reviewedAt?: Date | null; amount: number; utr: string }): Date | null {
+  if (p.amount <= 0 || /^(admin|promoter)-/.test(p.utr) || p.createdAt < EXPIRY_STARTS) return null;
+  const end = new Date(p.reviewedAt ?? p.createdAt);
+  end.setUTCMonth(end.getUTCMonth() + ACCESS_MONTHS);
+  return end;
+}
+
+export function isAccessActive(p: Parameters<typeof accessExpiry>[0], now = new Date()): boolean {
+  const end = accessExpiry(p);
+  return !end || end > now;
+}
 
 export const SINGLE_PRICE = PACKS[0].price;
 
@@ -42,7 +66,8 @@ export function priceFor(count: number): number {
   if (count <= 0) return 0;
   const best = [0];
   for (let n = 1; n <= count; n++) {
-    best[n] = Math.min(...PACKS.filter((p) => p.subjects <= n).map((p) => best[n - p.subjects] + p.price));
+    // A pack bigger than what's needed is fine if it's cheaper (5 subjects = the 6-pack).
+    best[n] = Math.min(...PACKS.map((p) => best[Math.max(0, n - p.subjects)] + p.price));
   }
   return best[count];
 }

@@ -8,9 +8,9 @@ import { parseLeadSemester } from "@/lib/note-leads";
 export const ORDER_PLANS = ["subject", "semester"] as const;
 export type OrderPlan = (typeof ORDER_PLANS)[number];
 
-// Same prices as /paid-notes: one subject, and its "Full Semester" pack. Always read server-side when
+// Same prices as /paid-notes: one subject, and the whole-semester pack. Always read server-side when
 // an order is created; the client only displays them.
-const FULL_SEMESTER = PACKS.find((p) => p.name === "Full Semester") ?? PACKS[PACKS.length - 1];
+const FULL_SEMESTER = PACKS[PACKS.length - 1];
 export const ORDER_PRICE: Record<OrderPlan, number> = { subject: PACKS[0].price, semester: FULL_SEMESTER.price };
 
 /** The buffer we promise between payment and the notes arriving on WhatsApp. */

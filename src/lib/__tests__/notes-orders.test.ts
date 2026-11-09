@@ -22,9 +22,9 @@ const subjectReq = {
   subjectSlug: "microeconomics",
 };
 
-test("prices come from the /paid-notes packs: one subject and the Full Semester pack", () => {
+test("prices come from the /paid-notes packs: one subject and the Whole Semester pack", () => {
   assert.equal(ORDER_PRICE.subject, PACKS[0].price);
-  assert.equal(ORDER_PRICE.semester, PACKS.find((p) => p.name === "Full Semester")!.price);
+  assert.equal(ORDER_PRICE.semester, PACKS.find((p) => p.name === "Whole Semester")!.price);
   assert.ok(ORDER_PRICE.semester > ORDER_PRICE.subject);
 });
 

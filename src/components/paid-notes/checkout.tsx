@@ -4,7 +4,7 @@ import { useActionState, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Script from "next/script";
-import { ArrowRight, BookOpenText, Check, CheckCircle, Copy, Infinity as InfinityIcon, Star, Trophy, X } from "@phosphor-icons/react";
+import { ArrowRight, BookOpenText, Check, CheckCircle, Clock, Copy, Star, Trophy, X } from "@phosphor-icons/react";
 import type { NotesCatalogProgramme } from "@/lib/paid-notes";
 import { PAID_FEATURES, PLANS, itemKey, planFor, upiPayLink } from "@/lib/paid-notes-pricing";
 import { submitPaymentAction, type FormResult } from "@/lib/paid-notes-actions";
@@ -164,7 +164,7 @@ export function PaidNotesCheckout({
               p.subjects === plan.subjects ? "bg-brand text-brand-foreground" : "text-muted hover:text-foreground"
             }`}
           >
-            {p.subjects === 1 ? "1 subject" : p.subjects === 5 ? "Semester" : `${p.subjects} subjects`}
+            {p.subjects === 1 ? "1 subject" : p.subjects === 6 ? "Semester" : `${p.subjects} subjects`}
             <span className="block text-[11px] opacity-80">₹{p.price}</span>
           </button>
         ))}
@@ -191,7 +191,7 @@ export function PaidNotesCheckout({
             {PAID_FEATURES.map((f) => (
               <Feature key={f} label={f} value={<Check size={18} weight="bold" className="text-green-600" />} />
             ))}
-            <Feature label="Access" value={<span className="flex items-center gap-1 text-brand"><InfinityIcon size={20} weight="bold" /> Lifetime</span>} />
+            <Feature label="Access" value={<span className="flex items-center gap-1 text-brand"><Clock size={20} weight="bold" /> 6 months</span>} />
           </ul>
         </div>
       </div>

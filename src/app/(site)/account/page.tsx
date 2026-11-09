@@ -121,7 +121,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
       </nav>
 
       <div className="mt-5">
-        {tab === "notes" && <NotesTab groups={portal.groups} />}
+        {tab === "notes" && <NotesTab groups={portal.groups} expired={portal.expired} />}
         {tab === "purchases" && <PurchasesTab purchases={portal.purchases} />}
         {tab === "devices" && <DevicesTab devices={devices} error={error} />}
       </div>
@@ -148,8 +148,11 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function NotesTab({ groups }: { groups: Awaited<ReturnType<typeof getPortalData>>["groups"] }) {
-  if (groups.length === 0) {
+const expiryText = (d: Date) => d.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
+const SOON_MS = 30 * 86_400_000;
+
+function NotesTab({ groups, expired }: { groups: Awaited<ReturnType<typeof getPortalData>>["groups"]; expired: Awaited<ReturnType<typeof getPortalData>>["expired"] }) {
+  if (groups.length === 0 && expired.length === 0) {
     return (
       <section className="rounded-[28px] bg-surface p-7 text-center shadow-[var(--shadow-tile)] sm:p-10">
         <span className="mx-auto flex size-14 items-center justify-center rounded-[18px] bg-brand/10 text-brand">
@@ -170,6 +173,9 @@ function NotesTab({ groups }: { groups: Awaited<ReturnType<typeof getPortalData>
   }
   return (
     <div className="flex flex-col gap-6">
+      {groups.length === 0 && (
+        <p className="rounded-[22px] bg-surface-muted p-6 text-center text-[15px] text-muted">Your notes have expired — renew below to read them again.</p>
+      )}
       {groups.map((g) => (
         <section key={g.programmeSlug} aria-label={g.programme}>
           <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.07em] text-muted">{g.programme}</h2>
@@ -185,7 +191,15 @@ function NotesTab({ groups }: { groups: Awaited<ReturnType<typeof getPortalData>
                   </span>
                   <span className="min-w-0 flex-1">
                     <span className="line-clamp-2 text-[15px] font-semibold leading-snug tracking-[-0.01em]">{n.subject}</span>
-                    {n.semester && <span className="mt-0.5 block text-xs text-muted">Semester {n.semester}</span>}
+                    <span className="mt-0.5 block text-xs text-muted">
+                      {n.semester ? `Semester ${n.semester}` : null}
+                      {n.semester && n.expiresAt ? " · " : null}
+                      {n.expiresAt && (
+                        <span className={n.expiresAt.getTime() - Date.now() < SOON_MS ? "font-semibold text-amber-700 dark:text-amber-300" : ""}>
+                          Valid till {expiryText(n.expiresAt)}
+                        </span>
+                      )}
+                    </span>
                   </span>
                   <CaretRight size={16} weight="bold" className="shrink-0 text-muted transition group-hover:translate-x-0.5" />
                 </Link>
@@ -194,6 +208,27 @@ function NotesTab({ groups }: { groups: Awaited<ReturnType<typeof getPortalData>
           </ul>
         </section>
       ))}
+      {expired.length > 0 && (
+        <section aria-label="Expired notes">
+          <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.07em] text-muted">Expired</h2>
+          <ul className="mt-2 grid gap-2.5 sm:grid-cols-2">
+            {expired.map((n) => (
+              <li key={n.key}>
+                <Link
+                  href={`/paid-notes/checkout?plan=1&add=${encodeURIComponent(n.key)}`}
+                  className="flex min-h-[4.5rem] items-center gap-3.5 rounded-[22px] bg-surface-muted p-3.5 transition hover:bg-foreground/[0.07]"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="line-clamp-2 text-[15px] font-semibold leading-snug tracking-[-0.01em] text-foreground/80">{n.name}</span>
+                    <span className="mt-0.5 block text-xs text-muted">Expired {expiryText(n.expiredAt)}</span>
+                  </span>
+                  <span className="shrink-0 text-sm font-semibold text-brand">Renew</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
       <Link
         href="/paid-notes"
         className="flex min-h-14 items-center justify-between gap-3 rounded-[22px] bg-surface-muted px-5 text-[15px] font-semibold text-brand transition hover:bg-foreground/[0.07]"

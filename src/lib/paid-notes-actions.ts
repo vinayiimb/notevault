@@ -10,7 +10,7 @@ import { deleteByUrl, putBytes } from "@/lib/storage";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
 import { getStudentEmail } from "@/lib/paid-notes";
 import { endCurrentStudentSession, resetStudentDevices, revokeStudentDevice, startStudentSession, type DeviceInfo } from "@/lib/student-devices";
-import { normalizeEmail, normalizePhone, normalizeUtr, priceFor } from "@/lib/paid-notes-pricing";
+import { isAccessActive, normalizeEmail, normalizePhone, normalizeUtr, priceFor } from "@/lib/paid-notes-pricing";
 import { FIREBASE_CONFIG, googleSignInEnabled } from "@/lib/firebase-config";
 import { PROMOTER_COOKIE, PROMOTER_COOKIE_OPTIONS, getPromoter, promoterUtrPrefix, signPromoterSession } from "@/lib/promoter";
 import { verifyFirebaseIdToken } from "@/lib/firebase-token";
@@ -228,10 +228,10 @@ async function grantItems(formData: FormData, by: { utr: string; adminNote: stri
       where: { OR: pairs.map(([programmeSlug, subjectSlug]) => ({ programmeSlug, subjectSlug })), NOT: { content: "" } },
       select: { programmeSlug: true, subjectSlug: true },
     }),
-    prisma.purchase.findMany({ where: { email, status: "APPROVED" }, select: { items: true } }),
+    prisma.purchase.findMany({ where: { email, status: "APPROVED" }, select: { items: true, createdAt: true, reviewedAt: true, amount: true, utr: true } }),
     prisma.purchase.findFirst({ where: { email }, orderBy: { createdAt: "desc" }, select: { phone: true } }),
   ]);
-  const owned = new Set(approved.flatMap((p) => p.items));
+  const owned = new Set(approved.filter((p) => isAccessActive(p)).flatMap((p) => p.items));
   const items = notes.map((n) => `${n.programmeSlug}/${n.subjectSlug}`).filter((k) => !owned.has(k));
   if (!items.length) return;
   await prisma.purchase.create({

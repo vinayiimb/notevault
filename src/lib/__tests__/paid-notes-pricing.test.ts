@@ -1,24 +1,38 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { normalizeEmail, normalizePhone, normalizeUtr, previewOf, priceFor, upsellFor } from "@/lib/paid-notes-pricing";
+import { accessExpiry, isAccessActive, normalizeEmail, normalizePhone, normalizeUtr, previewOf, priceFor, upsellFor } from "@/lib/paid-notes-pricing";
 
 test("priceFor picks the cheapest pack mix", () => {
   assert.equal(priceFor(0), 0);
   assert.equal(priceFor(1), 49);
   assert.equal(priceFor(2), 98);
-  assert.equal(priceFor(3), 99);
-  assert.equal(priceFor(4), 148);
-  assert.equal(priceFor(5), 149);
-  assert.equal(priceFor(6), 198);
-  assert.equal(priceFor(8), 248);
-  assert.equal(priceFor(10), 298);
+  assert.equal(priceFor(3), 119);
+  assert.equal(priceFor(4), 168);
+  assert.equal(priceFor(5), 199); // never more than the 6-pack
+  assert.equal(priceFor(6), 199);
+  assert.equal(priceFor(7), 248);
+  assert.equal(priceFor(9), 318);
+  assert.equal(priceFor(10), 367);
 });
 
 test("upsellFor nudges only when the next subject is cheap", () => {
-  assert.deepEqual(upsellFor(2), { extra: 1, nextCount: 3 });
-  assert.deepEqual(upsellFor(4), { extra: 1, nextCount: 5 });
+  assert.deepEqual(upsellFor(2), { extra: 21, nextCount: 3 });
+  assert.deepEqual(upsellFor(4), { extra: 31, nextCount: 5 });
+  assert.deepEqual(upsellFor(5), { extra: 0, nextCount: 6 });
   assert.equal(upsellFor(1), null); // 2nd subject costs a full ₹49
   assert.equal(upsellFor(3), null);
+});
+
+test("accessExpiry: 6 months for new paid purchases, never for old or gifted ones", () => {
+  const after = new Date("2026-12-01T10:00:00Z");
+  assert.equal(accessExpiry({ createdAt: after, amount: 199, utr: "pay_1" })?.toISOString(), "2027-06-01T10:00:00.000Z");
+  // UPI: counted from approval, not submission
+  assert.equal(accessExpiry({ createdAt: after, reviewedAt: new Date("2026-12-03T10:00:00Z"), amount: 49, utr: "U1" })?.toISOString(), "2027-06-03T10:00:00.000Z");
+  assert.equal(accessExpiry({ createdAt: new Date("2026-10-01T00:00:00Z"), amount: 149, utr: "old" }), null); // sold as lifetime
+  assert.equal(accessExpiry({ createdAt: after, amount: 0, utr: "admin-x" }), null);
+  assert.equal(accessExpiry({ createdAt: after, amount: 0, utr: "promoter-x" }), null);
+  assert.equal(isAccessActive({ createdAt: new Date("2026-11-20T00:00:00Z"), amount: 49, utr: "x" }, new Date("2027-05-19T00:00:00Z")), true);
+  assert.equal(isAccessActive({ createdAt: new Date("2026-11-20T00:00:00Z"), amount: 49, utr: "x" }, new Date("2027-05-21T00:00:00Z")), false);
 });
 
 test("previewOf cuts on a block boundary, never inside a fence", () => {

@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession, jwtSecret } from "@/lib/auth";
 import { findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
 import { slugify } from "@/lib/utils";
-import { itemKey } from "@/lib/paid-notes-pricing";
+import { isAccessActive, itemKey } from "@/lib/paid-notes-pricing";
 import { DEVICE_IDLE_DAYS } from "@/lib/student-device-policy";
 import raw from "../../public/data/canonical-programmes.json";
 
@@ -107,9 +107,10 @@ export function isMissingTable(err: unknown): boolean {
 export async function getUnlockedItems(email: string): Promise<Set<string>> {
   const purchases = await prisma.purchase.findMany({
     where: { email, status: "APPROVED" },
-    select: { items: true },
+    select: { items: true, createdAt: true, reviewedAt: true, amount: true, utr: true },
   });
-  return new Set(purchases.flatMap((p) => p.items));
+  // Paid purchases run out 6 months after the purchase date (see accessExpiry).
+  return new Set(purchases.filter((p) => isAccessActive(p)).flatMap((p) => p.items));
 }
 
 export type NoteAccess = "free" | "admin" | "owner" | "locked";
@@ -139,7 +140,11 @@ export async function hasPaidAccess(): Promise<boolean> {
     if (await getSession()) return true;
     const email = await getStudentEmail();
     if (!email) return false;
-    return (await prisma.purchase.count({ where: { email, status: "APPROVED", amount: { gt: 0 } } })) > 0;
+    const paid = await prisma.purchase.findMany({
+      where: { email, status: "APPROVED", amount: { gt: 0 } },
+      select: { createdAt: true, reviewedAt: true, amount: true, utr: true },
+    });
+    return paid.some((p) => isAccessActive(p));
   } catch {
     return false;
   }
