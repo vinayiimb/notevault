@@ -6,7 +6,7 @@ import { slugify } from "@/lib/utils";
 import { itemKey } from "@/lib/paid-notes-pricing";
 import type { LeadResult } from "@/lib/note-lead-actions";
 import { parseLeadSemester, type LeadCourse, type LeadSubject } from "@/lib/note-leads";
-import { OPEN_NOTES_EVENT, promoClickedRecently } from "@/lib/notes-promo";
+import { OPEN_NOTES_EVENT } from "@/lib/notes-promo";
 import { LeadForm, useKnownLead } from "./lead-form";
 import { NotesPurchase } from "./notes-purchase";
 
@@ -102,13 +102,29 @@ export function NotesPrompt({
 
   useEffect(() => {
     if (!auto || (!landing && !paperId)) return;
-    if (promptOff() || promoClickedRecently() || (known && askedRecently())) return;
-    const t = setTimeout(() => {
-      if (document.visibilityState !== "visible" || promoClickedRecently()) return;
-      if (known) markAsked();
-      setStep((s) => s ?? "ask");
-    }, landing ? LANDING_DELAY_MS : PAPER_DELAY_MS);
-    return () => clearTimeout(t);
+    if (promptOff() || (known && askedRecently())) return;
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    let shown = false;
+    const arm = () => {
+      timer = setTimeout(() => {
+        if (document.visibilityState !== "visible" || promptOff()) return; // a hidden tab re-arms when it comes back
+        shown = true;
+        if (known) markAsked();
+        setStep((s) => s ?? "ask");
+      }, landing ? LANDING_DELAY_MS : PAPER_DELAY_MS);
+    };
+    // A page opened in a background tab used to lose its one chance: the timer fired while nobody was looking.
+    const onVisible = () => {
+      if (shown || document.visibilityState !== "visible") return;
+      clearTimeout(timer);
+      arm();
+    };
+    arm();
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [auto, landing, paperId, known]);
 
   // A promo card on the page was tapped: open straight at the form (they have already said yes).

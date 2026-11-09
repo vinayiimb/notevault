@@ -595,7 +595,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
           />
         )}
         {/* Before a subject is chosen the right side is mostly empty: offer the notes there. Tapping the card opens
-            the notes flow and the pop-up that follows a paper opening stays away (they were offered once). */}
+            the notes flow. */}
         {!subject && (
           <>
             <NotesPromoCard
@@ -713,7 +713,9 @@ function PaperPanel({
 
   return (
     <>
-      <NotesPrompt source="paper-pdf" paperId={openPaper?.id ?? null} course={{ name: course }} subject={subjectLabel} semester={openPaper?.semester ?? null} />
+      {/* The pop-up waits for a paper to open; a subject reached by search or a link opens none, so it also starts once a
+          subject is chosen (the id only has to be non-empty to arm the timer). */}
+      <NotesPrompt source="paper-pdf" paperId={openPaper?.id ?? `subject:${subjectLabel}`} course={{ name: course }} subject={subjectLabel} semester={openPaper?.semester ?? null} />
       <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 shadow-2xs sm:p-5">
         <div className="min-w-0 flex-1 basis-full sm:basis-0">
           <span className="inline-block rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent">
@@ -774,6 +776,10 @@ function PaperPanel({
           </div>
         )}
       </div>
+
+      {/* Same card as before a subject is picked, so the offer is still on the page once they have chosen course,
+          semester and subject (the pop-up above can be closed or held back). Tapping it opens that pop-up's form. */}
+      <NotesPromoCard className="mt-3.5" title={`Need notes for ${subjectLabel}?`} />
 
       {zipState === "loading" && (
         <div className="mt-3.5 rounded-2xl border border-border bg-surface py-5 shadow-2xs">

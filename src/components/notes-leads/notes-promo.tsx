@@ -6,8 +6,7 @@ import { ORDER_PRICE } from "@/lib/notes-orders";
 
 /**
  * An in-page "get the notes" card. Tapping it opens the same notes flow as the pop-up (form, then pay or have us
- * reach out) and tells the pop-up not to appear later: the visitor has been offered the notes once already.
- * The page needs a <NotesPrompt> mounted; it opens it.
+ * reach out). The page needs a <NotesPrompt> mounted; it opens it.
  *
  * Apple look (soft grey tile, SF type, blue pill). `apple-scope` restores the Apple palette on pages that keep
  * the classic theme, such as /papers.
