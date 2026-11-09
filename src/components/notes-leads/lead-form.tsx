@@ -93,6 +93,7 @@ export function LeadForm({
   submitLabel = "Get notes on WhatsApp",
   stacked = false,
   subjectRequired = true,
+  showSuccess = true,
   onSuccess,
 }: {
   courses: LeadCourse[];
@@ -107,6 +108,8 @@ export function LeadForm({
   stacked?: boolean;
   /** Full variant: false lets a student ask for a whole course without naming the subject. */
   subjectRequired?: boolean;
+  /** false: render nothing once saved, because the parent shows its own next step (via onSuccess). */
+  showSuccess?: boolean;
   onSuccess?: (r: LeadResult) => void;
 }) {
   const uid = useId();
@@ -150,6 +153,7 @@ export function LeadForm({
   };
 
   if (state.ok) {
+    if (!showSuccess) return null;
     const anySubject = state.subject === ANY_SUBJECT;
     const ready = state.hasNotes;
     const text = encodeURIComponent(`Hi! I need ${anySubject ? "" : (state.subject ?? "")} notes from DU PYQ Online.`.replace("  ", " "));

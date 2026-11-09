@@ -885,6 +885,37 @@ model NoteLead {
   @@index([phone])
 }
 
+enum NotesOrderStatus {
+  PAID
+  DELIVERED
+  REFUNDED
+}
+
+// A student who paid (Razorpay) for notes from the pop-up on a PYQ page. The notes are sent on
+// WhatsApp by hand after a short buffer, so this table is the admin's to-do list. Unlike Purchase
+// it works for subjects whose notes aren't written yet and never unlocks anything on the site.
+// plan "semester" has an empty subject/subjectSlug.
+model NotesOrder {
+  id                String           @id @default(cuid())
+  phone             String // 91XXXXXXXXXX
+  plan              String // "subject" | "semester"
+  programmeSlug     String
+  programme         String
+  semester          Int
+  subjectSlug       String
+  subject           String
+  amount            Int // rupees
+  razorpayOrderId   String           @unique
+  razorpayPaymentId String           @unique
+  status            NotesOrderStatus @default(PAID)
+  adminNote         String?
+  paidAt            DateTime         @default(now())
+  deliveredAt       DateTime?
+
+  @@index([status, paidAt])
+  @@index([phone])
+}
+
 // Learned filename/title -> subject associations for Bulk Upload. When an
 // admin manually assigns a subject to a paper the filename-matching heuristic
 // couldn't place, we remember it (keyed by a normalized title with trailing

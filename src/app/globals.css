@@ -576,6 +576,24 @@ body:has([data-ask-ai-launcher]) .wa-fab {
   .lead-sheet[open], .lead-sheet[open]::backdrop { animation: none; }
 }
 
+/* Centred pop-up (the "Need notes?" prompt on PYQ pages): fades and grows in from slightly below. */
+@keyframes lead-pop-in { from { transform: translateY(10px) scale(0.96); opacity: 0; } to { transform: none; opacity: 1; } }
+.lead-pop[open] { animation: lead-pop-in 0.38s var(--ease-apple); }
+.lead-pop[open]::backdrop { animation: lead-backdrop-in 0.3s var(--ease-apple); }
+@media (prefers-reduced-motion: reduce) {
+  .lead-pop[open], .lead-pop[open]::backdrop { animation: none; }
+}
+
+/* Hidden (sr-only) labels are absolutely positioned. Inside a table in a scroll box they would otherwise sit
+   outside that box and widen the whole page (sideways scrolling on phones). Base layer, so any utility such as
+   sticky/absolute/fixed on the same element still wins. */
+@layer base {
+  .overflow-x-auto,
+  .overflow-auto {
+    position: relative;
+  }
+}
+
 /* Puts the Apple palette back inside a .theme-classic page (/papers keeps its
    own look; only the notes prompt that opens on top of it is Apple-styled). */
 .apple-scope {
@@ -593,6 +611,8 @@ body:has([data-ask-ai-launcher]) .wa-fab {
   --brand-hover: var(--accent-hover);
   --brand-foreground: var(--accent-foreground);
 }
+/* Inside the pop-up the form rows draw their own focus ring; the global outline would double it. */
+.apple-scope :where(input, select):focus-visible { outline: none; }
 .dark .apple-scope {
   --surface-muted: #1d1d1f;
   --foreground: #f5f5f7;

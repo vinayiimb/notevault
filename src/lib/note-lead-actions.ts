@@ -17,7 +17,18 @@ import {
   type LeadStatusName,
 } from "@/lib/note-leads";
 
-export type LeadResult = { ok?: boolean; error?: string; subject?: string; hasNotes?: boolean };
+export type LeadResult = {
+  ok?: boolean;
+  error?: string;
+  subject?: string;
+  hasNotes?: boolean;
+  // What the student asked for, so the pop-up can offer to buy it. Absent for the bot honeypot's fake "ok".
+  phone?: string;
+  programme?: string;
+  programmeSlug?: string;
+  subjectSlug?: string;
+  semester?: number;
+};
 
 // A few submissions per visitor is plenty; this only stops a script flooding the table.
 // In memory per instance, which is enough while there is one server.
@@ -97,7 +108,7 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
     // Never block a student from their notes because the lead couldn't be saved.
     console.error("note lead not saved:", err);
   }
-  return { ok: true, hasNotes, subject: subjectName };
+  return { ok: true, hasNotes, subject: subjectName, subjectSlug, programme: programmeName, programmeSlug, semester, phone };
 }
 
 // ---------- Admin ----------
@@ -114,6 +125,19 @@ export async function setLeadStatusAction(formData: FormData) {
   await prisma.noteLead.update({
     where: { id },
     data: { status, contactedAt: status === "NEW" ? null : new Date() },
+  });
+  revalidatePath("/admin/leads");
+}
+
+// A paid pop-up order: the admin has sent the notes on WhatsApp (or takes that back).
+export async function markOrderDeliveredAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  const delivered = formData.get("status") !== "PAID";
+  await prisma.notesOrder.updateMany({
+    where: { id, status: delivered ? "PAID" : "DELIVERED" },
+    data: delivered ? { status: "DELIVERED", deliveredAt: new Date() } : { status: "PAID", deliveredAt: null },
   });
   revalidatePath("/admin/leads");
 }

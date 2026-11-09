@@ -1,6 +1,8 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { getRazorpayOrder, verifyWebhookSignature } from "@/lib/razorpay";
 import { completeRazorpayPurchase } from "@/lib/paid-notes-actions";
+import { recordNotesOrderFromRazorpay } from "@/lib/notes-orders-server";
+import { NOTES_ORDER_KIND } from "@/lib/notes-orders";
 
 // Durable backstop for /api/razorpay/verify: Razorpay calls this
 // server-to-server, so even if the student's browser never gets back to us
@@ -24,6 +26,12 @@ export async function POST(request: NextRequest) {
   const order = await getRazorpayOrder(payment.order_id);
   if (!order) return NextResponse.json({ error: "Order lookup failed." }, { status: 502 }); // non-2xx → Razorpay retries
   const notes = order.notes;
+  // Pay-first notes bought from the pop-up on a PYQ page: recorded for the admin to send by WhatsApp.
+  if (notes?.kind === NOTES_ORDER_KIND) {
+    const result = await recordNotesOrderFromRazorpay(order, payment.id);
+    if (result === "bad-order") return NextResponse.json({ error: "Order amount mismatch." }, { status: 422 });
+    return NextResponse.json({ ok: true });
+  }
   if (!notes?.email || !notes.items) {
     return NextResponse.json({ ok: true }); // not one of our checkout orders; ack so Razorpay stops retrying
   }
