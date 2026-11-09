@@ -2,6 +2,28 @@ import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder, type RazorpayOrder } from "@/lib/razorpay";
 import { ORDER_PRICE, fromRazorpayNotes, parseOrderRequest, toRazorpayNotes } from "@/lib/notes-orders";
 
+let readyCache: { at: number; ok: boolean } | null = null;
+
+/**
+ * True when a payment can be taken AND recorded: Razorpay is configured and the NotesOrder table exists (its
+ * migration is applied). Until then the pop-up skips the payment step, so nobody can pay into a table that
+ * can't record it. Checked at most once a minute.
+ */
+export async function notesOrdersReady(): Promise<boolean> {
+  if (readyCache && Date.now() - readyCache.at < 60_000) return readyCache.ok;
+  let ok = false;
+  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    try {
+      await prisma.notesOrder.findFirst({ select: { id: true } });
+      ok = true;
+    } catch {
+      ok = false;
+    }
+  }
+  readyCache = { at: Date.now(), ok };
+  return ok;
+}
+
 export type CreateOrderResult =
   | { ok: true; orderId: string; amount: number; keyId: string }
   | { ok: false; status: number; error: string };
@@ -11,7 +33,7 @@ export async function createNotesOrder(body: unknown): Promise<CreateOrderResult
   const req = parseOrderRequest(body);
   if (!req) return { ok: false, status: 400, error: "Some details are missing. Please try again." };
   const keyId = process.env.RAZORPAY_KEY_ID;
-  if (!keyId || !process.env.RAZORPAY_KEY_SECRET) {
+  if (!keyId || !process.env.RAZORPAY_KEY_SECRET || !(await notesOrdersReady())) {
     return { ok: false, status: 503, error: "Online payment isn't available right now. We'll WhatsApp you instead." };
   }
   const amount = ORDER_PRICE[req.plan];

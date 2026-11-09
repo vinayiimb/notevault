@@ -51,7 +51,7 @@ export function NotesPurchase({
   onClose: () => void;
 }) {
   const semester = result.semester ?? 0;
-  const canBuy = !!(result.phone && result.programme && result.programmeSlug && semester);
+  const canBuy = !!(result.phone && result.programme && result.programmeSlug && semester) && result.canBuy === true;
   const canSubject = canBuy && !!result.subject && result.subject !== ANY_SUBJECT && !!result.subjectSlug;
   const [plan, setPlan] = useState<OrderPlan>("semester");
   const [phase, setPhase] = useState<"choose" | "paid" | "pending" | "later">(canBuy ? "choose" : "later");
@@ -142,7 +142,7 @@ export function NotesPurchase({
               {phase === "pending" && " We're still confirming the payment on our side; you don't need to pay again."}
             </>
           ) : (
-            "We'll WhatsApp you about your notes. You can buy them any time from the pop-up on a papers page."
+            "We'll message you personally on WhatsApp to help with your notes. If you'd like to pay, we'll share the details there."
           )}
         </p>
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
@@ -165,6 +165,11 @@ export function NotesPurchase({
             Done
           </button>
         </div>
+        {phase === "later" && canBuy && (
+          <button type="button" onClick={() => setPhase("choose")} className="mt-3 text-[14px] font-medium text-brand transition hover:underline">
+            Pay now instead
+          </button>
+        )}
       </div>
     );
   }
@@ -232,10 +237,22 @@ export function NotesPurchase({
         <Lock size={13} weight="bold" className="mr-1 inline-block align-[-2px]" />
         Secure payment by Razorpay. Notes on WhatsApp {NOTES_DELIVERY_TEXT}.
       </p>
-      <div className="mt-2 flex items-center justify-center gap-4 text-[13px]">
-        <button type="button" onClick={() => setPhase("later")} className="font-medium text-muted transition hover:text-foreground">
-          Maybe later
-        </button>
+
+      <div className="my-3 flex items-center gap-3 text-[12px] uppercase tracking-wide text-muted">
+        <span className="h-px flex-1 bg-border" />
+        or
+        <span className="h-px flex-1 bg-border" />
+      </div>
+      <button
+        type="button"
+        onClick={() => setPhase("later")}
+        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
+      >
+        <WhatsappLogo size={18} weight="fill" className="text-[#25D366]" />
+        Message me on WhatsApp first
+      </button>
+      <p className="mt-2 text-center text-[13px] leading-snug text-muted">We&apos;ll reach out personally. You can pay after we talk.</p>
+      <div className="mt-2 text-center text-[13px]">
         <Link href="/refund-policy" target="_blank" className="text-muted underline-offset-2 transition hover:text-foreground hover:underline">
           Refund policy
         </Link>

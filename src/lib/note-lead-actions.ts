@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { findCanonicalProgramme, findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
 import { slugify } from "@/lib/utils";
+import { notesOrdersReady } from "@/lib/notes-orders-server";
 import {
   ANY_SUBJECT,
   ANY_SUBJECT_SLUG,
@@ -28,6 +29,8 @@ export type LeadResult = {
   programmeSlug?: string;
   subjectSlug?: string;
   semester?: number;
+  /** The payment step can be offered (Razorpay configured and the orders table exists). */
+  canBuy?: boolean;
 };
 
 // A few submissions per visitor is plenty; this only stops a script flooding the table.
@@ -108,7 +111,8 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
     // Never block a student from their notes because the lead couldn't be saved.
     console.error("note lead not saved:", err);
   }
-  return { ok: true, hasNotes, subject: subjectName, subjectSlug, programme: programmeName, programmeSlug, semester, phone };
+  const canBuy = await notesOrdersReady().catch(() => false);
+  return { ok: true, hasNotes, subject: subjectName, subjectSlug, programme: programmeName, programmeSlug, semester, phone, canBuy };
 }
 
 // ---------- Admin ----------
