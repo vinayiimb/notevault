@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BookOpenText, ChatCircleDots, WhatsappLogo, X } from "@phosphor-icons/react";
+import { BookOpenText, X } from "@phosphor-icons/react";
 import { slugify } from "@/lib/utils";
 import { itemKey } from "@/lib/paid-notes-pricing";
 import type { LeadResult } from "@/lib/note-lead-actions";
 import { parseLeadSemester, type LeadCourse, type LeadSubject } from "@/lib/note-leads";
 import { OPEN_NOTES_EVENT } from "@/lib/notes-promo";
 import { chatLink } from "@/lib/chat-link";
-import { CHAT_NUDGE_EVENT, openChat, trackIntent } from "@/lib/lead-intent";
+import { CHAT_NUDGE_EVENT, trackIntent } from "@/lib/lead-intent";
 import { LeadForm, useKnownLead } from "./lead-form";
 import { NotesPurchase } from "./notes-purchase";
 
@@ -91,7 +91,7 @@ export function NotesPrompt({
   const bodyRef = useRef<HTMLDivElement>(null);
   const ignoreClose = useRef(false);
   const known = useKnownLead();
-  const [step, setStep] = useState<"ask" | "choose" | "form" | "buy" | null>(null);
+  const [step, setStep] = useState<"ask" | "form" | "buy" | null>(null);
   const [result, setResult] = useState<LeadResult | null>(null);
   const [paying, setPaying] = useState(false);
   const [available, setAvailable] = useState<Set<string> | null>(null);
@@ -143,7 +143,7 @@ export function NotesPrompt({
       setStep((s) => {
         if (s === "buy") return s;
         if (s === null || s === "ask") trackIntent("yes", intentRef.current);
-        return "choose";
+        return "form";
       });
     window.addEventListener(OPEN_NOTES_EVENT, open);
     return () => window.removeEventListener(OPEN_NOTES_EVENT, open);
@@ -185,7 +185,7 @@ export function NotesPrompt({
     try {
       sessionStorage.setItem(OFF_KEY, "1");
     } catch {}
-    if (nudge && (step === "choose" || step === "form")) {
+    if (nudge && step === "form") {
       window.dispatchEvent(new CustomEvent(CHAT_NUDGE_EVENT, { detail: { href: chatHref, what, ...intentRef.current } }));
     }
     setStep(null);
@@ -256,8 +256,8 @@ export function NotesPrompt({
                 <button
                   type="button"
                   onClick={() => {
-                    trackIntent("yes", intentCtx);
-                    setStep("choose");
+                    trackIntent("yes", intentCtx); // also opens their chat with the team in the background
+                    setStep("form");
                   }}
                   className="inline-flex h-[52px] items-center justify-center rounded-full bg-brand px-7 text-[17px] font-semibold text-brand-foreground transition duration-300 ease-[var(--ease-apple)] hover:bg-brand-hover active:scale-[0.985]"
                 >
@@ -271,43 +271,6 @@ export function NotesPrompt({
                   No, thanks
                 </button>
               </div>
-            </div>
-          )}
-
-          {step === "choose" && (
-            <div className="text-center">
-              <h2 id="notes-prompt-title" className="pr-6 text-[24px] font-semibold leading-tight tracking-[-0.025em]">
-                How should we help?
-              </h2>
-              <p className="mx-auto mt-2 max-w-[19rem] text-[15px] leading-snug text-muted">Notes for {what}</p>
-              <div className="mt-6 flex flex-col gap-2.5">
-                <button
-                  type="button"
-                  onClick={() => {
-                    trackIntent("wa", intentCtx);
-                    setStep("form");
-                  }}
-                  className="inline-flex h-[52px] items-center justify-center gap-2 rounded-full bg-brand px-7 text-[17px] font-semibold text-brand-foreground transition duration-300 ease-[var(--ease-apple)] hover:bg-brand-hover active:scale-[0.985]"
-                >
-                  <WhatsappLogo size={20} weight="fill" />
-                  Send notes on WhatsApp
-                </button>
-                <a
-                  href={chatHref}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={(e) => {
-                    trackIntent("chat", intentCtx);
-                    openChat(e, chatHref); // their own chat (with our "Hi" waiting) when the Yes click already opened one
-                    dismiss(false);
-                  }}
-                  className="inline-flex h-[52px] items-center justify-center gap-2 rounded-full bg-surface-muted px-7 text-[17px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
-                >
-                  <ChatCircleDots size={20} weight="fill" className="text-brand" />
-                  Chat with us now
-                </a>
-              </div>
-              <p className="mt-3 text-[13px] leading-snug text-muted">WhatsApp: leave your number, we send the notes. Chat: talk to us live, no number needed.</p>
             </div>
           )}
 
