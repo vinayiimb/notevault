@@ -226,11 +226,16 @@ export async function updateOrderAction(formData: FormData) {
   const id = String(formData.get("id") ?? "");
   const f = readOrderForm(formData);
   if (!id) return;
-  const old = await prisma.notesOrder.findUnique({ where: { id }, select: { programme: true, programmeSlug: true } });
+  const old = await prisma.notesOrder.findUnique({ where: { id }, select: { programme: true, programmeSlug: true, adminNote: true } });
   if (!old) return;
   // Keep the original programme slug unless the name was changed, so the order still links to its notes.
   const programmeSlug = f.programme === old.programme ? old.programmeSlug : slugify(f.programme);
-  await prisma.notesOrder.update({ where: { id }, data: { ...f, programmeSlug } });
+  const meta = parseOrderMeta(old.adminNote);
+  if (formData.get("hasPaid") === "1") {
+    meta.unpaid = formData.get("paid") !== "on";
+    meta.paid = null;
+  }
+  await prisma.notesOrder.update({ where: { id }, data: { ...f, programmeSlug, adminNote: buildOrderMeta(meta) } });
   revalidatePath("/admin/leads/delivery");
   revalidatePath("/admin/leads");
 }
@@ -268,7 +273,7 @@ export async function addOrderAction(formData: FormData) {
       razorpayPaymentId: ref,
       status: delivered ? "DELIVERED" : "PAID",
       deliveredAt: delivered ? new Date() : null,
-      adminNote: buildOrderMeta({ text: "Added by admin", under, gmail }),
+      adminNote: buildOrderMeta({ text: "Added by admin", under, gmail, unpaid: formData.get("hasPaid") === "1" && formData.get("paid") !== "on" }),
     },
   });
   if (!skey) await rememberStudent(phone || `mail:${gmail}`, { name: text120(formData.get("name")), gmail });
@@ -277,36 +282,67 @@ export async function addOrderAction(formData: FormData) {
   return back("Added.");
 }
 
-/**
- * Type the subjects of a whole-semester order in one go (one per line, "1." numbering allowed). Each becomes its own row
- * under the pack, so it can be ticked, edited or deleted on its own. The pack decides the student, course and semester.
- */
-export async function addPackSubjectsAction(formData: FormData) {
-  await requireAdmin();
-  const packId = String(formData.get("under") ?? "");
-  const pack = packId ? await prisma.notesOrder.findUnique({ where: { id: packId } }) : null;
-  if (!pack || pack.plan !== "semester") return back("That semester order was not found.");
-  const names = [
+/** "1. Law, 2) Accounts; Stats" -> ["Law", "Accounts", "Stats"]: names split on new lines, commas or semicolons. */
+function parseSubjectNames(raw: string) {
+  return [
     ...new Set(
-      String(formData.get("subjects") ?? "")
+      raw
         .split(/[\n;,]/)
         .map((n) => n.replace(/^\s*\d+\s*[.)\-:]\s*/, "").trim().slice(0, 120))
         .filter(Boolean),
     ),
   ].slice(0, 15);
-  if (!names.length) return back("Type at least one subject name.");
-  const meta = buildOrderMeta({ text: "Added by admin", under: pack.id, gmail: parseOrderMeta(pack.adminNote).gmail });
+}
+
+/**
+ * The short "add subject" box: just type the name(s) and press Enter. With `under` the subjects join that whole-semester
+ * order (same student, course and semester); with `skey` they join that student and copy the course and semester of
+ * their latest entry. The "Access given" tick saves them already ticked.
+ */
+export async function quickAddSubjectsAction(formData: FormData) {
+  await requireAdmin();
+  const names = parseSubjectNames(String(formData.get("subjects") ?? ""));
+  if (!names.length) return back("Type a subject name.");
+  const delivered = formData.get("delivered") === "on";
+  const underId = String(formData.get("under") ?? "");
+  const skey = String(formData.get("skey") ?? "");
+
+  let phone = "";
+  let gmail = "";
+  let programme = "";
+  let semester = 0;
+  let under = "";
+  if (underId) {
+    const pack = await prisma.notesOrder.findUnique({ where: { id: underId } });
+    if (!pack || pack.plan !== "semester") return back("That semester order was not found.");
+    ({ phone, programme, semester } = pack);
+    gmail = parseOrderMeta(pack.adminNote).gmail;
+    under = pack.id;
+  } else {
+    if (skey.startsWith("mail:")) gmail = skey.slice(5);
+    else phone = normalizePhone(skey) ?? "";
+    if (!phone && !gmail) return back("Student not found.");
+    const mine = await prisma.notesOrder.findMany({
+      where: phone ? { phone } : { phone: "", adminNote: { contains: gmail, mode: "insensitive" } },
+      orderBy: { paidAt: "desc" },
+      select: { programme: true, semester: true },
+    });
+    const ref = mine.find((m) => m.programme) ?? mine[0];
+    programme = ref?.programme ?? "";
+    semester = ref?.semester ?? 0;
+  }
   await prisma.notesOrder.createMany({
     data: names.map((subject) => {
       const ref = `manual-${crypto.randomUUID()}`;
       return {
-        phone: pack.phone, plan: "subject", programmeSlug: pack.programmeSlug, programme: pack.programme, semester: pack.semester,
-        subject, subjectSlug: slugify(subject), amount: 0, razorpayOrderId: ref, razorpayPaymentId: ref, adminNote: meta,
-      };
+        phone, plan: "subject", programmeSlug: slugify(programme), programme, semester, subject, subjectSlug: slugify(subject), amount: 0,
+        razorpayOrderId: ref, razorpayPaymentId: ref, status: delivered ? "DELIVERED" : "PAID", deliveredAt: delivered ? new Date() : null,
+        adminNote: buildOrderMeta({ text: "Added by admin", under, gmail }),
+      } as const;
     }),
   });
   revalidatePath("/admin/leads/delivery");
-  return back(`Added ${names.length} subject${names.length === 1 ? "" : "s"} under this semester.`);
+  return back(`Added ${names.length} subject${names.length === 1 ? "" : "s"}.`);
 }
 
 /** "Fill in from the syllabus": list the DSC papers of this whole-semester order's course + semester under it. */
@@ -318,6 +354,104 @@ export async function fillPackFromSyllabusAction(formData: FormData) {
   const n = await fillPackFromSyllabus(pack);
   revalidatePath("/admin/leads/delivery");
   return back(n ? `Listed ${n} subject${n === 1 ? "" : "s"} from the syllabus.` : `No new DSC subjects found in the syllabus for ${pack.programme}, Semester ${pack.semester}. You can type them yourself.`);
+}
+
+/**
+ * The per-student payment line in the overview: purchase type, total price and amount paid, typed once.
+ *  - "Full semester" turns their loose subjects into a semester pack and moves the payment onto it; "subjects" dissolves a
+ *    pack back into its subjects. Only hand-entered rows are rearranged, never a Razorpay payment.
+ *  - The price and the paid amount are put on one primary row (the pack, else the first purchase); every other
+ *    hand-entered purchase of the student goes to 0, so totals add up to exactly what was typed. Rest = price - paid.
+ */
+export async function saveStudentPaymentAction(formData: FormData) {
+  await requireAdmin();
+  const skey = String(formData.get("skey") ?? "");
+  const type = formData.get("type") === "semester" ? "semester" : "subjects";
+  const price = Math.max(0, Math.min(1_000_000, Math.round(Number(formData.get("price")) || 0)));
+  const paid = Math.max(0, Math.min(1_000_000, Math.round(Number(formData.get("paid")) || 0)));
+  if (paid > price) return back("The amount paid can't be more than the total price.");
+  const gmailKey = skey.startsWith("mail:") ? skey.slice(5) : "";
+  const phone = gmailKey ? "" : normalizePhone(skey) ?? "";
+  if (!gmailKey && !phone) return back("Student not found.");
+
+  const load = () =>
+    prisma.notesOrder.findMany({
+      where: phone ? { phone } : { phone: "", adminNote: { contains: gmailKey, mode: "insensitive" } },
+      orderBy: { paidAt: "asc" },
+    });
+  const isManual = (o: { razorpayPaymentId: string }) => o.razorpayPaymentId.startsWith("manual-");
+  const underOf = (o: { adminNote: string | null }) => parseOrderMeta(o.adminNote).under;
+  let rows = await load();
+  let top = rows.filter((o) => isManual(o) && !underOf(o));
+
+  if (type === "semester" && !top.some((o) => o.plan === "semester")) {
+    const subs = top.filter((o) => o.plan === "subject");
+    const ref = subs.find((o) => o.programme) ?? subs[0];
+    if (!ref) return back("Add at least one subject for this student first.");
+    const refId = `manual-${crypto.randomUUID()}`;
+    const pack = await prisma.notesOrder.create({
+      data: {
+        phone: ref.phone, plan: "semester", programme: ref.programme, programmeSlug: ref.programmeSlug, semester: ref.semester, subject: "", subjectSlug: "",
+        amount: 0, razorpayOrderId: refId, razorpayPaymentId: refId, adminNote: buildOrderMeta({ text: "Added by admin", gmail: parseOrderMeta(ref.adminNote).gmail }),
+      },
+    });
+    for (const o of subs) {
+      const meta = parseOrderMeta(o.adminNote);
+      await prisma.notesOrder.update({ where: { id: o.id }, data: { amount: 0, adminNote: buildOrderMeta({ ...meta, under: pack.id, unpaid: false, paid: null }) } });
+    }
+  } else if (type === "subjects") {
+    const pack = top.find((o) => o.plan === "semester");
+    if (pack) {
+      if (!isManual(pack)) return back("This semester was paid through Razorpay, so it can't be changed to individual subjects here.");
+      const kids = rows.filter((o) => underOf(o) === pack.id);
+      if (!kids.length) return back("Type the subject names under this semester first, then switch it to subjects.");
+      for (const k of kids) {
+        const meta = parseOrderMeta(k.adminNote);
+        await prisma.notesOrder.update({ where: { id: k.id }, data: { adminNote: buildOrderMeta({ ...meta, under: "" }) } });
+      }
+      await prisma.notesOrder.delete({ where: { id: pack.id } });
+    }
+  }
+
+  rows = await load();
+  top = rows.filter((o) => isManual(o) && !underOf(o));
+  const real = rows.filter((o) => !isManual(o)); // Razorpay payments keep their recorded amounts
+  const realAmount = real.reduce((n, o) => n + o.amount, 0);
+  const primary = top.find((o) => o.plan === "semester") ?? top[0];
+  if (!primary) {
+    revalidatePath("/admin/leads/delivery");
+    return back(price || paid ? "This student's payment came through Razorpay and can't be edited here." : "Saved.");
+  }
+  const myPrice = Math.max(0, price - realAmount);
+  const myPaid = Math.max(0, Math.min(myPrice, paid - realAmount));
+  for (const o of top) {
+    const meta = parseOrderMeta(o.adminNote);
+    meta.unpaid = false;
+    meta.paid = null;
+    if (o.id === primary.id) {
+      if (myPaid === 0 && myPrice > 0) meta.unpaid = true;
+      else if (myPaid < myPrice) meta.paid = myPaid;
+      await prisma.notesOrder.update({ where: { id: o.id }, data: { amount: myPrice, adminNote: buildOrderMeta(meta) } });
+    } else {
+      await prisma.notesOrder.update({ where: { id: o.id }, data: { amount: 0, adminNote: buildOrderMeta(meta) } });
+    }
+  }
+  revalidatePath("/admin/leads/delivery");
+  revalidatePath("/admin/leads");
+  return back(`Saved: total ₹${price}, paid ₹${paid}, rest ₹${price - paid}.`);
+}
+
+/** "Payment received" tick on a purchase, separate from whether access has been given. */
+export async function setOrderPaidAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const order = id ? await prisma.notesOrder.findUnique({ where: { id }, select: { adminNote: true } }) : null;
+  if (!order) return;
+  const meta = parseOrderMeta(order.adminNote);
+  meta.unpaid = formData.get("paid") !== "yes"; // the button sends what the state should become
+  meta.paid = null;
+  await prisma.notesOrder.update({ where: { id }, data: { adminNote: buildOrderMeta(meta) } });
+  revalidatePath("/admin/leads/delivery");
 }
 
 /** Only hand-added rows can be removed; a real Razorpay payment is never deleted from here. */
