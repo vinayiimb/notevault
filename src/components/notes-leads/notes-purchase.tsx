@@ -43,10 +43,16 @@ const pill =
  */
 export function NotesPurchase({
   result,
+  initialPlan,
+  hideContact = false,
   onPayingChange,
   onClose,
 }: {
   result: LeadResult;
+  /** Start with this plan selected (the chat's payment card says which one the student tapped). */
+  initialPlan?: OrderPlan;
+  /** Leave out the "Chat now / WhatsApp first" block (used on the page that the chat links to). */
+  hideContact?: boolean;
   /** true while Razorpay's window is open: the pop-up steps aside, since a native modal blocks clicks outside it. */
   onPayingChange: (paying: boolean) => void;
   onClose: () => void;
@@ -54,7 +60,7 @@ export function NotesPurchase({
   const semester = result.semester ?? 0;
   const canBuy = !!(result.phone && result.programme && result.programmeSlug && semester) && result.canBuy === true;
   const canSubject = canBuy && !!result.subject && result.subject !== ANY_SUBJECT && !!result.subjectSlug;
-  const [plan, setPlan] = useState<OrderPlan>("semester");
+  const [plan, setPlan] = useState<OrderPlan>(initialPlan ?? "semester");
   const [phase, setPhase] = useState<"choose" | "paid" | "pending" | "later">(canBuy ? "choose" : "later");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -239,32 +245,36 @@ export function NotesPurchase({
         Secure payment by Razorpay. Notes on WhatsApp {NOTES_DELIVERY_TEXT}.
       </p>
 
-      <div className="my-3 flex items-center gap-3 text-[12px] uppercase tracking-wide text-muted">
-        <span className="h-px flex-1 bg-border" />
-        or
-        <span className="h-px flex-1 bg-border" />
-      </div>
-      <a
-        href={chatLink(`Hi! I need ${selected === "subject" ? subjectName : "all subjects"} notes for ${result.programme ?? "my course"}, Semester ${semester}`.replace(/\s+/g, " "))}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
-      >
-        <ChatCircleDots size={20} weight="fill" className="text-brand" />
-        Chat now
-      </a>
-      <button
-        type="button"
-        onClick={() => {
-          void leadWantsChatAction({ phone: result.phone ?? "" }).catch(() => undefined); // tells the owner on WhatsApp
-          setPhase("later");
-        }}
-        className="mt-2.5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
-      >
-        <WhatsappLogo size={18} weight="fill" className="text-[#25D366]" />
-        Message me on WhatsApp first
-      </button>
-      <p className="mt-2 text-center text-[13px] leading-snug text-muted">Chat with us live, or we&apos;ll message you on WhatsApp. You can pay after we talk.</p>
+      {!hideContact && (
+        <>
+        <div className="my-3 flex items-center gap-3 text-[12px] uppercase tracking-wide text-muted">
+          <span className="h-px flex-1 bg-border" />
+          or
+          <span className="h-px flex-1 bg-border" />
+        </div>
+        <a
+          href={chatLink(`Hi! I need ${selected === "subject" ? subjectName : "all subjects"} notes for ${result.programme ?? "my course"}, Semester ${semester}`.replace(/\s+/g, " "))}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
+        >
+          <ChatCircleDots size={20} weight="fill" className="text-brand" />
+          Chat now
+        </a>
+        <button
+          type="button"
+          onClick={() => {
+            void leadWantsChatAction({ phone: result.phone ?? "" }).catch(() => undefined); // tells the owner on WhatsApp
+            setPhase("later");
+          }}
+          className="mt-2.5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
+        >
+          <WhatsappLogo size={18} weight="fill" className="text-[#25D366]" />
+          Message me on WhatsApp first
+        </button>
+        <p className="mt-2 text-center text-[13px] leading-snug text-muted">Chat with us live, or we&apos;ll message you on WhatsApp. You can pay after we talk.</p>
+        </>
+      )}
       <div className="mt-2 text-center text-[13px]">
         <Link href="/refund-policy" target="_blank" className="text-muted underline-offset-2 transition hover:text-foreground hover:underline">
           Refund policy

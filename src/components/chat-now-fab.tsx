@@ -14,6 +14,7 @@ import { chatDraftFor, chatLink } from "@/lib/chat-link";
 export function ChatNowFab() {
   const pathname = usePathname();
   const href = useMemo(() => chatLink(chatDraftFor(pathname)), [pathname]);
+  if (pathname.startsWith("/chat-pay")) return null; // the student is already paying; don't point them elsewhere
   return (
     <a
       href={href}
