@@ -33,6 +33,26 @@ export default async function SubjectNotesOverviewPage() {
         </p>
       </div>
 
+      <form
+        method="get"
+        action="/admin/subject-notes/subject/general-notes/new"
+        className="flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface p-4"
+      >
+        <label className="flex-1 text-sm font-medium">
+          General note: type a name, then drop the .md file on the next page
+          <input
+            name="name"
+            required
+            maxLength={120}
+            placeholder="e.g. भारतीय भक्ति परंपरा और मानव मूल्य"
+            className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+          />
+        </label>
+        <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90">
+          Add note →
+        </button>
+      </form>
+
       <div className="rounded-2xl border border-border bg-surface p-6">
         <h2 className="font-medium">Shown on the public /notes page</h2>
         <p className="mt-1 text-sm text-muted">
