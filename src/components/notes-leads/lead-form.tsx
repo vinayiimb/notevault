@@ -3,6 +3,7 @@
 import { useActionState, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { CaretUpDown, Check, WhatsappLogo } from "@phosphor-icons/react";
 import { submitNoteLeadAction, type LeadResult } from "@/lib/note-lead-actions";
+import { getVisitorId } from "@/lib/lead-intent";
 import {
   ANY_SUBJECT,
   LEAD_PHONE_KEY,
@@ -114,6 +115,7 @@ export function LeadForm({
 }) {
   const uid = useId();
   const phoneRef = useRef<HTMLInputElement>(null);
+  const vidRef = useRef<HTMLInputElement>(null);
   const lastPhone = useRef("");
   const [course, setCourse] = useState(initial?.course ?? "");
   const [subject, setSubject] = useState(initial?.subject ?? "");
@@ -140,6 +142,7 @@ export function LeadForm({
   useEffect(() => {
     const el = phoneRef.current;
     if (el && !el.value) el.value = savedPhone();
+    if (vidRef.current) vidRef.current.value = getVisitorId(); // lets the server tie earlier clicks to this number
   }, []);
 
   useEffect(() => {
@@ -194,6 +197,7 @@ export function LeadForm({
       <input type="hidden" name="source" value={source} />
       {/* Honeypot: invisible to people, bots fill it. */}
       <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] size-px opacity-0" />
+      <input ref={vidRef} type="hidden" name="vid" />
     </>
   );
   const errorLine = state.error && (

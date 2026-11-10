@@ -931,6 +931,29 @@ model NoteLead {
   @@index([phone])
 }
 
+// A visitor who showed interest in notes before (or without) leaving a number: clicked "Yes, I need notes",
+// opened the live chat, or chose WhatsApp. One row per browser (visitorId) and subject. `phone` is filled in when
+// that browser later submits the lead form, which is how /admin/leads shows who is hot and who never moved on.
+model LeadIntent {
+  id         String    @id @default(cuid())
+  visitorId  String
+  key        String // source|programme|subject, so one visitor asking for two subjects is two rows
+  source     String
+  programme  String
+  subject    String
+  semester   Int?
+  phone      String?
+  yesAt      DateTime  @default(now())
+  chatAt     DateTime?
+  waAt       DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@unique([visitorId, key])
+  @@index([createdAt])
+  @@index([phone])
+}
+
 enum NotesOrderStatus {
   PAID
   DELIVERED

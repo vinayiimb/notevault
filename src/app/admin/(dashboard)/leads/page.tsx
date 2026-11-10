@@ -6,6 +6,8 @@ import { markOrderDeliveredAction, setLeadNoteAction, setLeadStatusAction } from
 import { LEAD_STATUSES, formatLeadPhone, leadWhatsAppText, type LeadStatusName } from "@/lib/note-leads";
 import { NOTES_DELIVERY_HOURS, orderPlanLabel, orderWhatsAppText } from "@/lib/notes-orders";
 import { AlertsPanel } from "@/components/admin/alerts-panel";
+import { CHAT_INBOX } from "@/lib/chat-link";
+import { intentScore } from "@/lib/lead-intent";
 
 const SOURCE_LABEL: Record<string, string> = {
   "notes-hub": "Notes page form",
@@ -22,6 +24,7 @@ const STATUS_ACTIONS: { status: LeadStatusName; label: string }[] = [
 ];
 
 const daysAgo = (n: number) => new Date(Date.now() - n * 24 * 60 * 60 * 1000);
+const withinDays = (d: Date, n: number) => Date.now() - d.getTime() < n * 24 * 60 * 60 * 1000;
 const hoursSince = (d: Date) => (Date.now() - d.getTime()) / (60 * 60 * 1000);
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none";
@@ -75,7 +78,28 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
       </div>
     );
   }
-  const { counts, leads, top, requests } = data;
+  // Funnel clicks (Yes / opened chat / chose WhatsApp). Separate query: a database without the LeadIntent table yet
+  // still shows every lead, just without the flags.
+  let intents: Awaited<ReturnType<typeof prisma.leadIntent.findMany>> = [];
+  try {
+    intents = await prisma.leadIntent.findMany({ where: { createdAt: { gte: daysAgo(30) } }, orderBy: { createdAt: "desc" }, take: 500 });
+  } catch (err) {
+    console.error("lead intents not read (migration not applied?):", err);
+  }
+  const flagsOf = new Map<string, { yes: boolean; chat: boolean; wa: boolean }>();
+  for (const i of intents) {
+    if (!i.phone) continue;
+    const f = flagsOf.get(i.phone) ?? { yes: false, chat: false, wa: false };
+    flagsOf.set(i.phone, { yes: true, chat: f.chat || !!i.chatAt, wa: f.wa || !!i.waAt });
+  }
+  const unreached = intents
+    .filter((i) => !i.phone && withinDays(i.createdAt, 3))
+    .sort((a, b) => intentScore(b) - intentScore(a) || b.createdAt.getTime() - a.createdAt.getTime())
+    .slice(0, 40);
+  const { counts, top, requests } = data;
+  // Hot first: someone who opened the chat or chose WhatsApp outranks a bare number, then newest first.
+  const hot = (phone: string) => { const f = flagsOf.get(phone); return f ? intentScore({ chatAt: f.chat ? "x" : null, waAt: f.wa ? "x" : null }) : 0; };
+  const leads = [...data.leads].sort((a, b) => hot(b.phone) - hot(a.phone) || b.createdAt.getTime() - a.createdAt.getTime());
   const countOf = (s: LeadStatusName) => counts.find((c) => c.status === s)?._count._all ?? 0;
 
   return (
@@ -165,6 +189,38 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
       )}
 
 
+      {unreached.length > 0 && (
+        <section className="mt-5 max-w-3xl">
+          <h2 className="text-lg font-semibold">
+            Said Yes, no number yet<span className="text-amber-600"> · {unreached.length}</span>
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            They never left a number, so the live chat is the only way to reach them. Warmest first: the ones that opened the
+            chat may write any moment.{" "}
+            <a href={CHAT_INBOX} target="_blank" rel="noreferrer" className="font-medium text-accent hover:underline">
+              Open the chat inbox →
+            </a>
+          </p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {unreached.map((i) => (
+              <li key={i.id} className="flex flex-col gap-1.5 rounded-xl border border-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-sm">
+                  <span className="font-medium">{i.subject || "Notes"}</span>
+                  <span className="text-muted">{i.programme ? ` · ${i.programme}` : ""}{i.semester ? ` · Sem ${i.semester}` : ""}</span>
+                </span>
+                <span className="flex flex-wrap items-center gap-1.5 text-xs">
+                  <span className={`rounded-full px-2 py-0.5 font-medium ${i.chatAt ? "bg-green-600/10 text-green-700" : "bg-surface-muted text-muted"}`}>
+                    {i.chatAt ? "💬 Opened chat" : "Chat not opened"}
+                  </span>
+                  {i.waAt && <span className="rounded-full bg-surface-muted px-2 py-0.5 text-muted">Chose WhatsApp, no number</span>}
+                  <span className="text-muted">{i.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {top.length > 0 && (
         <section className="mt-6 max-w-3xl">
           <h2 className="text-sm font-medium">Most asked for, last 30 days</h2>
@@ -201,6 +257,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
         <ul className="mt-4 flex max-w-3xl flex-col gap-3">
           {leads.map((l) => {
             const times = requests.get(l.phone) ?? 1;
+            const flags = flagsOf.get(l.phone);
             return (
               <li key={l.id} className="rounded-xl border border-border bg-surface p-4 sm:p-5">
                 <div className="flex flex-wrap items-baseline justify-between gap-2">
@@ -217,7 +274,17 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
                   <span className={`rounded-full px-2 py-0.5 font-medium ${l.hasNotes ? "bg-success-soft text-success" : "bg-amber-500/10 text-amber-700 dark:text-amber-400"}`}>
                     {l.hasNotes ? "Notes ready" : "No notes yet"}
                   </span>
+                  {flags && (flags.chat || flags.wa) && <span className="rounded-full bg-red-500/10 px-2 py-0.5 font-semibold text-red-600">🔥 Hot</span>}
                   <span className="rounded-full bg-surface-muted px-2 py-0.5 text-muted">{SOURCE_LABEL[l.source] ?? l.source}</span>
+                  {flags && (
+                    <>
+                      <span className="rounded-full bg-surface-muted px-2 py-0.5 text-muted">👍 Clicked Yes</span>
+                      <span className={`rounded-full px-2 py-0.5 ${flags.chat ? "bg-green-600/10 font-medium text-green-700" : "bg-surface-muted text-muted"}`}>
+                        {flags.chat ? "💬 Opened chat" : "Chat not opened"}
+                      </span>
+                      {flags.wa && <span className="rounded-full bg-surface-muted px-2 py-0.5 text-muted">Chose WhatsApp</span>}
+                    </>
+                  )}
                   {times > 1 && <span className="rounded-full bg-accent-soft px-2 py-0.5 font-medium text-accent">{times} requests from this number</span>}
                 </div>
 

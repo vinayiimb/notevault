@@ -5,6 +5,9 @@
  */
 const CHAT_ORIGIN = (process.env.NEXT_PUBLIC_CHAT_URL || "https://pingchat-production-069c.up.railway.app").replace(/\/+$/, "");
 
+/** The owner's chat inbox (where visitor chats arrive). */
+export const CHAT_INBOX = `${CHAT_ORIGIN}/`;
+
 export function chatLink(topic: string): string {
   return `${CHAT_ORIGIN}/chat?topic=${encodeURIComponent(topic.trim().slice(0, 140))}`;
 }

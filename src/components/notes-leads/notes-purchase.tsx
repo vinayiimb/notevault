@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ChatCircleDots, Check, Lock, WhatsappLogo } from "@phosphor-icons/react";
 import { leadWantsChatAction, type LeadResult } from "@/lib/note-lead-actions";
 import { chatLink } from "@/lib/chat-link";
+import { trackIntent } from "@/lib/lead-intent";
 import { ANY_SUBJECT } from "@/lib/note-leads";
 import { NOTES_DELIVERY_TEXT, ORDER_PRICE, orderPlanLabel, type OrderPlan } from "@/lib/notes-orders";
 
@@ -45,10 +46,13 @@ export function NotesPurchase({
   result,
   initialPlan,
   hideContact = false,
+  intent,
   onPayingChange,
   onClose,
 }: {
   result: LeadResult;
+  /** What the funnel tracking calls this visitor's request, so a chat/WhatsApp click here lands on the same row as their "Yes". */
+  intent?: { source: string; programme?: string; subject?: string; semester?: number | null };
   /** Start with this plan selected (the chat's payment card says which one the student tapped). */
   initialPlan?: OrderPlan;
   /** Leave out the "Chat now / WhatsApp first" block (used on the page that the chat links to). */
@@ -256,6 +260,7 @@ export function NotesPurchase({
           href={chatLink(`Hi! I need ${selected === "subject" ? subjectName : "all subjects"} notes for ${result.programme ?? "my course"}, Semester ${semester}`.replace(/\s+/g, " "))}
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => intent && trackIntent("chat", intent)}
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
         >
           <ChatCircleDots size={20} weight="fill" className="text-brand" />
@@ -265,6 +270,7 @@ export function NotesPurchase({
           type="button"
           onClick={() => {
             void leadWantsChatAction({ phone: result.phone ?? "" }).catch(() => undefined); // tells the owner on WhatsApp
+            if (intent) trackIntent("wa", intent);
             setPhase("later");
           }}
           className="mt-2.5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"

@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { findCanonicalProgramme, findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
 import { slugify } from "@/lib/utils";
+import { validVisitorId } from "@/lib/lead-intent";
 import { notesOrdersReady } from "@/lib/notes-orders-server";
 import { notifyOwner } from "@/lib/owner-notify";
 import { chatAlert, leadAlert, leadLostAlert, returningLeadAlert } from "@/lib/owner-messages";
@@ -94,6 +95,13 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
   if (throttled(ip)) return { error: "Too many requests. Please try again in a few minutes." };
 
   const { programmeSlug, programmeName, subjectSlug, subjectName } = target;
+  // Tie this browser's earlier "Yes" / chat clicks to the number it just gave, so /admin/leads can show the flags.
+  const vid = validVisitorId(formData.get("vid"));
+  if (vid) {
+    await prisma.leadIntent
+      .updateMany({ where: { visitorId: vid, phone: null }, data: { phone } })
+      .catch(() => undefined); // the LeadIntent table may not exist yet
+  }
   let hasNotes = false;
   try {
     hasNotes = (await prisma.canonicalSubjectNote.count({ where: { programmeSlug, subjectSlug, NOT: { content: "" } } })) > 0;
