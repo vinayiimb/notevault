@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { findCanonicalProgramme, findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
 import { slugify } from "@/lib/utils";
+import { normalizePhone } from "@/lib/paid-notes-pricing";
 import { validVisitorId } from "@/lib/lead-intent";
 import { notesOrdersReady } from "@/lib/notes-orders-server";
 import { notifyOwner } from "@/lib/owner-notify";
@@ -183,6 +184,68 @@ export async function markOrderDeliveredAction(formData: FormData) {
     where: { id, status: delivered ? "PAID" : "DELIVERED" },
     data: delivered ? { status: "DELIVERED", deliveredAt: new Date() } : { status: "PAID", deliveredAt: null },
   });
+  revalidatePath("/admin/leads");
+  revalidatePath("/admin/leads/delivery");
+}
+
+const text120 = (v: FormDataEntryValue | null) => String(v ?? "").trim().slice(0, 120);
+
+/** Fields of the admin edit / add forms on the delivery tracker. null = something required is missing. */
+function readOrderForm(fd: FormData) {
+  const plan = fd.get("plan") === "semester" ? "semester" : "subject";
+  const programme = text120(fd.get("programme"));
+  const semester = parseLeadSemester(fd.get("semester"));
+  const subject = plan === "subject" ? text120(fd.get("subject")) : "";
+  const amount = Math.max(0, Math.min(100000, Math.round(Number(fd.get("amount")) || 0)));
+  if (!programme || !semester || (plan === "subject" && !subject)) return null;
+  return { plan, programme, semester, subject, subjectSlug: slugify(subject), amount };
+}
+
+export async function updateOrderAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  const f = readOrderForm(formData);
+  if (!id || !f) return;
+  const old = await prisma.notesOrder.findUnique({ where: { id }, select: { programme: true, programmeSlug: true } });
+  if (!old) return;
+  // Keep the original programme slug unless the name was changed, so the order still links to its notes.
+  const programmeSlug = f.programme === old.programme ? old.programmeSlug : slugify(f.programme);
+  await prisma.notesOrder.update({ where: { id }, data: { ...f, programmeSlug } });
+  revalidatePath("/admin/leads/delivery");
+  revalidatePath("/admin/leads");
+}
+
+/** Add a purchase by hand: a subject bought outside the pop-up (UPI / cash) or one more subject for a student. */
+export async function addOrderAction(formData: FormData) {
+  await requireAdmin();
+  const phone = normalizePhone(String(formData.get("phone") ?? ""));
+  const f = readOrderForm(formData);
+  if (!phone || !f) return;
+  const ref = `manual-${crypto.randomUUID()}`; // both Razorpay ids are unique columns
+  const delivered = formData.get("delivered") === "on";
+  await prisma.notesOrder.create({
+    data: {
+      ...f,
+      phone,
+      programmeSlug: slugify(f.programme),
+      razorpayOrderId: ref,
+      razorpayPaymentId: ref,
+      status: delivered ? "DELIVERED" : "PAID",
+      deliveredAt: delivered ? new Date() : null,
+      adminNote: "Added by admin",
+    },
+  });
+  revalidatePath("/admin/leads/delivery");
+  revalidatePath("/admin/leads");
+}
+
+/** Only hand-added rows can be removed; a real Razorpay payment is never deleted from here. */
+export async function deleteManualOrderAction(formData: FormData) {
+  await requireAdmin();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  await prisma.notesOrder.deleteMany({ where: { id, razorpayPaymentId: { startsWith: "manual-" } } });
+  revalidatePath("/admin/leads/delivery");
   revalidatePath("/admin/leads");
 }
 

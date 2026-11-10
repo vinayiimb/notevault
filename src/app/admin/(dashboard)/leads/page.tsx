@@ -114,6 +114,9 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
 
       {orders && (orders.paid.length > 0 || orders.delivered.length > 0) && (
         <section className="mt-5 max-w-3xl">
+          <Link href="/admin/leads/delivery" className="mb-2 inline-block text-sm font-medium text-accent hover:underline">
+            Delivery tracker: all students &rarr;
+          </Link>
           <h2 className="text-lg font-semibold">
             Paid orders{orders.paid.length > 0 ? <span className="text-green-600"> · {orders.paid.length} to send</span> : ""}
           </h2>
