@@ -778,6 +778,8 @@ mark.nt-search-hit-active { background: var(--nt-warning); color: var(--nt-backg
   .nt-gm-table tbody th, .nt-gm-table thead th { font-size: .78rem; padding-left: .2rem; padding-right: .2rem; }
   .nt-gm-table thead th.nt-gm-corner { max-width: 5.5rem; font-size: .66rem; }
 }
+/* Inline diagrams are drawn in a fixed 520-unit box, so on a phone their labels shrink to ~8px. Larger label text there. */
+@media (max-width: 640px) { .nt-prose svg.diagram text { font-size: 15.5px; } }
 @media (prefers-reduced-motion: reduce) { .nt-gm-table td, .nt-gt-edge, .nt-ck input::after { transition: none !important; } }
 
 @media print {
