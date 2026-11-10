@@ -8,7 +8,7 @@ import type { LeadResult } from "@/lib/note-lead-actions";
 import { parseLeadSemester, type LeadCourse, type LeadSubject } from "@/lib/note-leads";
 import { OPEN_NOTES_EVENT } from "@/lib/notes-promo";
 import { chatLink } from "@/lib/chat-link";
-import { CHAT_NUDGE_EVENT, trackIntent } from "@/lib/lead-intent";
+import { CHAT_NUDGE_EVENT, openChat, trackIntent } from "@/lib/lead-intent";
 import { LeadForm, useKnownLead } from "./lead-form";
 import { NotesPurchase } from "./notes-purchase";
 
@@ -296,8 +296,9 @@ export function NotesPrompt({
                   href={chatHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => {
+                  onClick={(e) => {
                     trackIntent("chat", intentCtx);
+                    openChat(e, chatHref); // their own chat (with our "Hi" waiting) when the Yes click already opened one
                     dismiss(false);
                   }}
                   className="inline-flex h-[52px] items-center justify-center gap-2 rounded-full bg-surface-muted px-7 text-[17px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"

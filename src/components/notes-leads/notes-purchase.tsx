@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ChatCircleDots, Check, Lock, WhatsappLogo } from "@phosphor-icons/react";
 import type { LeadResult } from "@/lib/note-lead-actions";
 import { chatLink } from "@/lib/chat-link";
-import { trackIntent } from "@/lib/lead-intent";
+import { openChat, trackIntent } from "@/lib/lead-intent";
 import { ANY_SUBJECT } from "@/lib/note-leads";
 import { NOTES_DELIVERY_TEXT, ORDER_PRICE, orderPlanLabel, type OrderPlan } from "@/lib/notes-orders";
 
@@ -190,6 +190,7 @@ export function NotesPurchase({
     { plan: "semester", title: `Whole Semester ${semester}`, detail: "All subjects of the semester, one price", badge: "Best value" },
   ];
   const selected: OrderPlan = options.some((o) => o.plan === plan) ? plan : "semester";
+  const purchaseChatHref = chatLink(`Hi! I need ${selected === "subject" ? subjectName : "all subjects"} notes for ${result.programme ?? "my course"}, Semester ${semester}`.replace(/\s+/g, " "));
 
   return (
     <div>
@@ -257,10 +258,13 @@ export function NotesPurchase({
           <span className="h-px flex-1 bg-border" />
         </div>
         <a
-          href={chatLink(`Hi! I need ${selected === "subject" ? subjectName : "all subjects"} notes for ${result.programme ?? "my course"}, Semester ${semester}`.replace(/\s+/g, " "))}
+          href={purchaseChatHref}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={() => intent && trackIntent("chat", intent)}
+          onClick={(e) => {
+            openChat(e, purchaseChatHref);
+            if (intent) trackIntent("chat", intent);
+          }}
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
         >
           <ChatCircleDots size={20} weight="fill" className="text-brand" />

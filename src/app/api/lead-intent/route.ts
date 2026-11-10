@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { parseIntent } from "@/lib/lead-intent";
 import { notifyOwner } from "@/lib/owner-notify";
 import { intentAlert } from "@/lib/owner-messages";
+import { seedVisitorChat } from "@/lib/pingchat";
 
 // Public beacon from the notes pop-up (and the floating "Chat now"): records that a visitor clicked Yes / opened the
 // chat / chose WhatsApp, and tells the owner the first time. Never throws at the visitor and never blocks them.
@@ -34,22 +35,30 @@ export async function POST(req: Request) {
   const i = parseIntent(body);
   if (!i) return ok;
 
+  let first = true; // if the record can't be read or written, still treat it as new: the alert matters more than the record
   try {
     const now = new Date();
     const existing = await prisma.leadIntent.findUnique({ where: { visitorId_key: { visitorId: i.vid, key: i.key } } });
-    const first = i.event === "yes" ? !existing : i.event === "chat" ? !existing?.chatAt : !existing?.waAt;
+    first = i.event === "yes" ? !existing : i.event === "chat" ? !existing?.chatAt : !existing?.waAt;
     const stamp = i.event === "chat" ? { chatAt: existing?.chatAt ?? now } : i.event === "wa" ? { waAt: existing?.waAt ?? now } : {};
     await prisma.leadIntent.upsert({
       where: { visitorId_key: { visitorId: i.vid, key: i.key } },
       create: { visitorId: i.vid, key: i.key, source: i.source, programme: i.programme, subject: i.subject, semester: i.semester, ...stamp },
       update: { ...stamp, ...(i.semester ? { semester: i.semester } : {}) },
     });
-    // "wa" is shown in the admin only: the lead form's own alert already tells the owner when a number arrives.
-    if (first && i.event !== "wa" && !over(alerts, ip, 60 * 60 * 1000, MAX_ALERTS_PER_HOUR)) notifyOwner(intentAlert(i.event, i));
   } catch (err) {
     console.error("lead intent not saved (is the LeadIntent migration applied?):", err);
-    // Still tell the owner about a first-time "yes"/"chat" click: the alert matters more than the record.
-    if (i.event !== "wa" && !over(alerts, ip, 60 * 60 * 1000, MAX_ALERTS_PER_HOUR)) notifyOwner(intentAlert(i.event, i));
   }
-  return ok;
+  // "wa" is shown in the admin only: the lead form's own alert already tells the owner when a number arrives.
+  let chat: string | null = null;
+  if (first && i.event !== "wa" && !over(alerts, ip, 60 * 60 * 1000, MAX_ALERTS_PER_HOUR)) {
+    notifyOwner(intentAlert(i.event, i));
+    // "Yes": put this visitor in the chat inbox now, so the team can say hi even if they close the tab. The reply is
+    // found through the private link the browser keeps (see chat-now-fab).
+    if (i.event === "yes") {
+      const what = [i.subject, i.programme].filter(Boolean).join(", ") || "notes";
+      chat = await seedVisitorChat(i.vid, `Hi! I need notes for ${what}${i.semester ? `, Semester ${i.semester}` : ""}. (clicked Yes on the website)`);
+    }
+  }
+  return NextResponse.json({ ok: true, chat });
 }

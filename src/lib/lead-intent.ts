@@ -1,3 +1,5 @@
+import { CHAT_ORIGIN } from "@/lib/chat-link";
+
 // Funnel tracking for the notes pop-up: who clicked "Yes", who opened the live chat, who chose WhatsApp, even if
 // they never leave a number. Client-safe (no server imports); the route and the admin page reuse parseIntent/score.
 
@@ -42,6 +44,26 @@ export function intentScore(i: { chatAt?: Date | string | null; waAt?: Date | st
 }
 
 const VID_KEY = "nv_visitor_id";
+const CHAT_KEY = "nv_chat_link";
+const CHAT_LINK = new RegExp(`^${CHAT_ORIGIN.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}/g/[0-9a-f]{48}$`);
+
+/** The private link to this visitor's own chat (kept in the browser after their first "Yes"), or "". */
+export function getChatLink(): string {
+  try {
+    const l = localStorage.getItem(CHAT_KEY) ?? "";
+    return CHAT_LINK.test(l) ? l : "";
+  } catch {
+    return "";
+  }
+}
+
+/** Open the visitor's own chat when they have one (so the team's "Hi" is waiting there), else the normal link. */
+export function openChat(e: { preventDefault: () => void }, fallback: string) {
+  const link = getChatLink();
+  if (!link || link === fallback) return;
+  e.preventDefault();
+  window.open(link, "_blank", "noopener,noreferrer");
+}
 /** A random id kept in this browser so the "Yes" click and a later phone number can be tied together. */
 export function getVisitorId(): string {
   try {
@@ -67,6 +89,12 @@ export function trackIntent(event: IntentEvent, ctx: { source: string; programme
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ vid, event, ...ctx }),
       keepalive: true,
-    }).catch(() => undefined);
+    })
+      .then((r) => r.json())
+      .then((d: { chat?: string | null }) => {
+        // The first "Yes" opens this visitor's chat; remember its private link so every Chat now button reuses it.
+        if (d?.chat && CHAT_LINK.test(d.chat)) localStorage.setItem(CHAT_KEY, d.chat);
+      })
+      .catch(() => undefined);
   } catch {}
 }
