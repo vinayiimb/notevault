@@ -10,6 +10,8 @@
 //   • CallMeBot (free, 2-minute setup, a third-party relay): CALLMEBOT_PHONE, CALLMEBOT_APIKEY
 // With neither set the alerts are skipped and everything else works as before.
 
+import { sendOwnerPush } from "@/lib/owner-push";
+
 const CLOUD_URL = () => process.env.WHATSAPP_GRAPH_URL ?? "https://graph.facebook.com/v21.0";
 const CALLMEBOT_URL = () => process.env.CALLMEBOT_URL ?? "https://api.callmebot.com/whatsapp.php";
 const GAP_MS = () => Number(process.env.OWNER_NOTIFY_GAP_MS ?? 1500);
@@ -153,6 +155,7 @@ let queued = 0;
  * caller never waits for or sees a failure.
  */
 export function notifyOwner(text: string, label?: string): void {
+  void sendOwnerPush(text); // phone push; independent of the WhatsApp sender below
   if (!ownerNotifyProvider() || queued >= MAX_QUEUED) return;
   queued++;
   chain = chain

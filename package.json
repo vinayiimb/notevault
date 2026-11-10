@@ -44,6 +44,7 @@
     "@tiptap/react": "^3.31.4",
     "@tiptap/starter-kit": "^3.31.4",
     "@types/katex": "^0.16.8",
+    "@types/web-push": "^3.6.4",
     "@vercel/blob": "^2.6.1",
     "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
@@ -73,6 +74,7 @@
     "server-only": "^0.0.1",
     "tailwind-merge": "^3.6.0",
     "tesseract.js": "^7.0.0",
+    "web-push": "^4.0.0",
     "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
     "zod": "^4.4.3"
   },

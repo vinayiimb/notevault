@@ -4,6 +4,7 @@ import { ChartBar, ChatCircleText, CurrencyInr, FileArrowUp, Files, Flag, Gear, 
 import { logoutAction } from "@/lib/actions";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { LeadNotifier } from "./lead-notifier";
 
 
 
@@ -139,6 +140,7 @@ export default async function AdminDashboardLayout({
       </aside>
 
       <div className="min-w-0 flex-1 bg-background">{children}</div>
+      <LeadNotifier />
     </div>
   );
 }
