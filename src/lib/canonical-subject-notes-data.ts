@@ -1,6 +1,7 @@
 import "server-only";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
+import { createHash } from "node:crypto";
 import { slugify } from "@/lib/utils";
 
 type CanonicalProgrammeRaw = { name: string; subjects: string[] };
@@ -23,6 +24,14 @@ async function loadProgrammes(): Promise<Record<string, CanonicalProgrammeRaw>> 
 // Home for notes that belong to no course or semester. Its subjects are whatever the admin
 // named when adding them (stored as normal CanonicalSubjectNote rows), not the syllabus file.
 export const GENERAL_PROGRAMME = { name: "General Notes", slug: "general-notes" };
+
+// slugify() drops every non-ASCII character, so a Hindi General note name became "-" (all Hindi
+// notes overwrote each other) or "" (save threw). Non-ASCII names get a stable hash suffix instead.
+export function subjectSlugFor(programmeSlug: string, name: string) {
+  const base = slugify(name).replace(/^-+|-+$/g, "");
+  if (programmeSlug !== GENERAL_PROGRAMME.slug || /^[\x00-\x7f]*$/.test(name)) return slugify(name);
+  return `${base || "note"}-${createHash("sha1").update(name.trim()).digest("hex").slice(0, 8)}`;
+}
 
 async function programmeList() {
   const programmes = await loadProgrammes();
@@ -59,8 +68,8 @@ export async function findCanonicalProgramme(programmeSlug: string) {
 export async function findCanonicalSubject(programmeSlug: string, subjectSlug: string, nameHint?: string) {
   const programme = await findCanonicalProgramme(programmeSlug);
   if (!programme) return null;
-  let subject = programme.subjects.find((s) => slugify(s) === subjectSlug);
-  if (!subject && programmeSlug === GENERAL_PROGRAMME.slug && nameHint && slugify(nameHint) === subjectSlug) {
+  let subject = programme.subjects.find((s) => subjectSlugFor(programmeSlug, s) === subjectSlug);
+  if (!subject && programmeSlug === GENERAL_PROGRAMME.slug && nameHint && subjectSlugFor(programmeSlug, nameHint) === subjectSlug) {
     subject = nameHint;
   }
   if (!subject) return null;
@@ -134,7 +143,7 @@ export async function getProgrammeSubjectsWithNotesStatus(programmeSlug: string)
   const noteMap = new Map(notes.map((n) => [n.subjectSlug, n]));
 
   const subjects = programme.subjects.map((name) => {
-    const slug = slugify(name);
+    const slug = subjectSlugFor(programmeSlug, name);
     const note = noteMap.get(slug);
     return { name, slug, hasNotes: !!note, updatedAt: note?.updatedAt ?? null, semester: note?.semester ?? null };
   });

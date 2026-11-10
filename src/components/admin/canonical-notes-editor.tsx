@@ -44,6 +44,7 @@ export function CanonicalNotesEditor({
   const [editorMode, setEditorMode] = useState<"write" | "preview">("write");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [error, setError] = useState("");
 
   // A dropped file goes straight to the published-look preview: that is what the admin wants to check.
   async function loadMarkdownFile(file: File) {
@@ -61,6 +62,7 @@ export function CanonicalNotesEditor({
   async function save() {
     setSaving(true);
     setSaved(false);
+    setError("");
     try {
       const formData = new FormData();
       formData.set("programmeSlug", programmeSlug);
@@ -73,6 +75,8 @@ export function CanonicalNotesEditor({
       if (isFree) formData.set("isFree", "on");
       await updateCanonicalSubjectNoteAction(formData);
       setSaved(true);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Save failed");
     } finally {
       setSaving(false);
     }
@@ -277,6 +281,7 @@ export function CanonicalNotesEditor({
       >
         {saving ? "Saving..." : saved ? "Saved ✓" : "Save notes"}
       </button>
+      {error && <p className="text-sm text-red-600">Not saved: {error}</p>}
     </div>
   );
 }
