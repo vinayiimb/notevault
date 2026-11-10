@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Check, Lock, WhatsappLogo } from "@phosphor-icons/react";
+import { ChatCircleDots, Check, Lock, WhatsappLogo } from "@phosphor-icons/react";
 import { leadWantsChatAction, type LeadResult } from "@/lib/note-lead-actions";
+import { chatLink } from "@/lib/chat-link";
 import { ANY_SUBJECT } from "@/lib/note-leads";
 import { NOTES_DELIVERY_TEXT, ORDER_PRICE, orderPlanLabel, type OrderPlan } from "@/lib/notes-orders";
 
@@ -243,18 +244,27 @@ export function NotesPurchase({
         or
         <span className="h-px flex-1 bg-border" />
       </div>
+      <a
+        href={chatLink(`${result.programme ?? ""} Semester ${semester} ${selected === "subject" ? subjectName : "all subjects"} notes`.replace(/\s+/g, " "))}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
+      >
+        <ChatCircleDots size={20} weight="fill" className="text-brand" />
+        Chat now
+      </a>
       <button
         type="button"
         onClick={() => {
           void leadWantsChatAction({ phone: result.phone ?? "" }).catch(() => undefined); // tells the owner on WhatsApp
           setPhase("later");
         }}
-        className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
+        className="mt-2.5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
       >
         <WhatsappLogo size={18} weight="fill" className="text-[#25D366]" />
         Message me on WhatsApp first
       </button>
-      <p className="mt-2 text-center text-[13px] leading-snug text-muted">We&apos;ll reach out personally. You can pay after we talk.</p>
+      <p className="mt-2 text-center text-[13px] leading-snug text-muted">Chat with us live, or we&apos;ll message you on WhatsApp. You can pay after we talk.</p>
       <div className="mt-2 text-center text-[13px]">
         <Link href="/refund-policy" target="_blank" className="text-muted underline-offset-2 transition hover:text-foreground hover:underline">
           Refund policy
