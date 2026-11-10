@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { describeItems, getNotesCatalog } from "@/lib/paid-notes";
+import { describeItems, EXTRA_ITEMS, getNotesCatalog } from "@/lib/paid-notes";
 import { grantSubjectsAction, resetStudentDevicesAction, revokeSubjectAction } from "@/lib/paid-notes-actions";
 import { listLiveDevices, liveDeviceCounts } from "@/lib/student-devices";
 import { MAX_DEVICES } from "@/lib/student-device-policy";
@@ -15,6 +15,17 @@ const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text
 
 type Student = { email: string; phone: string; unlocked: Set<string>; paid: number; pending: number; lastAt: Date; seconds: number; lastActive: Date | null };
 
+
+// Adds the hand-built paid pages (EXTRA_ITEMS) to the picker, without duplicating a subject that already has a note.
+function withExtras(catalog: Awaited<ReturnType<typeof getNotesCatalog>>) {
+  const out = catalog.map((p) => ({ ...p, subjects: [...p.subjects] }));
+  for (const e of EXTRA_ITEMS) {
+    let prog = out.find((p) => p.slug === e.programmeSlug);
+    if (!prog) { prog = { slug: e.programmeSlug, name: e.programme, subjects: [] }; out.push(prog); }
+    if (!prog.subjects.some((x) => x.slug === e.subjectSlug)) prog.subjects.push({ slug: e.subjectSlug, name: e.subject, semester: e.semester });
+  }
+  return out;
+}
 
 export default async function AdminStudentsPage({ searchParams }: { searchParams: Promise<{ q?: string; email?: string }> }) {
   const { q = "", email } = await searchParams;
@@ -273,7 +284,7 @@ async function StudentDetail({ email }: { email: string }) {
           <input type="hidden" name="email" value={email} />
           <select name="item" required defaultValue="" className={`${inputClass} min-w-0 flex-1`}>
             <option value="" disabled>Add a subject…</option>
-            {catalog.map((p) => (
+            {withExtras(catalog).map((p) => (
               <optgroup key={p.slug} label={p.name}>
                 {p.subjects.map((s) => {
                   const key = `${p.slug}/${s.slug}`;

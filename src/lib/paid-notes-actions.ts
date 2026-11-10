@@ -8,7 +8,7 @@ import { prisma } from "@/lib/prisma";
 import { clearLoginFailures, generatePassword, getSession, hashPassword, isLoginLocked, loginThrottleKey, recordLoginFailure, verifyPassword } from "@/lib/auth";
 import { deleteByUrl, putBytes } from "@/lib/storage";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
-import { getStudentEmail } from "@/lib/paid-notes";
+import { getStudentEmail, isExtraItem } from "@/lib/paid-notes";
 import { endCurrentStudentSession, resetStudentDevices, revokeStudentDevice, startStudentSession, type DeviceInfo } from "@/lib/student-devices";
 import { isAccessActive, normalizeEmail, normalizePhone, normalizeUtr, priceFor } from "@/lib/paid-notes-pricing";
 import { FIREBASE_CONFIG, googleSignInEnabled } from "@/lib/firebase-config";
@@ -281,7 +281,12 @@ async function grantItems(formData: FormData, by: { utr: string; adminNote: stri
     prisma.purchase.findFirst({ where: { email }, orderBy: { createdAt: "desc" }, select: { phone: true } }),
   ]);
   const owned = new Set(approved.filter((p) => isAccessActive(p)).flatMap((p) => p.items));
-  const items = notes.map((n) => `${n.programmeSlug}/${n.subjectSlug}`).filter((k) => !owned.has(k));
+  const items = [
+    ...new Set([
+      ...notes.map((n) => `${n.programmeSlug}/${n.subjectSlug}`),
+      ...pairs.filter(([p, s]) => isExtraItem(p, s)).map(([p, s]) => `${p}/${s}`),
+    ]),
+  ].filter((k) => !owned.has(k));
   if (!items.length) return;
   await prisma.purchase.create({
     data: {

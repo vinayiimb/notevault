@@ -150,6 +150,14 @@ export async function hasPaidAccess(): Promise<boolean> {
   }
 }
 
+// Paid pages that are not a CanonicalSubjectNote row (hand-built interactive notes, e.g. /sample/probability-statistics).
+// Admins can grant them like any subject; they are not on sale in the public checkout.
+export const EXTRA_ITEMS = [
+  { programmeSlug: "bsc-hons-mathematics", programme: "B.Sc. (Hons.) Mathematics", subjectSlug: "probability-and-statistics", subject: "Probability and Statistics (interactive notes)", semester: 1 },
+] as const;
+export const isExtraItem = (programmeSlug: string, subjectSlug: string) =>
+  EXTRA_ITEMS.some((e) => e.programmeSlug === programmeSlug && e.subjectSlug === subjectSlug);
+
 export type NotesCatalogProgramme = {
   slug: string;
   name: string;
