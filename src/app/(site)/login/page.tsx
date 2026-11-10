@@ -36,7 +36,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
       <StudentLoginForm next={next ?? ""} />
       <p className="mt-6 text-center text-sm text-muted">
         Want the full notes?{" "}
-        <Link href="/paid-notes" className="font-medium text-brand hover:underline">See prices — from ₹49</Link>
+        <Link href="/paid-notes" className="font-medium text-brand hover:underline">See prices — from ₹99</Link>
       </p>
     </div>
   );

@@ -4,22 +4,21 @@ import { accessExpiry, isAccessActive, normalizeEmail, normalizePhone, normalize
 
 test("priceFor picks the cheapest pack mix", () => {
   assert.equal(priceFor(0), 0);
-  assert.equal(priceFor(1), 49);
-  assert.equal(priceFor(2), 98);
-  assert.equal(priceFor(3), 119);
-  assert.equal(priceFor(4), 168);
-  assert.equal(priceFor(5), 199); // never more than the 6-pack
-  assert.equal(priceFor(6), 199);
-  assert.equal(priceFor(7), 248);
-  assert.equal(priceFor(9), 318);
-  assert.equal(priceFor(10), 367);
+  assert.equal(priceFor(1), 99);
+  assert.equal(priceFor(2), 198);
+  assert.equal(priceFor(3), 249);
+  assert.equal(priceFor(4), 348);
+  assert.equal(priceFor(5), 447); // 3-pack + 2 singles, ₹2 under the 6-pack
+  assert.equal(priceFor(6), 449);
+  assert.equal(priceFor(7), 548);
+  assert.equal(priceFor(9), 698);
+  assert.equal(priceFor(10), 797);
 });
 
 test("upsellFor nudges only when the next subject is cheap", () => {
-  assert.deepEqual(upsellFor(2), { extra: 21, nextCount: 3 });
-  assert.deepEqual(upsellFor(4), { extra: 31, nextCount: 5 });
-  assert.deepEqual(upsellFor(5), { extra: 0, nextCount: 6 });
-  assert.equal(upsellFor(1), null); // 2nd subject costs a full ₹49
+  assert.deepEqual(upsellFor(2), { extra: 51, nextCount: 3 });
+  assert.deepEqual(upsellFor(5), { extra: 2, nextCount: 6 });
+  assert.equal(upsellFor(1), null); // 2nd subject costs a full ₹99
   assert.equal(upsellFor(3), null);
 });
 

@@ -166,7 +166,7 @@ function NotesTab({ groups, expired }: { groups: Awaited<ReturnType<typeof getPo
           href="/paid-notes"
           className="mt-6 inline-flex h-12 items-center justify-center gap-2 rounded-full bg-brand px-7 text-[16px] font-semibold text-brand-foreground transition hover:bg-brand-hover active:scale-[0.985]"
         >
-          See notes — from ₹49 <ArrowRight size={16} weight="bold" />
+          See notes — from ₹99 <ArrowRight size={16} weight="bold" />
         </Link>
       </section>
     );

@@ -36,7 +36,7 @@ const NAVIGATION_SECTIONS = [
     items: [
       { href: "/papers", label: "Papers", desc: "Interactive PDF viewer and PYQ archive", icon: BookOpenText },
       { href: "/notes", label: "Notes", desc: "Access study notes and summaries", icon: NotePencil },
-      { href: "/paid-notes", label: "Pricing", desc: "Full notes & solutions from ₹49", icon: Tag },
+      { href: "/paid-notes", label: "Pricing", desc: "Full notes & solutions from ₹99", icon: Tag },
     ],
   },
   {

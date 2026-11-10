@@ -5,9 +5,9 @@
 // 2 subjects = 2 singles, 4 = 3-pack + single, 5 = the 6-pack (a bigger pack
 // is allowed when it costs less), 7 = 6-pack + single, etc.
 export const PACKS = [
-  { subjects: 1, price: 49, name: "Single Subject", badge: null },
-  { subjects: 3, price: 119, name: "3 Subjects", badge: "Most popular" },
-  { subjects: 6, price: 199, name: "Whole Semester", badge: "Best value" },
+  { subjects: 1, price: 99, name: "Single Subject", badge: null },
+  { subjects: 3, price: 249, name: "3 Subjects", badge: "Most popular" },
+  { subjects: 6, price: 449, name: "Whole Semester", badge: "Best value" },
 ] as const;
 
 // Paid access lasts this long from the purchase date (not "lifetime").

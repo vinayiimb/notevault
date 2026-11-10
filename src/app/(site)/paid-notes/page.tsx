@@ -9,8 +9,8 @@ import { studentLogoutAction } from "@/lib/paid-notes-actions";
 import { PAID_FEATURES, PLANS } from "@/lib/paid-notes-pricing";
 
 export const metadata: Metadata = {
-  title: "Pricing – Full DU Subject Notes from ₹49",
-  description: "Unlock complete DU subject notes with full solutions — ₹49 per subject, ₹119 for 3 subjects, ₹199 for a whole semester (6 subjects). 6 months of access. Pay by UPI.",
+  title: "Pricing – Full DU Subject Notes from ₹99",
+  description: "Unlock complete DU subject notes with full solutions — ₹99 per subject, ₹249 for 3 subjects, ₹449 for a whole semester (6 subjects). 6 months of access. Pay by UPI.",
   alternates: { canonical: "/paid-notes" },
 };
 
