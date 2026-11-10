@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { Phone, WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
 import { prisma } from "@/lib/prisma";
+import { OrderAccess } from "@/components/admin/order-access";
 import { markOrderDeliveredAction, setLeadNoteAction, setLeadStatusAction } from "@/lib/note-lead-actions";
 import { LEAD_STATUSES, formatLeadPhone, leadWhatsAppText, type LeadStatusName } from "@/lib/note-leads";
 import { NOTES_DELIVERY_HOURS, orderPlanLabel, orderWhatsAppText } from "@/lib/notes-orders";
@@ -121,7 +122,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
             Paid orders{orders.paid.length > 0 ? <span className="text-green-600"> · {orders.paid.length} to send</span> : ""}
           </h2>
           <p className="mt-1 text-sm text-muted">
-            They paid in the pop-up. Send the notes on WhatsApp, then tap Mark delivered. We promised them within{" "}
+            They paid in the pop-up. Ask for their Gmail on WhatsApp and type it in Give site access (it unlocks the notes on the site and gives you a login message to send), then it is marked delivered. We promised them within{" "}
             {NOTES_DELIVERY_HOURS} hours.
           </p>
           <ul className="mt-3 flex flex-col gap-3">
@@ -162,6 +163,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
                       </button>
                     </form>
                   </div>
+                  <OrderAccess id={o.id} subjects={orderPlanLabel(o)} />
                 </li>
               );
             })}

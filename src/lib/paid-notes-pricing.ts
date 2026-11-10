@@ -94,7 +94,21 @@ export const PREVIEW_RATIO = 0.3;
 
 const isTableRow = (line: string | undefined) => !!line && /^\s*\|/.test(line);
 
+// An author can say exactly where the free part ends by putting `<!-- preview-end -->` on its own line. Everything above
+// the marker is the free preview, everything below is paid. Without a marker the ~30% rule below applies. The marker is an
+// HTML comment, so the reader drops it when the full note is shown. Use it to keep a premium note's teaching content fully
+// locked: put it right after the title page. (docs/NOTES_BLOCKS.md)
+const PREVIEW_END = /^[ \t]*<!--\s*preview-end\s*-->[ \t]*$/m;
+
 export function previewOf(markdown: string): { preview: string; truncated: boolean } {
+  const marker = PREVIEW_END.exec(markdown);
+  if (marker) {
+    let preview = markdown.slice(0, marker.index).trimEnd();
+    if (!markdown.slice(marker.index + marker[0].length).trim()) return { preview: markdown, truncated: false }; // nothing below the marker to lock
+    // A marker at the very top would leave an empty lock screen: show the title line only.
+    if (!preview) preview = markdown.split("\n").find((l) => l.trim() && !PREVIEW_END.test(l))?.trim() ?? "";
+    return { preview, truncated: true };
+  }
   const target = markdown.length * PREVIEW_RATIO;
   const lines = markdown.split("\n");
   let inFence = false;

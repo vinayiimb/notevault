@@ -102,3 +102,27 @@ test("input normalizers", () => {
   assert.equal(normalizePhone("09876543210"), "919876543210");
   assert.equal(normalizePhone("12345"), null);
 });
+
+test("previewOf: a preview-end marker locks everything below it, whatever the length", () => {
+  const front = "# Title\n\nOne line summary.\n\n## How to use\n\n1. Read.\n";
+  const rest = "\n## Unit I\n\n" + "Teaching content.\n\n".repeat(200);
+  const { preview, truncated } = previewOf(front + "\n<!-- preview-end -->\n" + rest);
+  assert.equal(truncated, true);
+  assert.equal(preview, front.trimEnd());
+  assert.ok(!preview.includes("Teaching content"));
+  assert.ok(!preview.includes("preview-end"));
+});
+
+test("previewOf: a marker with nothing below it locks nothing, and a marker at the top still shows a title", () => {
+  assert.equal(previewOf("# T\n\nBody.\n\n<!-- preview-end -->\n").truncated, false);
+  const top = previewOf("<!-- preview-end -->\n# Title\n\nPaid body.");
+  assert.equal(top.truncated, true);
+  assert.equal(top.preview, "# Title");
+});
+
+test("previewOf: notes without a marker keep the 30% rule", () => {
+  const md = Array.from({ length: 40 }, (_, i) => `Paragraph ${i}.\n`).join("\n");
+  const { preview, truncated } = previewOf(md);
+  assert.equal(truncated, true);
+  assert.ok(preview.length < md.length * 0.5);
+});

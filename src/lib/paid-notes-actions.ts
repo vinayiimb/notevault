@@ -184,6 +184,55 @@ export async function approvePurchaseAction(_prev: ApproveResult, formData: Form
   return { ok: true, email: purchase.email, phone: purchase.phone, password, existingAccount: !!account };
 }
 
+// Admin → Leads → a paid pop-up order. The pop-up only records a phone number, so the order alone unlocks nothing on the
+// site. This ties it to the student's Gmail: it adds the notes they paid for to that login (a real, paid purchase that
+// expires after ACCESS_MONTHS like any other), creates the login if there isn't one, and marks the order delivered.
+export async function grantOrderAccessAction(_prev: ApproveResult, formData: FormData): Promise<ApproveResult> {
+  await requireAdmin();
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  if (!email) return { error: "Enter the student's Gmail." };
+  const order = await prisma.notesOrder.findUnique({ where: { id: String(formData.get("id") ?? "") } });
+  if (!order) return { error: "Order not found." };
+
+  const notes = await prisma.canonicalSubjectNote.findMany({
+    where:
+      order.plan === "semester"
+        ? { programmeSlug: order.programmeSlug, semester: order.semester, NOT: { content: "" } }
+        : { programmeSlug: order.programmeSlug, subjectSlug: order.subjectSlug, NOT: { content: "" } },
+    select: { programmeSlug: true, subjectSlug: true },
+  });
+  if (!notes.length) return { error: "No notes are published for this order yet. Publish them first, then give access." };
+
+  const utr = `order-${order.razorpayPaymentId}`; // unique, so pressing twice can never grant twice
+  const already = await prisma.purchase.findUnique({ where: { utr }, select: { email: true } });
+  if (already) return { error: `Access for this order was already given to ${already.email}.` };
+
+  const account = await prisma.notesAccount.findUnique({ where: { email } });
+  let password: string | undefined;
+  await prisma.$transaction(async (tx) => {
+    await tx.purchase.create({
+      data: {
+        email,
+        phone: order.phone,
+        utr,
+        amount: order.amount,
+        items: notes.map((n) => `${n.programmeSlug}/${n.subjectSlug}`),
+        status: "APPROVED",
+        reviewedAt: new Date(),
+        provider: "razorpay",
+        adminNote: "Pop-up order",
+      },
+    });
+    if (!account) {
+      password = generatePassword();
+      await tx.notesAccount.create({ data: { email, passwordHash: await hashPassword(password) } });
+    }
+    await tx.notesOrder.update({ where: { id: order.id }, data: { status: "DELIVERED", deliveredAt: new Date() } });
+  });
+  // No revalidatePath: the card would leave the "to send" list and take the one-time password with it.
+  return { ok: true, email, phone: order.phone, password, existingAccount: !!account };
+}
+
 export async function resetStudentPasswordAction(_prev: ApproveResult, formData: FormData): Promise<ApproveResult> {
   await requireAdmin();
   const email = String(formData.get("email") ?? "");

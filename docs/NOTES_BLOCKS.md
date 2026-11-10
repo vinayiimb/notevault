@@ -97,3 +97,16 @@ Invalid input must render nothing, never a broken box. Keep step buttons hidden 
 
 Gotcha: the renderer reads the fence label with `\w+`, which stops at `-`, so hyphenated labels are matched with
 `[\w-]+` in `notes-markdown.tsx`.
+
+## Keeping a premium note fully locked (`<!-- preview-end -->`)
+
+Paid notes show a free preview of about the first 30% of the text. For a note whose teaching content should be **entirely**
+paid, put this on its own line right after the title page:
+
+```
+<!-- preview-end -->
+```
+
+Everything above the marker is the free preview, everything below is paid and is only sent to a logged-in student who has
+bought it. The marker is an HTML comment, so it is invisible in the full note. Without a marker the 30% rule applies. A marker
+at the very top shows just the title line; a marker with nothing below it locks nothing.
