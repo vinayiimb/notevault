@@ -9,6 +9,7 @@ import { findCanonicalProgramme, findCanonicalSubject } from "@/lib/canonical-su
 import { slugify } from "@/lib/utils";
 import { normalizeEmail, normalizePhone } from "@/lib/paid-notes-pricing";
 import { grantSubjectsAction } from "@/lib/paid-notes-actions";
+import { buildOrderMeta, parseOrderMeta } from "@/lib/order-meta";
 import { validVisitorId } from "@/lib/lead-intent";
 import { notesOrdersReady } from "@/lib/notes-orders-server";
 import { notifyOwner } from "@/lib/owner-notify";
@@ -191,23 +192,40 @@ export async function markOrderDeliveredAction(formData: FormData) {
 }
 
 const text120 = (v: FormDataEntryValue | null) => String(v ?? "").trim().slice(0, 120);
+const back = (msg: string): never => redirect(`/admin/leads/delivery?msg=${encodeURIComponent(msg)}`);
 
-/** Fields of the admin edit / add forms on the delivery tracker. null = something required is missing. */
+/**
+ * Fields of the admin edit / add forms on the delivery tracker. Only the subject name (for a one-subject row) is
+ * required: a blank course is stored as "" and a blank semester as 0 ("not set").
+ */
 function readOrderForm(fd: FormData) {
   const plan = fd.get("plan") === "semester" ? "semester" : "subject";
   const programme = text120(fd.get("programme"));
-  const semester = parseLeadSemester(fd.get("semester"));
+  const rawSem = String(fd.get("semester") ?? "").trim();
+  const semester = rawSem === "" ? 0 : parseLeadSemester(rawSem);
+  if (semester === null) return back("Semester must be a number from 1 to 8, or left blank.");
   const subject = plan === "subject" ? text120(fd.get("subject")) : "";
+  if (plan === "subject" && !subject) return back("Type the subject name.");
   const amount = Math.max(0, Math.min(100000, Math.round(Number(fd.get("amount")) || 0)));
-  if (!programme || !semester || (plan === "subject" && !subject)) return null;
   return { plan, programme, semester, subject, subjectSlug: slugify(subject), amount };
+}
+
+/** Best effort: the profile table may not exist until its migration is applied, and that must never break an order. */
+async function rememberStudent(phone: string, data: { name?: string; gmail?: string }) {
+  const clean = Object.fromEntries(Object.entries(data).filter(([, v]) => v));
+  if (!Object.keys(clean).length) return;
+  try {
+    await prisma.notesStudent.upsert({ where: { phone }, create: { phone, ...clean }, update: clean });
+  } catch (err) {
+    console.error("notes student not saved (migration add_notes_student applied?):", err);
+  }
 }
 
 export async function updateOrderAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   const f = readOrderForm(formData);
-  if (!id || !f) return;
+  if (!id) return;
   const old = await prisma.notesOrder.findUnique({ where: { id }, select: { programme: true, programmeSlug: true } });
   if (!old) return;
   // Keep the original programme slug unless the name was changed, so the order still links to its notes.
@@ -217,13 +235,16 @@ export async function updateOrderAction(formData: FormData) {
   revalidatePath("/admin/leads");
 }
 
-/** Add a purchase by hand: a subject bought outside the pop-up (UPI / cash) or one more subject for a student. */
+/**
+ * Add a purchase by hand: a student bought outside the pop-up (UPI / cash), one more subject for a student, or (with
+ * `under`) one subject that belongs to a whole-semester order, so it can be delivered and tracked on its own.
+ */
 export async function addOrderAction(formData: FormData) {
   await requireAdmin();
   const phone = normalizePhone(String(formData.get("phone") ?? ""));
+  if (!phone) return back("Enter a valid 10-digit WhatsApp number.");
   const f = readOrderForm(formData);
-  if (!phone) redirect(`/admin/leads/delivery?msg=${encodeURIComponent("Enter a valid 10-digit WhatsApp number.")}`);
-  if (!f) redirect(`/admin/leads/delivery?msg=${encodeURIComponent("Fill in the course, semester and subject name.")}`);
+  const under = String(formData.get("under") ?? "").replace(/[^\w-]/g, "");
   const ref = `manual-${crypto.randomUUID()}`; // both Razorpay ids are unique columns
   const delivered = formData.get("delivered") === "on";
   await prisma.notesOrder.create({
@@ -235,12 +256,13 @@ export async function addOrderAction(formData: FormData) {
       razorpayPaymentId: ref,
       status: delivered ? "DELIVERED" : "PAID",
       deliveredAt: delivered ? new Date() : null,
-      adminNote: "Added by admin",
+      adminNote: buildOrderMeta({ text: "Added by admin", under }),
     },
   });
+  await rememberStudent(phone, { name: text120(formData.get("name")) });
   revalidatePath("/admin/leads/delivery");
   revalidatePath("/admin/leads");
-  redirect(`/admin/leads/delivery?msg=${encodeURIComponent("Added.")}`);
+  return back("Added.");
 }
 
 /** Only hand-added rows can be removed; a real Razorpay payment is never deleted from here. */
@@ -253,36 +275,66 @@ export async function deleteManualOrderAction(formData: FormData) {
   revalidatePath("/admin/leads");
 }
 
+/** A student's name, a second number and Gmail, shown on every row of theirs in the tracker. */
+export async function saveStudentAction(formData: FormData) {
+  await requireAdmin();
+  const phone = normalizePhone(String(formData.get("phone") ?? ""));
+  if (!phone) return back("Student not found.");
+  const altRaw = String(formData.get("altPhone") ?? "").trim();
+  const altPhone = altRaw ? normalizePhone(altRaw) : null;
+  if (altRaw && !altPhone) return back("The extra number is not a valid 10-digit number.");
+  const gmailRaw = String(formData.get("gmail") ?? "").trim();
+  const gmail = gmailRaw ? normalizeEmail(gmailRaw) : null;
+  if (gmailRaw && !gmail) return back("That Gmail address is not valid.");
+  const data = { name: text120(formData.get("name")) || null, altPhone, gmail };
+  try {
+    await prisma.notesStudent.upsert({ where: { phone }, create: { phone, ...data }, update: data });
+  } catch (err) {
+    console.error("notes student not saved:", err);
+    return back("Student details can't be saved yet: the add_notes_student database update has not been applied.");
+  }
+  revalidatePath("/admin/leads/delivery");
+  return back("Saved.");
+}
+
 /**
  * "Notes are ready": unlock the order's subject(s) for the student's Gmail (they read them after signing in),
- * remember the Gmail on the order and mark it delivered. A whole-semester order unlocks every published subject
- * of that semester. Nothing is granted for a subject whose notes are not published yet.
+ * remember the Gmail and mark the order delivered. A whole-semester order unlocks every published subject of that
+ * semester. Nothing is granted for a subject whose notes are not published yet.
  */
 export async function giveNotesAccessAction(formData: FormData) {
   await requireAdmin();
-  const done = (msg: string): never => redirect(`/admin/leads/delivery?msg=${encodeURIComponent(msg)}`);
   const id = String(formData.get("id") ?? "");
   const email = normalizeEmail(String(formData.get("email") ?? ""));
   const order = id ? await prisma.notesOrder.findUnique({ where: { id } }) : null;
-  if (!order) return done("Order not found.");
-  if (!email) return done("Enter a valid Gmail address.");
+  if (!order) return back("Order not found.");
+  if (!email) return back("Enter a valid Gmail address.");
+  const isPack = order.plan === "semester";
+  if (isPack && !order.semester) return back("Set this order's semester first (Edit), so I know which subjects to unlock.");
   const notes = await prisma.canonicalSubjectNote.findMany({
     where: {
-      programmeSlug: order.programmeSlug,
       NOT: { content: "" },
-      ...(order.plan === "semester" ? { semester: order.semester } : { subjectSlug: order.subjectSlug }),
+      ...(order.programmeSlug ? { programmeSlug: order.programmeSlug } : {}),
+      ...(isPack ? { semester: order.semester } : { subjectSlug: order.subjectSlug }),
     },
     select: { programmeSlug: true, subjectSlug: true },
   });
-  if (!notes.length) return done(`Notes for ${order.plan === "semester" ? `Semester ${order.semester}` : order.subject} are not published yet, so nothing was unlocked.`);
+  const what = isPack ? `Semester ${order.semester}` : order.subject;
+  if (!notes.length) return back(`Notes for ${what} are not published yet, so nothing was unlocked.`);
+  if (!isPack && !order.programmeSlug && notes.length > 1) return back(`More than one course has "${order.subject}". Add the course (Edit) so I unlock the right one.`);
   const fd = new FormData();
   fd.set("email", email);
   for (const n of notes) fd.append("item", `${n.programmeSlug}/${n.subjectSlug}`);
   await grantSubjectsAction(fd);
-  await prisma.notesOrder.update({ where: { id }, data: { adminNote: `Gmail: ${email}`, status: "DELIVERED", deliveredAt: order.deliveredAt ?? new Date() } });
+  const meta = parseOrderMeta(order.adminNote);
+  await prisma.notesOrder.update({
+    where: { id },
+    data: { adminNote: buildOrderMeta({ ...meta, gmail: email }), status: "DELIVERED", deliveredAt: order.deliveredAt ?? new Date() },
+  });
+  await rememberStudent(order.phone, { gmail: email });
   revalidatePath("/admin/leads/delivery");
   revalidatePath("/admin/leads");
-  return done(`Unlocked ${notes.length} subject${notes.length === 1 ? "" : "s"} for ${email}. Now send them the WhatsApp message.`);
+  return back(`Unlocked ${notes.length} subject${notes.length === 1 ? "" : "s"} for ${email}. Now send them the WhatsApp message.`);
 }
 
 export async function setLeadNoteAction(formData: FormData) {

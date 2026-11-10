@@ -985,6 +985,16 @@ model NotesOrder {
   @@index([phone])
 }
 
+// Who a paid-notes buyer is, keyed by the WhatsApp number their orders carry: a name, a second number to reach them
+// on, and the Gmail they sign in with. Filled by hand on the admin delivery tracker; every field is optional.
+model NotesStudent {
+  phone     String   @id // 91XXXXXXXXXX, same as NotesOrder.phone
+  name      String?
+  altPhone  String? // 91XXXXXXXXXX
+  gmail     String?
+  updatedAt DateTime @updatedAt
+}
+
 // Learned filename/title -> subject associations for Bulk Upload. When an
 // admin manually assigns a subject to a paper the filename-matching heuristic
 // couldn't place, we remember it (keyed by a normalized title with trailing

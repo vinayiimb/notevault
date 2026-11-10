@@ -136,7 +136,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
                   </div>
                   <p className="mt-1.5 text-sm">
                     <span className="font-medium">{orderPlanLabel(o)}</span>
-                    <span className="text-muted"> · {o.programme} · Sem {o.semester}</span>
+                    <span className="text-muted"> · {o.programme}{o.semester ? ` · Sem ${o.semester}` : ""}</span>
                   </p>
                   <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs">
                     <span className="rounded-full bg-green-600 px-2 py-0.5 font-semibold text-white">₹{o.amount} paid</span>
@@ -176,7 +176,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
                   <li key={o.id} className="flex flex-col gap-1.5 rounded-lg border border-border px-4 py-2.5 sm:flex-row sm:items-center sm:justify-between">
                     <span>
                       <span className="font-medium">{orderPlanLabel(o)}</span>
-                      <span className="text-muted"> · {o.programme} · Sem {o.semester} · {formatLeadPhone(o.phone)} · ₹{o.amount}</span>
+                      <span className="text-muted"> · {o.programme}{o.semester ? ` · Sem ${o.semester}` : ""} · {formatLeadPhone(o.phone)} · ₹{o.amount}</span>
                     </span>
                     <form action={markOrderDeliveredAction}>
                       <input type="hidden" name="id" value={o.id} />

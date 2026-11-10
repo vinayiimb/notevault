@@ -83,10 +83,10 @@ export function fromRazorpayNotes(notes: Record<string, string> | null | undefin
 
 /** "Whole Semester 3" / "Risk Management" for the admin list and the WhatsApp message. */
 export function orderPlanLabel(o: { plan: string; subject: string; semester: number }) {
-  return o.plan === "semester" ? `Whole Semester ${o.semester}` : o.subject;
+  return o.plan === "semester" ? (o.semester ? `Whole Semester ${o.semester}` : "Whole semester") : o.subject;
 }
 
 /** First WhatsApp message to a buyer: tells them what they bought; the admin attaches the notes. */
 export function orderWhatsAppText(o: { plan: string; subject: string; semester: number; programme: string }) {
-  return `Hi! Thank you for your DU PYQ Online notes purchase: ${orderPlanLabel(o)} (${o.programme}, Sem ${o.semester}). Sending your notes below.`;
+  return `Hi! Thank you for your DU PYQ Online notes purchase: ${orderPlanLabel(o)} (${[o.programme, o.semester ? `Sem ${o.semester}` : ""].filter(Boolean).join(", ")}). Sending your notes below.`;
 }
