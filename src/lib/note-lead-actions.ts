@@ -8,7 +8,7 @@ import { findCanonicalProgramme, findCanonicalSubject } from "@/lib/canonical-su
 import { slugify } from "@/lib/utils";
 import { notesOrdersReady } from "@/lib/notes-orders-server";
 import { notifyOwner } from "@/lib/owner-notify";
-import { chatAlert, leadAlert } from "@/lib/owner-messages";
+import { chatAlert, leadAlert, leadLostAlert, returningLeadAlert } from "@/lib/owner-messages";
 import {
   ANY_SUBJECT,
   ANY_SUBJECT_SLUG,
@@ -102,7 +102,10 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
       where: { phone, programmeSlug, subjectSlug, createdAt: { gt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } },
       select: { id: true },
     });
-    if (!duplicate) {
+    if (duplicate) {
+      // Asking again within a week is a stronger signal, so it must not pass in silence.
+      notifyOwner(returningLeadAlert({ phone, programme: programmeName, semester, subject: subjectName, hasNotes }));
+    } else {
       await prisma.noteLead.create({
         data: {
           phone, programmeSlug, programme: programmeName, semester, subjectSlug, subject: subjectName, hasNotes, source,
@@ -114,6 +117,7 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
   } catch (err) {
     // Never block a student from their notes because the lead couldn't be saved.
     console.error("note lead not saved:", err);
+    notifyOwner(leadLostAlert({ phone, programme: programmeName, subject: subjectName })); // never lose the number
   }
   const canBuy = await notesOrdersReady().catch(() => false);
   return { ok: true, hasNotes, subject: subjectName, subjectSlug, programme: programmeName, programmeSlug, semester, phone, canBuy };

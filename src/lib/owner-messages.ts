@@ -28,6 +28,22 @@ export function leadAlert(l: { phone: string; programme: string; semester: numbe
   return lines.join("\n");
 }
 
+/** Someone who already left their number asked for the same notes again: a stronger signal than a first visit. */
+export function returningLeadAlert(l: { phone: string; programme: string; semester: number | null; subject: string; hasNotes: boolean }) {
+  return [
+    "🔁 Came back again",
+    formatLeadPhone(l.phone),
+    `${l.subject} · ${l.programme}${l.semester ? ` · Sem ${l.semester}` : ""}`,
+    "",
+    `Reply: ${reply(l.phone, leadWhatsAppText(l))}`,
+  ].join("\n");
+}
+
+/** The lead could not be saved (database trouble). The number is here so it is not lost. */
+export function leadLostAlert(l: { phone: string; programme: string; subject: string }) {
+  return ["⚠️ A lead could NOT be saved — message them now", formatLeadPhone(l.phone), `${l.subject} · ${l.programme}`, "", `Reply: ${reply(l.phone, "Hi! Here are the notes you asked for on DU PYQ Online.")}`].join("\n");
+}
+
 export function chatAlert(l: { phone: string; programme: string; semester: number | null; subject: string; hasNotes: boolean }) {
   return [
     "☎️ Wants you to message them first",

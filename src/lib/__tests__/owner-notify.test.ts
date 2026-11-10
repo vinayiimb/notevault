@@ -4,7 +4,7 @@ import { createServer, type IncomingMessage } from "node:http";
 import type { AddressInfo } from "node:net";
 import { getAlertLog, notifyOwner, ownerNotifyProvider, ownerNotifyStatus, sendOwnerWhatsApp, sendOwnerWhatsAppDetailed } from "../owner-notify";
 import { explainAlertFailure } from "../owner-notify-hints";
-import { chatAlert, feedbackAlert, leadAlert, orderAlert, paymentAlert } from "../owner-messages";
+import { leadLostAlert, returningLeadAlert, chatAlert, feedbackAlert, leadAlert, orderAlert, paymentAlert } from "../owner-messages";
 
 type Hit = { method: string; url: string; auth: string | undefined; body: string };
 
@@ -221,4 +221,11 @@ test("hints name the usual causes in plain words", () => {
   assert.match(f({ provider: "callmebot", status: 429, detail: "Too many requests" }), /rate-limiting/i);
   assert.match(f({ provider: "callmebot", status: 503, detail: "x" }), /retried once/i);
   assert.match(f({ provider: "callmebot", status: 418, detail: "teapot" }), /Unrecognised/i);
+});
+
+test("returning-lead and lost-lead alerts carry the number and a reply link", () => {
+  const r = returningLeadAlert({ phone: "919876543210", programme: "B.Com", semester: 1, subject: "Management", hasNotes: true });
+  assert.match(r, /Came back again/); assert.match(r, /wa\.me\/919876543210/);
+  const l = leadLostAlert({ phone: "919876543210", programme: "B.Com", subject: "Management" });
+  assert.match(l, /could NOT be saved/); assert.match(l, /wa\.me\/919876543210/);
 });
