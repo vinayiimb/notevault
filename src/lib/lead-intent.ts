@@ -57,6 +57,13 @@ export function getChatLink(): string {
   }
 }
 
+/** Remember the private chat link the server handed back (only if it really is a link to our chat). */
+export function saveChatLink(link: unknown) {
+  try {
+    if (typeof link === "string" && CHAT_LINK.test(link)) localStorage.setItem(CHAT_KEY, link);
+  } catch {}
+}
+
 /** Open the visitor's own chat when they have one (so the team's "Hi" is waiting there), else the normal link. */
 export function openChat(e: { preventDefault: () => void }, fallback: string) {
   const link = getChatLink();

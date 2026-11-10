@@ -38,3 +38,18 @@ export async function visitorChatStatus(token: string): Promise<{ unread: number
     return none;
   }
 }
+
+export type ThreadMessage = { id: number; mine: boolean; auto: boolean; body: string; at: number };
+
+/** The visitor's whole conversation (theirs, the team's, auto-replies) for the on-site chat panel. Reading it marks the team's replies as seen. */
+export async function visitorThread(token: string): Promise<ThreadMessage[]> {
+  if (!secret() || !/^[0-9a-f]{48}$/.test(token)) return [];
+  try {
+    const res = await fetch(`${CHAT_ORIGIN}/api/seed/thread?link=${token}`, { headers: { "x-seed-secret": secret() }, signal: AbortSignal.timeout(4000), cache: "no-store" });
+    if (!res.ok) return [];
+    const d = (await res.json()) as { messages?: { id?: number; mine?: boolean; auto?: number; body?: string; at?: number }[] };
+    return (d.messages ?? []).map((m) => ({ id: Number(m.id) || 0, mine: !!m.mine, auto: !!m.auto, body: String(m.body ?? "").slice(0, 2000), at: Number(m.at) || 0 }));
+  } catch {
+    return [];
+  }
+}

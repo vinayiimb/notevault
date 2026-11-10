@@ -139,12 +139,15 @@ export function NotesPrompt({
 
   // A promo card on the page was tapped: open straight at the form (they have already said yes).
   useEffect(() => {
-    const open = () =>
+    const open = (e: Event) => {
+      const d = (e as CustomEvent<{ handled?: boolean } | undefined>).detail;
+      if (d && typeof d === "object") d.handled = true; // tells the chat panel this page has the number form
       setStep((s) => {
         if (s === "buy") return s;
         if (s === null || s === "ask") trackIntent("yes", intentRef.current);
         return "form";
       });
+    };
     window.addEventListener(OPEN_NOTES_EVENT, open);
     return () => window.removeEventListener(OPEN_NOTES_EVENT, open);
   }, []);
@@ -256,8 +259,10 @@ export function NotesPrompt({
                 <button
                   type="button"
                   onClick={() => {
-                    trackIntent("yes", intentCtx); // also opens their chat with the team in the background
-                    setStep("form");
+                    trackIntent("yes", intentCtx); // also puts them in the team's chat inbox right now
+                    // Yes opens the chat in the page (the team can answer at once). The number form is one tap away inside it.
+                    dismiss(false);
+                    window.dispatchEvent(new CustomEvent(CHAT_NUDGE_EVENT, { detail: { what, ...intentCtx } }));
                   }}
                   className="inline-flex h-[52px] items-center justify-center rounded-full bg-brand px-7 text-[17px] font-semibold text-brand-foreground transition duration-300 ease-[var(--ease-apple)] hover:bg-brand-hover active:scale-[0.985]"
                 >

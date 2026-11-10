@@ -626,3 +626,8 @@ body:has([data-ask-ai-launcher]) .wa-fab {
   --accent: #0a84ff;
   --accent-hover: #3b9bff;
 }
+
+/* On-site chat panel */
+@keyframes chat-rise { from { opacity: 0; transform: translateY(24px) scale(0.96); } }
+@keyframes chat-pop { from { opacity: 0; transform: translateY(6px) scale(0.97); } }
+@keyframes chat-dot { 50% { opacity: 0.25; transform: translateY(-3px); } }

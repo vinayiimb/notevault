@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChatCircleDots, Check, Lock, WhatsappLogo } from "@phosphor-icons/react";
 import type { LeadResult } from "@/lib/note-lead-actions";
-import { chatLink } from "@/lib/chat-link";
-import { openChat, trackIntent } from "@/lib/lead-intent";
+import { CHAT_NUDGE_EVENT, trackIntent } from "@/lib/lead-intent";
 import { ANY_SUBJECT } from "@/lib/note-leads";
 import { NOTES_DELIVERY_TEXT, ORDER_PRICE, orderPlanLabel, type OrderPlan } from "@/lib/notes-orders";
 
@@ -230,7 +229,6 @@ export function NotesPurchase({
     { plan: "semester", title: `Whole Semester ${semester}`, detail: "All subjects of the semester, one price", badge: "Best value" },
   ];
   const selected: OrderPlan = options.some((o) => o.plan === plan) ? plan : "semester";
-  const purchaseChatHref = chatLink(`Hi! I need ${selected === "subject" ? subjectName : "all subjects"} notes for ${result.programme ?? "my course"}, Semester ${semester}`.replace(/\s+/g, " "));
 
   return (
     <div>
@@ -297,19 +295,18 @@ export function NotesPurchase({
           or
           <span className="h-px flex-1 bg-border" />
         </div>
-        <a
-          href={purchaseChatHref}
-          target="_blank"
-          rel="noopener noreferrer"
-          onClick={(e) => {
-            openChat(e, purchaseChatHref);
-            if (intent) trackIntent("chat", intent);
+        <button
+          type="button"
+          onClick={() => {
+            // The chat opens in the page (the pop-up closes first: a native modal would sit on top of it).
+            onClose();
+            window.dispatchEvent(new CustomEvent(CHAT_NUDGE_EVENT, { detail: { what: selected === "subject" ? subjectName : `Semester ${semester}`, source: "pyq-page", ...intent } }));
           }}
           className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
         >
           <ChatCircleDots size={20} weight="fill" className="text-brand" />
           Chat now
-        </a>
+        </button>
         <button
           type="button"
           onClick={() => {

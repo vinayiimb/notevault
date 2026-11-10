@@ -51,14 +51,13 @@ export async function POST(req: Request) {
   }
   // "wa" is shown in the admin only: the lead form's own alert already tells the owner when a number arrives.
   let chat: string | null = null;
-  if (first && i.event !== "wa" && !over(alerts, ip, 60 * 60 * 1000, MAX_ALERTS_PER_HOUR)) {
-    notifyOwner(intentAlert(i.event, i));
-    // "Yes": put this visitor in the chat inbox now, so the team can say hi even if they close the tab. The reply is
-    // found through the private link the browser keeps (see chat-now-fab).
-    if (i.event === "yes") {
-      const what = [i.subject, i.programme].filter(Boolean).join(", ") || "notes";
-      chat = await seedVisitorChat(i.vid, `Hi! I need notes for ${what}${i.semester ? `, Semester ${i.semester}` : ""}. (clicked Yes on the website)`);
-    }
+  if (first && i.event !== "wa" && !over(alerts, ip, 60 * 60 * 1000, MAX_ALERTS_PER_HOUR)) notifyOwner(intentAlert(i.event, i));
+  // "Yes": put this visitor in the chat inbox now, so the team can say hi even if they close the tab. The reply is
+  // found through the private link the browser keeps (see chat-now-fab). Not tied to the alert limit above: many
+  // students on one college Wi-Fi share an IP, and each of them must still land in the inbox.
+  if (first && i.event === "yes") {
+    const what = [i.subject, i.programme].filter(Boolean).join(", ") || "notes";
+    chat = await seedVisitorChat(i.vid, `Hi! I need notes for ${what}${i.semester ? `, Semester ${i.semester}` : ""}. (clicked Yes on the website)`);
   }
   return NextResponse.json({ ok: true, chat });
 }
