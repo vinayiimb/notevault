@@ -3,6 +3,9 @@ import { createRazorpayOrder, type RazorpayOrder } from "@/lib/razorpay";
 import { ORDER_PRICE, fromRazorpayNotes, parseOrderRequest, toRazorpayNotes } from "@/lib/notes-orders";
 import { notifyOwner } from "@/lib/owner-notify";
 import { orderAlert } from "@/lib/owner-messages";
+import { dscSubjects } from "@/lib/syllabus-subjects";
+import { buildOrderMeta, parseOrderMeta } from "@/lib/order-meta";
+import { slugify } from "@/lib/utils";
 
 let readyCache: { at: number; ok: boolean } | null = null;
 
@@ -63,8 +66,9 @@ export async function recordNotesOrderFromRazorpay(order: RazorpayOrder, payment
 
   const existing = await prisma.notesOrder.findUnique({ where: { razorpayOrderId: order.id }, select: { id: true } });
   if (existing) return "recorded";
+  let created: { id: string; phone: string; programme: string; programmeSlug: string; semester: number; adminNote: string | null } | null = null;
   try {
-    await prisma.notesOrder.create({
+    created = await prisma.notesOrder.create({
       data: {
         phone: notes.phone,
         plan: notes.plan,
@@ -86,6 +90,10 @@ export async function recordNotesOrderFromRazorpay(order: RazorpayOrder, payment
   // Only the call that actually recorded the order gets here, so the owner is told exactly once.
   notifyOwner(orderAlert(notes));
 
+  // A whole-semester buyer's subjects (the syllabus's DSC papers) are listed under the order for the delivery tracker.
+  // Never allowed to affect the payment: any failure here is only logged.
+  if (created && notes.plan === "semester") await fillPackFromSyllabus(created).catch((err) => console.error("pack subjects not listed:", err));
+
   // They bought what they asked for, so those asks are no longer open leads.
   await prisma.noteLead
     .updateMany({
@@ -99,4 +107,28 @@ export async function recordNotesOrderFromRazorpay(order: RazorpayOrder, payment
     })
     .catch((err) => console.error("leads not marked converted:", err));
   return "recorded";
+}
+
+/**
+ * Lists the syllabus's DSC papers for the pack's course + semester as separate rows under it (one per subject, to be
+ * ticked off on the delivery tracker), skipping any the pack already has. Returns how many were added.
+ */
+export async function fillPackFromSyllabus(pack: { id: string; phone: string; programme: string; programmeSlug: string; semester: number; adminNote: string | null }): Promise<number> {
+  const names = await dscSubjects(pack.programme, pack.semester);
+  if (!names.length) return 0;
+  const have = await prisma.notesOrder.findMany({ where: { phone: pack.phone, adminNote: { contains: `Under: ${pack.id}` } }, select: { subjectSlug: true } });
+  const taken = new Set(have.map((h) => h.subjectSlug));
+  const fresh = names.filter((n) => !taken.has(slugify(n)));
+  if (!fresh.length) return 0;
+  const note = buildOrderMeta({ text: "From the syllabus", under: pack.id, gmail: parseOrderMeta(pack.adminNote).gmail });
+  await prisma.notesOrder.createMany({
+    data: fresh.map((subject) => {
+      const ref = `manual-${crypto.randomUUID()}`;
+      return {
+        phone: pack.phone, plan: "subject", programmeSlug: pack.programmeSlug, programme: pack.programme, semester: pack.semester,
+        subject, subjectSlug: slugify(subject), amount: 0, razorpayOrderId: ref, razorpayPaymentId: ref, adminNote: note,
+      };
+    }),
+  });
+  return fresh.length;
 }

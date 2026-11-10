@@ -37,6 +37,42 @@ function maskPhone(phone: string) {
 const pill =
   "inline-flex h-[52px] w-full items-center justify-center rounded-full bg-brand px-7 text-[17px] font-semibold text-brand-foreground transition duration-300 ease-[var(--ease-apple)] hover:bg-brand-hover active:scale-[0.985] disabled:opacity-60";
 
+/** Right after paying: which Gmail will they read the notes with, and their name. Saved against their own payment. */
+function ContactAfterPay({ receipt }: { receipt: { orderId: string; paymentId: string } }) {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [state, setState] = useState<"idle" | "saving" | "saved">("idle");
+  const [err, setErr] = useState<string | null>(null);
+  if (state === "saved") return <p className="mx-auto mt-4 max-w-sm text-[15px] font-medium text-success">Thanks! We have your Gmail.</p>;
+  return (
+    <form
+      className="mx-auto mt-5 flex max-w-sm flex-col gap-2 text-left"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setErr(null);
+        setState("saving");
+        const res = await fetch("/api/notes-orders/contact", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...receipt, email, name }),
+        }).catch(() => null);
+        if (res?.ok) return setState("saved");
+        const d = await res?.json().catch(() => ({}));
+        setErr(d?.error ?? "Could not save. Please try again.");
+        setState("idle");
+      }}
+    >
+      <p className="text-[15px] font-semibold">Which Gmail will you read your notes with?</p>
+      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name (optional)" autoComplete="name" className="h-11 rounded-xl border border-border bg-background px-4 text-[16px]" />
+      <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" required placeholder="yourname@gmail.com" autoComplete="email" className="h-11 rounded-xl border border-border bg-background px-4 text-[16px]" />
+      {err && <p role="alert" className="text-[13px] text-red-600">{err}</p>}
+      <button type="submit" disabled={state === "saving"} className="h-11 rounded-full bg-brand px-5 text-[15px] font-semibold text-brand-foreground disabled:opacity-60">
+        {state === "saving" ? "Saving…" : "Save"}
+      </button>
+    </form>
+  );
+}
+
 /**
  * The step after the lead form: "Want the notes today?" with one subject or the whole semester. They pay on
  * Razorpay and we send the notes on WhatsApp within the buffer, by hand, so any subject can be sold,
@@ -68,6 +104,8 @@ export function NotesPurchase({
   const [phase, setPhase] = useState<"choose" | "paid" | "pending" | "later">(canBuy ? "choose" : "later");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Proof of payment, kept so the student can tell us their Gmail afterwards (see ContactAfterPay).
+  const [receipt, setReceipt] = useState<{ orderId: string; paymentId: string } | null>(null);
 
   useEffect(() => {
     if (canBuy) loadRazorpay().catch(() => {}); // warm up; a failure is reported when they press Pay
@@ -118,6 +156,7 @@ export function NotesPurchase({
           }).catch(() => null);
           // Money has moved either way; if verification didn't land, the webhook records the order.
           setPhase(verify?.ok ? "paid" : "pending");
+          if (verify?.ok) setReceipt({ orderId: response.razorpay_order_id, paymentId: response.razorpay_payment_id });
           setBusy(false);
         },
         modal: {
@@ -156,6 +195,7 @@ export function NotesPurchase({
             "We'll message you personally on WhatsApp to help with your notes. If you'd like to pay, we'll share the details there."
           )}
         </p>
+        {phase === "paid" && receipt && <ContactAfterPay receipt={receipt} />}
         <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
           <a
             href={`https://wa.me/${HELP_WHATSAPP}?text=${encodeURIComponent(

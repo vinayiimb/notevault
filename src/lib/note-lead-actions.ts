@@ -11,7 +11,7 @@ import { normalizeEmail, normalizePhone } from "@/lib/paid-notes-pricing";
 import { grantSubjectsAction } from "@/lib/paid-notes-actions";
 import { buildOrderMeta, parseOrderMeta } from "@/lib/order-meta";
 import { validVisitorId } from "@/lib/lead-intent";
-import { notesOrdersReady } from "@/lib/notes-orders-server";
+import { fillPackFromSyllabus, notesOrdersReady } from "@/lib/notes-orders-server";
 import { notifyOwner } from "@/lib/owner-notify";
 import { chatAlert, leadAlert, leadLostAlert, returningLeadAlert } from "@/lib/owner-messages";
 import {
@@ -211,11 +211,11 @@ function readOrderForm(fd: FormData) {
 }
 
 /** Best effort: the profile table may not exist until its migration is applied, and that must never break an order. */
-async function rememberStudent(phone: string, data: { name?: string; gmail?: string }) {
+async function rememberStudent(key: string, data: { name?: string; gmail?: string }) {
   const clean = Object.fromEntries(Object.entries(data).filter(([, v]) => v));
-  if (!Object.keys(clean).length) return;
+  if (!key || !Object.keys(clean).length) return;
   try {
-    await prisma.notesStudent.upsert({ where: { phone }, create: { phone, ...clean }, update: clean });
+    await prisma.notesStudent.upsert({ where: { phone: key }, create: { phone: key, ...clean }, update: clean });
   } catch (err) {
     console.error("notes student not saved (migration add_notes_student applied?):", err);
   }
@@ -241,8 +241,20 @@ export async function updateOrderAction(formData: FormData) {
  */
 export async function addOrderAction(formData: FormData) {
   await requireAdmin();
-  const phone = normalizePhone(String(formData.get("phone") ?? ""));
-  if (!phone) return back("Enter a valid 10-digit WhatsApp number.");
+  // A student already on the tracker is identified by `skey` (a phone, or "mail:<gmail>" when they have none);
+  // a new one by the phone and/or Gmail typed in the form.
+  const skey = String(formData.get("skey") ?? "");
+  let phone: string | null = "";
+  let gmail = "";
+  if (skey.startsWith("mail:")) gmail = skey.slice(5);
+  else if (skey) phone = normalizePhone(skey);
+  else {
+    const rawPhone = String(formData.get("phone") ?? "").trim();
+    phone = rawPhone ? normalizePhone(rawPhone) : "";
+    gmail = normalizeEmail(String(formData.get("gmail") ?? "")) ?? "";
+    if (rawPhone && !phone) return back("That WhatsApp number is not a valid 10-digit number.");
+  }
+  if (phone === null || (!phone && !gmail)) return back("Enter a WhatsApp number or a Gmail address for the student.");
   const f = readOrderForm(formData);
   const under = String(formData.get("under") ?? "").replace(/[^\w-]/g, "");
   const ref = `manual-${crypto.randomUUID()}`; // both Razorpay ids are unique columns
@@ -256,13 +268,56 @@ export async function addOrderAction(formData: FormData) {
       razorpayPaymentId: ref,
       status: delivered ? "DELIVERED" : "PAID",
       deliveredAt: delivered ? new Date() : null,
-      adminNote: buildOrderMeta({ text: "Added by admin", under }),
+      adminNote: buildOrderMeta({ text: "Added by admin", under, gmail }),
     },
   });
-  await rememberStudent(phone, { name: text120(formData.get("name")) });
+  if (!skey) await rememberStudent(phone || `mail:${gmail}`, { name: text120(formData.get("name")), gmail });
   revalidatePath("/admin/leads/delivery");
   revalidatePath("/admin/leads");
   return back("Added.");
+}
+
+/**
+ * Type the subjects of a whole-semester order in one go (one per line, "1." numbering allowed). Each becomes its own row
+ * under the pack, so it can be ticked, edited or deleted on its own. The pack decides the student, course and semester.
+ */
+export async function addPackSubjectsAction(formData: FormData) {
+  await requireAdmin();
+  const packId = String(formData.get("under") ?? "");
+  const pack = packId ? await prisma.notesOrder.findUnique({ where: { id: packId } }) : null;
+  if (!pack || pack.plan !== "semester") return back("That semester order was not found.");
+  const names = [
+    ...new Set(
+      String(formData.get("subjects") ?? "")
+        .split(/[\n;,]/)
+        .map((n) => n.replace(/^\s*\d+\s*[.)\-:]\s*/, "").trim().slice(0, 120))
+        .filter(Boolean),
+    ),
+  ].slice(0, 15);
+  if (!names.length) return back("Type at least one subject name.");
+  const meta = buildOrderMeta({ text: "Added by admin", under: pack.id, gmail: parseOrderMeta(pack.adminNote).gmail });
+  await prisma.notesOrder.createMany({
+    data: names.map((subject) => {
+      const ref = `manual-${crypto.randomUUID()}`;
+      return {
+        phone: pack.phone, plan: "subject", programmeSlug: pack.programmeSlug, programme: pack.programme, semester: pack.semester,
+        subject, subjectSlug: slugify(subject), amount: 0, razorpayOrderId: ref, razorpayPaymentId: ref, adminNote: meta,
+      };
+    }),
+  });
+  revalidatePath("/admin/leads/delivery");
+  return back(`Added ${names.length} subject${names.length === 1 ? "" : "s"} under this semester.`);
+}
+
+/** "Fill in from the syllabus": list the DSC papers of this whole-semester order's course + semester under it. */
+export async function fillPackFromSyllabusAction(formData: FormData) {
+  await requireAdmin();
+  const pack = await prisma.notesOrder.findUnique({ where: { id: String(formData.get("id") ?? "") } });
+  if (!pack || pack.plan !== "semester") return back("That semester order was not found.");
+  if (!pack.programme || !pack.semester) return back("Set this order's course and semester first (Edit).");
+  const n = await fillPackFromSyllabus(pack);
+  revalidatePath("/admin/leads/delivery");
+  return back(n ? `Listed ${n} subject${n === 1 ? "" : "s"} from the syllabus.` : `No new DSC subjects found in the syllabus for ${pack.programme}, Semester ${pack.semester}. You can type them yourself.`);
 }
 
 /** Only hand-added rows can be removed; a real Razorpay payment is never deleted from here. */
@@ -278,17 +333,18 @@ export async function deleteManualOrderAction(formData: FormData) {
 /** A student's name, a second number and Gmail, shown on every row of theirs in the tracker. */
 export async function saveStudentAction(formData: FormData) {
   await requireAdmin();
-  const phone = normalizePhone(String(formData.get("phone") ?? ""));
-  if (!phone) return back("Student not found.");
+  const key = String(formData.get("key") ?? "");
+  const mailKey = key.startsWith("mail:");
+  if (!mailKey && !normalizePhone(key)) return back("Student not found.");
   const altRaw = String(formData.get("altPhone") ?? "").trim();
   const altPhone = altRaw ? normalizePhone(altRaw) : null;
-  if (altRaw && !altPhone) return back("The extra number is not a valid 10-digit number.");
+  if (altRaw && !altPhone) return back("That number is not a valid 10-digit number.");
   const gmailRaw = String(formData.get("gmail") ?? "").trim();
-  const gmail = gmailRaw ? normalizeEmail(gmailRaw) : null;
+  const gmail = mailKey ? key.slice(5) : gmailRaw ? normalizeEmail(gmailRaw) : null;
   if (gmailRaw && !gmail) return back("That Gmail address is not valid.");
   const data = { name: text120(formData.get("name")) || null, altPhone, gmail };
   try {
-    await prisma.notesStudent.upsert({ where: { phone }, create: { phone, ...data }, update: data });
+    await prisma.notesStudent.upsert({ where: { phone: key }, create: { phone: key, ...data }, update: data });
   } catch (err) {
     console.error("notes student not saved:", err);
     return back("Student details can't be saved yet: the add_notes_student database update has not been applied.");
@@ -331,7 +387,7 @@ export async function giveNotesAccessAction(formData: FormData) {
     where: { id },
     data: { adminNote: buildOrderMeta({ ...meta, gmail: email }), status: "DELIVERED", deliveredAt: order.deliveredAt ?? new Date() },
   });
-  await rememberStudent(order.phone, { gmail: email });
+  await rememberStudent(order.phone || `mail:${email}`, { gmail: email });
   revalidatePath("/admin/leads/delivery");
   revalidatePath("/admin/leads");
   return back(`Unlocked ${notes.length} subject${notes.length === 1 ? "" : "s"} for ${email}. Now send them the WhatsApp message.`);
