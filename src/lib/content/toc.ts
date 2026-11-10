@@ -64,11 +64,20 @@ function breaksIfSeparated(trimmed: string): boolean {
 function insertParagraphBreaks(lines: string[]): string[] {
   const out: string[] = [];
   let inCodeFence = false;
+  // An inline <svg> diagram is one HTML block. A blank line inside it ends the block, and every later tag
+  // (its <text> labels) falls out as plain text. So no break is ever forced between its lines.
+  let inSvg = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
     const trimmed = line.trim();
     const enteringOrLeavingFence = /^```/.test(trimmed);
+
+    if (inSvg && !inCodeFence) {
+      out.push(line);
+      if (/<\/svg>/i.test(trimmed)) inSvg = false;
+      continue;
+    }
 
     if (!inCodeFence && !enteringOrLeavingFence) {
       const bulletMatch = trimmed.match(BULLET_LINE);
@@ -98,10 +107,13 @@ function insertParagraphBreaks(lines: string[]): string[] {
         prev !== undefined &&
         prev.trim() !== "" &&
         !breaksIfSeparated(prev.trim()) &&
-        !breaksIfSeparated(trimmed)
+        !breaksIfSeparated(trimmed) &&
+        // consecutive "> " lines are one quote box, not separate ones
+        !(trimmed.startsWith(">") && prev.trim().startsWith(">"))
       ) {
         out.push("");
       }
+      if (/^<svg[\s>]/i.test(trimmed) && !/<\/svg>/i.test(trimmed)) inSvg = true;
     }
 
     out.push(line);

@@ -74,3 +74,18 @@ test("checklist: parses dashes, task syntax and an optional title", () => {
   assert.equal(hashKey("a"), hashKey("a"));
   assert.notEqual(hashKey("a"), hashKey("b"));
 });
+
+import { preprocessNotesMarkdown } from "../content/toc";
+
+test("preprocess keeps an inline <svg> in one block, so its <text> labels stay inside it", () => {
+  const md = 'Intro line.\n<svg class="diagram" viewBox="0 0 10 10">\n<line x1="0" y1="0" x2="5" y2="5"/>\n<text x="1" y="2">E1</text>\n</svg>\nAfter.';
+  const out = preprocessNotesMarkdown(md);
+  const svg = out.slice(out.indexOf("<svg"), out.indexOf("</svg>") + 6);
+  assert.ok(!/\n\s*\n/.test(svg), "no blank line inside the svg");
+  assert.ok(svg.includes("<text"));
+});
+
+test("preprocess keeps consecutive quote lines in one quote, and still splits plain prose lines", () => {
+  assert.ok(!/\n\s*\n/.test(preprocessNotesMarkdown("> **Result:** one\n> two\n> three").trim()));
+  assert.ok(/\n\s*\n/.test(preprocessNotesMarkdown("Line one\nLine two")));
+});
