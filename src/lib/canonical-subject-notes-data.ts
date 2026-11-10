@@ -20,11 +20,28 @@ async function loadProgrammes(): Promise<Record<string, CanonicalProgrammeRaw>> 
   return cachedProgrammes!;
 }
 
+// Home for notes that belong to no course or semester. Its subjects are whatever the admin
+// named when adding them (stored as normal CanonicalSubjectNote rows), not the syllabus file.
+export const GENERAL_PROGRAMME = { name: "General Notes", slug: "general-notes" };
+
 async function programmeList() {
   const programmes = await loadProgrammes();
-  return Object.values(programmes)
-    .map((p) => ({ name: p.name, slug: slugify(p.name), subjects: p.subjects }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  let custom: string[] = [];
+  try {
+    const rows = await prisma.canonicalSubjectNote.findMany({
+      where: { programmeSlug: GENERAL_PROGRAMME.slug },
+      select: { subject: true },
+      orderBy: { subject: "asc" },
+    });
+    custom = rows.map((r) => r.subject);
+  } catch (err) {
+    // Same reasoning as readOrBuildFallback below: Railway's build can't always reach Neon.
+    if (process.env.NEXT_PHASE !== "phase-production-build") throw err;
+  }
+  return [
+    ...Object.values(programmes).map((p) => ({ name: p.name, slug: slugify(p.name), subjects: p.subjects })),
+    { name: GENERAL_PROGRAMME.name, slug: GENERAL_PROGRAMME.slug, subjects: custom },
+  ].sort((a, b) => a.name.localeCompare(b.name));
 }
 
 export async function getAllCanonicalProgrammeSlugs() {
@@ -37,10 +54,15 @@ export async function findCanonicalProgramme(programmeSlug: string) {
   return list.find((p) => p.slug === programmeSlug) ?? null;
 }
 
-export async function findCanonicalSubject(programmeSlug: string, subjectSlug: string) {
+// `nameHint` only matters for General Notes: a brand-new custom subject has no row yet,
+// so the admin editor passes the name typed in the "Add custom note" form.
+export async function findCanonicalSubject(programmeSlug: string, subjectSlug: string, nameHint?: string) {
   const programme = await findCanonicalProgramme(programmeSlug);
   if (!programme) return null;
-  const subject = programme.subjects.find((s) => slugify(s) === subjectSlug);
+  let subject = programme.subjects.find((s) => slugify(s) === subjectSlug);
+  if (!subject && programmeSlug === GENERAL_PROGRAMME.slug && nameHint && slugify(nameHint) === subjectSlug) {
+    subject = nameHint;
+  }
   if (!subject) return null;
   return { programme, subject };
 }
@@ -120,8 +142,8 @@ export async function getProgrammeSubjectsWithNotesStatus(programmeSlug: string)
   return { name: programme.name, slug: programme.slug, subjects };
 }
 
-export async function getCanonicalNote(programmeSlug: string, subjectSlug: string) {
-  const found = await findCanonicalSubject(programmeSlug, subjectSlug);
+export async function getCanonicalNote(programmeSlug: string, subjectSlug: string, nameHint?: string) {
+  const found = await findCanonicalSubject(programmeSlug, subjectSlug, nameHint);
   if (!found) return null;
 
   const existing = await prisma.canonicalSubjectNote.findUnique({

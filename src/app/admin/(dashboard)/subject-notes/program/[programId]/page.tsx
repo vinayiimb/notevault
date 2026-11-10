@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getProgrammeSubjectsWithNotesStatus } from "@/lib/canonical-subject-notes-data";
+import { getProgrammeSubjectsWithNotesStatus, GENERAL_PROGRAMME } from "@/lib/canonical-subject-notes-data";
 
 export default async function SubjectNotesProgramPage({
   params,
@@ -23,8 +23,34 @@ export default async function SubjectNotesProgramPage({
         <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-foreground">
           {programme.name}
         </h1>
-        <p className="mt-1 text-sm text-muted">{programme.subjects.length} subjects in the syllabus file.</p>
+        <p className="mt-1 text-sm text-muted">
+          {programme.slug === GENERAL_PROGRAMME.slug
+            ? `${programme.subjects.length} custom notes. No course or semester needed.`
+            : `${programme.subjects.length} subjects in the syllabus file.`}
+        </p>
       </div>
+
+      {programme.slug === GENERAL_PROGRAMME.slug && (
+        <form
+          method="get"
+          action={`/admin/subject-notes/subject/${programme.slug}/new`}
+          className="flex flex-wrap items-end gap-3 rounded-2xl border border-border bg-surface p-4"
+        >
+          <label className="flex-1 text-sm font-medium">
+            Custom note name
+            <input
+              name="name"
+              required
+              maxLength={120}
+              placeholder="e.g. English Language Through Literature"
+              className="mt-1 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+            />
+          </label>
+          <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90">
+            Add note →
+          </button>
+        </form>
+      )}
 
       <div className="overflow-x-auto rounded-2xl border border-border bg-surface">
         <table className="w-full min-w-[560px] text-left text-sm">

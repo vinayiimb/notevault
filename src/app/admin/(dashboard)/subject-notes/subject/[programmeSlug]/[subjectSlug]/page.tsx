@@ -1,16 +1,25 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
-import { notFound } from "next/navigation";
-import { getCanonicalNote } from "@/lib/canonical-subject-notes-data";
+import { notFound, redirect } from "next/navigation";
+import { slugify } from "@/lib/utils";
+import { getCanonicalNote, GENERAL_PROGRAMME } from "@/lib/canonical-subject-notes-data";
 import { CanonicalNotesEditor } from "@/components/admin/canonical-notes-editor";
 
 export default async function SubjectNotesEditorPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ programmeSlug: string; subjectSlug: string }>;
+  searchParams: Promise<{ name?: string }>;
 }) {
   const { programmeSlug, subjectSlug } = await params;
-  const note = await getCanonicalNote(programmeSlug, subjectSlug);
+  const { name } = await searchParams;
+  // "Add custom note" form lands here with slug "new"; send it to the real slug (General Notes only).
+  if (programmeSlug === GENERAL_PROGRAMME.slug && subjectSlug === "new" && name?.trim()) {
+    const clean = name.trim();
+    redirect(`/admin/subject-notes/subject/${programmeSlug}/${slugify(clean)}?name=${encodeURIComponent(clean)}`);
+  }
+  const note = await getCanonicalNote(programmeSlug, subjectSlug, name);
   if (!note) notFound();
 
   return (
