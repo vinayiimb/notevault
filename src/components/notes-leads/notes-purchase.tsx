@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ChatCircleDots, Check, Lock, WhatsappLogo } from "@phosphor-icons/react";
-import { leadWantsChatAction, type LeadResult } from "@/lib/note-lead-actions";
+import type { LeadResult } from "@/lib/note-lead-actions";
 import { chatLink } from "@/lib/chat-link";
 import { trackIntent } from "@/lib/lead-intent";
 import { ANY_SUBJECT } from "@/lib/note-leads";
@@ -269,7 +269,7 @@ export function NotesPurchase({
         <button
           type="button"
           onClick={() => {
-            void leadWantsChatAction({ phone: result.phone ?? "" }).catch(() => undefined); // tells the owner on WhatsApp
+            void fetch("/api/note-lead/chat", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone: result.phone ?? "" }), keepalive: true }).catch(() => undefined); // tells the owner on WhatsApp
             if (intent) trackIntent("wa", intent);
             setPhase("later");
           }}

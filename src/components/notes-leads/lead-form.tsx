@@ -1,8 +1,8 @@
 "use client";
 
-import { useActionState, useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
+import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
 import { CaretUpDown, Check, WhatsappLogo } from "@phosphor-icons/react";
-import { submitNoteLeadAction, type LeadResult } from "@/lib/note-lead-actions";
+import type { LeadResult } from "@/lib/note-lead-actions";
 import { getVisitorId } from "@/lib/lead-intent";
 import {
   ANY_SUBJECT,
@@ -121,7 +121,8 @@ export function LeadForm({
   const [subject, setSubject] = useState(initial?.subject ?? "");
   const [semester, setSemester] = useState(initial?.semester ? String(initial.semester) : "");
   const [fetched, setFetched] = useState<Record<string, LeadSubject[]>>({});
-  const [state, formAction, pending] = useActionState<LeadResult, FormData>(submitNoteLeadAction, {});
+  const [state, setState] = useState<LeadResult>({});
+  const [pending, setPending] = useState(false);
 
   const list =
     initialSubjects && course === initial?.course ? initialSubjects : (subjectsCache.get(course) ?? fetched[course]);
@@ -151,8 +152,22 @@ export function LeadForm({
     onSuccess?.(state);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state]);
-  const onSubmit = () => {
+  // A plain POST (not a server action): a page left open across a deploy can no longer crash on submit.
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (pending) return;
+    const data = new FormData(e.currentTarget);
     lastPhone.current = phoneRef.current?.value ?? "";
+    setPending(true);
+    let next: LeadResult;
+    try {
+      const res = await fetch("/api/note-lead", { method: "POST", body: data });
+      next = (await res.json()) as LeadResult;
+    } catch {
+      next = { error: "Couldn't reach the server. Check your connection and try again." };
+    }
+    setState(next);
+    setPending(false);
   };
 
   if (state.ok) {
@@ -225,7 +240,7 @@ export function LeadForm({
   // Course and subject come from the page: just (semester if unknown) + number.
   if (fixed) {
     return (
-      <form action={formAction} onSubmit={onSubmit} className="flex flex-col gap-3">
+      <form onSubmit={onSubmit} className="flex flex-col gap-3">
         {hidden}
         <input type="hidden" name="programme" value={course} />
         <input type="hidden" name="subject" value={subject} />
@@ -260,7 +275,7 @@ export function LeadForm({
   }
 
   return (
-    <form action={formAction} onSubmit={onSubmit} className="flex flex-col gap-3">
+    <form onSubmit={onSubmit} className="flex flex-col gap-3">
       {hidden}
       {/* Printed names, for PYQ-page courses/subjects that aren't a notes subject. */}
       <input type="hidden" name="programmeName" value={courses.find((c) => c.slug === course)?.name ?? ""} />

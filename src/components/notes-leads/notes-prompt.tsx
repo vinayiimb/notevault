@@ -16,8 +16,8 @@ import { NotesPurchase } from "./notes-purchase";
 const OFF_KEY = "nv_notes_prompt_off";
 // /papers: the student just opened a paper. Let it start loading first.
 const PAPER_DELAY_MS = 1400;
-// PYQ pages reached from Google or a link: let them read before asking.
-const LANDING_DELAY_MS = 6000;
+// PYQ pages reached from Google or a link: a short beat (asking later lost people who leave within seconds).
+const LANDING_DELAY_MS = 2000;
 
 // Someone who already left a number is the likeliest buyer, so they are asked again, but at most once a day.
 const KNOWN_KEY = "nv_notes_prompt_known_at";
@@ -57,7 +57,7 @@ const TILE = "bg-gradient-to-b from-[#3fa0ff] to-[#0071e3] text-white shadow-[0_
  * form, and once it is saved the pop-up offers to buy the notes (one subject or the whole semester).
  *
  * - /papers (source "paper-pdf"): ~1.4 s after a paper opens (`paperId`).
- * - PYQ pages (source "pyq-page"): ~6 s after arriving.
+ * - PYQ pages (source "pyq-page"): ~2 s after arriving.
  *   What the form asks depends on what the page knows: subject (phone only), course (semester, an optional
  *   subject, phone) or nothing (course too).
  *
