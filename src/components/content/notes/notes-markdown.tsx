@@ -15,6 +15,7 @@ import { ContentCodeBlock } from "./code-block";
 import { NoteImage } from "./note-image";
 import { DataChart } from "@/components/subjects/data-chart";
 import { InfoCards } from "./info-cards";
+import { ChecklistBlock, GameMatrixBlock, GameTreeBlock } from "./note-blocks";
 
 // Drops a leading "Q1. " / "3. " etc. from the first text child, keeping any inline formatting after it.
 function stripLead(children: React.ReactNode, re: RegExp): React.ReactNode {
@@ -208,6 +209,11 @@ export function NotesMarkdown({ content }: { content: string }) {
       if (language === "mermaid") return <ContentMermaidBlock chart={raw} />;
       if (language === "chart") return <DataChart source={raw} />;
       if (language === "cards") return <InfoCards source={raw} />;
+      // The fence label is read with \w+, which stops at "-", so game-matrix arrives as "game"; use the full class.
+      const label = /language-([\w-]+)/.exec(className ?? "")?.[1] ?? "";
+      if (label === "game-matrix") return <GameMatrixBlock source={raw} />;
+      if (label === "game-tree") return <GameTreeBlock source={raw} />;
+      if (label === "checklist") return <ChecklistBlock source={raw} />;
       return <ContentCodeBlock language={language} code={raw} />;
     },
   };
