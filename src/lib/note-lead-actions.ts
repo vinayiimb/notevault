@@ -1,12 +1,14 @@
 "use server";
 
 import { headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { findCanonicalProgramme, findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
 import { slugify } from "@/lib/utils";
-import { normalizePhone } from "@/lib/paid-notes-pricing";
+import { normalizeEmail, normalizePhone } from "@/lib/paid-notes-pricing";
+import { grantSubjectsAction } from "@/lib/paid-notes-actions";
 import { validVisitorId } from "@/lib/lead-intent";
 import { notesOrdersReady } from "@/lib/notes-orders-server";
 import { notifyOwner } from "@/lib/owner-notify";
@@ -220,7 +222,8 @@ export async function addOrderAction(formData: FormData) {
   await requireAdmin();
   const phone = normalizePhone(String(formData.get("phone") ?? ""));
   const f = readOrderForm(formData);
-  if (!phone || !f) return;
+  if (!phone) redirect(`/admin/leads/delivery?msg=${encodeURIComponent("Enter a valid 10-digit WhatsApp number.")}`);
+  if (!f) redirect(`/admin/leads/delivery?msg=${encodeURIComponent("Fill in the course, semester and subject name.")}`);
   const ref = `manual-${crypto.randomUUID()}`; // both Razorpay ids are unique columns
   const delivered = formData.get("delivered") === "on";
   await prisma.notesOrder.create({
@@ -237,6 +240,7 @@ export async function addOrderAction(formData: FormData) {
   });
   revalidatePath("/admin/leads/delivery");
   revalidatePath("/admin/leads");
+  redirect(`/admin/leads/delivery?msg=${encodeURIComponent("Added.")}`);
 }
 
 /** Only hand-added rows can be removed; a real Razorpay payment is never deleted from here. */
@@ -247,6 +251,38 @@ export async function deleteManualOrderAction(formData: FormData) {
   await prisma.notesOrder.deleteMany({ where: { id, razorpayPaymentId: { startsWith: "manual-" } } });
   revalidatePath("/admin/leads/delivery");
   revalidatePath("/admin/leads");
+}
+
+/**
+ * "Notes are ready": unlock the order's subject(s) for the student's Gmail (they read them after signing in),
+ * remember the Gmail on the order and mark it delivered. A whole-semester order unlocks every published subject
+ * of that semester. Nothing is granted for a subject whose notes are not published yet.
+ */
+export async function giveNotesAccessAction(formData: FormData) {
+  await requireAdmin();
+  const done = (msg: string): never => redirect(`/admin/leads/delivery?msg=${encodeURIComponent(msg)}`);
+  const id = String(formData.get("id") ?? "");
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  const order = id ? await prisma.notesOrder.findUnique({ where: { id } }) : null;
+  if (!order) return done("Order not found.");
+  if (!email) return done("Enter a valid Gmail address.");
+  const notes = await prisma.canonicalSubjectNote.findMany({
+    where: {
+      programmeSlug: order.programmeSlug,
+      NOT: { content: "" },
+      ...(order.plan === "semester" ? { semester: order.semester } : { subjectSlug: order.subjectSlug }),
+    },
+    select: { programmeSlug: true, subjectSlug: true },
+  });
+  if (!notes.length) return done(`Notes for ${order.plan === "semester" ? `Semester ${order.semester}` : order.subject} are not published yet, so nothing was unlocked.`);
+  const fd = new FormData();
+  fd.set("email", email);
+  for (const n of notes) fd.append("item", `${n.programmeSlug}/${n.subjectSlug}`);
+  await grantSubjectsAction(fd);
+  await prisma.notesOrder.update({ where: { id }, data: { adminNote: `Gmail: ${email}`, status: "DELIVERED", deliveredAt: order.deliveredAt ?? new Date() } });
+  revalidatePath("/admin/leads/delivery");
+  revalidatePath("/admin/leads");
+  return done(`Unlocked ${notes.length} subject${notes.length === 1 ? "" : "s"} for ${email}. Now send them the WhatsApp message.`);
 }
 
 export async function setLeadNoteAction(formData: FormData) {

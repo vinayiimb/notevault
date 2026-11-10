@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
 import { prisma } from "@/lib/prisma";
-import { addOrderAction, deleteManualOrderAction, markOrderDeliveredAction, updateOrderAction } from "@/lib/note-lead-actions";
+import { addOrderAction, deleteManualOrderAction, giveNotesAccessAction, markOrderDeliveredAction, updateOrderAction } from "@/lib/note-lead-actions";
 import { formatLeadPhone } from "@/lib/note-leads";
 import { NOTES_DELIVERY_HOURS, orderPlanLabel } from "@/lib/notes-orders";
 
@@ -49,7 +49,7 @@ function OrderForm({ o, phone, programmes, askPhone }: { o?: Order; phone?: stri
   return (
     <div className="mt-2 rounded-xl border border-border bg-background p-3">
       <form action={o ? updateOrderAction : addOrderAction} className="grid gap-3 sm:grid-cols-2">
-        {o ? <input type="hidden" name="id" value={o.id} /> : <input type="hidden" name="phone" value={phone} />}
+        {o ? <input type="hidden" name="id" value={o.id} /> : !askPhone && <input type="hidden" name="phone" value={phone} />}
         {askPhone && (
           <label className={`${label} sm:col-span-2`}>
             WhatsApp number
@@ -121,8 +121,45 @@ function AddRow({ phone, programmes }: { phone: string; programmes: string[] }) 
   );
 }
 
-export default async function DeliveryTrackerPage({ searchParams }: { searchParams: Promise<{ show?: string }> }) {
-  const { show } = await searchParams;
+const gmailOf = (o: Order) => /^Gmail: (\S+)$/.exec(o.adminNote ?? "")?.[1] ?? "";
+
+function readyText(o: Order, gmail: string) {
+  const what = o.plan === "semester" ? `your Semester ${o.semester} notes` : `your notes for ${o.subject}`;
+  return `Hi! ${what[0].toUpperCase() + what.slice(1)} (${o.programme}, Sem ${o.semester}) are ready. Open https://www.dupyq.online/login and sign in with your Gmail${gmail ? ` (${gmail})` : ""}, then go to My notes to read them. Reply here if you need any help.`;
+}
+
+/** Unlock the subject for the student's Gmail, then message them on WhatsApp to log in. */
+function NotesReady({ o }: { o: Order }) {
+  const gmail = gmailOf(o);
+  return (
+    <details className="mt-1">
+      <summary className={linkBtn}>{gmail ? "Notes ready ✓" : "Notes ready…"}</summary>
+      <div className="mt-2 rounded-xl border border-border bg-background p-3">
+        <form action={giveNotesAccessAction} className="flex flex-col gap-2">
+          <input type="hidden" name="id" value={o.id} />
+          <label className={label}>
+            Student&apos;s Gmail (they sign in with it)
+            <input name="email" type="email" required defaultValue={gmail} placeholder="name@gmail.com" className={field} />
+          </label>
+          <button type="submit" className="self-start rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-accent-foreground hover:opacity-90">
+            Unlock for this Gmail
+          </button>
+        </form>
+        <a
+          href={`https://wa.me/${o.phone}?text=${encodeURIComponent(readyText(o, gmail))}`}
+          target="_blank"
+          rel="noreferrer"
+          className="mt-2 inline-flex items-center gap-1.5 rounded-lg bg-green-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-green-700"
+        >
+          <WhatsappLogo size={14} weight="fill" /> Message: notes are ready, log in
+        </a>
+      </div>
+    </details>
+  );
+}
+
+export default async function DeliveryTrackerPage({ searchParams }: { searchParams: Promise<{ show?: string; msg?: string }> }) {
+  const { show, msg } = await searchParams;
   const pendingOnly = show === "pending";
 
   let orders: Order[];
@@ -159,6 +196,8 @@ export default async function DeliveryTrackerPage({ searchParams }: { searchPara
       <Link href="/admin/leads" className="text-sm text-muted hover:text-foreground">&larr; Leads</Link>
       <h1 className="mt-2 text-2xl font-semibold">Delivery tracker</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted">Every student who paid, what they bought, and what you have sent so far.</p>
+
+      {msg && <p className="mt-4 max-w-2xl rounded-lg bg-green-600/10 px-4 py-3 text-sm text-foreground">{msg.slice(0, 300)}</p>}
 
       <dl className="mt-4 grid max-w-2xl grid-cols-2 gap-3 sm:grid-cols-4">
         {[
@@ -197,7 +236,7 @@ export default async function DeliveryTrackerPage({ searchParams }: { searchPara
                   <th className="w-16 border-l border-border px-2 py-2.5 text-center font-medium">Sem</th>
                   <th className="w-20 border-l border-border px-2 py-2.5 text-center font-medium">Paid</th>
                   <th className="w-24 border-l border-border px-2 py-2.5 text-center font-medium">Date</th>
-                  <th className="w-52 border-l border-border px-3 py-2.5 text-left font-medium">Delivered</th>
+                  <th className="w-60 border-l border-border px-3 py-2.5 text-left font-medium">Delivered</th>
                 </tr>
               </thead>
               {students.map((s) => (
@@ -224,7 +263,7 @@ export default async function DeliveryTrackerPage({ searchParams }: { searchPara
                       <td className="border-l border-border/60 px-2 py-2 text-center text-muted">{o.semester}</td>
                       <td className="border-l border-border/60 px-2 py-2 text-center tabular-nums">₹{o.amount}</td>
                       <td className="border-l border-border/60 px-2 py-2 text-center text-muted">{day(o.paidAt)}</td>
-                      <td className="border-l border-border/60 px-3 py-2"><DeliveryCell o={o} /></td>
+                      <td className="border-l border-border/60 px-3 py-2"><DeliveryCell o={o} /><NotesReady o={o} /></td>
                     </tr>
                   ))}
                   <tr className="border-t border-border/60">
@@ -253,7 +292,7 @@ export default async function DeliveryTrackerPage({ searchParams }: { searchPara
                     <li key={o.id} className="px-4 py-3">
                       <p className="text-sm font-medium">{orderPlanLabel(o)}</p>
                       <p className="text-xs text-muted">{o.programme} · Sem {o.semester} · ₹{o.amount} · {day(o.paidAt)}</p>
-                      <div className="mt-2"><DeliveryCell o={o} /></div>
+                      <div className="mt-2"><DeliveryCell o={o} /><NotesReady o={o} /></div>
                       <EditRow o={o} programmes={programmes} />
                     </li>
                   ))}
