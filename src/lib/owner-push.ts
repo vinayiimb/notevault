@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import webpush from "web-push";
+import * as webpush from "web-push"; // web-push has named exports only; a default import fails the Turbopack build
 import { prisma } from "@/lib/prisma";
 
 // Web Push to the owner's phone/home-screen app. No migration and no env vars: subscriptions and the VAPID
