@@ -245,7 +245,7 @@ export function NotesPurchase({
         <span className="h-px flex-1 bg-border" />
       </div>
       <a
-        href={chatLink(`${result.programme ?? ""} Semester ${semester} ${selected === "subject" ? subjectName : "all subjects"} notes`.replace(/\s+/g, " "))}
+        href={chatLink(`Hi! I need ${selected === "subject" ? subjectName : "all subjects"} notes for ${result.programme ?? "my course"}, Semester ${semester}`.replace(/\s+/g, " "))}
         target="_blank"
         rel="noopener noreferrer"
         className="inline-flex h-12 w-full items-center justify-center gap-2 rounded-full bg-surface-muted px-6 text-[16px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"

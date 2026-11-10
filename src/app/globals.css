@@ -497,6 +497,11 @@ body:has([data-ask-ai-launcher]) .wa-fab {
   0% { transform: scale(1); opacity: 0.6; }
   80%, 100% { transform: scale(1.6); opacity: 0; }
 }
+/* Pill-shaped (Chat now) version of the ping: a small, even halo instead of a 1.6x scale that would leave the screen. */
+@keyframes chat-ping {
+  0% { transform: scale(1); opacity: 0.5; }
+  80%, 100% { transform: scale(1.14, 1.32); opacity: 0; }
+}
 
 /* Mascot (src/components/landing/mascot.tsx): idle bob, a wave every few
    seconds, a real blink (eyelids drawn over the baked-in eyes) and a hop on

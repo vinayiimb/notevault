@@ -2,7 +2,9 @@
 
 import { WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
 
-export const WHATSAPP_GROUP_URL = "https://chat.whatsapp.com/GwT0moUvMqQDDKZjCajpPU";
+import { WHATSAPP_GROUP_URL } from "@/lib/whatsapp-group";
+
+export { WHATSAPP_GROUP_URL };
 
 /**
  * Floating WhatsApp button, bottom-right on every public page. Position lives

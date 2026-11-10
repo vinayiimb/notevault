@@ -6,7 +6,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteSidebar } from "@/components/site-sidebar";
 import { FeatureGate } from "@/components/feature-flags-client";
 import { CommandPalette } from "@/components/command-palette";
-import { WhatsAppJoin } from "@/components/whatsapp-join";
+import { ChatNowFab } from "@/components/chat-now-fab";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -17,7 +17,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
     return (
       <main className="theme-classic min-h-screen w-full">
         {children}
-        <WhatsAppJoin />
+        <ChatNowFab />
       </main>
     );
   }
@@ -25,7 +25,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   return (
     <div className={`flex w-full flex-1 ${isPapers ? "theme-classic" : ""}`}>
       <CommandPalette />
-      <WhatsAppJoin />
+      <ChatNowFab />
       {!isPapers && <SiteSidebar />}
       <div className="flex min-w-0 flex-1 flex-col">
         <SiteHeader />

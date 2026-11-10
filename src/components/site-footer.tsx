@@ -1,3 +1,4 @@
+import { WHATSAPP_GROUP_URL } from "@/lib/whatsapp-group";
 import Link from "next/link";
 
 // Crawlable links from every page to the highest-demand course hubs.
@@ -120,6 +121,11 @@ export function SiteFooter() {
               <li>
                 <a href="https://wa.me/919376180015" target="_blank" rel="noopener noreferrer" className="text-muted underline-offset-2 hover:text-foreground hover:underline">
                   WhatsApp Helpdesk
+                </a>
+              </li>
+              <li>
+                <a href={WHATSAPP_GROUP_URL} target="_blank" rel="noopener noreferrer" className="text-muted underline-offset-2 hover:text-foreground hover:underline">
+                  Join WhatsApp group
                 </a>
               </li>
             </ul>
