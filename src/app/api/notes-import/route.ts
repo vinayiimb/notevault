@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { isHtmlNote } from "@/lib/content/html-note";
 import {
   NOTE_THEMES,
   findCanonicalSubject,
@@ -11,6 +12,7 @@ import {
 // Save button does (saveCanonicalNote). Off unless NOTES_IMPORT_TOKEN is set; callers send it as a Bearer token.
 //   GET  ?programmeSlug=&subjectSlug=   what is there now (so the caller can warn before overwriting)
 //   POST {programmeSlug, subjectSlug, content, theme?, semester?, isFree?, replace?}
+//        content is markdown, or a whole finished HTML page (starts with <!doctype html> / <html>): that is shown as-is in a frame.
 //        409 if a note already exists and replace is not true.
 export const dynamic = "force-dynamic";
 
@@ -41,6 +43,7 @@ export async function GET(req: Request) {
     subject: t.found.subject,
     exists: Boolean(note?.content),
     chars: note?.content.length ?? 0,
+    format: note?.content && isHtmlNote(note.content) ? "html" : "markdown",
     updatedAt: note?.updatedAt ?? null,
     theme: note?.theme ?? "sky",
     semester: note?.semester ?? null,
@@ -68,5 +71,5 @@ export async function POST(req: Request) {
   const isFree = typeof b?.isFree === "boolean" ? b.isFree : (existing?.isFree ?? false);
 
   await saveCanonicalNote({ ...t.slugs, programme: t.found.programme.name, subject: t.found.subject, content, theme, semester, isFree });
-  return NextResponse.json({ ok: true, replaced: Boolean(existing?.content), chars: content.length, programme: t.found.programme.name, subject: t.found.subject, url: `/notes/${t.slugs.programmeSlug}/${t.slugs.subjectSlug}` });
+  return NextResponse.json({ ok: true, replaced: Boolean(existing?.content), format: isHtmlNote(content) ? "html" : "markdown", chars: content.length, programme: t.found.programme.name, subject: t.found.subject, url: `/notes/${t.slugs.programmeSlug}/${t.slugs.subjectSlug}` });
 }

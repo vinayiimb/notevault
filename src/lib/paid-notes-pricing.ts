@@ -1,3 +1,5 @@
+import { htmlNoteTitleOnly, isHtmlNote } from "@/lib/content/html-note";
+
 // Client-safe (no Prisma): pricing + free-preview rules for paid subject
 // notes, shared by the checkout page, the notes paywall and the papers nudge.
 
@@ -101,6 +103,8 @@ const isTableRow = (line: string | undefined) => !!line && /^\s*\|/.test(line);
 const PREVIEW_END = /^[ \t]*<!--\s*preview-end\s*-->[ \t]*$/m;
 
 export function previewOf(markdown: string): { preview: string; truncated: boolean } {
+  // A finished .html note can't be cut by lines (it would slice through <style>): marker, or title only.
+  if (isHtmlNote(markdown) && !PREVIEW_END.test(markdown)) return { preview: htmlNoteTitleOnly(markdown), truncated: true };
   const marker = PREVIEW_END.exec(markdown);
   if (marker) {
     let preview = markdown.slice(0, marker.index).trimEnd();

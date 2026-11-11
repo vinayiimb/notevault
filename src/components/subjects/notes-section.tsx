@@ -3,6 +3,8 @@ import { themeValuesToTokens, LEGACY_NOTES_THEME_TO_PRESET } from "@/lib/content
 import { findNotesLabTheme } from "@/lib/content/theme-presets";
 import { NotesReadingChrome } from "@/components/content/notes/reading-chrome";
 import { AskAiPanel } from "@/components/content/notes/ask-ai-panel";
+import { HtmlNoteFrame } from "@/components/content/notes/html-note-frame";
+import { isHtmlNote } from "@/lib/content/html-note";
 import { GatedNotes } from "@/components/paid-notes/gated-notes";
 import { resolveNotesTheme } from "./notes-renderer";
 import { StructuredNoteRenderer } from "./structured-note-renderer";
@@ -69,9 +71,19 @@ export function NotesSection({
     // doesn't validate — better to show the plain-text fallback than nothing.
   }
 
+  // A finished .html note: shown as designed, in its own frame (no markdown reader chrome).
+  if (isHtmlNote(content) && !paywall) {
+    return (
+      <div className="relative mt-4 ml-[calc(50%-50vw)] w-screen">
+        <HtmlNoteFrame html={content} title={subjectName} />
+      </div>
+    );
+  }
+
   const resolvedNotesTheme = resolveNotesTheme(theme);
-  const preprocessed = preprocessNotesMarkdown(content);
-  const headings = extractContentHeadings(preprocessed);
+  const html = isHtmlNote(content); // paid .html preview: GatedNotes draws the frame, the text must stay untouched
+  const preprocessed = html ? content : preprocessNotesMarkdown(content);
+  const headings = html ? [] : extractContentHeadings(preprocessed);
   const subjectTokens = resolvedTheme
     ? themeValuesToTokens(resolvedTheme)
     : findNotesLabTheme(LEGACY_NOTES_THEME_TO_PRESET[resolvedNotesTheme]).light;

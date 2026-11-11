@@ -4,6 +4,8 @@ import { useRef, useState } from "react";
 import { ChartBar, Eye, FlowArrow, Table, UploadSimple } from "@phosphor-icons/react/dist/ssr";
 import { updateCanonicalSubjectNoteAction } from "@/lib/actions";
 import { NotesRenderer, resolveNotesTheme } from "@/components/subjects/notes-renderer";
+import { HtmlNoteFrame } from "@/components/content/notes/html-note-frame";
+import { isHtmlNote } from "@/lib/content/html-note";
 
 const THEMES = [
   { value: "sky", label: "Sky", dot: "bg-sky-dark" },
@@ -48,7 +50,10 @@ export function CanonicalNotesEditor({
 
   // A dropped file goes straight to the published-look preview: that is what the admin wants to check.
   async function loadMarkdownFile(file: File) {
-    setContent(await file.text());
+    let text = await file.text();
+    // A bare .html fragment has no <!doctype>, so wrap it: that is what marks the note as a finished HTML page.
+    if (/\.html?$/i.test(file.name) && !isHtmlNote(text)) text = `<!doctype html><meta charset="utf-8">${text}`;
+    setContent(text);
     setSaved(false);
     setEditorMode("preview");
   }
@@ -86,7 +91,7 @@ export function CanonicalNotesEditor({
     <div className="mt-4 flex flex-col gap-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <p className="max-w-2xl text-xs leading-5 text-muted">
-          Drop a finished .md file (written elsewhere) or write notes directly. Nothing is live until you
+          Drop a finished .md file, or a finished .html page that keeps its own design (written elsewhere) or write notes directly. Nothing is live until you
           click Save.
         </p>
         <div className="flex shrink-0 items-center gap-2">
@@ -96,12 +101,12 @@ export function CanonicalNotesEditor({
             className="flex items-center gap-1.5 rounded-lg border border-border px-3 py-1.5 text-xs font-medium transition hover:bg-surface-muted"
           >
             <UploadSimple size={14} weight="bold" />
-            Drop a .md file
+            Drop a .md / .html file
           </button>
           <input
             ref={mdInputRef}
             type="file"
-            accept=".md,.markdown,.txt,text/markdown,text/plain"
+            accept=".md,.markdown,.txt,.html,.htm,text/markdown,text/plain,text/html"
             className="hidden"
             onChange={(e) => {
               const file = e.target.files?.[0];
@@ -182,14 +187,16 @@ export function CanonicalNotesEditor({
               setSaved(false);
             }}
             rows={22}
-            placeholder="Write notes here, or drag and drop a .md file…"
+            placeholder="Write notes here, or drag and drop a .md or .html file…"
             className={`block w-full resize-y border-0 px-4 py-3 font-mono text-sm leading-6 outline-none ${
               dragOver ? "bg-accent-soft/30" : "bg-background"
             }`}
           />
         ) : (
           <div className="max-h-[820px] min-h-72 overflow-y-auto bg-surface-muted/40 p-3 sm:p-5">
-            {content.trim() ? (
+            {isHtmlNote(content) ? (
+              <HtmlNoteFrame html={content} title={subject} />
+            ) : content.trim() ? (
               <NotesRenderer content={content} theme={resolveNotesTheme(theme)} resolvedTheme={null} />
             ) : (
               <div className="flex min-h-64 items-center justify-center text-sm text-muted">

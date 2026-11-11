@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle, LockSimple } from "@phosphor-icons/react";
+import { HtmlNoteFrame } from "@/components/content/notes/html-note-frame";
+import { isHtmlNote } from "@/lib/content/html-note";
 import { NotesReadingChrome } from "@/components/content/notes/reading-chrome";
 import { extractContentHeadings, preprocessNotesMarkdown, type ContentHeading } from "@/lib/content/toc";
 import type { NotesLabColorTokens } from "@/lib/content/theme-presets";
@@ -43,8 +45,8 @@ export function GatedNotes({
         if (ownsIt) return setOwned(true);
         if (!content) return setLocked(true);
         setAdminView(!!admin);
-        const preprocessed = preprocessNotesMarkdown(content);
-        setFull({ content: preprocessed, headings: extractContentHeadings(preprocessed) });
+        const preprocessed = isHtmlNote(content) ? content : preprocessNotesMarkdown(content);
+        setFull({ content: preprocessed, headings: isHtmlNote(content) ? [] : extractContentHeadings(preprocessed) });
       })
       .catch(() => !cancelled && setLocked(true));
     return () => {
@@ -97,14 +99,18 @@ export function GatedNotes({
         </div>
       )}
       </div>
-      <NotesReadingChrome
-        title={title}
-        programmeName={programmeName}
-        content={full?.content ?? preview}
-        headings={full?.headings ?? headings}
-        subjectTheme={subjectTheme}
-        downloadable={!!full}
-      />
+      {isHtmlNote(full?.content ?? preview) ? (
+        <HtmlNoteFrame html={full?.content ?? preview} title={title} />
+      ) : (
+        <NotesReadingChrome
+          title={title}
+          programmeName={programmeName}
+          content={full?.content ?? preview}
+          headings={full?.headings ?? headings}
+          subjectTheme={subjectTheme}
+          downloadable={!!full}
+        />
+      )}
       {(locked || owned) && (
         <div className="relative -mt-24 px-4 sm:px-6">
           <div className="pointer-events-none h-24 bg-gradient-to-b from-transparent to-background" />
