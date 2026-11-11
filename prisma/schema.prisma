@@ -1573,3 +1573,28 @@ model UnifiedCatalogPaper {
   @@index([semester])
   @@index([yearRange])
 }
+
+// The SEC / VAC / GE / AEC subjects a student lists on their dashboard ("My
+// subjects"). Name + code are free text (suggestions come from the DU course
+// catalogue), unique per student by name. See src/lib/student-subjects.ts.
+model StudentSubject {
+  id        String   @id @default(cuid())
+  email     String
+  type      String // "SEC" | "VAC" | "GE" | "AEC" | "DSC" | "DSE"
+  name      String
+  code      String?
+  // For DSC / DSE / GE picked as course -> semester -> subject; null for the university-wide types or typed-in subjects.
+  course    String?
+  semester  Int?
+  createdAt DateTime @default(now())
+
+  @@unique([email, name])
+  @@index([email])
+}
+
+// Admin override of how many subjects a student may list on their dashboard.
+// No row = the default (DEFAULT_MAX_SUBJECTS in src/lib/feathers.ts).
+model StudentSubjectLimit {
+  email       String @id
+  maxSubjects Int
+}

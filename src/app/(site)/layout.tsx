@@ -13,6 +13,16 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   const isDashboard = pathname.startsWith("/dashboard");
   const isPapers = pathname === "/papers" || pathname.startsWith("/papers");
 
+  // The student dashboard brings its own frame (AccountShell): sidebar only, no site header/footer.
+  if (pathname === "/account") {
+    return (
+      <div className="w-full flex-1">
+        {children}
+        <ChatNowFab />
+      </div>
+    );
+  }
+
   if (isDashboard) {
     return (
       <main className="theme-classic min-h-screen w-full">

@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { describeItems, EXTRA_ITEMS, getNotesCatalog } from "@/lib/paid-notes";
-import { grantSubjectsAction, resetStudentDevicesAction, revokeSubjectAction } from "@/lib/paid-notes-actions";
+import { grantSubjectsAction, resetStudentDevicesAction, revokeSubjectAction, setSubjectLimitAction } from "@/lib/paid-notes-actions";
 import { listLiveDevices, liveDeviceCounts } from "@/lib/student-devices";
 import { MAX_DEVICES } from "@/lib/student-device-policy";
 import { ResetPasswordButton } from "@/components/admin/payment-approve";
@@ -10,6 +10,8 @@ import { getActivitySummaries, getStudentActivity } from "@/lib/student-activity
 import { fmtDuration, hourLabel } from "@/lib/student-activity-format";
 import { accessExpiry } from "@/lib/paid-notes-pricing";
 import { shortDate, timeAgo } from "@/lib/time-ago";
+import { listSubjects, getSubjectLimit } from "@/lib/student-dashboard";
+import { DEFAULT_MAX_SUBJECTS, MAX_SUBJECT_LIMIT } from "@/lib/feathers";
 
 const inputClass = "rounded-lg border border-border bg-background px-3 py-2 text-sm focus:border-accent focus:outline-none";
 
@@ -124,12 +126,14 @@ async function StudentList({ q }: { q: string }) {
 }
 
 async function StudentDetail({ email }: { email: string }) {
-  const [purchases, account, catalog, devices, activity] = await Promise.all([
+  const [purchases, account, catalog, devices, activity, listed, subjectLimit] = await Promise.all([
     prisma.purchase.findMany({ where: { email }, orderBy: { createdAt: "desc" } }),
     prisma.notesAccount.findUnique({ where: { email }, select: { email: true } }),
     getNotesCatalog(),
     listLiveDevices(email).catch(() => null), // null = migration not applied yet
     getStudentActivity(email), // null = activity migration not applied yet
+    listSubjects(email), // null = subjects migration not applied yet
+    getSubjectLimit(email),
   ]);
   const approved = purchases.filter((p) => p.status === "APPROVED");
   const unlocked = [...new Set(approved.flatMap((p) => p.items))];
@@ -186,6 +190,22 @@ async function StudentDetail({ email }: { email: string }) {
             </button>
             Signs them out everywhere and clears their swap count (lost phone, hit the limit).
           </form>
+        )}
+        {listed !== null && (
+          <div className="mt-3 border-t border-border pt-3 text-sm">
+            <p className="text-muted">
+              Dashboard subjects: {listed.length} of {subjectLimit}
+              {subjectLimit !== DEFAULT_MAX_SUBJECTS ? " (custom limit)" : ""}
+            </p>
+            {listed.length > 0 && <p className="mt-1">{listed.map((x) => `${x.type} ${x.name}${x.code ? ` (${x.code})` : ""}`).join(" · ")}</p>}
+            <form action={setSubjectLimitAction} className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
+              <input type="hidden" name="email" value={email} />
+              <label htmlFor="subject-limit">Subject limit</label>
+              <input id="subject-limit" name="limit" type="number" min={1} max={MAX_SUBJECT_LIMIT} defaultValue={subjectLimit} className={`${inputClass} w-20`} />
+              <button type="submit" className="rounded-lg border border-border px-3 py-1.5 text-xs hover:border-accent hover:text-accent">Save</button>
+              <button type="submit" name="reset" value="1" className="rounded-lg border border-border px-3 py-1.5 text-xs hover:text-foreground">Use default ({DEFAULT_MAX_SUBJECTS})</button>
+            </form>
+          </div>
         )}
         <div className="mt-3 border-t border-border pt-3">
           <ResetPasswordButton email={email} phone={phone} subjects={subjects} />

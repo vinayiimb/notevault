@@ -631,3 +631,14 @@ body:has([data-ask-ai-launcher]) .wa-fab {
 @keyframes chat-rise { from { opacity: 0; transform: translateY(24px) scale(0.96); } }
 @keyframes chat-pop { from { opacity: 0; transform: translateY(6px) scale(0.97); } }
 @keyframes chat-dot { 50% { opacity: 0.25; transform: translateY(-3px); } }
+
+/* Student dashboard (/account): progress bars grow in, the flame flickers, the feather drifts. */
+@keyframes dash-fill { from { transform: scaleX(0); } }
+@keyframes dash-flame { 0%, 100% { transform: scale(1) rotate(-2deg); } 50% { transform: scale(1.08) rotate(2deg); } }
+@keyframes dash-float { 0%, 100% { transform: translateY(0) rotate(-6deg); } 50% { transform: translateY(-5px) rotate(6deg); } }
+.dash-fill { transform-origin: left; animation: dash-fill 0.9s var(--ease-apple) both; }
+.dash-flame { display: inline-block; animation: dash-flame 1.6s ease-in-out infinite; }
+.dash-float { display: inline-block; animation: dash-float 3.6s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .dash-fill, .dash-flame, .dash-float { animation: none; }
+}

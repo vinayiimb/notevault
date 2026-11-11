@@ -9,6 +9,8 @@ import { clearLoginFailures, generatePassword, getSession, hashPassword, isLogin
 import { deleteByUrl, putBytes } from "@/lib/storage";
 import { currencyIconExtensionFor } from "@/lib/currency-icon";
 import { getStudentEmail, isExtraItem } from "@/lib/paid-notes";
+import { cleanSubject, parseGoal, parseSubjectLimit } from "@/lib/feathers";
+import { addSubject, removeSubject, setSubjectLimit } from "@/lib/student-dashboard";
 import { endCurrentStudentSession, resetStudentDevices, revokeStudentDevice, startStudentSession, type DeviceInfo } from "@/lib/student-devices";
 import { isAccessActive, normalizeEmail, normalizePhone, normalizeUtr, priceFor } from "@/lib/paid-notes-pricing";
 import { FIREBASE_CONFIG, googleSignInEnabled } from "@/lib/firebase-config";
@@ -438,4 +440,42 @@ function revalidatePaywall() {
   revalidatePath("/admin/payments");
   revalidatePath("/paid-notes");
   revalidatePath("/notes", "layout");
+}
+
+// ---------- Dashboard: My subjects + daily goal ----------
+
+export async function addSubjectAction(formData: FormData) {
+  const email = await getStudentEmail();
+  if (!email) redirect("/login?next=/account");
+  const parsed = cleanSubject({ type: formData.get("type"), name: formData.get("name"), code: formData.get("code"), course: formData.get("course"), semester: formData.get("semester") });
+  const result = parsed.ok ? await addSubject(email, parsed.value) : parsed;
+  revalidatePath("/account");
+  if (!result.ok) redirect(`/account?subjectError=${encodeURIComponent(result.error)}#subjects`);
+  redirect("/account#subjects");
+}
+
+export async function removeSubjectAction(formData: FormData) {
+  const email = await getStudentEmail();
+  if (!email) redirect("/login?next=/account");
+  await removeSubject(email, String(formData.get("id") ?? ""));
+  revalidatePath("/account");
+  redirect("/account#subjects");
+}
+
+export async function setGoalAction(formData: FormData) {
+  const email = await getStudentEmail();
+  if (!email) redirect("/login?next=/account");
+  const jar = await cookies();
+  jar.set("notevault_goal", String(parseGoal(String(formData.get("minutes") ?? ""))), { maxAge: 365 * 86_400, path: "/", sameSite: "lax" });
+  revalidatePath("/account");
+}
+
+// Admin → Payments → Students → student: how many subjects they may list on their dashboard (blank = default).
+export async function setSubjectLimitAction(formData: FormData) {
+  await requireAdmin();
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  if (!email) return;
+  await setSubjectLimit(email, formData.get("reset") ? null : parseSubjectLimit(formData.get("limit")));
+  revalidatePath("/admin/payments/students");
+  revalidatePath("/account");
 }

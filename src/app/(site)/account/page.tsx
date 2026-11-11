@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import {
   ArrowRight,
@@ -12,7 +13,6 @@ import {
   Gift,
   Laptop,
   Receipt,
-  SignOut,
   WhatsappLogo,
   XCircle,
 } from "@phosphor-icons/react/dist/ssr";
@@ -20,8 +20,14 @@ import { getStudentSession } from "@/lib/paid-notes";
 import { getPortalData, type PurchaseRow } from "@/lib/student-portal";
 import { listLiveDevices } from "@/lib/student-devices";
 import { MAX_DEVICES } from "@/lib/student-device-policy";
-import { signOutDeviceAction, studentLogoutAction } from "@/lib/paid-notes-actions";
+import { signOutDeviceAction } from "@/lib/paid-notes-actions";
 import { shortDate, timeAgo } from "@/lib/time-ago";
+import { getStudentActivity } from "@/lib/student-activity";
+import { getSubjectLimit, getWeeklyReaders, listSubjects } from "@/lib/student-dashboard";
+import { feathersFor, parseGoal } from "@/lib/feathers";
+import { CommunityCard, FeatherTile, OverviewTiles, ProgressCard, SectionLabel, StreakTile, ToolTiles } from "./dashboard-cards";
+import { SubjectsCard } from "./subjects-card";
+import { AccountShell } from "@/components/account-shell";
 
 export const metadata: Metadata = {
   title: "My notes",
@@ -44,56 +50,46 @@ function firstName(email: string) {
 // The student dashboard: signed-in students read their notes here (the public
 // /notes pages only ever show the free preview), see what they've bought and
 // manage the (max 2) devices they're signed in on.
-export default async function AccountPage({ searchParams }: { searchParams: Promise<{ tab?: string; error?: string }> }) {
+export default async function AccountPage({ searchParams }: { searchParams: Promise<{ tab?: string; error?: string; subjectError?: string }> }) {
   const session = await getStudentSession();
   if (!session) redirect("/login?next=/account");
   const { email, deviceId } = session;
-  const { tab: tabParam, error } = await searchParams;
+  const { tab: tabParam, error, subjectError } = await searchParams;
   const tab: TabId = TABS.some((t) => t.id === tabParam) ? (tabParam as TabId) : "notes";
 
-  const [portal, devices] = await Promise.all([
+  const [portal, devices, activity, subjects, weeklyReaders, jar, subjectLimit] = await Promise.all([
     getPortalData(email),
     listLiveDevices(email, deviceId).catch(() => []), // table missing before the migration
+    getStudentActivity(email), // null before the activity migration: the dashboard just shows zeros
+    listSubjects(email),
+    getWeeklyReaders(),
+    cookies(),
+    getSubjectLimit(email),
   ]);
+  const goalMin = parseGoal(jar.get("notevault_goal")?.value);
+  const totalSeconds = activity?.totalSeconds ?? 0;
+  const activeDays = activity?.activeDays ?? 0;
+  const todaySeconds = activity?.days[0]?.seconds ?? 0; // days[0] = today (India time)
+  const feathers = feathersFor(totalSeconds, activeDays);
   const counts: Record<TabId, number> = { notes: portal.ownedCount, purchases: portal.purchases.length, devices: devices.length };
 
   return (
-    <div className="mx-auto w-full max-w-3xl px-4 pb-20 pt-6 sm:px-6 sm:pt-12">
-      {/* Greeting */}
-      <header className="flex items-center gap-3.5">
-        <span
-          aria-hidden
-          className="flex size-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-b from-[#3fa0ff] to-[#0071e3] text-lg font-semibold text-white shadow-[0_8px_20px_rgb(0_113_227/0.28)] sm:size-14 sm:text-xl"
-        >
-          {firstName(email).charAt(0)}
-        </span>
-        <div className="min-w-0 flex-1">
-          <h1 className="truncate font-display text-[1.6rem] font-semibold leading-tight tracking-[-0.03em] sm:text-[2rem]">
-            Hi, {firstName(email)}
-          </h1>
-          <p className="truncate text-sm text-muted">{email}</p>
+    <AccountShell name={firstName(email)} email={email} streak={activity?.streak ?? 0} feathers={feathers}>
+    <div className="mx-auto w-full max-w-[1680px] px-4 pb-16 pt-5 sm:px-8 sm:pt-7 xl:px-12">
+      {/* Progress, streak, feathers, community */}
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-[1.35fr_0.85fr_1fr_1.5fr] xl:gap-4">
+        <div className="col-span-2 lg:col-span-1 [&>*]:h-full">
+          <ProgressCard todaySeconds={todaySeconds} goalMin={goalMin} />
         </div>
-        <form action={studentLogoutAction}>
-          <button
-            type="submit"
-            aria-label="Sign out"
-            className="flex min-h-10 items-center gap-1.5 rounded-full bg-foreground/[0.06] px-3.5 text-sm font-semibold text-foreground transition hover:bg-foreground/[0.1]"
-          >
-            <SignOut size={16} weight="bold" />
-            <span className="hidden sm:inline">Sign out</span>
-          </button>
-        </form>
-      </header>
-
-      {/* Numbers */}
-      <dl className="mt-5 grid grid-cols-3 gap-2.5 sm:gap-3">
-        <Stat label="Notes" value={String(portal.ownedCount)} />
-        <Stat label="Spent" value={`₹${portal.totalPaid}`} />
-        <Stat label="Devices" value={`${devices.length}/${MAX_DEVICES}`} />
-      </dl>
+        <StreakTile streak={activity?.streak ?? 0} />
+        <FeatherTile feathers={feathers} />
+        <div className="col-span-2 lg:col-span-1 [&>*]:h-full">
+          <CommunityCard readers={weeklyReaders} />
+        </div>
+      </div>
 
       {portal.pendingCount > 0 && (
-        <p className="mt-3 flex items-start gap-2.5 rounded-[18px] bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
+        <p className="mt-4 flex items-start gap-2.5 rounded-[18px] bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
           <Clock size={18} weight="fill" className="mt-0.5 shrink-0" />
           <span>
             {portal.pendingCount} payment{portal.pendingCount > 1 ? "s" : ""} waiting for verification — usually done within a few hours.
@@ -102,8 +98,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         </p>
       )}
 
-      {/* Sections */}
-      <nav aria-label="Account sections" className="mt-5 grid grid-cols-3 gap-1 rounded-full bg-foreground/[0.06] p-1">
+      {/* Library: notes, purchases, devices */}
+      <div id="library" className="scroll-mt-24" />
+      <SectionLabel>{tab === "notes" ? "My notes" : tab === "purchases" ? "Purchases" : "Devices"}</SectionLabel>
+      <nav aria-label="Account sections" className="mt-3 grid max-w-3xl grid-cols-3 gap-1 rounded-full bg-foreground/[0.06] p-1">
         {TABS.map((t) => (
           <Link
             key={t.id}
@@ -122,9 +120,20 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
       <div className="mt-5">
         {tab === "notes" && <NotesTab groups={portal.groups} expired={portal.expired} />}
-        {tab === "purchases" && <PurchasesTab purchases={portal.purchases} />}
-        {tab === "devices" && <DevicesTab devices={devices} error={error} />}
+        {tab === "purchases" && <div className="max-w-3xl"><PurchasesTab purchases={portal.purchases} /></div>}
+        {tab === "devices" && <div className="max-w-3xl"><DevicesTab devices={devices} error={error} /></div>}
       </div>
+
+
+      <div className="mt-10">
+        <SubjectsCard rows={subjects} error={subjectError} limit={subjectLimit} />
+      </div>
+
+      <SectionLabel>Study tools</SectionLabel>
+      <ToolTiles />
+
+      <SectionLabel>Overview</SectionLabel>
+      <OverviewTiles notes={portal.ownedCount} totalSeconds={totalSeconds} activeDays={activeDays} subjects={subjects?.length ?? 0} />
 
       <a
         href={`https://wa.me/${HELP_WHATSAPP}`}
@@ -136,15 +145,7 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
         Need help? Message us on WhatsApp
       </a>
     </div>
-  );
-}
-
-function Stat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-[20px] bg-surface-muted px-3.5 py-3 sm:px-5 sm:py-4">
-      <dt className="text-xs font-medium text-muted">{label}</dt>
-      <dd className="mt-0.5 text-[1.35rem] font-semibold leading-tight tracking-[-0.02em] sm:text-[1.65rem]">{value}</dd>
-    </div>
+    </AccountShell>
   );
 }
 
@@ -179,7 +180,7 @@ function NotesTab({ groups, expired }: { groups: Awaited<ReturnType<typeof getPo
       {groups.map((g) => (
         <section key={g.programmeSlug} aria-label={g.programme}>
           <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.07em] text-muted">{g.programme}</h2>
-          <ul className="mt-2 grid gap-2.5 sm:grid-cols-2">
+          <ul className="mt-2 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
             {g.notes.map((n) => (
               <li key={n.key}>
                 <Link
@@ -211,7 +212,7 @@ function NotesTab({ groups, expired }: { groups: Awaited<ReturnType<typeof getPo
       {expired.length > 0 && (
         <section aria-label="Expired notes">
           <h2 className="px-1 text-xs font-semibold uppercase tracking-[0.07em] text-muted">Expired</h2>
-          <ul className="mt-2 grid gap-2.5 sm:grid-cols-2">
+          <ul className="mt-2 grid gap-2.5 sm:grid-cols-2 xl:grid-cols-3">
             {expired.map((n) => (
               <li key={n.key}>
                 <Link
