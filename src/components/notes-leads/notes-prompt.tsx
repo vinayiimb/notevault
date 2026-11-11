@@ -14,6 +14,8 @@ import { NotesPurchase } from "./notes-purchase";
 
 // "Said no (or closed it)": leave this visitor alone for the rest of the visit.
 const OFF_KEY = "nv_notes_prompt_off";
+// "No" snoozes the pop-up for a few minutes only, so the next course / semester / subject they pick asks again.
+const SNOOZE_MS = 3 * 60 * 1000;
 // /papers: the student just opened a paper. Let it start loading first.
 const PAPER_DELAY_MS = 1400;
 // PYQ pages reached from Google or a link: a short beat (asking later lost people who leave within seconds).
@@ -40,7 +42,8 @@ function markAsked() {
 
 function promptOff() {
   try {
-    return sessionStorage.getItem(OFF_KEY) === "1";
+    const t = Number(sessionStorage.getItem(OFF_KEY));
+    return t > 0 && Date.now() - t < SNOOZE_MS;
   } catch {
     return false;
   }
@@ -73,6 +76,7 @@ export function NotesPrompt({
   subjects,
   courses,
   auto = true,
+  pickKey,
 }: {
   source: "paper-pdf" | "pyq-page";
   /** /papers browser only: the paper that is open. The prompt waits for one. */
@@ -86,6 +90,8 @@ export function NotesPrompt({
   courses?: LeadCourse[];
   /** false: never pops up by itself; it only opens when a promo card is tapped. */
   auto?: boolean;
+  /** /papers: changes whenever the student picks a course, semester or subject. Each pick asks at once (no delay). */
+  pickKey?: string | null;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -137,6 +143,22 @@ export function NotesPrompt({
     };
   }, [auto, landing, paperId, known]);
 
+  // Course / semester / subject just picked: ask right away (the lead is warmest at the click).
+  const firstPick = useRef(true);
+  useEffect(() => {
+    if (!pickKey) return;
+    if (firstPick.current) {
+      firstPick.current = false;
+      if (!pickKey.replace(/\|/g, "")) return; // nothing picked yet
+    }
+    if (promptOff() || (known && askedRecently())) return;
+    const t = setTimeout(() => { // next tick = "instantly" to the eye, and keeps setState out of the effect body
+      if (known) markAsked();
+      setStep((s) => s ?? "ask");
+    }, 0);
+    return () => clearTimeout(t);
+  }, [pickKey, known]);
+
   // A promo card on the page was tapped: open straight at the form (they have already said yes).
   useEffect(() => {
     const open = (e: Event) => {
@@ -186,7 +208,7 @@ export function NotesPrompt({
   // `nudge`: they said Yes but are leaving without a number or the chat, so the floating "Chat now" greets them.
   function dismiss(nudge = true) {
     try {
-      sessionStorage.setItem(OFF_KEY, "1");
+      sessionStorage.setItem(OFF_KEY, String(Date.now()));
     } catch {}
     if (nudge && step === "form") {
       window.dispatchEvent(new CustomEvent(CHAT_NUDGE_EVENT, { detail: { href: chatHref, what, ...intentRef.current } }));

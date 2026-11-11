@@ -606,6 +606,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
             <NotesPrompt
               source="pyq-page"
               auto={false}
+              pickKey={`${course ?? ""}|${semester ?? ""}`}
               courses={(index ?? []).map((c) => ({ slug: c.slug, name: c.course }))}
               course={course ? { name: course } : undefined}
               semester={semester}
@@ -715,7 +716,7 @@ function PaperPanel({
     <>
       {/* The pop-up waits for a paper to open; a subject reached by search or a link opens none, so it also starts once a
           subject is chosen (the id only has to be non-empty to arm the timer). */}
-      <NotesPrompt source="paper-pdf" paperId={openPaper?.id ?? `subject:${subjectLabel}`} course={{ name: course }} subject={subjectLabel} semester={openPaper?.semester ?? null} />
+      <NotesPrompt source="paper-pdf" paperId={openPaper?.id ?? `subject:${subjectLabel}`} course={{ name: course }} subject={subjectLabel} semester={openPaper?.semester ?? null} pickKey={`${course}|${subjectLabel}`} />
       <div className="flex flex-wrap items-start justify-between gap-4 rounded-2xl border border-border bg-surface p-4 shadow-2xs sm:p-5">
         <div className="min-w-0 flex-1 basis-full sm:basis-0">
           <span className="inline-block rounded-md bg-accent-soft px-2.5 py-0.5 text-[11px] font-bold uppercase tracking-wider text-accent">
