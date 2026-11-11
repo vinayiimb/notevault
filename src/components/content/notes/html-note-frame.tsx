@@ -5,7 +5,7 @@
 // #jump links behave as they were designed to.
 export function HtmlNoteFrame({ html, title }: { html: string; title: string }) {
   return (
-    <div className="mx-auto w-full max-w-[69rem] px-0 sm:px-6">
+    <div className="mx-auto w-full px-0 sm:w-[97%] sm:max-w-[2000px]">
       <iframe
         title={title}
         srcDoc={html}
