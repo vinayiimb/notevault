@@ -29,12 +29,13 @@ export function leadAlert(l: { phone: string; programme: string; semester: numbe
 }
 
 /** A visitor showed interest but has not left a number. They can only be reached through the live chat. */
-export function intentAlert(event: "yes" | "chat", i: { programme: string; subject: string; semester: number | null }) {
+export function intentAlert(event: "yes" | "chat", i: { programme: string; subject: string; semester: number | null; source?: string }) {
   const what = [i.subject, i.programme].filter(Boolean).join(" · ") || "notes";
+  const fromPopup = event === "chat" && i.source !== "chat-button"; // said No to the pop-up and the chat opened instead
   return [
-    event === "chat" ? "💬 Opened the live chat" : "👀 Clicked “Yes, I need notes”",
+    event === "yes" ? "💎 Clicked “Yes, I need notes”" : fromPopup ? "⭐ Said no to the pop-up, chat opened" : "💬 Opened the live chat",
     `${what}${i.semester ? ` · Sem ${i.semester}` : ""}`,
-    event === "chat" ? "They may write any moment: keep the chat open." : "No number yet. If they open the chat, answer there.",
+    event === "yes" ? "WhatsApp opened for them: if they tap Send, the message arrives on your number." : "They may write any moment: keep the chat open.",
     "",
     `All leads: ${SITE}/admin/leads`,
   ].join("\n");

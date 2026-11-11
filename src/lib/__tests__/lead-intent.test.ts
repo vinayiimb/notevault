@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { intentScore, parseIntent, validVisitorId } from "../lead-intent";
+import { intentScore, isSeedMessage, parseIntent, seedText, validVisitorId } from "../lead-intent";
+import { notesAskText, notesWhatsAppLink } from "../note-leads";
 import { intentAlert } from "../owner-messages";
 
 const vid = "a1b2c3d4-e5f6-4789-a012-b3c4d5e6f708";
@@ -33,6 +34,23 @@ test("validVisitorId only passes well-formed ids", () => {
 });
 
 test("intent alerts say what happened and that there is no number", () => {
-  assert.match(intentAlert("yes", { programme: "B.Com", subject: "Management", semester: 1 }), /Yes, I need notes[\s\S]*No number yet/);
-  assert.match(intentAlert("chat", { programme: "", subject: "", semester: null }), /live chat/);
+  assert.match(intentAlert("yes", { programme: "B.Com", subject: "Management", semester: 1 }), /💎[\s\S]*Yes, I need notes[\s\S]*WhatsApp opened/);
+  assert.match(intentAlert("chat", { programme: "", subject: "", semester: null, source: "chat-button" }), /live chat/);
+  assert.match(intentAlert("chat", { programme: "", subject: "", semester: null, source: "pyq-page" }), /⭐/);
+});
+
+test("team-side seeds carry 💎 / ⭐ and are recognised so the visitor never sees them", () => {
+  const i = { programme: "B.Com", subject: "Management", semester: 1 };
+  assert.ok(seedText("yes", i).startsWith("💎") && seedText("no", i).startsWith("⭐"));
+  assert.ok(isSeedMessage(seedText("yes", i)) && isSeedMessage(seedText("no", i)));
+  assert.equal(isSeedMessage("Hi, I need notes"), false);
+});
+
+test("the WhatsApp message is pre-filled with subject, course and semester", () => {
+  assert.equal(notesAskText({ subject: "Microeconomics", programme: "B.A. (Hons) Economics", semester: 3 }), "Microeconomics (B.A. (Hons) Economics), Semester 3");
+  assert.equal(notesAskText({ programme: "B.Com", semester: 2 }), "B.Com, Semester 2");
+  assert.equal(notesAskText({}), "my DU subject");
+  const url = new URL(notesWhatsAppLink({ subject: "Microeconomics", programme: "B.A. (Hons) Economics", semester: 3 }));
+  assert.equal(url.pathname, "/919376180015");
+  assert.equal(url.searchParams.get("text"), "💎 Hi! I would like the notes for Microeconomics (B.A. (Hons) Economics), Semester 3. Please share the details.");
 });

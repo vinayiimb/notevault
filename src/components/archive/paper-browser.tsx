@@ -606,7 +606,7 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
             <NotesPrompt
               source="pyq-page"
               auto={false}
-              pickKey={`${course ?? ""}|${semester ?? ""}`}
+              pickKey={course && semester ? `${course}|${semester}` : null} /* asks once both are chosen */
               courses={(index ?? []).map((c) => ({ slug: c.slug, name: c.course }))}
               course={course ? { name: course } : undefined}
               semester={semester}

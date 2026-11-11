@@ -3,7 +3,7 @@ import { CHAT_ORIGIN } from "@/lib/chat-link";
 // Funnel tracking for the notes pop-up: who clicked "Yes", who opened the live chat, who chose WhatsApp, even if
 // they never leave a number. Client-safe (no server imports); the route and the admin page reuse parseIntent/score.
 
-/** Fired on window when someone clicked Yes but closed the pop-up without leaving a number or opening the chat. */
+/** Fired on window when someone said No (or closed the pop-up): the chat opens by itself with a ⭐ greeting. */
 export const CHAT_NUDGE_EVENT = "nv:chat-nudge";
 
 export const INTENT_EVENTS = ["yes", "chat", "wa"] as const;
@@ -36,6 +36,46 @@ export function parseIntent(body: unknown): IntentInput | null {
   const sem = Number(b.semester);
   const semester = Number.isInteger(sem) && sem >= 1 && sem <= 8 ? sem : null;
   return { vid, event, source, programme, subject, semester, key: `${source}|${programme}|${subject}`.toLowerCase().slice(0, 300) };
+}
+
+/**
+ * First line the team sees in the chat inbox. 💎 = said Yes (WhatsApp opened), ⭐ = said No / closed the pop-up and
+ * the chat opened instead. The visitor's own panel hides these (see `isSeedMessage`).
+ */
+export function seedText(tone: "yes" | "no", i: { programme: string; subject: string; semester: number | null }) {
+  const what = [i.subject, i.programme].filter(Boolean).join(", ") || "notes";
+  const sem = i.semester ? `, Semester ${i.semester}` : "";
+  return tone === "yes"
+    ? `💎 Hi! I need notes for ${what}${sem}. (clicked Yes on the website)`
+    : `⭐ Hi! I need notes for ${what}${sem}. (opened the chat from the website)`;
+}
+
+/** True for the two messages above, so the visitor's chat panel doesn't show them back to the visitor. */
+export const isSeedMessage = (body: string) => /\((clicked Yes on the website|opened the chat from the website)\)\s*$/i.test(body);
+
+const WA_KEY = "nv_wa_opened_at";
+const WA_AWAY_MIN_MS = 4000; // a page that comes back sooner than this was never really left
+const WA_WINDOW_MS = 30 * 60 * 1000;
+
+/** They tapped Yes and WhatsApp opened: remember it, so the chat can open when they come back to this page. */
+export function markWhatsAppOpened() {
+  try {
+    sessionStorage.setItem(WA_KEY, String(Date.now()));
+  } catch {}
+}
+
+/** True once, when this visitor returns to the page after WhatsApp was opened (within half an hour). */
+export function takeWhatsAppReturn(): boolean {
+  try {
+    const t = Number(sessionStorage.getItem(WA_KEY));
+    if (!t) return false;
+    const age = Date.now() - t;
+    if (age < WA_AWAY_MIN_MS) return false;
+    sessionStorage.removeItem(WA_KEY);
+    return age < WA_WINDOW_MS;
+  } catch {
+    return false;
+  }
 }
 
 /** Priority for the admin: opened the chat / chose WhatsApp beats a bare "Yes". */

@@ -2,13 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
-import { ChatCircleDots, X } from "@phosphor-icons/react";
+import { ChatCircleDots } from "@phosphor-icons/react";
 import { chatDraftFor, chatLink } from "@/lib/chat-link";
-import { CHAT_NUDGE_EVENT, getChatLink, trackIntent } from "@/lib/lead-intent";
+import { CHAT_NUDGE_EVENT, getChatLink, takeWhatsAppReturn, trackIntent } from "@/lib/lead-intent";
 import { ChatPanel } from "@/components/chat-panel";
 
-type Nudge = { href: string; what: string; source: string; programme?: string; subject?: string; semester?: number | null };
-const REPLY_POLL_MS = 45_000;
+type Nudge = { href: string; what: string; star?: boolean; source: string; programme?: string; subject?: string; semester?: number | null };
+const REPLY_POLL_MS = 15_000; // a team reply opens the chat within this long
 
 /**
  * Floating "Chat now" button, bottom-right on every public page (replaces the old WhatsApp-group icon).
@@ -16,17 +16,16 @@ const REPLY_POLL_MS = 45_000;
  * Position lives in `.wa-fab` (globals.css) so it steps above the notes Ask-AI launcher and the dashboard's
  * mobile bottom nav without either component knowing.
  *
- * The chat opens in the page (`ChatPanel`), never in another tab. When someone said "Yes, I need notes" in the pop-up
- * but closed it without a number, it opens by itself (they are the leads that would otherwise be lost).
+ * The chat opens in the page (`ChatPanel`), never in another tab. It opens by itself (a) when someone says No to the
+ * notes pop-up (⭐ greeting) and (b) when the team writes to a visitor who minimised it, so the reply is not missed.
  */
 export function ChatNowFab() {
   const pathname = usePathname();
   const href = useMemo(() => chatLink(chatDraftFor(pathname)), [pathname]);
   const [open, setOpen] = useState(false);
-  const [what, setWhat] = useState("");
-  // The team wrote to this visitor (they said Yes, left, and came back): tell them, with the message, on any page.
-  const [reply, setReply] = useState<{ n: number; body: string } | null>(null);
-  const [replyHidden, setReplyHidden] = useState(false);
+  const [greeting, setGreeting] = useState<"star" | "back" | undefined>();
+  // The team wrote to this visitor and the chat could not open yet (a pop-up is in the way): shown as a badge.
+  const [reply, setReply] = useState<{ n: number } | null>(null);
   const openRef = useRef(false);
   useEffect(() => {
     openRef.current = open;
@@ -35,7 +34,7 @@ export function ChatNowFab() {
   useEffect(() => {
     const on = (e: Event) => {
       const n = (e as CustomEvent<Nudge>).detail;
-      setWhat(n.what);
+      setGreeting(n.star ? "star" : undefined);
       setOpen(true);
       trackIntent("chat", n);
     };
@@ -49,8 +48,15 @@ export function ChatNowFab() {
       const link = getChatLink();
       if (!link || document.visibilityState !== "visible" || openRef.current) return;
       try {
-        const d = (await (await fetch(`/api/lead-chat?t=${link.slice(-48)}`, { cache: "no-store" })).json()) as { unread?: number; last?: { body?: string } | null };
-        if (alive) setReply(d.unread && d.unread > 0 ? { n: d.unread, body: d.last?.body ?? "" } : null);
+        const d = (await (await fetch(`/api/lead-chat?t=${link.slice(-48)}`, { cache: "no-store" })).json()) as { unread?: number };
+        if (!alive) return;
+        const n = d.unread ?? 0;
+        // The team replied while the chat was minimised: open it in full (not behind an open pop-up or payment window).
+        if (n > 0 && !document.querySelector("dialog[open]")) {
+          setGreeting(undefined);
+          setOpen(true);
+          setReply(null);
+        } else setReply(n > 0 ? { n } : null);
       } catch {}
     };
     void check();
@@ -63,36 +69,35 @@ export function ChatNowFab() {
     };
   }, []);
 
+  // They tapped Yes, WhatsApp opened, and they are back on this page: the chat opens so they can carry on here too.
+  useEffect(() => {
+    const back = () => {
+      if (document.visibilityState === "visible" && takeWhatsAppReturn()) {
+        setGreeting("back");
+        setOpen(true);
+      }
+    };
+    document.addEventListener("visibilitychange", back);
+    window.addEventListener("pageshow", back);
+    back(); // a phone may have dropped the page while WhatsApp was in front
+    return () => {
+      document.removeEventListener("visibilitychange", back);
+      window.removeEventListener("pageshow", back);
+    };
+  }, []);
+
   if (pathname.startsWith("/chat-pay")) return null; // the student is already paying; don't point them elsewhere
   const subjectOf = chatDraftFor(pathname).replace(/^Hi! I need notes( for )?/, "");
-  const openPanel = (label: string) => {
-    setWhat(label);
+  const openPanel = () => {
+    setGreeting(undefined);
     setOpen(true);
-    setReplyHidden(true);
   };
-  if (open) return <ChatPanel what={what || subjectOf || "your DU subject"} fallbackHref={href} onMinimise={() => {
+  if (open) return <ChatPanel greeting={greeting} fallbackHref={href} onMinimise={() => {
     setOpen(false);
     setReply(null); // the panel marked the team's replies as seen
   }} />;
   return (
     <div className="wa-fab fixed right-4 z-40 flex flex-col items-end gap-2.5 print:hidden sm:right-5">
-      {reply && !replyHidden && (
-        <div role="status" className="relative max-w-[16rem] rounded-2xl bg-surface p-3.5 pr-9 text-left shadow-[0_12px_32px_-8px_rgba(0,0,0,0.35)] ring-1 ring-brand/40">
-          <button type="button" onClick={() => setReplyHidden(true)} aria-label="Dismiss" className="absolute right-2 top-2 flex size-6 items-center justify-center rounded-full text-muted hover:text-foreground">
-            <X size={12} weight="bold" />
-          </button>
-          <p className="text-[14px] font-semibold leading-snug text-foreground">We replied to you 💬</p>
-          {reply.body && <p className="mt-0.5 line-clamp-3 text-[13px] leading-snug text-muted">“{reply.body}”</p>}
-          <button
-            type="button"
-            onClick={() => openPanel(subjectOf)}
-            className="mt-2.5 inline-flex h-9 items-center gap-1.5 rounded-full bg-brand px-4 text-[14px] font-semibold text-brand-foreground"
-          >
-            <ChatCircleDots size={16} weight="fill" />
-            Open chat
-          </button>
-        </div>
-      )}
       <a
         href={href}
         target="_blank"
@@ -100,7 +105,7 @@ export function ChatNowFab() {
         aria-label="Chat with us now"
         onClick={(e) => {
           e.preventDefault(); // opens the chat in the page; the href stays for crawlers and "open in new tab"
-          openPanel(subjectOf);
+          openPanel();
           const w = window as typeof window & { gtag?: (...a: unknown[]) => void };
           w.gtag?.("event", "chat_now_click", { page_path: location.pathname, placement: "floating" });
           trackIntent("chat", { source: "chat-button", subject: subjectOf });

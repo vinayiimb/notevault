@@ -65,3 +65,22 @@ export function leadWhatsAppText(l: { subject: string; programme: string; semest
     ? `Hi! Thanks for asking for ${what} notes on DU PYQ Online. Sending them to you now. Which exam are you preparing for?`
     : `Hi! You asked for ${what} notes on DU PYQ Online. I'm preparing these now and will send them to you here as soon as they're ready.`;
 }
+
+/** The owner's WhatsApp (same number as the site's Help links). */
+export const OWNER_WHATSAPP = "919376180015";
+
+type NotesAsk = { subject?: string | null; programme?: string | null; semester?: number | null };
+
+/** What a student asks for, in a few words: "Microeconomics (B.A. (Hons) Economics), Semester 3". */
+export function notesAskText(a: NotesAsk) {
+  const sem = a.semester ? `Semester ${a.semester}` : "";
+  const course = [a.programme, sem].filter(Boolean);
+  if (a.subject && a.programme) return `${a.subject} (${a.programme})${sem ? `, ${sem}` : ""}`;
+  return [a.subject, ...course].filter(Boolean).join(", ") || "my DU subject";
+}
+
+/** 💎 = clicked "Yes": the message that opens WhatsApp already filled in, so the student only taps Send. */
+export function notesWhatsAppLink(a: NotesAsk) {
+  const text = `💎 Hi! I would like the notes for ${notesAskText(a)}. Please share the details.`;
+  return `https://wa.me/${OWNER_WHATSAPP}?text=${encodeURIComponent(text)}`;
+}

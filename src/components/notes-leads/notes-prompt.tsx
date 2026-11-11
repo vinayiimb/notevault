@@ -5,17 +5,19 @@ import { BookOpenText, X } from "@phosphor-icons/react";
 import { slugify } from "@/lib/utils";
 import { itemKey } from "@/lib/paid-notes-pricing";
 import type { LeadResult } from "@/lib/note-lead-actions";
-import { parseLeadSemester, type LeadCourse, type LeadSubject } from "@/lib/note-leads";
+import { notesWhatsAppLink, parseLeadSemester, type LeadCourse, type LeadSubject } from "@/lib/note-leads";
 import { OPEN_NOTES_EVENT } from "@/lib/notes-promo";
 import { chatLink } from "@/lib/chat-link";
-import { CHAT_NUDGE_EVENT, trackIntent } from "@/lib/lead-intent";
+import { CHAT_NUDGE_EVENT, markWhatsAppOpened, trackIntent } from "@/lib/lead-intent";
 import { LeadForm, useKnownLead } from "./lead-form";
 import { NotesPurchase } from "./notes-purchase";
 
-// "Said no (or closed it)": leave this visitor alone for the rest of the visit.
+// Value = the time until which the pop-up stays quiet (sessionStorage, so it ends with the visit).
 const OFF_KEY = "nv_notes_prompt_off";
 // "No" snoozes the pop-up for a few minutes only, so the next course / semester / subject they pick asks again.
 const SNOOZE_MS = 3 * 60 * 1000;
+// "Yes" opened WhatsApp for them: asking again on the next pick would only annoy.
+const YES_QUIET_MS = 12 * 60 * 60 * 1000;
 // /papers: the student just opened a paper. Let it start loading first.
 const PAPER_DELAY_MS = 1400;
 // PYQ pages reached from Google or a link: a short beat (asking later lost people who leave within seconds).
@@ -40,10 +42,15 @@ function markAsked() {
   } catch {}
 }
 
+function quietFor(ms: number) {
+  try {
+    sessionStorage.setItem(OFF_KEY, String(Date.now() + ms));
+  } catch {}
+}
+
 function promptOff() {
   try {
-    const t = Number(sessionStorage.getItem(OFF_KEY));
-    return t > 0 && Date.now() - t < SNOOZE_MS;
+    return Date.now() < Number(sessionStorage.getItem(OFF_KEY));
   } catch {
     return false;
   }
@@ -64,8 +71,9 @@ const TILE = "bg-gradient-to-b from-[#3fa0ff] to-[#0071e3] text-white shadow-[0_
  *   What the form asks depends on what the page knows: subject (phone only), course (semester, an optional
  *   subject, phone) or nothing (course too).
  *
- * No / the X / Esc: closed and quiet for the rest of the visit. Someone who already left a number is asked again
- * (they are the likeliest buyers), at most once a day.
+ * Yes: WhatsApp opens with a message already written (subject, course, semester, 💎). No / the X / Esc / the
+ * backdrop: the on-site chat opens instead, greeting with ⭐ (the pop-up stays quiet for a few minutes). Someone who
+ * already left a number is asked again (they are the likeliest buyers), at most once a day.
  */
 export function NotesPrompt({
   source,
@@ -114,7 +122,19 @@ export function NotesPrompt({
   useEffect(() => {
     intentRef.current = intentCtx; // the window-level promo listener below reads the latest values
   });
+  const waHref = notesWhatsAppLink({ subject, programme: course?.name, semester: semNumber });
   const chatHref = chatLink(`Hi! I need notes for ${what}${subject && course ? ` (${course.name})` : ""}${semNumber ? `, Semester ${semNumber}` : ""}`);
+
+  // Testing aid: opening any page with ?popup=reset forgets "said Yes / said No / already asked today" on this device.
+  // (First effect on purpose: the ones below read that state.)
+  useEffect(() => {
+    try {
+      if (new URLSearchParams(location.search).get("popup") === "reset") {
+        sessionStorage.removeItem(OFF_KEY);
+        localStorage.removeItem(KNOWN_KEY);
+      }
+    } catch {}
+  }, []);
 
   useEffect(() => {
     if (!auto || (!landing && !paperId)) return;
@@ -159,16 +179,19 @@ export function NotesPrompt({
     return () => clearTimeout(t);
   }, [pickKey, known]);
 
-  // A promo card on the page was tapped: open straight at the form (they have already said yes).
+  // A promo card ("Get the notes") was tapped: that is a Yes. WhatsApp opens with the message already written
+  // (still inside the tap, so no pop-up blocker objects), and the team is told.
+  const waRef = useRef(waHref);
   useEffect(() => {
-    const open = (e: Event) => {
-      const d = (e as CustomEvent<{ handled?: boolean } | undefined>).detail;
-      if (d && typeof d === "object") d.handled = true; // tells the chat panel this page has the number form
-      setStep((s) => {
-        if (s === "buy") return s;
-        if (s === null || s === "ask") trackIntent("yes", intentRef.current);
-        return "form";
-      });
+    waRef.current = waHref;
+  });
+  useEffect(() => {
+    const open = () => {
+      trackIntent("yes", intentRef.current);
+      window.open(waRef.current, "_blank", "noopener,noreferrer");
+      markWhatsAppOpened();
+      quietFor(YES_QUIET_MS);
+      setStep(null);
     };
     window.addEventListener(OPEN_NOTES_EVENT, open);
     return () => window.removeEventListener(OPEN_NOTES_EVENT, open);
@@ -205,13 +228,11 @@ export function NotesPrompt({
       .catch(() => setAvailable(new Set()));
   }, [step, scope, available]);
 
-  // `nudge`: they said Yes but are leaving without a number or the chat, so the floating "Chat now" greets them.
+  // `nudge`: they said No (or closed it) before leaving a number, so the chat opens by itself with a ⭐ greeting.
   function dismiss(nudge = true) {
-    try {
-      sessionStorage.setItem(OFF_KEY, String(Date.now()));
-    } catch {}
-    if (nudge && step === "form") {
-      window.dispatchEvent(new CustomEvent(CHAT_NUDGE_EVENT, { detail: { href: chatHref, what, ...intentRef.current } }));
+    quietFor(SNOOZE_MS);
+    if (nudge && (step === "ask" || step === "form")) {
+      window.dispatchEvent(new CustomEvent(CHAT_NUDGE_EVENT, { detail: { href: chatHref, what, star: true, ...intentRef.current } }));
     }
     setStep(null);
   }
@@ -275,27 +296,29 @@ export function NotesPrompt({
                 {known ? "Still need" : "Need"} notes for {what}?
               </h2>
               <p className="mx-auto mt-2 max-w-[19rem] text-[15px] leading-snug text-muted">
-                Solved answers, the most repeated questions and exam tips, sent to your WhatsApp.
+                Solved answers, the most repeated questions and exam tips. Tap Yes and we will message you on WhatsApp.
               </p>
               <div className="mt-6 flex flex-col gap-2.5">
-                <button
-                  type="button"
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onClick={() => {
-                    trackIntent("yes", intentCtx); // also puts them in the team's chat inbox right now
-                    // Yes opens the chat in the page (the team can answer at once). The number form is one tap away inside it.
-                    dismiss(false);
-                    window.dispatchEvent(new CustomEvent(CHAT_NUDGE_EVENT, { detail: { what, ...intentCtx } }));
+                    trackIntent("yes", intentCtx); // tells the team now, and puts them in the chat inbox with a 💎 line
+                    markWhatsAppOpened(); // the chat opens when they come back to this page
+                    quietFor(YES_QUIET_MS);
+                    setStep(null);
                   }}
                   className="inline-flex h-[52px] items-center justify-center rounded-full bg-brand px-7 text-[17px] font-semibold text-brand-foreground transition duration-300 ease-[var(--ease-apple)] hover:bg-brand-hover active:scale-[0.985]"
                 >
-                  Yes, I need notes
-                </button>
+                  Yes, get the notes
+                </a>
                 <button
                   type="button"
-                  onClick={() => dismiss(false)}
+                  onClick={() => dismiss()}
                   className="inline-flex h-[52px] items-center justify-center rounded-full bg-surface-muted px-7 text-[17px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
                 >
-                  No, thanks
+                  Not now
                 </button>
               </div>
             </div>

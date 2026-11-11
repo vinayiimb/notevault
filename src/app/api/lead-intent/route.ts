@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { parseIntent } from "@/lib/lead-intent";
+import { parseIntent, seedText } from "@/lib/lead-intent";
 import { notifyOwner } from "@/lib/owner-notify";
 import { intentAlert } from "@/lib/owner-messages";
 import { seedVisitorChat } from "@/lib/pingchat";
@@ -35,10 +35,12 @@ export async function POST(req: Request) {
   const i = parseIntent(body);
   if (!i) return ok;
 
+  let existed = false;
   let first = true; // if the record can't be read or written, still treat it as new: the alert matters more than the record
   try {
     const now = new Date();
     const existing = await prisma.leadIntent.findUnique({ where: { visitorId_key: { visitorId: i.vid, key: i.key } } });
+    existed = !!existing;
     first = i.event === "yes" ? !existing : i.event === "chat" ? !existing?.chatAt : !existing?.waAt;
     const stamp = i.event === "chat" ? { chatAt: existing?.chatAt ?? now } : i.event === "wa" ? { waAt: existing?.waAt ?? now } : {};
     await prisma.leadIntent.upsert({
@@ -51,13 +53,13 @@ export async function POST(req: Request) {
   }
   // "wa" is shown in the admin only: the lead form's own alert already tells the owner when a number arrives.
   let chat: string | null = null;
-  if (first && i.event !== "wa" && !over(alerts, ip, 60 * 60 * 1000, MAX_ALERTS_PER_HOUR)) notifyOwner(intentAlert(i.event, i));
-  // "Yes": put this visitor in the chat inbox now, so the team can say hi even if they close the tab. The reply is
-  // found through the private link the browser keeps (see chat-now-fab). Not tied to the alert limit above: many
-  // students on one college Wi-Fi share an IP, and each of them must still land in the inbox.
-  if (first && i.event === "yes") {
-    const what = [i.subject, i.programme].filter(Boolean).join(", ") || "notes";
-    chat = await seedVisitorChat(i.vid, `Hi! I need notes for ${what}${i.semester ? `, Semester ${i.semester}` : ""}. (clicked Yes on the website)`);
-  }
+  if (first && i.event !== "wa" && !over(alerts, ip, 60 * 60 * 1000, MAX_ALERTS_PER_HOUR)) notifyOwner(intentAlert(i.event as "yes" | "chat", i));
+  // Put this visitor in the chat inbox now, so the team can say hi even if they close the tab. The reply is found
+  // through the private link the browser keeps (see chat-now-fab). Not tied to the alert limit above: many students on
+  // one college Wi-Fi share an IP, and each of them must still land in the inbox.
+  // 💎 = clicked Yes (WhatsApp opens for them). ⭐ = said No to the pop-up and the chat opened instead; the plain
+  // "Chat now" button seeds nothing, and nobody who already said Yes gets a second, lower-tier line.
+  const tone = i.event === "yes" ? "yes" : i.event === "chat" && i.source !== "chat-button" && !existed ? "no" : null;
+  if (first && tone) chat = await seedVisitorChat(i.vid, seedText(tone, i));
   return NextResponse.json({ ok: true, chat });
 }
