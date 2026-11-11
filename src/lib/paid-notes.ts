@@ -4,8 +4,8 @@ import jwt from "jsonwebtoken";
 import { cookies } from "next/headers";
 import { prisma } from "@/lib/prisma";
 import { getSession, jwtSecret } from "@/lib/auth";
-import { findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
-import { slugify } from "@/lib/utils";
+import { findCanonicalSubject, GENERAL_PROGRAMME } from "@/lib/canonical-subject-notes-data";
+import { buildNotesCatalog, type NotesCatalogProgramme } from "@/lib/notes-catalog";
 import { isAccessActive, itemKey } from "@/lib/paid-notes-pricing";
 import { DEVICE_IDLE_DAYS } from "@/lib/student-device-policy";
 import raw from "../../public/data/canonical-programmes.json";
@@ -158,34 +158,16 @@ export const EXTRA_ITEMS = [
 export const isExtraItem = (programmeSlug: string, subjectSlug: string) =>
   EXTRA_ITEMS.some((e) => e.programmeSlug === programmeSlug && e.subjectSlug === subjectSlug);
 
-export type NotesCatalogProgramme = {
-  slug: string;
-  name: string;
-  subjects: { slug: string; name: string; semester: number | null }[];
-};
+export type { NotesCatalogProgramme } from "@/lib/notes-catalog";
 
 // Every programme/subject that actually has published notes — what the
-// checkout lets a student buy.
+// checkout lets a student buy and what the admin "add access" picker lists.
 export async function getNotesCatalog(): Promise<NotesCatalogProgramme[]> {
   const notes = await prisma.canonicalSubjectNote.findMany({
     where: { NOT: { content: "" } },
-    select: { programmeSlug: true, subjectSlug: true, semester: true },
+    select: { programmeSlug: true, subjectSlug: true, subject: true, semester: true },
   });
-  const programmes = Object.values(raw as Record<string, { name: string; subjects: string[] }>);
-  const bySlug = new Map(programmes.map((p) => [slugify(p.name), p]));
-
-  const result = new Map<string, NotesCatalogProgramme>();
-  for (const n of notes) {
-    const programme = bySlug.get(n.programmeSlug);
-    const subjectName = programme?.subjects.find((s) => slugify(s) === n.subjectSlug);
-    if (!programme || !subjectName) continue;
-    const entry = result.get(n.programmeSlug) ?? { slug: n.programmeSlug, name: programme.name, subjects: [] };
-    entry.subjects.push({ slug: n.subjectSlug, name: subjectName, semester: n.semester });
-    result.set(n.programmeSlug, entry);
-  }
-  return [...result.values()]
-    .map((p) => ({ ...p, subjects: p.subjects.sort((a, b) => (a.semester ?? 99) - (b.semester ?? 99) || a.name.localeCompare(b.name)) }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  return buildNotesCatalog(notes, Object.values(raw as Record<string, { name: string; subjects: string[] }>), GENERAL_PROGRAMME);
 }
 
 // "bcom-p/risk-management" -> "Risk Management (B.Com (P))" for admin and
