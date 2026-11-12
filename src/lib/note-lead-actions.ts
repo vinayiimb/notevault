@@ -91,8 +91,15 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
       };
     }
   }
+  // The pop-up's "No" form asks for the number only: course / subject / semester are whatever the page knew.
+  const phoneOnly = formData.get("phoneOnly") === "1" && isPaperSource(source);
+  if (phoneOnly && !target) {
+    const programmeName = typed("programmeName") || "Not specified";
+    const subjectName = typed("subjectName") || ANY_SUBJECT;
+    target = { programmeSlug: slugify(programmeName), programmeName, subjectSlug: typed("subjectName") ? slugify(subjectName) : ANY_SUBJECT_SLUG, subjectName };
+  }
   if (!target) return { error: anySubject ? "Pick your course." : "Pick your course and subject." };
-  if (!semester) return { error: "Pick your semester." };
+  if (!semester && !phoneOnly) return { error: "Pick your semester." };
   if (!phone) return { error: "Enter a valid 10-digit mobile number." };
 
   const ip = (await headers()).get("x-forwarded-for")?.split(",").pop()?.trim() ?? "local";
@@ -116,15 +123,15 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
     });
     if (duplicate) {
       // Asking again within a week is a stronger signal, so it must not pass in silence.
-      notifyOwner(returningLeadAlert({ phone, programme: programmeName, semester, subject: subjectName, hasNotes }));
+      notifyOwner(returningLeadAlert({ phone, programme: programmeName, semester: semester ?? null, subject: subjectName, hasNotes }));
     } else {
       await prisma.noteLead.create({
         data: {
-          phone, programmeSlug, programme: programmeName, semester, subjectSlug, subject: subjectName, hasNotes, source,
+          phone, programmeSlug, programme: programmeName, semester: semester ?? null, subjectSlug, subject: subjectName, hasNotes, source,
         },
       });
       // Tell the owner on WhatsApp (fire and forget; a failure here never touches the student's request).
-      notifyOwner(leadAlert({ phone, programme: programmeName, semester, subject: subjectName, hasNotes, source }));
+      notifyOwner(leadAlert({ phone, programme: programmeName, semester: semester ?? null, subject: subjectName, hasNotes, source }));
     }
   } catch (err) {
     // Never block a student from their notes because the lead couldn't be saved.
@@ -132,7 +139,7 @@ export async function submitNoteLeadAction(_prev: LeadResult, formData: FormData
     notifyOwner(leadLostAlert({ phone, programme: programmeName, subject: subjectName })); // never lose the number
   }
   const canBuy = await notesOrdersReady().catch(() => false);
-  return { ok: true, hasNotes, subject: subjectName, subjectSlug, programme: programmeName, programmeSlug, semester, phone, canBuy };
+  return { ok: true, hasNotes, subject: subjectName, subjectSlug, programme: programmeName, programmeSlug, semester: semester ?? undefined, phone, canBuy };
 }
 
 /**

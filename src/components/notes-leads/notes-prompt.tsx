@@ -1,16 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BookOpenText, X } from "@phosphor-icons/react";
-import { slugify } from "@/lib/utils";
-import { itemKey } from "@/lib/paid-notes-pricing";
-import type { LeadResult } from "@/lib/note-lead-actions";
-import { notesWhatsAppLink, parseLeadSemester, type LeadCourse, type LeadSubject } from "@/lib/note-leads";
+import { BookOpenText, Check, X } from "@phosphor-icons/react";
+import { notesWhatsAppLink, parseLeadSemester } from "@/lib/note-leads";
 import { OPEN_NOTES_EVENT } from "@/lib/notes-promo";
-import { chatLink } from "@/lib/chat-link";
-import { CHAT_NUDGE_EVENT, markWhatsAppOpened, trackIntent } from "@/lib/lead-intent";
-import { LeadForm, useKnownLead } from "./lead-form";
-import { NotesPurchase } from "./notes-purchase";
+import { markWhatsAppOpened, trackIntent } from "@/lib/lead-intent";
+import { PhoneOnlyForm, useKnownLead } from "./lead-form";
 
 // Value = the time until which the pop-up stays quiet (sessionStorage, so it ends with the visit).
 const OFF_KEY = "nv_notes_prompt_off";
@@ -71,9 +66,10 @@ const TILE = "bg-gradient-to-b from-[#3fa0ff] to-[#0071e3] text-white shadow-[0_
  *   What the form asks depends on what the page knows: subject (phone only), course (semester, an optional
  *   subject, phone) or nothing (course too).
  *
- * Yes: WhatsApp opens with a message already written (subject, course, semester, 💎). No / the X / Esc / the
- * backdrop: the on-site chat opens instead, greeting with ⭐ (the pop-up stays quiet for a few minutes). Someone who
- * already left a number is asked again (they are the likeliest buyers), at most once a day.
+ * Yes: WhatsApp opens with the message already written and the owner is alerted (💎); when they come back to the page
+ * the on-site chat (PingChat) opens by itself (see chat-now-fab). No: nobody is alerted; the pop-up asks for their
+ * WhatsApp number instead (the lead form). X / Esc / the backdrop just close it. Someone who already left a number is
+ * asked again (they are the likeliest buyers), at most once a day.
  */
 export function NotesPrompt({
   source,
@@ -81,8 +77,6 @@ export function NotesPrompt({
   course,
   subject,
   semester,
-  subjects,
-  courses,
   auto = true,
   pickKey,
 }: {
@@ -92,10 +86,9 @@ export function NotesPrompt({
   course?: { name: string; slug?: string };
   subject?: string;
   semester?: string | number | null;
-  /** Course known, subject not: the subjects (as printed on the papers) to choose from. */
+  /** Accepted for the existing callers; the "No" form asks for the number only, so these are no longer used. */
   subjects?: string[];
-  /** Nothing known: the courses to choose from. */
-  courses?: LeadCourse[];
+  courses?: { slug: string; name: string }[];
   /** false: never pops up by itself; it only opens when a promo card is tapped. */
   auto?: boolean;
   /** /papers: changes whenever the student picks a course, semester or subject. Each pick asks at once (no delay). */
@@ -103,17 +96,10 @@ export function NotesPrompt({
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const ignoreClose = useRef(false);
   const known = useKnownLead();
-  const [step, setStep] = useState<"ask" | "form" | "buy" | null>(null);
-  const [result, setResult] = useState<LeadResult | null>(null);
-  const [paying, setPaying] = useState(false);
-  const [available, setAvailable] = useState<Set<string> | null>(null);
+  const [step, setStep] = useState<"ask" | "form" | "thanks" | null>(null);
 
   const landing = source === "pyq-page";
-  const scope = subject && course ? "subject" : course ? "course" : "any";
-  const courseSlug = course ? (course.slug ?? slugify(course.name)) : "";
-  const subjectSlug = subject ? slugify(subject) : "";
   const semNumber = parseLeadSemester(semester);
   const what = subject ?? course?.name ?? "your DU subject";
   // What the funnel beacons and the chat's first message say about this visitor's request (never personal data).
@@ -123,7 +109,6 @@ export function NotesPrompt({
     intentRef.current = intentCtx; // the window-level promo listener below reads the latest values
   });
   const waHref = notesWhatsAppLink({ subject, programme: course?.name, semester: semNumber });
-  const chatHref = chatLink(`Hi! I need notes for ${what}${subject && course ? ` (${course.name})` : ""}${semNumber ? `, Semester ${semNumber}` : ""}`);
 
   // Testing aid: opening any page with ?popup=reset forgets "said Yes / said No / already asked today" on this device.
   // (First effect on purpose: the ones below read that state.)
@@ -179,25 +164,28 @@ export function NotesPrompt({
     return () => clearTimeout(t);
   }, [pickKey, known]);
 
-  // A promo card ("Get the notes") was tapped: that is a Yes. WhatsApp opens with the message already written
-  // (still inside the tap, so no pop-up blocker objects), and the team is told.
+  // Said Yes (the pop-up button or a promo card): the owner is alerted once (💎), WhatsApp opens with the message
+  // already written, and the chat opens when they come back to this page.
   const waRef = useRef(waHref);
   useEffect(() => {
     waRef.current = waHref;
   });
+  function afterYes() {
+    trackIntent("yes", intentRef.current);
+    markWhatsAppOpened();
+    quietFor(YES_QUIET_MS);
+    setStep(null);
+  }
   useEffect(() => {
+    // Promo card tap: window.open still runs inside the tap, so no pop-up blocker objects.
     const open = () => {
-      trackIntent("yes", intentRef.current);
       window.open(waRef.current, "_blank", "noopener,noreferrer");
-      markWhatsAppOpened();
-      quietFor(YES_QUIET_MS);
-      setStep(null);
+      afterYes();
     };
     window.addEventListener(OPEN_NOTES_EVENT, open);
     return () => window.removeEventListener(OPEN_NOTES_EVENT, open);
   }, []);
 
-  // While Razorpay's window is open the dialog steps aside (a native modal blocks clicks outside it).
   useEffect(() => {
     const d = ref.current;
     if (!d) return;
@@ -205,70 +193,29 @@ export function NotesPrompt({
       if (d.open) d.close();
       return;
     }
-    if (paying) {
-      if (d.open) {
-        ignoreClose.current = true;
-        d.close();
-      }
-      return;
-    }
     if (!d.open) {
       d.showModal();
       // Start focus on the content itself, not on the first control (a ring on the close button looks like a bug).
       bodyRef.current?.focus({ preventScroll: true });
     }
-  }, [step, paying]);
+  }, [step]);
 
-  // Which of this course's subjects have notes (same cached list /papers uses), to group the subject picker.
-  useEffect(() => {
-    if (step !== "form" || scope !== "course" || available) return;
-    fetch("/api/notes-available")
-      .then((r) => r.json())
-      .then((d: { items?: string[] }) => setAvailable(new Set(d.items ?? [])))
-      .catch(() => setAvailable(new Set()));
-  }, [step, scope, available]);
-
-  // `nudge`: they said No (or closed it) before leaving a number, so the chat opens by itself with a ⭐ greeting.
-  function dismiss(nudge = true) {
+  // Close without a word to the team (X, Esc, backdrop, or finishing the form).
+  function dismiss() {
     quietFor(SNOOZE_MS);
-    if (nudge && (step === "ask" || step === "form")) {
-      window.dispatchEvent(new CustomEvent(CHAT_NUDGE_EVENT, { detail: { href: chatHref, what, star: true, ...intentRef.current } }));
-    }
     setStep(null);
   }
 
-  const subjectChoices: LeadSubject[] = [
-    ...new Map(
-      (subjects ?? []).map((name) => [
-        slugify(name),
-        { slug: slugify(name), name, hasNotes: !!available?.has(itemKey(courseSlug, slugify(name))), semester: semNumber },
-      ]),
-    ).values(),
-  ];
-
-  // Close the dialog right now (not on the next render) so Razorpay's window never opens behind a native modal.
-  function setPayingNow(next: boolean) {
-    const d = ref.current;
-    if (next && d?.open) {
-      ignoreClose.current = true;
-      d.close();
-    }
-    setPaying(next);
+  // "No": nobody is alerted. Ask for a WhatsApp number instead (the team only hears when a number is left).
+  function sayNo() {
+    quietFor(SNOOZE_MS);
+    setStep("form");
   }
-
-  const onSuccess = (r: LeadResult) => {
-    setResult(r);
-    setStep("buy");
-  };
 
   return (
     <dialog
       ref={ref}
       onClose={() => {
-        if (ignoreClose.current) {
-          ignoreClose.current = false;
-          return;
-        }
         dismiss();
       }}
       // Click on the dimmed backdrop (the dialog element itself) closes it.
@@ -303,22 +250,17 @@ export function NotesPrompt({
                   href={waHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={() => {
-                    trackIntent("yes", intentCtx); // tells the team now, and puts them in the chat inbox with a 💎 line
-                    markWhatsAppOpened(); // the chat opens when they come back to this page
-                    quietFor(YES_QUIET_MS);
-                    setStep(null);
-                  }}
+                  onClick={afterYes}
                   className="inline-flex h-[52px] items-center justify-center rounded-full bg-brand px-7 text-[17px] font-semibold text-brand-foreground transition duration-300 ease-[var(--ease-apple)] hover:bg-brand-hover active:scale-[0.985]"
                 >
                   Yes, get the notes
                 </a>
                 <button
                   type="button"
-                  onClick={() => dismiss()}
+                  onClick={sayNo}
                   className="inline-flex h-[52px] items-center justify-center rounded-full bg-surface-muted px-7 text-[17px] font-medium text-foreground transition duration-300 ease-[var(--ease-apple)] hover:brightness-95 active:scale-[0.985]"
                 >
-                  Not now
+                  No, thanks
                 </button>
               </div>
             </div>
@@ -327,39 +269,23 @@ export function NotesPrompt({
           {step === "form" && (
             <>
               <h2 id="notes-prompt-title" className="pr-10 text-[24px] font-semibold leading-tight tracking-[-0.025em]">
-                Where should we send them?
+                Want them on WhatsApp instead?
               </h2>
-              <p className="mb-5 mt-1.5 text-[15px] leading-snug text-muted">
-                {scope === "subject" ? `${subject} · ${course?.name}` : scope === "course" ? course?.name : "Tell us what you need"}
-              </p>
-              {scope === "subject" ? (
-                <LeadForm
-                  courses={[{ slug: courseSlug, name: course!.name }]}
-                  initial={{ course: courseSlug, subject: subjectSlug, semester: semNumber }}
-                  initialSubjects={[{ slug: subjectSlug, name: subject!, hasNotes: false, semester: semNumber }]}
-                  source={source}
-                  variant="inline"
-                  submitLabel="Continue"
-                  stacked
-                  showSuccess={false}
-                  onSuccess={onSuccess}
-                />
-              ) : (
-                <LeadForm
-                  courses={scope === "course" ? [{ slug: courseSlug, name: course!.name }] : (courses ?? [])}
-                  initial={scope === "course" ? { course: courseSlug, semester: semNumber } : undefined}
-                  initialSubjects={scope === "course" ? subjectChoices : undefined}
-                  source={source}
-                  subjectRequired={false}
-                  submitLabel="Continue"
-                  showSuccess={false}
-                  onSuccess={onSuccess}
-                />
-              )}
+              <p className="mb-5 mt-1.5 text-[15px] leading-snug text-muted">Just leave your number. That is all we need.</p>
+              <PhoneOnlyForm source={source} programmeName={course?.name} subjectName={subject} semester={semNumber} onSuccess={() => setStep("thanks")} />
             </>
           )}
 
-          {step === "buy" && result && <NotesPurchase result={result} intent={intentCtx} onPayingChange={setPayingNow} onClose={() => dismiss(false)} />}
+          {step === "thanks" && (
+            <div className="text-center">
+              <span aria-hidden className="mx-auto flex size-14 items-center justify-center rounded-full bg-success text-white">
+                <Check size={28} weight="bold" />
+              </span>
+              <h2 id="notes-prompt-title" className="mt-4 text-[22px] font-semibold tracking-[-0.02em]">Thanks! We&apos;ll message you on WhatsApp.</h2>
+              <p className="mx-auto mt-2 max-w-sm text-[15px] leading-relaxed text-muted">We will ask which subject you need, then send the notes.</p>
+              <button type="button" onClick={dismiss} className="mt-5 inline-flex h-11 items-center justify-center rounded-full bg-surface-muted px-6 text-[15px] font-medium transition hover:brightness-95">Done</button>
+            </div>
+          )}
         </div>
       )}
     </dialog>

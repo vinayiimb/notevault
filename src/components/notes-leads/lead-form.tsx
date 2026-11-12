@@ -356,3 +356,85 @@ export function LeadForm({
     </form>
   );
 }
+
+/** The pop-up's "No" step: asks for the WhatsApp number and nothing else. What the page already knows rides along hidden. */
+export function PhoneOnlyForm({
+  source,
+  programmeName = "",
+  subjectName = "",
+  semester,
+  onSuccess,
+}: {
+  source: LeadSource;
+  programmeName?: string;
+  subjectName?: string;
+  semester?: number | null;
+  onSuccess: (r: LeadResult) => void;
+}) {
+  const uid = useId();
+  const phoneRef = useRef<HTMLInputElement>(null);
+  const vidRef = useRef<HTMLInputElement>(null);
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    const el = phoneRef.current;
+    if (el && !el.value) el.value = savedPhone();
+    if (vidRef.current) vidRef.current.value = getVisitorId();
+  }, []);
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (pending) return;
+    setPending(true);
+    setError("");
+    let r: LeadResult;
+    try {
+      r = (await (await fetch("/api/note-lead", { method: "POST", body: new FormData(e.currentTarget) })).json()) as LeadResult;
+    } catch {
+      r = { error: "Couldn't reach the server. Check your connection and try again." };
+    }
+    setPending(false);
+    if (r.ok) {
+      rememberLead(phoneRef.current?.value ?? "");
+      onSuccess(r);
+    } else setError(r.error ?? "Something went wrong. Please try again.");
+  };
+
+  return (
+    <form onSubmit={onSubmit} className="flex flex-col gap-3">
+      <input type="hidden" name="source" value={source} />
+      <input type="hidden" name="phoneOnly" value="1" />
+      <input type="hidden" name="programmeName" value={programmeName} />
+      <input type="hidden" name="subjectName" value={subjectName} />
+      <input type="hidden" name="semester" value={semester ?? ""} />
+      <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] size-px opacity-0" />
+      <input ref={vidRef} type="hidden" name="vid" />
+      <div className={group}>
+        <div className={row}>
+          <label htmlFor={`${uid}-phone`} className={rowLabel}>WhatsApp number</label>
+          <div className="flex items-center gap-2">
+            <span className="text-[17px] leading-7 text-muted">+91</span>
+            <input
+              ref={phoneRef}
+              id={`${uid}-phone`}
+              name="phone"
+              type="tel"
+              inputMode="numeric"
+              autoComplete="tel-national"
+              required
+              maxLength={16}
+              placeholder="98765 43210"
+              className="h-7 min-w-0 flex-1 bg-transparent text-[17px] leading-7 text-foreground outline-none placeholder:text-muted/60"
+            />
+          </div>
+        </div>
+      </div>
+      {error && <p role="alert" className="px-1 text-[14px] text-red-600 dark:text-red-400">{error}</p>}
+      <button type="submit" disabled={pending} className={`${pill} w-full`}>
+        {pending ? "Please wait…" : "Send me the notes"}
+      </button>
+      <p className="text-center text-[13px] text-muted">We&apos;ll only WhatsApp you about these notes.</p>
+    </form>
+  );
+}

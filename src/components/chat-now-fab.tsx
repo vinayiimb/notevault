@@ -7,7 +7,7 @@ import { chatDraftFor, chatLink } from "@/lib/chat-link";
 import { CHAT_NUDGE_EVENT, getChatLink, takeWhatsAppReturn, trackIntent } from "@/lib/lead-intent";
 import { ChatPanel } from "@/components/chat-panel";
 
-type Nudge = { href: string; what: string; star?: boolean; source: string; programme?: string; subject?: string; semester?: number | null };
+type Nudge = { href: string; what: string; star?: boolean; quiet?: boolean; source: string; programme?: string; subject?: string; semester?: number | null };
 const REPLY_POLL_MS = 15_000; // a team reply opens the chat within this long
 
 /**
@@ -36,7 +36,7 @@ export function ChatNowFab() {
       const n = (e as CustomEvent<Nudge>).detail;
       setGreeting(n.star ? "star" : undefined);
       setOpen(true);
-      trackIntent("chat", n);
+      if (!n.quiet) trackIntent("chat", n);
     };
     window.addEventListener(CHAT_NUDGE_EVENT, on);
     return () => window.removeEventListener(CHAT_NUDGE_EVENT, on);
@@ -70,6 +70,9 @@ export function ChatNowFab() {
   }, []);
 
   // They tapped Yes, WhatsApp opened, and they are back on this page: the chat opens so they can carry on here too.
+  // Tab visibility alone is not enough: when WhatsApp opens in its desktop app or another window, this tab never
+  // becomes "hidden", so window focus and the first touch / mouse move / key / scroll count as coming back too
+  // (takeWhatsAppReturn ignores anything in the first few seconds after the tap, and only fires once).
   useEffect(() => {
     const back = () => {
       if (document.visibilityState === "visible" && takeWhatsAppReturn()) {
@@ -77,12 +80,14 @@ export function ChatNowFab() {
         setOpen(true);
       }
     };
-    document.addEventListener("visibilitychange", back);
-    window.addEventListener("pageshow", back);
+    const signals: [EventTarget, string][] = [
+      [document, "visibilitychange"], [window, "pageshow"], [window, "focus"],
+      [window, "pointermove"], [window, "pointerdown"], [window, "keydown"], [window, "scroll"], [window, "touchstart"],
+    ];
+    for (const [t, n] of signals) t.addEventListener(n, back, { passive: true });
     back(); // a phone may have dropped the page while WhatsApp was in front
     return () => {
-      document.removeEventListener("visibilitychange", back);
-      window.removeEventListener("pageshow", back);
+      for (const [t, n] of signals) t.removeEventListener(n, back);
     };
   }, []);
 
