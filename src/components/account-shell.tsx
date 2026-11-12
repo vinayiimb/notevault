@@ -17,7 +17,6 @@ import {
   Stethoscope,
   X,
 } from "@phosphor-icons/react";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { studentLogoutAction } from "@/lib/paid-notes-actions";
 
 // The student dashboard's own frame (AfterBoards-style): a permanent left
@@ -167,7 +166,6 @@ export function AccountShell({
               <span aria-hidden>🪶</span>
               {new Intl.NumberFormat("en-IN").format(feathers)}
             </span>
-            <ThemeToggle />
           </div>
         </header>
         <main className="flex-1">{children}</main>

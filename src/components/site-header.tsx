@@ -7,7 +7,6 @@ import { usePathname } from "next/navigation";
 import { SignIn } from "@phosphor-icons/react/dist/ssr";
 import { BookOpenText } from "@phosphor-icons/react";
 import { SearchBar } from "@/components/search-bar";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { MobileNavMenu, SiteNavigation } from "@/components/site-navigation";
 
 export function SiteHeader() {
@@ -65,7 +64,6 @@ export function SiteHeader() {
               <SearchBar compact />
             </Suspense>
           </div>
-          <ThemeToggle />
           {/* Student sign-in only. Admins use the direct /admin/login link. */}
           <Link
             href="/login"

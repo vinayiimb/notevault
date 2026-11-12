@@ -99,11 +99,8 @@ export const metadata: Metadata = {
 const themeInitScript = `
 (function () {
   try {
-    var stored = localStorage.getItem("notevault-theme");
-    var prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    if (stored === "dark" || (!stored && prefersDark)) {
-      document.documentElement.classList.add("dark");
-    }
+    // Light mode only: never apply the dark class.
+    document.documentElement.classList.remove("dark");
     if (localStorage.getItem("notevault-sidebar-collapsed") !== "false") {
       document.documentElement.classList.add("sidebar-collapsed");
     }
