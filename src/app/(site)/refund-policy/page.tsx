@@ -12,7 +12,7 @@ export default function RefundPolicyPage() {
   return (
     <LegalPage
       title="Refund & Cancellation Policy"
-      intro="Try before you buy: every subject has a free preview (about the first 30% of the notes), and all question papers are free. Please read the preview before purchasing."
+      intro="Try before you buy: every subject has a free preview (about the first 15% of the notes, readable for 3 minutes), and all question papers are free. Please read the preview before purchasing."
     >
       <Section title="Cancellation">
         <p>

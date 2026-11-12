@@ -55,7 +55,7 @@ export default async function AdminPaymentsPage({ searchParams }: { searchParams
             <span className="text-sm">
               <span className="font-medium">Paywall on</span>
               <span className="block text-muted">
-                Notes show a free preview (~30%) and the rest needs purchase. Off = all notes free, checkout shows
+                Notes show a free preview (~15%, 3 minutes of reading) and the rest needs purchase. Off = all notes free, checkout shows
                 &ldquo;coming soon&rdquo;.
               </span>
             </span>

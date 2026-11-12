@@ -8,7 +8,36 @@ import { isHtmlNote } from "@/lib/content/html-note";
 import { NotesReadingChrome } from "@/components/content/notes/reading-chrome";
 import { extractContentHeadings, preprocessNotesMarkdown, type ContentHeading } from "@/lib/content/toc";
 import type { NotesLabColorTokens } from "@/lib/content/theme-presets";
-import { PLANS, SINGLE_PRICE, STUDENT_PDF_DOWNLOAD, itemKey } from "@/lib/paid-notes-pricing";
+import { PLANS, PREVIEW_SECONDS, SINGLE_PRICE, STUDENT_PDF_DOWNLOAD, itemKey } from "@/lib/paid-notes-pricing";
+import { NoteGuard } from "./note-guard";
+
+// Counts down the free preview's reading time while `active` and the tab is visible. Seconds used are kept in
+// localStorage per note, so a refresh doesn't restart it. Client-side only: a visitor who clears site data gets a fresh
+// 3 minutes (the server can't tell who an anonymous reader is). Returns the seconds left.
+function usePreviewTimer(key: string, active: boolean) {
+  const [used, setUsed] = useState(0);
+  useEffect(() => {
+    if (!active) return;
+    const storeKey = `notevault:preview-used:${key}`;
+    let seconds = 0;
+    try {
+      seconds = Math.min(PREVIEW_SECONDS, Number(localStorage.getItem(storeKey)) || 0);
+    } catch {}
+    setUsed(seconds);
+    const id = setInterval(() => {
+      if (document.hidden || seconds >= PREVIEW_SECONDS) return;
+      seconds += 1;
+      setUsed(seconds);
+      try {
+        localStorage.setItem(storeKey, String(seconds));
+      } catch {}
+    }, 1000);
+    return () => clearInterval(id);
+  }, [key, active]);
+  return PREVIEW_SECONDS - used;
+}
+
+const clock = (s: number) => `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
 
 // A paid note: the server renders only the free preview (cached, crawlable);
 // this asks /api/notes-access what the visitor may do. Admins get the rest
@@ -54,17 +83,21 @@ export function GatedNotes({
     };
   }, [programmeSlug, subjectSlug]);
 
+  const timeLeft = usePreviewTimer(itemKey(programmeSlug, subjectSlug), locked);
+  const expired = locked && timeLeft <= 0;
+
   const checkoutHref = `/paid-notes/checkout?plan=1&add=${encodeURIComponent(itemKey(programmeSlug, subjectSlug))}`;
   const readerHref = `/account/notes/${programmeSlug}/${subjectSlug}`;
 
   return (
     <>
+      {!adminView && <NoteGuard />}
       {/* the reader below is full-bleed, so the bars above it keep to its width */}
       <div className="mx-auto max-w-[69rem] px-4 sm:px-6">
       {adminView && (
         <p className="mb-3 rounded-2xl border border-amber-500/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-800 dark:text-amber-300">
           <strong className="font-semibold">Admin view:</strong> you&apos;re signed in as admin, so you see the full note.
-          Students see the first ~30%, then the unlock card. Use a private window to check the student view.
+          Students see the first ~15% for 3 minutes, then the unlock card. Use a private window to check the student view.
         </p>
       )}
       {owned && (
@@ -86,7 +119,7 @@ export function GatedNotes({
           <p className="flex min-w-0 items-center gap-2 text-sm">
             <LockSimple size={16} weight="bold" className="shrink-0 text-brand" />
             <span className="min-w-0">
-              <strong className="font-semibold">Free preview.</strong>
+              <strong className="font-semibold">Free preview{expired ? " ended" : ` \u00b7 ${clock(timeLeft)} left`}.</strong>
               <span className="hidden text-muted sm:inline"> Unlock the full notes &amp; solutions.</span>
             </span>
           </p>
@@ -99,7 +132,7 @@ export function GatedNotes({
         </div>
       )}
       </div>
-      {isHtmlNote(full?.content ?? preview) ? (
+      {expired ? null : isHtmlNote(full?.content ?? preview) ? (
         <HtmlNoteFrame html={full?.content ?? preview} title={title} />
       ) : (
         <NotesReadingChrome
@@ -112,14 +145,14 @@ export function GatedNotes({
         />
       )}
       {(locked || owned) && (
-        <div className="relative -mt-24 px-4 sm:px-6">
-          <div className="pointer-events-none h-24 bg-gradient-to-b from-transparent to-background" />
+        <div className={`relative px-4 sm:px-6 ${expired ? "mt-8" : "-mt-24"}`}>
+          {!expired && <div className="pointer-events-none h-24 bg-gradient-to-b from-transparent to-background" />}
           <div className="mx-auto max-w-xl rounded-3xl bg-surface p-6 text-center shadow-[0_1px_2px_rgba(0,0,0,.05),0_20px_50px_-14px_rgba(0,0,0,.22)] ring-1 ring-foreground/[0.06] sm:p-8">
             <span className="mx-auto flex size-11 items-center justify-center rounded-full bg-brand/10 text-brand">
               <LockSimple size={22} weight="bold" />
             </span>
             <h2 className="mt-4 text-xl font-semibold tracking-tight">
-              {owned ? "The full note is in your dashboard" : "You\u2019ve read the free preview"}
+              {owned ? "The full note is in your dashboard" : expired ? "Your 3-minute free preview has ended" : "You\u2019ve read the free preview"}
             </h2>
             {owned ? (
               <>

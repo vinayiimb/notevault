@@ -31,7 +31,7 @@ export default function TermsPage() {
 
       <Section title="What's free and what's paid">
         <ul>
-          <li><strong>Free:</strong> all previous year question papers, and a free preview (about the first 30%) of every subject&apos;s notes.</li>
+          <li><strong>Free:</strong> all previous year question papers, and a free preview (about the first 15%, readable for 3 minutes) of every subject&apos;s notes.</li>
           <li>
             <strong>Paid:</strong> complete subject notes — the full notes, worked answers, diagrams and PDF download — sold per
             subject or in packs, as listed on our <Link href="/paid-notes" className="text-brand hover:underline">pricing page</Link>.

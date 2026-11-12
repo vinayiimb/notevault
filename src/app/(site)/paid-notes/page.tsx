@@ -103,7 +103,7 @@ export default async function PricingPage({ searchParams }: { searchParams: Prom
             cta={{ href: "/papers", label: "Try now" }}
             groups={[
               { title: "Question papers", items: ["All DU PYQs (16,000+)", "Open, view & download"] },
-              { title: "Notes", items: ["Free preview of every subject (~30%)"] },
+              { title: "Notes", items: ["Free preview of every subject (~15%, 3 minutes)"] },
             ]}
           />
           {PLANS.map((plan) => (

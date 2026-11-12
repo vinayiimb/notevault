@@ -822,3 +822,22 @@ mark.nt-search-hit-active { background: var(--nt-warning); color: var(--nt-backg
   .nt-figure img { box-shadow: none !important; }
   a { color: #000 !important; text-decoration: none !important; }
 }
+
+/* NoteGuard (src/components/paid-notes/note-guard.tsx): paid notes can't be printed, selected or saved; the page is hidden
+   while a screenshot shortcut fires or the window is out of focus. Only active while the guard is mounted. */
+html[data-note-guard] body { -webkit-user-select: none; user-select: none; -webkit-touch-callout: none; }
+html[data-note-guard] img { -webkit-user-drag: none; }
+html[data-note-guard] input, html[data-note-guard] textarea { -webkit-user-select: text; user-select: text; }
+html[data-note-guard][data-note-hidden] body > * { visibility: hidden !important; }
+html[data-note-guard][data-note-hidden] body::before {
+  content: "Notes are hidden while the window is not in focus.";
+  visibility: visible; position: fixed; inset: 0; display: grid; place-items: center; padding: 2rem; text-align: center;
+  background: #fff; color: #444; font: 500 15px/1.5 system-ui, sans-serif; z-index: 2147483647;
+}
+@media print {
+  html[data-note-guard] body > * { display: none !important; }
+  html[data-note-guard] body::before {
+    content: "Printing is disabled for NoteVault notes."; display: block; padding: 3rem; text-align: center; color: #000;
+    font: 600 18px system-ui, sans-serif;
+  }
+}

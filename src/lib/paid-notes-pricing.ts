@@ -87,17 +87,19 @@ export function itemKey(programmeSlug: string, subjectSlug: string) {
   return `${programmeSlug}/${subjectSlug}`;
 }
 
-// The free part of a note: the lines up to ~30% of the text. Every note is
+// The free part of a note: the lines up to ~15% of the text. Every note is
 // gated, short ones included. The cut goes at the first line break past
-// 30% — never inside a ``` fence (a half Mermaid/code block) or between two
+// 15% — never inside a ``` fence (a half Mermaid/code block) or between two
 // table rows. Not "blank lines only": live notes often have none at all
 // (heading, bullets, heading…), and that left a whole note unlocked.
-export const PREVIEW_RATIO = 0.3;
+export const PREVIEW_RATIO = 0.15;
+// How long a visitor may read that free preview, in seconds (enforced client-side in GatedNotes).
+export const PREVIEW_SECONDS = 180;
 
 const isTableRow = (line: string | undefined) => !!line && /^\s*\|/.test(line);
 
 // An author can say exactly where the free part ends by putting `<!-- preview-end -->` on its own line. Everything above
-// the marker is the free preview, everything below is paid. Without a marker the ~30% rule below applies. The marker is an
+// the marker is the free preview, everything below is paid. Without a marker the ~15% rule below applies. The marker is an
 // HTML comment, so the reader drops it when the full note is shown. Use it to keep a premium note's teaching content fully
 // locked: put it right after the title page. (docs/NOTES_BLOCKS.md)
 const PREVIEW_END = /^[ \t]*<!--\s*preview-end\s*-->[ \t]*$/m;

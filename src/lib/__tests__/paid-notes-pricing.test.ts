@@ -60,7 +60,7 @@ test("previewOf gates short notes too (live bug: a 1.5k-char note was fully free
   const md = ["# Management Accounting", "", "Intro paragraph.", "", "## Meaning", "", "Body one.", "", "## Scope", "", "Body two.", "", "## Functions", "", "Body three."].join("\n");
   const { preview, truncated } = previewOf(md);
   assert.equal(truncated, true);
-  assert.ok(preview.length <= md.length * 0.5, "about 30%, not most of it");
+  assert.ok(preview.length <= md.length * 0.5, "about 15%, not most of it");
   assert.ok(!preview.includes("Body three"));
 });
 
@@ -119,7 +119,7 @@ test("previewOf: a marker with nothing below it locks nothing, and a marker at t
   assert.equal(top.preview, "# Title");
 });
 
-test("previewOf: notes without a marker keep the 30% rule", () => {
+test("previewOf: notes without a marker keep the 15% rule", () => {
   const md = Array.from({ length: 40 }, (_, i) => `Paragraph ${i}.\n`).join("\n");
   const { preview, truncated } = previewOf(md);
   assert.equal(truncated, true);
