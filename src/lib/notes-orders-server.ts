@@ -92,7 +92,7 @@ export async function recordNotesOrderFromRazorpay(order: RazorpayOrder, payment
 
   // A whole-semester buyer's subjects (the syllabus's DSC papers) are listed under the order for the delivery tracker.
   // Never allowed to affect the payment: any failure here is only logged.
-  if (created && notes.plan === "semester") await fillPackFromSyllabus(created).catch((err) => console.error("pack subjects not listed:", err));
+  if (created && notes.plan === "semester" && notes.semester) await fillPackFromSyllabus(created).catch((err) => console.error("pack subjects not listed:", err));
 
   // They bought what they asked for, so those asks are no longer open leads.
   await prisma.noteLead

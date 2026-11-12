@@ -6,7 +6,7 @@ import { ChatCircleDots, Check, Lock, WhatsappLogo } from "@phosphor-icons/react
 import type { LeadResult } from "@/lib/note-lead-actions";
 import { CHAT_NUDGE_EVENT, trackIntent } from "@/lib/lead-intent";
 import { ANY_SUBJECT } from "@/lib/note-leads";
-import { NOTES_DELIVERY_TEXT, ORDER_PRICE, orderPlanLabel, type OrderPlan } from "@/lib/notes-orders";
+import { NOTES_DELIVERY_TEXT, ORDER_PRICE, SEMESTER_SUBJECTS, orderPlanLabel, type OrderPlan } from "@/lib/notes-orders";
 
 const HELP_WHATSAPP = "919376180015";
 
@@ -97,7 +97,8 @@ export function NotesPurchase({
   onClose: () => void;
 }) {
   const semester = result.semester ?? 0;
-  const canBuy = !!(result.phone && result.programme && result.programmeSlug && semester) && result.canBuy === true;
+  const chatOrder = result.programmeSlug === "chat"; // pay-first from the live chat: course and subject are asked on WhatsApp afterwards
+  const canBuy = !!(result.phone && result.programme && result.programmeSlug && (semester || chatOrder)) && result.canBuy === true;
   const canSubject = canBuy && !!result.subject && result.subject !== ANY_SUBJECT && !!result.subjectSlug;
   const [plan, setPlan] = useState<OrderPlan>(initialPlan ?? "semester");
   const [phase, setPhase] = useState<"choose" | "paid" | "pending" | "later">(canBuy ? "choose" : "later");
@@ -225,8 +226,9 @@ export function NotesPurchase({
   }
 
   const options: { plan: OrderPlan; title: string; detail: string; badge?: string }[] = [
-    ...(canSubject ? [{ plan: "subject" as const, title: "This subject", detail: subjectName }] : []),
-    { plan: "semester", title: `Whole Semester ${semester}`, detail: "All subjects of the semester, one price", badge: "Best value" },
+    ...(canSubject || (chatOrder && canBuy) ? [{ plan: "subject" as const, title: chatOrder ? "Single subject" : "This subject", detail: chatOrder ? "One subject of your choice" : subjectName }] : []),
+    ...(chatOrder ? [{ plan: "three" as const, title: "3 subjects", detail: "Any three subjects of your choice" }] : []),
+    { plan: "semester", title: chatOrder ? "Whole semester" : `Whole Semester ${semester}`, detail: chatOrder ? `All ${SEMESTER_SUBJECTS} subjects · ₹${SEMESTER_SUBJECTS * ORDER_PRICE.subject} → ₹${ORDER_PRICE.semester}, you save ₹${SEMESTER_SUBJECTS * ORDER_PRICE.subject - ORDER_PRICE.semester}` : "All subjects of the semester, one price", badge: "Best value" },
   ];
   const selected: OrderPlan = options.some((o) => o.plan === plan) ? plan : "semester";
 
@@ -236,7 +238,7 @@ export function NotesPurchase({
         Want the notes today?
       </h2>
       <p className="mb-5 mt-1.5 text-[15px] leading-snug text-muted">
-        {result.programme} · Semester {semester}
+        {chatOrder ? "Pay now, then tell us your course and subject on WhatsApp" : `${result.programme} · Semester ${semester}`}
       </p>
 
       <div role="radiogroup" aria-label="Choose your notes" className="flex flex-col gap-2.5">

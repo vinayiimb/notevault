@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { WhatsappLogo } from "@phosphor-icons/react/dist/ssr";
 import { prisma } from "@/lib/prisma";
-import { addOrderAction, deleteManualOrderAction, fillPackFromSyllabusAction, giveNotesAccessAction, markOrderDeliveredAction, quickAddSubjectsAction, saveStudentAction, saveStudentPaymentAction, setOrderPaidAction, updateOrderAction } from "@/lib/note-lead-actions";
+import { addOrderAction, deleteOrderAction, deleteStudentAction, editAutoOrderAction, fillPackFromSyllabusAction, giveNotesAccessAction, markOrderDeliveredAction, quickAddSubjectsAction, removeSiteAccessAction, saveStudentAction, saveStudentPaymentAction, setOrderPaidAction, updateOrderAction } from "@/lib/note-lead-actions";
 import { formatLeadPhone } from "@/lib/note-leads";
 import { NOTES_DELIVERY_HOURS, orderPlanLabel } from "@/lib/notes-orders";
 import { buildOrderMeta, parseOrderMeta, receivedOf } from "@/lib/order-meta";
@@ -84,13 +84,33 @@ const semText = (o: { semester: number }) => (o.semester ? `Sem ${o.semester}` :
 const where = (o: Order) => [o.programme, semText(o)].filter(Boolean).join(" · ");
 const localNumber = (p: string | null) => (p ?? "").replace(/^91/, "");
 
+/** "Delete…" opens a small confirmation first, so nothing is removed by a stray tap. */
+function ConfirmDelete({ action, fields, what, label = "Delete", className = "text-xs text-muted hover:text-red-500" }: { action: (fd: FormData) => Promise<void>; fields: Record<string, string>; what: string; label?: string; className?: string }) {
+  return (
+    <details>
+      <summary className={`cursor-pointer list-none [&::-webkit-details-marker]:hidden ${className}`}>{label}…</summary>
+      <form action={action} className="mt-1 flex flex-wrap items-center gap-2 rounded-lg border border-red-500/30 bg-red-500/5 px-2.5 py-1.5">
+        {Object.entries(fields).map(([k, v]) => <input key={k} type="hidden" name={k} value={v} />)}
+        <span className="text-xs text-red-700">{what}</span>
+        <button type="submit" className="rounded-md bg-red-600 px-2.5 py-1 text-xs font-semibold text-white hover:bg-red-700">Yes, {label.toLowerCase()}</button>
+      </form>
+    </details>
+  );
+}
+
+/** For a row that comes from site access: delete = take that subject's access away from their Gmail. */
+function RemoveAccess({ o }: { o: Order }) {
+  const email = parseOrderMeta(o.adminNote).gmail;
+  if (!email) return null;
+  return <ConfirmDelete action={removeSiteAccessAction} fields={{ email, item: `${o.programmeSlug}/${o.subjectSlug}` }} what={`Remove ${o.subject} from ${email}? They will lose access.`} label="Remove access" />;
+}
+
 const ACCESS_CHIP = "rounded-full bg-green-600/10 px-2 py-0.5 text-xs font-medium text-green-700";
 
 /** A subject inside a whole-semester order: one tap ticks it as given (or unticks it), and it can be deleted. */
 function TickCell({ o, viaAccess }: { o: Order; viaAccess: boolean }) {
-  if (isAuto(o)) return <span className={ACCESS_CHIP}>Access given on the site</span>;
+  if (isAuto(o)) return <div className="flex flex-wrap items-center gap-x-3 gap-y-1"><span className={ACCESS_CHIP}>Access given on the site</span><RemoveAccess o={o} /></div>;
   const done = o.status === "DELIVERED" || viaAccess;
-  const manual = o.razorpayPaymentId.startsWith("manual-");
   return (
     <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
       <form action={markOrderDeliveredAction}>
@@ -106,12 +126,7 @@ function TickCell({ o, viaAccess }: { o: Order; viaAccess: boolean }) {
           {done ? (viaAccess && o.status !== "DELIVERED" ? "Access given" : `Given${o.deliveredAt ? ` ${day(o.deliveredAt)}` : ""}`) : "Pending"}
         </button>
       </form>
-      {manual && (
-        <form action={deleteManualOrderAction}>
-          <input type="hidden" name="id" value={o.id} />
-          <button type="submit" className="text-xs text-muted hover:text-red-500">Delete</button>
-        </form>
-      )}
+      <ConfirmDelete action={deleteOrderAction} fields={{ id: o.id }} what={`Delete ${o.subject || "this row"}?`} />
     </div>
   );
 }
@@ -146,7 +161,7 @@ function DeliveryCell({ o, kids, viaAccess, doneKids }: { o: Order; kids: Order[
       </span>
     );
   }
-  if (isAuto(o)) return <span className={ACCESS_CHIP}>Access unlocked on the site</span>;
+  if (isAuto(o)) return <div className="flex flex-wrap items-center gap-x-3 gap-y-1"><span className={ACCESS_CHIP}>Access unlocked on the site</span><RemoveAccess o={o} /></div>;
   if (viaAccess && o.status !== "DELIVERED") return <span className={ACCESS_CHIP}>Access given on the site</span>;
   const done = o.status === "DELIVERED";
   return (
@@ -175,8 +190,18 @@ function OrderForm({ o, skey, programmes, askPhone, preset }: { o?: Order; skey?
   const manual = o?.razorpayPaymentId.startsWith("manual-");
   return (
     <div className="mt-2 rounded-xl border border-border bg-background p-3">
-      <form action={o ? updateOrderAction : addOrderAction} className="grid gap-3 sm:grid-cols-2">
-        {o ? <input type="hidden" name="id" value={o.id} /> : !askPhone && <input type="hidden" name="skey" value={skey} />}
+      <form action={o ? (isAuto(o) ? editAutoOrderAction : updateOrderAction) : addOrderAction} className="grid gap-3 sm:grid-cols-2">
+        {o && isAuto(o) ? (
+          <>
+            <input type="hidden" name="email" value={parseOrderMeta(o.adminNote).gmail} />
+            <input type="hidden" name="site" value={`${o.programmeSlug}/${o.subjectSlug}`} />
+            <input type="hidden" name="skey" value={skey} />
+          </>
+        ) : o ? (
+          <input type="hidden" name="id" value={o.id} />
+        ) : (
+          !askPhone && <input type="hidden" name="skey" value={skey} />
+        )}
         {preset && <input type="hidden" name="under" value={preset.under} />}
         {askPhone && (
           <>
@@ -216,7 +241,7 @@ function OrderForm({ o, skey, programmes, askPhone, preset }: { o?: Order; skey?
           </label>
           <label className={label}>
             Paid (₹)
-            <input name="amount" type="number" min={0} defaultValue={o?.amount ?? (preset ? 0 : 49)} className={field} />
+            <input name="amount" type="number" min={0} defaultValue={o?.amount ?? (preset ? 0 : 99)} className={field} />
           </label>
         </div>
         <input type="hidden" name="hasPaid" value="1" />
@@ -232,22 +257,27 @@ function OrderForm({ o, skey, programmes, askPhone, preset }: { o?: Order; skey?
           <button type="submit" className={saveBtn}>{o ? "Save changes" : "Add"}</button>
         </div>
       </form>
-      {manual && (
-        <form action={deleteManualOrderAction} className="mt-2">
-          <input type="hidden" name="id" value={o!.id} />
-          <button type="submit" className="text-xs text-muted hover:text-red-500">Remove this row (added by hand)</button>
-        </form>
+      {o && !isAuto(o) && (
+        <div className="mt-2">
+          <ConfirmDelete
+            action={deleteOrderAction}
+            fields={{ id: o.id }}
+            what={o.plan === "semester" ? "Delete this semester and all its subjects?" : `Delete ${o.subject || "this row"}?`}
+            label="Delete this row"
+          />
+          {!manual && <p className="mt-1 text-[11px] text-muted">This one is a recorded Razorpay payment; deleting it only removes it from this tracker.</p>}
+        </div>
       )}
       <datalist id="delivery-programmes">{programmes.map((p) => <option key={p} value={p} />)}</datalist>
     </div>
   );
 }
 
-function EditRow({ o, programmes }: { o: Order; programmes: string[] }) {
+function EditRow({ o, skey, programmes }: { o: Order; skey: string; programmes: string[] }) {
   return (
     <details className="mt-1">
       <summary className={linkBtn}>Edit</summary>
-      <OrderForm o={o} programmes={programmes} />
+      <OrderForm o={o} skey={skey} programmes={programmes} />
     </details>
   );
 }
@@ -410,15 +440,23 @@ function StudentHeader({ s, profilesReady }: { s: Student; profilesReady: boolea
               <input name="name" defaultValue={p?.name ?? ""} placeholder="e.g. Riya Sharma" className={field} />
             </label>
             <label className={label}>
-              {s.phone ? "Another number (parent / second phone)" : "WhatsApp number"}
+              WhatsApp number
+              <input name="phone" inputMode="tel" defaultValue={localNumber(s.phone || null)} placeholder="98765 43210" className={field} />
+            </label>
+            <label className={label}>
+              Another number (parent / second phone)
               <input name="altPhone" inputMode="tel" defaultValue={localNumber(p?.altPhone ?? null)} placeholder="98765 43210" className={field} />
             </label>
             <label className={label}>
               Gmail they sign in with
-              <input name="gmail" type="email" defaultValue={s.gmail} readOnly={s.key.startsWith("mail:")} placeholder="name@gmail.com" className={field} />
+              <input name="gmail" type="email" defaultValue={s.gmail} placeholder="name@gmail.com" className={field} />
             </label>
+            <p className="text-[11px] text-muted">Changing the number or Gmail updates every row of this student. If it matches another student, they become one.</p>
             <button type="submit" className={`${saveBtn} self-start`}>Save student</button>
           </form>
+          <div className="mt-3 border-t border-border pt-2">
+            <ConfirmDelete action={deleteStudentAction} fields={{ skey: s.key }} what="Delete this student and all their purchase rows? Their access on the site stays." label="Delete student" />
+          </div>
         </div>
       </details>
     </div>
@@ -477,7 +515,8 @@ export default async function DeliveryTrackerPage({ searchParams }: { searchPara
     // A subject you typed in yourself wins over the same subject listed automatically from site access.
     const typed = rawList.filter((o) => !isAuto(o));
     const same = (a: Order, b: Order) => !!a.subjectSlug && !!b.subjectSlug && (a.subjectSlug === b.subjectSlug || a.subjectSlug.startsWith(`${b.subjectSlug}-`) || b.subjectSlug.startsWith(`${a.subjectSlug}-`));
-    const list = rawList.filter((o) => !isAuto(o) || !typed.some((t) => same(t, o)));
+    const standsFor = new Set(typed.map((t) => parseOrderMeta(t.adminNote).site).filter(Boolean));
+    const list = rawList.filter((o) => !isAuto(o) || (!standsFor.has(`${o.programmeSlug}/${o.subjectSlug}`) && !typed.some((t) => same(t, o))));
     const ids = new Set(list.map((o) => o.id));
     // Subjects the site has unlocked for a student who paid for a whole semester are listed under that semester (the
     // only paid one, or the one for the same semester when there are several); otherwise they stay on their own.
@@ -506,7 +545,7 @@ export default async function DeliveryTrackerPage({ searchParams }: { searchPara
       total: counted.length,
       received: list.reduce((n, o) => n + recvOf(o), 0),
       due: list.reduce((n, o) => n + (o.amount - recvOf(o)), 0),
-      editablePay: list.some((o) => isManual(o) && !isAuto(o) && !parseOrderMeta(o.adminNote).under),
+      editablePay: list.some((o) => isManual(o) && !isAuto(o) && !parseOrderMeta(o.adminNote).under) || list.every(isAuto),
       hasPack: list.some((o) => o.plan === "semester" && !isAuto(o)),
       type: list.some((o) => o.plan === "semester") ? "Full semester" : counted.length > 1 ? "Multiple subjects" : "Individual",
       last: list[list.length - 1].paidAt,
@@ -532,6 +571,7 @@ export default async function DeliveryTrackerPage({ searchParams }: { searchPara
   // Gmail has unlocked ("game-theory" matches "game-theory-and-strategic-interactions").
   const unlockedSubject = (set: Set<string>, o: Order) =>
     set.has(`${o.programmeSlug}/${o.subjectSlug}`) ||
+    (!!parseOrderMeta(o.adminNote).site && set.has(parseOrderMeta(o.adminNote).site)) ||
     (!!o.subjectSlug && [...set].some((k) => { const sl = k.split("/")[1] ?? ""; return sl === o.subjectSlug || sl.startsWith(`${o.subjectSlug}-`) || o.subjectSlug.startsWith(`${sl}-`); }));
   const viaAccess = new Set<string>();
   for (const s of built) {
@@ -706,7 +746,7 @@ export default async function DeliveryTrackerPage({ searchParams }: { searchPara
                       <td className={`py-2 pr-3 ${child ? "pl-8" : "pl-3"}`}>
                         <span className="font-medium text-foreground">{child && <span className="mr-1 text-muted">↳</span>}{orderPlanLabel(o)}</span>
                         {o.programme && <span className="block text-xs text-muted">{o.programme}</span>}
-                        {!isAuto(o) && <EditRow o={o} programmes={programmes} />}
+                        <EditRow o={o} skey={s.key} programmes={programmes} />
                         {o.plan === "semester" && !isAuto(o) && <PackSubjects pack={o} hasKids={kids.length > 0} />}
                       </td>
                       <td className="border-l border-border/60 px-2 py-2 text-center text-muted">{o.semester || "—"}</td>
@@ -744,7 +784,7 @@ export default async function DeliveryTrackerPage({ searchParams }: { searchPara
                         {child ? <TickCell o={o} viaAccess={viaAccess.has(o.id)} /> : <DeliveryCell o={o} kids={kids} viaAccess={viaAccess.has(o.id)} doneKids={kids.filter((k) => k.status === "DELIVERED" || viaAccess.has(k.id)).length} />}
                         {!isAuto(o) && <NotesReady o={o} gmail={s.gmail} wa={s.wa} />}
                       </div>
-                      {!isAuto(o) && <EditRow o={o} programmes={programmes} />}
+                      <EditRow o={o} skey={s.key} programmes={programmes} />
                       {o.plan === "semester" && !isAuto(o) && <PackSubjects pack={o} hasKids={kids.length > 0} />}
                     </li>
                   ))}

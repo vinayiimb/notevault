@@ -3,10 +3,11 @@
 // free text first, then optional `Under` (this subject belongs to a whole-semester order), `Gmail`, and the payment
 // state: `Unpaid` (nothing received yet) or `Paid: N` (N rupees of the amount received so far); neither = paid in full.
 // Older rows hold just "Gmail: x".
-export type OrderMeta = { text: string; gmail: string; under: string; unpaid: boolean; paid: number | null };
+// `Site: <programme>/<subject>` marks an entry that stands for a subject unlocked on the site (an "auto" row you edited).
+export type OrderMeta = { text: string; gmail: string; under: string; unpaid: boolean; paid: number | null; site: string };
 
 export function parseOrderMeta(note: string | null | undefined): OrderMeta {
-  const meta: OrderMeta = { text: "", gmail: "", under: "", unpaid: false, paid: null };
+  const meta: OrderMeta = { text: "", gmail: "", under: "", unpaid: false, paid: null, site: "" };
   const text: string[] = [];
   for (const part of (note ?? "").split("|").map((s) => s.trim()).filter(Boolean)) {
     if (part === "Unpaid") {
@@ -18,9 +19,10 @@ export function parseOrderMeta(note: string | null | undefined): OrderMeta {
       meta.paid = Number(part2[1]);
       continue;
     }
-    const m = /^(Gmail|Under):\s*(\S+)$/.exec(part);
+    const m = /^(Gmail|Under|Site):\s*(\S+)$/.exec(part);
     if (!m) text.push(part);
     else if (m[1] === "Gmail") meta.gmail = m[2];
+    else if (m[1] === "Site") meta.site = m[2];
     else meta.under = m[2];
   }
   meta.text = text.join(" | ");
@@ -28,7 +30,7 @@ export function parseOrderMeta(note: string | null | undefined): OrderMeta {
 }
 
 export function buildOrderMeta(m: Partial<OrderMeta>): string | null {
-  const parts = [m.text, m.under && `Under: ${m.under}`, m.gmail && `Gmail: ${m.gmail}`, m.unpaid ? "Unpaid" : m.paid != null && `Paid: ${m.paid}`].filter(Boolean);
+  const parts = [m.text, m.under && `Under: ${m.under}`, m.gmail && `Gmail: ${m.gmail}`, m.site && `Site: ${m.site}`, m.unpaid ? "Unpaid" : m.paid != null && `Paid: ${m.paid}`].filter(Boolean);
   return parts.length ? parts.join(" | ") : null;
 }
 

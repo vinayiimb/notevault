@@ -62,10 +62,10 @@ export function ChatPay({
     <div>
       <p className="text-[13px] font-semibold uppercase tracking-wide text-brand">Almost there</p>
       <h1 className="mt-1 text-[24px] font-semibold leading-tight tracking-[-0.025em]">
-        {plan === "subject" && subject ? subject.name : `Whole Semester ${semester}`}
+        {semester === 0 ? (plan === "subject" ? "Single subject" : plan === "three" ? "3 subjects" : "Whole semester") : plan === "subject" && subject ? subject.name : `Whole Semester ${semester}`}
       </h1>
       <p className="mb-5 mt-1.5 text-[15px] leading-snug text-muted">
-        {programme.name} · Semester {semester}
+        {semester === 0 ? "Pay now, then tell us your course and subject on WhatsApp" : `${programme.name} · Semester ${semester}`}
       </p>
 
       {!canBuy ? (

@@ -9,6 +9,7 @@ import { NOTES_DELIVERY_HOURS, orderPlanLabel, orderWhatsAppText } from "@/lib/n
 import { AlertsPanel } from "@/components/admin/alerts-panel";
 import { CHAT_INBOX } from "@/lib/chat-link";
 import { intentScore } from "@/lib/lead-intent";
+import { parseOrderMeta, receivedOf } from "@/lib/order-meta";
 
 const SOURCE_LABEL: Record<string, string> = {
   "notes-hub": "Notes page form",
@@ -38,17 +39,33 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
   const { status: rawStatus } = await searchParams;
   const status: LeadStatusName = LEAD_STATUSES.find((s) => s === rawStatus) ?? "NEW";
 
-  // Paid pop-up orders. Separate from the leads query so a database without the NotesOrder table yet still shows leads.
-  let orders: { paid: Awaited<ReturnType<typeof prisma.notesOrder.findMany>>; delivered: Awaited<ReturnType<typeof prisma.notesOrder.findMany>> } | null = null;
+  // Section 1: students who paid directly in the pop-up (Razorpay). Hand-added tracker rows start with "manual-", so they never show here.
+  // Section 2: a simple per-student summary of every order. Separate queries so a database without the table still shows leads.
+  const direct = { razorpayOrderId: { not: { startsWith: "manual-" } } };
+  let orders: { paid: Awaited<ReturnType<typeof prisma.notesOrder.findMany>>; delivered: Awaited<ReturnType<typeof prisma.notesOrder.findMany>>; all: Awaited<ReturnType<typeof prisma.notesOrder.findMany>> } | null = null;
   try {
-    const [paid, delivered] = await Promise.all([
-      prisma.notesOrder.findMany({ where: { status: "PAID" }, orderBy: { paidAt: "asc" }, take: 100 }),
-      prisma.notesOrder.findMany({ where: { status: "DELIVERED" }, orderBy: { deliveredAt: "desc" }, take: 10 }),
+    const [paid, delivered, all] = await Promise.all([
+      prisma.notesOrder.findMany({ where: { status: "PAID", ...direct }, orderBy: { paidAt: "asc" }, take: 100 }),
+      prisma.notesOrder.findMany({ where: { status: "DELIVERED", ...direct }, orderBy: { deliveredAt: "desc" }, take: 10 }),
+      prisma.notesOrder.findMany({ orderBy: { paidAt: "desc" }, take: 1000 }),
     ]);
-    orders = { paid, delivered };
+    orders = { paid, delivered, all };
   } catch (err) {
     console.error("orders not read:", err);
   }
+  // Tracker rows: one per student (phone, or Gmail when they have no phone).
+  const tracker = new Map<string, { phone: string; gmail: string; subjects: number; received: number; toSend: number; last: Date }>();
+  for (const o of orders?.all ?? []) {
+    const m = parseOrderMeta(o.adminNote);
+    const key = o.phone || `mail:${m.gmail}`;
+    const t = tracker.get(key) ?? { phone: o.phone, gmail: "", subjects: 0, received: 0, toSend: 0, last: o.paidAt };
+    if (m.gmail) t.gmail = m.gmail;
+    if (!m.under) t.subjects += 1; // subjects listed under a whole-semester order are not counted twice
+    t.received += receivedOf(o.amount, m);
+    if (o.status === "PAID") t.toSend += 1;
+    tracker.set(key, t);
+  }
+  const trackerRows = [...tracker.values()].sort((a, b) => b.toSend - a.toSend || b.last.getTime() - a.last.getTime()).slice(0, 15);
 
   let data;
   try {
@@ -106,25 +123,22 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
   return (
     <div className="px-4 py-5 sm:p-8">
       <h1 className="text-2xl font-semibold">Leads</h1>
-      <p className="mt-1 max-w-2xl text-sm text-muted">
-        Students who left their number to get notes. Message them on WhatsApp (the text is pre-filled from what they
-        asked for), then move them along as you talk.
-      </p>
+      <nav className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-accent">
+        <a href="#paid" className="hover:underline">1. Paid directly</a>
+        <a href="#tracker" className="hover:underline">2. Tracker</a>
+        <a href="#numbers" className="hover:underline">3. WhatsApp numbers</a>
+      </nav>
 
-      <AlertsPanel />
-
-      {orders && (orders.paid.length > 0 || orders.delivered.length > 0) && (
-        <section className="mt-5 max-w-3xl">
-          <Link href="/admin/leads/delivery" className="mb-2 inline-block text-sm font-medium text-accent hover:underline">
-            Delivery tracker: all students &rarr;
-          </Link>
+      {orders && (
+        <section id="paid" className="mt-6 max-w-3xl scroll-mt-4">
           <h2 className="text-lg font-semibold">
-            Paid orders{orders.paid.length > 0 ? <span className="text-green-600"> · {orders.paid.length} to send</span> : ""}
+            1. Paid directly{orders.paid.length > 0 ? <span className="text-green-600"> · {orders.paid.length} to send</span> : ""}
           </h2>
           <p className="mt-1 text-sm text-muted">
-            They paid in the pop-up. Ask for their Gmail on WhatsApp and type it in Give site access (it unlocks the notes on the site and gives you a login message to send), then it is marked delivered. We promised them within{" "}
+            Paid in the pop-up themselves. Ask for their Gmail on WhatsApp, type it in Give site access, done. Promised within{" "}
             {NOTES_DELIVERY_HOURS} hours.
           </p>
+          {orders.paid.length === 0 && <p className="mt-3 text-sm text-muted">Nobody waiting.</p>}
           <ul className="mt-3 flex flex-col gap-3">
             {orders.paid.map((o) => {
               const overdue = hoursSince(o.paidAt) > NOTES_DELIVERY_HOURS;
@@ -194,57 +208,37 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
       )}
 
 
-      {unreached.length > 0 && (
-        <section className="mt-5 max-w-3xl">
-          <h2 className="text-lg font-semibold">
-            Said Yes, no number yet<span className="text-amber-600"> · {unreached.length}</span>
-          </h2>
-          <p className="mt-1 text-sm text-muted">
-            They never left a number, so the live chat is the only way to reach them. Warmest first: the ones that opened the
-            chat may write any moment.{" "}
-            <a href={CHAT_INBOX} target="_blank" rel="noreferrer" className="font-medium text-accent hover:underline">
-              Open the chat inbox →
-            </a>
-          </p>
-          <ul className="mt-3 flex flex-col gap-2">
-            {unreached.map((i) => (
-              <li key={i.id} className="flex flex-col gap-1.5 rounded-xl border border-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                <span className="text-sm">
-                  <span className="font-medium">{i.subject || "Notes"}</span>
-                  <span className="text-muted">{i.programme ? ` · ${i.programme}` : ""}{i.semester ? ` · Sem ${i.semester}` : ""}</span>
+      <section id="tracker" className="mt-10 max-w-3xl scroll-mt-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-lg font-semibold">2. Tracker</h2>
+          <Link href="/admin/leads/delivery" className="text-sm font-medium text-accent hover:underline">Open full tracker &rarr;</Link>
+        </div>
+        {trackerRows.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">No students yet.</p>
+        ) : (
+          <ul className="mt-3 divide-y divide-border rounded-xl border border-border bg-surface">
+            {trackerRows.map((t) => (
+              <li key={t.phone || t.gmail} className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-3 text-sm">
+                <span className="min-w-0">
+                  <span className="block font-medium tabular-nums">{t.phone ? formatLeadPhone(t.phone) : t.gmail}</span>
+                  {t.phone && t.gmail && <span className="block break-all text-xs text-muted">{t.gmail}</span>}
                 </span>
-                <span className="flex flex-wrap items-center gap-1.5 text-xs">
-                  <span className={`rounded-full px-2 py-0.5 font-medium ${i.chatAt ? "bg-green-600/10 text-green-700" : "bg-surface-muted text-muted"}`}>
-                    {i.chatAt ? "💬 Opened chat" : "Chat not opened"}
-                  </span>
-                  {i.waAt && <span className="rounded-full bg-surface-muted px-2 py-0.5 text-muted">Chose WhatsApp, no number</span>}
-                  <span className="text-muted">{i.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</span>
+                <span className="flex items-center gap-3 text-xs text-muted">
+                  <span>{t.subjects} subject{t.subjects === 1 ? "" : "s"}</span>
+                  <span className="font-semibold text-foreground">₹{t.received}</span>
+                  <span className={t.toSend ? "font-semibold text-amber-600" : "text-green-600"}>{t.toSend ? `${t.toSend} to send` : "Sent ✓"}</span>
                 </span>
               </li>
             ))}
           </ul>
-        </section>
-      )}
+        )}
+      </section>
 
-      {top.length > 0 && (
-        <section className="mt-6 max-w-3xl">
-          <h2 className="text-sm font-medium">Most asked for, last 30 days</h2>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {top.map((t) => (
-              <span
-                key={`${t.programmeSlug}/${t.subjectSlug}`}
-                className={`rounded-full border px-3 py-1 text-xs ${t.hasNotes ? "border-border text-muted" : "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"}`}
-                title={t.hasNotes ? "Notes ready" : "No notes yet — people are asking for this"}
-              >
-                {t.subject} · {t.programme} · {t._count._all}
-              </span>
-            ))}
-          </div>
-          <p className="mt-1.5 text-xs text-muted">Amber = no notes written yet, so these are the ones worth making next.</p>
-        </section>
-      )}
-
-      <div className="mt-7 grid grid-cols-2 gap-2 sm:mt-8 sm:flex sm:flex-wrap">
+      <section id="numbers" className="mt-10 max-w-3xl scroll-mt-4">
+        <h2 className="text-lg font-semibold">3. WhatsApp numbers</h2>
+        <p className="mt-1 text-sm text-muted">Left their number for notes. Message them, then move them along.</p>
+      </section>
+      <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         {LEAD_STATUSES.map((s) => (
           <Link
             key={s}
@@ -344,6 +338,60 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
           })}
         </ul>
       )}
+      <details className="mt-10 max-w-3xl">
+        <summary className="cursor-pointer text-sm font-medium text-muted hover:text-foreground">More: visitors with no number, most asked for, alerts</summary>
+        <AlertsPanel />
+      {unreached.length > 0 && (
+        <section className="mt-5 max-w-3xl">
+          <h2 className="text-lg font-semibold">
+            Said Yes, no number yet<span className="text-amber-600"> · {unreached.length}</span>
+          </h2>
+          <p className="mt-1 text-sm text-muted">
+            They never left a number, so the live chat is the only way to reach them. Warmest first: the ones that opened the
+            chat may write any moment.{" "}
+            <a href={CHAT_INBOX} target="_blank" rel="noreferrer" className="font-medium text-accent hover:underline">
+              Open the chat inbox →
+            </a>
+          </p>
+          <ul className="mt-3 flex flex-col gap-2">
+            {unreached.map((i) => (
+              <li key={i.id} className="flex flex-col gap-1.5 rounded-xl border border-border bg-surface px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+                <span className="text-sm">
+                  <span className="font-medium">{i.subject || "Notes"}</span>
+                  <span className="text-muted">{i.programme ? ` · ${i.programme}` : ""}{i.semester ? ` · Sem ${i.semester}` : ""}</span>
+                </span>
+                <span className="flex flex-wrap items-center gap-1.5 text-xs">
+                  <span className={`rounded-full px-2 py-0.5 font-medium ${i.chatAt ? "bg-green-600/10 text-green-700" : "bg-surface-muted text-muted"}`}>
+                    {i.chatAt ? "💬 Opened chat" : "Chat not opened"}
+                  </span>
+                  {i.waAt && <span className="rounded-full bg-surface-muted px-2 py-0.5 text-muted">Chose WhatsApp, no number</span>}
+                  <span className="text-muted">{i.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
+      {top.length > 0 && (
+        <section className="mt-6 max-w-3xl">
+          <h2 className="text-sm font-medium">Most asked for, last 30 days</h2>
+          <div className="mt-2 flex flex-wrap gap-2">
+            {top.map((t) => (
+              <span
+                key={`${t.programmeSlug}/${t.subjectSlug}`}
+                className={`rounded-full border px-3 py-1 text-xs ${t.hasNotes ? "border-border text-muted" : "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:text-amber-400"}`}
+                title={t.hasNotes ? "Notes ready" : "No notes yet — people are asking for this"}
+              >
+                {t.subject} · {t.programme} · {t._count._all}
+              </span>
+            ))}
+          </div>
+          <p className="mt-1.5 text-xs text-muted">Amber = no notes written yet, so these are the ones worth making next.</p>
+        </section>
+      )}
+
+      </details>
     </div>
   );
 }

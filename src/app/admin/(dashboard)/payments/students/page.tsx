@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { describeItems, EXTRA_ITEMS, getNotesCatalog } from "@/lib/paid-notes";
-import { grantSubjectsAction, resetStudentDevicesAction, revokeSubjectAction, setSubjectLimitAction } from "@/lib/paid-notes-actions";
+import { addStudentAction, grantSubjectsAction, resetStudentDevicesAction, revokeSubjectAction, setSubjectLimitAction } from "@/lib/paid-notes-actions";
 import { listLiveDevices, liveDeviceCounts } from "@/lib/student-devices";
 import { MAX_DEVICES } from "@/lib/student-device-policy";
 import { ResetPasswordButton } from "@/components/admin/payment-approve";
@@ -75,11 +75,25 @@ async function StudentList({ q }: { q: string }) {
           <input name="q" defaultValue={q} placeholder="Search by email" className={`${inputClass} min-w-0 flex-1`} />
           <button type="submit" className="rounded-lg border border-border px-3 py-2 text-sm text-muted hover:text-foreground">Search</button>
         </form>
-        <form className="flex flex-1 gap-2">
-          <input name="email" type="email" required placeholder="Give access to a new Gmail" className={`${inputClass} min-w-0 flex-1`} />
-          <button type="submit" className="rounded-lg bg-accent px-3 py-2 text-sm font-medium text-accent-foreground hover:opacity-90">Open</button>
-        </form>
       </div>
+
+      <form action={addStudentAction} className="mt-4 flex max-w-3xl flex-col gap-3 rounded-xl border border-border bg-surface p-4 sm:p-5">
+        <p className="font-medium">Add a student</p>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <input name="email" type="email" required placeholder="Student's Gmail" className={`${inputClass} min-w-0 flex-1`} />
+          <input name="phone" inputMode="tel" placeholder="WhatsApp number (optional)" className={`${inputClass} min-w-0 flex-1`} />
+        </div>
+        <div className="flex gap-4 text-sm">
+          <label className="flex items-center gap-1.5"><input type="radio" name="type" value="sample" defaultChecked /> Sample student</label>
+          <label className="flex items-center gap-1.5"><input type="radio" name="type" value="paid" /> Paid student</label>
+        </div>
+        <div className="flex flex-col gap-2 text-sm sm:flex-row sm:items-center">
+          <span className="text-xs text-muted">If paid:</span>
+          <input name="subjects" type="number" min={1} max={MAX_SUBJECT_LIMIT} placeholder="Number of subjects" className={`${inputClass} sm:w-44`} />
+          <input name="amount" type="number" min={0} placeholder="Amount ₹" className={`${inputClass} sm:w-32`} />
+          <button type="submit" className="rounded-lg bg-accent px-4 py-2 text-sm font-medium text-accent-foreground hover:opacity-90 sm:ml-auto">Add student</button>
+        </div>
+      </form>
 
       {activity === null && (
         <p className="mt-4 max-w-3xl rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-sm text-amber-800 dark:text-amber-300">
@@ -97,7 +111,7 @@ async function StudentList({ q }: { q: string }) {
                 href={`/admin/payments/students?email=${encodeURIComponent(s.email)}`}
                 className="block rounded-xl border border-border bg-surface p-4 transition hover:border-accent sm:p-5"
               >
-                <p className="break-all font-medium">{s.email}</p>
+                <p className="break-all font-medium">{s.email} <span className={`ml-1 rounded-full px-2 py-0.5 align-middle text-[11px] font-semibold ${s.paid > 0 ? "bg-green-600/10 text-green-700" : "bg-surface-muted text-muted"}`}>{s.paid > 0 ? "Paid" : "Sample"}</span></p>
                 <p className="mt-1 text-sm text-muted">
                   {s.unlocked.size} subject{s.unlocked.size === 1 ? "" : "s"} · ₹{s.paid} paid
                   {s.pending > 0 && <span className="text-amber-600 dark:text-amber-400"> · {s.pending} pending</span>}
@@ -165,6 +179,8 @@ async function StudentDetail({ email }: { email: string }) {
               <a href={`https://wa.me/${phone}`} target="_blank" rel="noreferrer" className="text-accent hover:underline">+{phone}</a>
             ) : "—"}
           </dd>
+          <dt className="text-muted">Type</dt>
+          <dd>{paid > 0 ? "Paid student" : "Sample student"}</dd>
           <dt className="text-muted">Paid</dt>
           <dd>₹{paid}</dd>
           <dt className="text-muted">Password login</dt>

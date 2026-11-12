@@ -8,7 +8,7 @@ import { getSession } from "@/lib/auth";
 import { findCanonicalProgramme, findCanonicalSubject } from "@/lib/canonical-subject-notes-data";
 import { slugify } from "@/lib/utils";
 import { normalizeEmail, normalizePhone } from "@/lib/paid-notes-pricing";
-import { grantSubjectsAction } from "@/lib/paid-notes-actions";
+import { grantSubjectsAction, revokeSubjectAction } from "@/lib/paid-notes-actions";
 import { buildOrderMeta, parseOrderMeta } from "@/lib/order-meta";
 import { validVisitorId } from "@/lib/lead-intent";
 import { fillPackFromSyllabus, notesOrdersReady } from "@/lib/notes-orders-server";
@@ -419,8 +419,21 @@ export async function saveStudentPaymentAction(formData: FormData) {
   const realAmount = real.reduce((n, o) => n + o.amount, 0);
   const primary = top.find((o) => o.plan === "semester") ?? top[0];
   if (!primary) {
-    revalidatePath("/admin/leads/delivery");
-    return back(price || paid ? "This student's payment came through Razorpay and can't be edited here." : "Saved.");
+    if (real.length) {
+      revalidatePath("/admin/leads/delivery");
+      return back(price || paid ? "This student's payment came through Razorpay and can't be edited here." : "Saved.");
+    }
+    // Known only from site access: start a hand-entered purchase from the first subject they can open.
+    if (!price) return back("Nothing to save.");
+    const email = gmailKey || (await prisma.notesStudent.findUnique({ where: { phone: skey } }).catch(() => null))?.gmail || "";
+    const access = email ? await prisma.purchase.findFirst({ where: { email, status: "APPROVED", NOT: { items: { isEmpty: true } } }, select: { items: true }, orderBy: { createdAt: "asc" } }) : null;
+    const [pSlug = "", sSlug = ""] = (access?.items[0] ?? "").split("/");
+    const name = sSlug.replace(/-/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()) || "Notes";
+    const ref = `manual-${crypto.randomUUID()}`;
+    await prisma.notesOrder.create({
+      data: { phone, plan: "subject", programme: "", programmeSlug: pSlug, semester: 0, subject: name, subjectSlug: sSlug || slugify(name), amount: 0, razorpayOrderId: ref, razorpayPaymentId: ref, adminNote: buildOrderMeta({ text: "Added by admin", gmail: email }) },
+    });
+    return saveStudentPaymentAction(formData); // run again, now there is a row to carry the payment
   }
   const myPrice = Math.max(0, price - realAmount);
   const myPaid = Math.max(0, Math.min(myPrice, paid - realAmount));
@@ -454,36 +467,126 @@ export async function setOrderPaidAction(formData: FormData) {
   revalidatePath("/admin/leads/delivery");
 }
 
-/** Only hand-added rows can be removed; a real Razorpay payment is never deleted from here. */
-export async function deleteManualOrderAction(formData: FormData) {
+/**
+ * Edit a row that comes from site access ("auto"): the edit is saved as a normal entry for the student, tagged with the
+ * access it stands for, so it replaces the auto row in the list. The access on the site is not changed; deleting the
+ * entry later brings the auto row back.
+ */
+export async function editAutoOrderAction(formData: FormData) {
+  await requireAdmin();
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  const site = String(formData.get("site") ?? "").replace(/[^\w/.-]/g, "");
+  const skey = String(formData.get("skey") ?? "");
+  const phone = skey.startsWith("mail:") ? "" : normalizePhone(skey) ?? "";
+  if (!email || !site.includes("/")) return back("That row could not be edited.");
+  const f = readOrderForm(formData);
+  const ref = `manual-${crypto.randomUUID()}`;
+  const paid = formData.get("paid") === "on";
+  await prisma.notesOrder.create({
+    data: {
+      ...f,
+      phone,
+      programmeSlug: site.split("/")[0],
+      subjectSlug: site.split("/")[1] ?? slugify(f.subject),
+      razorpayOrderId: ref,
+      razorpayPaymentId: ref,
+      status: "DELIVERED", // they can already open it on the site
+      deliveredAt: new Date(),
+      adminNote: buildOrderMeta({ text: "Added by admin", gmail: email, site, unpaid: !paid }),
+    },
+  });
+  revalidatePath("/admin/leads/delivery");
+  return back("Saved. This entry is now fully editable.");
+}
+
+/** Delete one purchase row from the tracker (hand-entered or a recorded payment). A whole-semester order takes the subjects listed under it too. */
+export async function deleteOrderAction(formData: FormData) {
   await requireAdmin();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
-  await prisma.notesOrder.deleteMany({ where: { id, razorpayPaymentId: { startsWith: "manual-" } } });
+  const order = await prisma.notesOrder.findUnique({ where: { id }, select: { id: true, plan: true } });
+  if (!order) return;
+  const ids = [id];
+  if (order.plan === "semester") {
+    const kids = await prisma.notesOrder.findMany({ where: { adminNote: { contains: `Under: ${id}` } }, select: { id: true } });
+    ids.push(...kids.map((k) => k.id));
+  }
+  await prisma.notesOrder.deleteMany({ where: { id: { in: ids } } });
   revalidatePath("/admin/leads/delivery");
   revalidatePath("/admin/leads");
+  return back(ids.length > 1 ? `Deleted the semester and its ${ids.length - 1} subjects.` : "Deleted.");
 }
 
-/** A student's name, a second number and Gmail, shown on every row of theirs in the tracker. */
+/** Delete a student from the tracker: every purchase row of theirs and their details. Site access is not touched. */
+export async function deleteStudentAction(formData: FormData) {
+  await requireAdmin();
+  const skey = String(formData.get("skey") ?? "");
+  const gmailKey = skey.startsWith("mail:") ? skey.slice(5) : "";
+  const phone = gmailKey ? "" : normalizePhone(skey) ?? "";
+  if (!gmailKey && !phone) return back("Student not found.");
+  const rows = await prisma.notesOrder.deleteMany({
+    where: phone ? { phone } : { phone: "", adminNote: { contains: gmailKey, mode: "insensitive" } },
+  });
+  await prisma.notesStudent.deleteMany({ where: { phone: skey } }).catch(() => undefined);
+  revalidatePath("/admin/leads/delivery");
+  revalidatePath("/admin/leads");
+  return back(`Deleted the student and ${rows.count} purchase row${rows.count === 1 ? "" : "s"}. Their access on the site was not changed.`);
+}
+
+/** Take a subject's access away from a Gmail (the row in the tracker that came from site access). */
+export async function removeSiteAccessAction(formData: FormData) {
+  await requireAdmin();
+  await revokeSubjectAction(formData);
+  revalidatePath("/admin/leads/delivery");
+  return back("Access removed for that subject.");
+}
+
+/**
+ * Edit a student: name, WhatsApp number, a second number and Gmail. Nothing is locked.
+ *  - Changing the WhatsApp number moves all their rows to the new number; adding one to a student known only by Gmail
+ *    does the same. If that number already belongs to another student, the two become one.
+ *  - Changing the Gmail updates it on all their rows. A Gmail that already has access on the site joins this student.
+ */
 export async function saveStudentAction(formData: FormData) {
   await requireAdmin();
   const key = String(formData.get("key") ?? "");
-  const mailKey = key.startsWith("mail:");
-  if (!mailKey && !normalizePhone(key)) return back("Student not found.");
+  const oldMail = key.startsWith("mail:") ? key.slice(5) : "";
+  const oldPhone = oldMail ? "" : normalizePhone(key) ?? "";
+  if (!oldMail && !oldPhone) return back("Student not found.");
+
+  const phoneRaw = String(formData.get("phone") ?? "").trim();
+  const newPhone = phoneRaw ? normalizePhone(phoneRaw) : oldPhone || "";
+  if (phoneRaw && !newPhone) return back("The WhatsApp number is not a valid 10-digit number.");
   const altRaw = String(formData.get("altPhone") ?? "").trim();
   const altPhone = altRaw ? normalizePhone(altRaw) : null;
-  if (altRaw && !altPhone) return back("That number is not a valid 10-digit number.");
+  if (altRaw && !altPhone) return back("The extra number is not a valid 10-digit number.");
   const gmailRaw = String(formData.get("gmail") ?? "").trim();
-  const gmail = mailKey ? key.slice(5) : gmailRaw ? normalizeEmail(gmailRaw) : null;
-  if (gmailRaw && !gmail) return back("That Gmail address is not valid.");
-  const data = { name: text120(formData.get("name")) || null, altPhone, gmail };
+  const newGmail = gmailRaw ? normalizeEmail(gmailRaw) : oldMail || null;
+  if (gmailRaw && !newGmail) return back("That Gmail address is not valid.");
+  if (!newPhone && !newGmail) return back("A student needs a WhatsApp number or a Gmail address.");
+
+  // Their rows: by phone, or (Gmail-only student) by the Gmail noted on them.
+  const rows = await prisma.notesOrder.findMany({
+    where: oldPhone ? { phone: oldPhone } : { phone: "", adminNote: { contains: oldMail, mode: "insensitive" } },
+    select: { id: true, adminNote: true },
+  });
+  for (const r of rows) {
+    const meta = parseOrderMeta(r.adminNote);
+    if (newGmail) meta.gmail = newGmail;
+    await prisma.notesOrder.update({ where: { id: r.id }, data: { phone: newPhone || "", adminNote: buildOrderMeta(meta) } });
+  }
+
+  const newKey = newPhone || `mail:${newGmail}`;
+  const data = { name: text120(formData.get("name")) || null, altPhone, gmail: newGmail };
   try {
-    await prisma.notesStudent.upsert({ where: { phone: key }, create: { phone: key, ...data }, update: data });
+    if (newKey !== key) await prisma.notesStudent.deleteMany({ where: { phone: key } });
+    await prisma.notesStudent.upsert({ where: { phone: newKey }, create: { phone: newKey, ...data }, update: data });
   } catch (err) {
     console.error("notes student not saved:", err);
     return back("Student details can't be saved yet: the add_notes_student database update has not been applied.");
   }
   revalidatePath("/admin/leads/delivery");
+  revalidatePath("/admin/leads");
   return back("Saved.");
 }
 

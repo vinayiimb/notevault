@@ -479,3 +479,33 @@ export async function setSubjectLimitAction(formData: FormData) {
   revalidatePath("/admin/payments/students");
   revalidatePath("/account");
 }
+
+// Admin → Students → new Gmail: is this a sample or a paid student? Both are a ₹0/₹N approved Purchase with no subjects yet
+// (no schema change), so they show in the student list, revenue and analytics like any other. Paid also sets the dashboard
+// subject limit to the number of subjects they bought.
+export async function addStudentAction(formData: FormData) {
+  await requireAdmin();
+  const email = normalizeEmail(String(formData.get("email") ?? ""));
+  if (!email) return;
+  const paid = formData.get("type") === "paid";
+  const rawPhone = String(formData.get("phone") ?? "").trim();
+  const phone = rawPhone ? normalizePhone(rawPhone) ?? "" : "";
+  const amount = paid ? Math.max(0, Math.floor(Number(formData.get("amount")) || 0)) : 0;
+  const subjects = paid ? parseSubjectLimit(formData.get("subjects")) : null;
+  await prisma.purchase.create({
+    data: {
+      email,
+      phone,
+      utr: `admin-${paid ? "paid" : "sample"}-${randomUUID()}`,
+      amount,
+      items: [],
+      status: "APPROVED",
+      reviewedAt: new Date(),
+      adminNote: paid ? `Paid student · ${subjects ?? "?"} subjects · ₹${amount}` : "Sample student",
+    },
+  });
+  if (subjects) await setSubjectLimit(email, subjects);
+  revalidatePath("/admin/payments", "layout");
+  revalidatePath("/account");
+  redirect(`/admin/payments/students?email=${encodeURIComponent(email)}`);
+}

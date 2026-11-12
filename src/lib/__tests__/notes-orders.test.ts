@@ -98,3 +98,21 @@ test("labels: whole semester vs subject, and the buyer message names what they b
   const t = orderWhatsAppText({ plan: "semester", subject: "", semester: 3, programme: "B.A. Eco" });
   assert.ok(t.includes("Whole Semester 3") && t.includes("B.A. Eco"));
 });
+
+test("a pay-first chat order needs only a phone and a plan, semester 0", () => {
+  const sub = parseOrderRequest({ plan: "subject", phone: "9876543210", programmeSlug: "chat" });
+  assert.equal(sub?.semester, 0);
+  assert.equal(sub?.programmeSlug, "chat");
+  assert.equal(parseOrderRequest({ plan: "semester", phone: "9876543210", programmeSlug: "chat" })?.subject, "");
+  assert.equal(parseOrderRequest({ plan: "semester", phone: "123", programmeSlug: "chat" }), null);
+  assert.equal(parseOrderRequest({ plan: "semester", phone: "9876543210", programmeSlug: "other", programme: "X" }), null); // a real course still needs its semester
+  const back = fromRazorpayNotes(toRazorpayNotes({ ...sub!, amount: 99 }));
+  assert.equal(back?.amount, 99);
+});
+
+test("the 3-subject pack exists only as a chat order, at its pack price", () => {
+  assert.equal(ORDER_PRICE.three, PACKS[1].price);
+  assert.equal(parseOrderRequest({ plan: "three", phone: "9876543210", programmeSlug: "chat" })?.plan, "three");
+  assert.equal(parseOrderRequest({ plan: "three", phone: "9876543210", programmeSlug: "bcom-hons", programme: "B.Com", semester: 3 }), null);
+  assert.equal(orderPlanLabel({ plan: "three", subject: "", semester: 0 }), "3 subjects");
+});
