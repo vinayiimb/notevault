@@ -228,6 +228,13 @@ export function ChatPanel({
 /** What the bot sends besides text: the sample pages, the payment options (with the discount), or the number + Gmail form. */
 function CardView({ card, live, onZoom, onSend }: { card: ThreadCard; live: boolean; onZoom: (url: string) => void; onSend: (text: string) => void }) {
   const [phone, setPhone] = useState(card.kind === "contact" ? card.phone : "");
+  if (card.kind === "link") {
+    return (
+      <a href={card.href} target="_blank" rel="noopener noreferrer" className="flex w-full items-center justify-center gap-2 rounded-2xl bg-[#25d366] px-4 py-3 text-[15px] font-bold text-white shadow-[0_8px_20px_-10px_rgba(37,211,102,0.8)] transition active:scale-[0.98]">
+        {card.label}
+      </a>
+    );
+  }
   const [gmail, setGmail] = useState("");
   if (card.kind === "images") {
     return (
@@ -241,18 +248,19 @@ function CardView({ card, live, onZoom, onSend }: { card: ThreadCard; live: bool
       </div>
     );
   }
-  if (card.kind === "contact") {
+  if (card.kind === "contact" || card.kind === "phone") {
     if (!live) return null;
     return (
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          if (phone.replace(/\D/g, "").length >= 10 && /\S+@\S+\.\S+/.test(gmail)) onSend(`${phone} ${gmail.trim()}`);
+          if (card.kind === "phone") { if (phone.replace(/\D/g, "").length >= 10) onSend(phone); }
+          else if (phone.replace(/\D/g, "").length >= 10 && /\S+@\S+\.\S+/.test(gmail)) onSend(`${phone} ${gmail.trim()}`);
         }}
         className="flex w-full flex-col gap-2 rounded-2xl bg-surface p-3 ring-1 ring-border"
       >
         <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" placeholder="WhatsApp number" aria-label="WhatsApp number" required className="h-10 rounded-xl bg-surface-muted px-3 text-[14.5px] outline-none focus:ring-2 focus:ring-brand" />
-        <input value={gmail} onChange={(e) => setGmail(e.target.value)} type="email" placeholder="Gmail" aria-label="Gmail" required className="h-10 rounded-xl bg-surface-muted px-3 text-[14.5px] outline-none focus:ring-2 focus:ring-brand" />
+        {card.kind === "contact" && <input value={gmail} onChange={(e) => setGmail(e.target.value)} type="email" placeholder="Gmail" aria-label="Gmail" required className="h-10 rounded-xl bg-surface-muted px-3 text-[14.5px] outline-none focus:ring-2 focus:ring-brand" />}
         <button type="submit" className="h-10 rounded-full bg-brand text-[14.5px] font-semibold text-brand-foreground">Send</button>
       </form>
     );

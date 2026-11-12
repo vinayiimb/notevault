@@ -43,6 +43,8 @@ export async function visitorChatStatus(token: string): Promise<{ unread: number
 export type ThreadCard =
   | { kind: "images"; images: { url: string; w: number; h: number }[] }
   | { kind: "contact"; phone: string }
+  | { kind: "phone"; phone: string }
+  | { kind: "link"; title: string; label: string; href: string }
   | { kind?: undefined; title: string; options: { label: string; note: string; price: number; was?: number; off?: number; href: string; best?: boolean }[]; foot: string };
 export type ThreadMessage = { id: number; mine: boolean; auto: boolean; body: string; at: number; card: ThreadCard | null; actions: string[] };
 
@@ -55,6 +57,8 @@ function cleanCard(c: unknown): ThreadCard | null {
     const images = (x.images as { url?: unknown; w?: unknown; h?: unknown }[]).filter((i) => /^\/sample\/[\w-]+\.jpg$/.test(String(i.url))).slice(0, 8).map((i) => ({ url: String(i.url), w: num(i.w) || 4, h: num(i.h) || 3 }));
     return images.length ? { kind: "images", images } : null;
   }
+  if (x.kind === "phone") return { kind: "phone", phone: "" };
+  if (x.kind === "link") return /^https:\/\/wa\.me\/\d{10,15}(\?text=[\w%]*)?$/.test(String(x.href)) ? { kind: "link", title: str(x.title, 60), label: str(x.label, 30) || "Open WhatsApp", href: String(x.href) } : null;
   if (x.kind === "contact") return { kind: "contact", phone: /^\d{10}$/.test(String(x.phone ?? "")) ? String(x.phone) : "" };
   if (Array.isArray(x.options)) {
     const options = (x.options as Record<string, unknown>[]).slice(0, 4).flatMap((o) => {
