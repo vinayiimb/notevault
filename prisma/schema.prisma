@@ -1598,3 +1598,24 @@ model StudentSubjectLimit {
   email       String @id
   maxSubjects Int
 }
+
+// A paid student's support ticket: a problem they hit, an idea, or an error
+// report. Answered by the owner in Admin → Support; the reply shows on the
+// student's /account/support page.
+model SupportTicket {
+  id            String    @id @default(cuid())
+  email         String
+  kind          String // PROBLEM | SUGGESTION | ERROR
+  subject       String
+  message       String    @db.Text
+  pageUrl       String?
+  userAgent     String?
+  screenshotUrl String?
+  status        String    @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED
+  reply         String?   @db.Text
+  repliedAt     DateTime?
+  createdAt     DateTime  @default(now())
+
+  @@index([email, createdAt])
+  @@index([status, createdAt])
+}

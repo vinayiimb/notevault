@@ -9,6 +9,7 @@ import {
   ClockCounterClockwise,
   Headset,
   House,
+  Lifebuoy,
   List,
   ListChecks,
   Notebook,
@@ -44,6 +45,7 @@ const GROUPS = [
 ] as const;
 
 const SUPPORT = [
+  { href: "/account/support", label: "Help & tickets", Icon: Lifebuoy, external: false },
   { href: "/feedback", label: "Feedback", Icon: ChatCircleText, external: false },
   { href: "https://wa.me/919376180015", label: "Help on WhatsApp", Icon: Headset, external: true },
 ] as const;
@@ -58,12 +60,14 @@ export function AccountShell({
   email,
   streak,
   feathers,
+  current = "/account",
   children,
 }: {
   name: string;
   email: string;
   streak: number;
   feathers: number;
+  current?: string; // which sidebar link is highlighted
   children: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false); // phone drawer
@@ -101,7 +105,7 @@ export function AccountShell({
               {g.label && <p className="px-3 pb-1.5 text-xs font-semibold uppercase tracking-[0.07em] text-muted">{g.label}</p>}
               <ul className="flex flex-col gap-0.5">
                 {g.items.map(({ href, label, Icon, ...rest }) => {
-                  const active = "current" in rest;
+                  const active = current === "/account" && "current" in rest;
                   return (
                     <li key={href}>
                       <Link href={href} onClick={() => setOpen(false)} aria-current={active ? "page" : undefined} className={itemClass(active)}>
@@ -120,7 +124,7 @@ export function AccountShell({
           <ul className="flex flex-col gap-0.5">
             {SUPPORT.map(({ href, label, Icon, external }) => (
               <li key={href}>
-                <Link href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} className={itemClass(false)}>
+                <Link href={href} {...(external ? { target: "_blank", rel: "noopener noreferrer" } : {})} aria-current={href === current ? "page" : undefined} className={itemClass(href === current)}>
                   <Icon size={20} className="shrink-0" />
                   {label}
                 </Link>

@@ -90,6 +90,18 @@ export function feedbackAlert(message: string, screenshotUrl: string | null) {
   ].join("\n");
 }
 
+export function ticketAlert(t: { email: string; kind: string; subject: string; message: string }) {
+  const label = t.kind === "ERROR" ? "🐞 Error report" : t.kind === "SUGGESTION" ? "💡 Suggestion" : "🎫 Problem";
+  return [
+    `${label} from a student`,
+    t.email,
+    `${clip(t.subject, 120)}`,
+    `"${clip(t.message.replace(/\s+/g, " "), 300)}"`,
+    "",
+    `Reply: ${SITE}/admin/support`,
+  ].join("\n");
+}
+
 export function paymentAlert(p: { phone: string; email: string; amount: number; utr: string }) {
   return [
     `💳 UPI payment to check: ₹${p.amount}`,

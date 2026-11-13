@@ -14,7 +14,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   const isPapers = pathname === "/papers" || pathname.startsWith("/papers");
 
   // The student dashboard brings its own frame (AccountShell): sidebar only, no site header/footer.
-  if (pathname === "/account") {
+  if (pathname === "/account" || pathname === "/account/support") {
     return (
       <div className="w-full flex-1">
         {children}
