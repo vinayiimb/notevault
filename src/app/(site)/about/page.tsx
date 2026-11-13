@@ -53,8 +53,13 @@ export default function AboutPage() {
             <Link href="/blog/du-business-communication-sec-most-repeated-questions" className="text-brand hover:underline">Business Communication</Link>,{" "}
             <Link href="/blog/du-social-media-marketing-sec-most-repeated-questions" className="text-brand hover:underline">Social Media Marketing</Link>,{" "}
             <Link href="/blog/du-personal-financial-planning-sec-most-repeated-questions" className="text-brand hover:underline">Personal Financial Planning (SEC)</Link>,{" "}
-            <Link href="/blog/du-financial-literacy-vac-most-repeated-questions" className="text-brand hover:underline">Financial Literacy</Link> and{" "}
-            <Link href="/blog/du-constitutional-values-fundamental-duties-vac-most-repeated-questions" className="text-brand hover:underline">Constitutional Values and Fundamental Duties (VAC)</Link>.
+            <Link href="/blog/du-financial-literacy-vac-most-repeated-questions" className="text-brand hover:underline">Financial Literacy</Link>,{" "}
+            <Link href="/blog/du-constitutional-values-fundamental-duties-vac-most-repeated-questions" className="text-brand hover:underline">Constitutional Values and Fundamental Duties (VAC)</Link>,{" "}
+            <Link href="/blog/du-emotional-intelligence-vac-most-repeated-questions" className="text-brand hover:underline">Emotional Intelligence (VAC)</Link>,{" "}
+            <Link href="/blog/du-swachh-bharat-vac-most-repeated-questions" className="text-brand hover:underline">Swachh Bharat (VAC)</Link>,{" "}
+            <Link href="/blog/du-ethics-values-ancient-indian-traditions-vac-most-repeated-questions" className="text-brand hover:underline">Ethics and Values in Ancient Indian Traditions (VAC)</Link>,{" "}
+            <Link href="/blog/du-personality-development-communication-sec-most-repeated-questions" className="text-brand hover:underline">Personality Development and Communication (SEC)</Link> and{" "}
+            <Link href="/blog/du-political-leadership-communication-sec-most-repeated-questions" className="text-brand hover:underline">Political Leadership and Communication (SEC)</Link>.
           </li>
           <li>
             <strong>Exam guides</strong> for each semester, covering passing rules, course types (DSC, DSE, GE, AEC, SEC,

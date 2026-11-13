@@ -212,6 +212,48 @@ export default async function HomePage() {
                 <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
               </Link>
             </li>
+            <li>
+              <Link href="/blog/du-emotional-intelligence-vac-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Emotional Intelligence (VAC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">The same self-awareness question in 2024, 2025 and 2026</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-swachh-bharat-vac-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Swachh Bharat (VAC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">ODF and ODF Plus are in 14 of 20 papers</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-ethics-values-ancient-indian-traditions-vac-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Ethics and Values in Ancient Indian Traditions (VAC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">Purushartha Chatushtaya is in 11 of 16 papers</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-personality-development-communication-sec-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Personality Development and Communication (SEC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">The Nov-Dec 2025 SOL paper repeated 5 of 6 questions</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog/du-political-leadership-communication-sec-most-repeated-questions" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">Political Leadership and Communication (SEC)</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">Psephology is in 18 of 25 papers</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Read the analysis <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
+            <li>
+              <Link href="/blog" className="group flex h-full flex-col rounded-[22px] bg-surface-muted p-5 text-foreground transition-colors duration-300 hover:bg-[color-mix(in_srgb,var(--surface-muted)_88%,var(--foreground))]">
+                <span className="text-[15px] font-semibold leading-snug tracking-[-0.01em]">All our analyses and guides</span>
+                <span className="mt-1.5 block text-[13px] leading-snug text-muted">Exam guides and more repeated-question breakdowns</span>
+                <span className="mt-auto inline-flex items-center gap-0.5 pt-4 text-[13px] font-medium text-brand group-hover:underline underline-offset-4">Browse the blog <CaretRight size={12} weight="bold" /></span>
+              </Link>
+            </li>
           </ul>
         </section>
 

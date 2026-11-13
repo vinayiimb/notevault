@@ -29,6 +29,8 @@ export async function GET() {
     `- [Environmental Science I (AEC)](${SITE_URL}/blog/du-environmental-science-aec-most-repeated-questions), [Environmental Science II (AEC)](${SITE_URL}/blog/du-environmental-science-ii-aec-most-repeated-questions)`,
     `- [Business Communication (SEC)](${SITE_URL}/blog/du-business-communication-sec-most-repeated-questions), [Social Media Marketing (SEC)](${SITE_URL}/blog/du-social-media-marketing-sec-most-repeated-questions), [Personal Financial Planning (SEC)](${SITE_URL}/blog/du-personal-financial-planning-sec-most-repeated-questions)`,
     `- [Financial Literacy (VAC)](${SITE_URL}/blog/du-financial-literacy-vac-most-repeated-questions), [Constitutional Values and Fundamental Duties (VAC)](${SITE_URL}/blog/du-constitutional-values-fundamental-duties-vac-most-repeated-questions)`,
+    `- [Emotional Intelligence (VAC)](${SITE_URL}/blog/du-emotional-intelligence-vac-most-repeated-questions), [Swachh Bharat (VAC)](${SITE_URL}/blog/du-swachh-bharat-vac-most-repeated-questions), [Ethics and Values in Ancient Indian Traditions (VAC)](${SITE_URL}/blog/du-ethics-values-ancient-indian-traditions-vac-most-repeated-questions)`,
+    `- [Personality Development and Communication (SEC)](${SITE_URL}/blog/du-personality-development-communication-sec-most-repeated-questions), [Political Leadership and Communication (SEC)](${SITE_URL}/blog/du-political-leadership-communication-sec-most-repeated-questions)`,
     "",
     "## Courses",
     ...progs.map((p) => `- [${p.name}](${SITE_URL}/papers/${p.slug}): ${p.totalPapers} papers`),
