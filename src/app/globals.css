@@ -647,3 +647,6 @@ body:has([data-ask-ai-launcher]) .wa-fab {
 @media (prefers-reduced-motion: reduce) {
   .dash-fill, .dash-flame, .dash-float { animation: none; }
 }
+
+/* PageOpening (src/components/page-opening.tsx): light sweep across the progress track */
+@keyframes opening-sweep { from { transform: translateX(-120%); } to { transform: translateX(420%); } }

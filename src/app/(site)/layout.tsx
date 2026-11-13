@@ -1,6 +1,8 @@
 "use client";
 
+import { Suspense } from "react";
 import { usePathname } from "next/navigation";
+import { RouteProgress } from "@/components/route-progress";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteSidebar } from "@/components/site-sidebar";
@@ -12,12 +14,14 @@ import { NotesPromptSite } from "@/components/notes-leads/notes-prompt-site";
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isDashboard = pathname.startsWith("/dashboard");
+  const progress = <Suspense fallback={null}><RouteProgress /></Suspense>;
   const isPapers = pathname === "/papers" || pathname.startsWith("/papers");
 
   // The student dashboard brings its own frame (AccountShell): sidebar only, no site header/footer.
   if (pathname === "/account" || pathname === "/account/support") {
     return (
       <div className="w-full flex-1">
+        {progress}
         {children}
         <ChatNowFab />
       </div>
@@ -27,6 +31,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   if (isDashboard) {
     return (
       <main className="theme-classic min-h-screen w-full">
+        {progress}
         {children}
         <ChatNowFab />
       </main>
@@ -35,6 +40,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <div className={`flex w-full flex-1 ${isPapers ? "theme-classic" : ""}`}>
+      {progress}
       <CommandPalette />
       <ChatNowFab />
       <NotesPromptSite />
