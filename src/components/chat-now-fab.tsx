@@ -6,6 +6,7 @@ import { ChatCircleDots } from "@phosphor-icons/react";
 import { chatDraftFor, chatLink } from "@/lib/chat-link";
 import { CHAT_NUDGE_EVENT, getChatLink, takeWhatsAppReturn, trackIntent } from "@/lib/lead-intent";
 import { ChatPanel } from "@/components/chat-panel";
+import { closeNotesFlow, openNotesFlow } from "@/lib/notes-promo";
 
 type Nudge = { href: string; what: string; star?: boolean; quiet?: boolean; source: string; programme?: string; subject?: string; semester?: number | null };
 const REPLY_POLL_MS = 15_000; // a team reply opens the chat within this long
@@ -51,12 +52,19 @@ export function ChatNowFab() {
         const d = (await (await fetch(`/api/lead-chat?t=${link.slice(-48)}`, { cache: "no-store" })).json()) as { unread?: number };
         if (!alive) return;
         const n = d.unread ?? 0;
-        // The team replied while the chat was minimised: open it in full (not behind an open pop-up or payment window).
-        if (n > 0 && !document.querySelector("dialog[open]")) {
+        if (n <= 0) return setReply(null);
+        // The team replied while the chat was minimised: open it in full. A sales pop-up in the way (a native modal
+        // would leave the chat unusable behind it) is asked to step aside first; a payment step is never interrupted.
+        if (document.querySelector("dialog[open]")) {
+          closeNotesFlow();
+          await new Promise((r) => setTimeout(r, 250));
+          if (!alive) return;
+        }
+        if (!document.querySelector("dialog[open]")) {
           setGreeting(undefined);
           setOpen(true);
           setReply(null);
-        } else setReply(n > 0 ? { n } : null);
+        } else setReply({ n });
       } catch {}
     };
     void check();
@@ -69,7 +77,8 @@ export function ChatNowFab() {
     };
   }, []);
 
-  // They tapped Yes, WhatsApp opened, and they are back on this page: the chat opens so they can carry on here too.
+  // They tapped Yes, WhatsApp opened, and they are back on this page: the chat opens so they can carry on here too, and
+  // the MRQ / Notes plans open on top of it (close them and the chat is right there).
   // Tab visibility alone is not enough: when WhatsApp opens in its desktop app or another window, this tab never
   // becomes "hidden", so window focus and the first touch / mouse move / key / scroll count as coming back too
   // (takeWhatsAppReturn ignores anything in the first few seconds after the tap, and only fires once).
@@ -78,6 +87,7 @@ export function ChatNowFab() {
       if (document.visibilityState === "visible" && takeWhatsAppReturn()) {
         setGreeting("back");
         setOpen(true);
+        openNotesFlow({ quiet: true }); // and the MRQ / Notes plans, on top, so they can pick a plan right away
       }
     };
     const signals: [EventTarget, string][] = [

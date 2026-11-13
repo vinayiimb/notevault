@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { BookOpenText, CaretLeft, Check, X } from "@phosphor-icons/react";
+import { BookOpenText, CaretLeft, Check, WhatsappLogo, X } from "@phosphor-icons/react";
 import { parseLeadSemester } from "@/lib/note-leads";
-import { OPEN_NOTES_EVENT } from "@/lib/notes-promo";
+import { CLOSE_NOTES_EVENT, OPEN_NOTES_EVENT } from "@/lib/notes-promo";
 import { markWhatsAppOpened, trackIntent } from "@/lib/lead-intent";
 import { PhoneOnlyForm, useKnownLead } from "./lead-form";
 import { NotesPricing } from "./notes-pricing";
@@ -74,9 +74,9 @@ const DIALOG =
  *   What the form asks depends on what the page knows: subject (phone only), course (semester, an optional
  *   subject, phone) or nothing (course too).
  *
- * Yes (the owner is alerted, 💎): the MRQ / Notes plans. Tap a plan to pay on the site (WhatsApp number, then Razorpay),
- * or "Message us on WhatsApp" (sales number, "Hi i need notes"; when they come back to the page the on-site chat
- * opens by itself, see chat-now-fab). No: nobody is alerted; the pop-up asks for their WhatsApp number instead
+ * Yes (the owner is alerted, 💎): WhatsApp opens on the sales number with "Hi i need notes" already typed; when they
+ * come back to the page the on-site chat opens by itself (see chat-now-fab). A promo card ("See plans") opens the
+ * MRQ / Notes plans instead: tap a plan to pay on the site (WhatsApp number, then Razorpay), or message us on WhatsApp. No: nobody is alerted; the pop-up asks for their WhatsApp number instead
  * (the lead form). X / Esc / the backdrop just close it. Someone who already left a number is asked again (they are
  * the likeliest buyers), but not on every page.
  *
@@ -190,20 +190,30 @@ export function NotesPrompt({
     return () => clearTimeout(t);
   }, [pickKey, known]);
 
-  // Said Yes (the pop-up button or a promo card): the owner is alerted once (💎) and the MRQ / Notes plans open.
+  // Said Yes on the pop-up: WhatsApp opens on the sales number with "Hi i need notes" already typed (the link itself),
+  // the owner is alerted once (💎), and the chat opens when they come back to this page.
   function afterYes() {
     trackIntent("yes", intentRef.current);
-    setStep("plans");
+    markWhatsAppOpened();
+    quietFor(YES_QUIET_MS);
+    setStep(null);
   }
   useEffect(() => {
     // Promo card tap: that is a Yes.
-    const open = () => {
+    const open = (e: Event) => {
       if (siteWide && pagePrompts > 0) return; // the page's own prompt handles it
-      trackIntent("yes", intentRef.current);
+      // A card tap is a Yes. Coming back from WhatsApp opens the plans too, but that Yes was already counted.
+      if (!(e as CustomEvent<{ quiet?: boolean }>).detail?.quiet) trackIntent("yes", intentRef.current);
       setStep("plans");
     };
+    // The chat is about to open for a team reply: step aside, unless they are in the middle of paying.
+    const close = () => setStep((s) => (s === "pay" ? s : null));
     window.addEventListener(OPEN_NOTES_EVENT, open);
-    return () => window.removeEventListener(OPEN_NOTES_EVENT, open);
+    window.addEventListener(CLOSE_NOTES_EVENT, close);
+    return () => {
+      window.removeEventListener(OPEN_NOTES_EVENT, open);
+      window.removeEventListener(CLOSE_NOTES_EVENT, close);
+    };
   }, [siteWide]);
 
   useEffect(() => {
@@ -305,13 +315,16 @@ export function NotesPrompt({
                 </span>
                 Notes from ₹99
               </p>
-              <button
-                type="button"
+              <a
+                href={salesWhatsAppLink()}
+                target="_blank"
+                rel="noopener noreferrer"
                 onClick={afterYes}
-                className="mt-7 inline-flex h-[50px] w-full items-center justify-center rounded-full bg-[#0071e3] px-7 text-[17px] font-semibold tracking-[-0.01em] text-white transition duration-300 ease-[var(--ease-apple)] hover:bg-[#0077ed] active:scale-[0.985]"
+                className="mt-7 inline-flex h-[50px] w-full items-center justify-center gap-2 rounded-full bg-[#0071e3] px-7 text-[17px] font-semibold tracking-[-0.01em] text-white transition duration-300 ease-[var(--ease-apple)] hover:bg-[#0077ed] active:scale-[0.985]"
               >
-                Yes, show me the plans
-              </button>
+                <WhatsappLogo size={20} weight="fill" aria-hidden />
+                Yes, chat on WhatsApp
+              </a>
               <button
                 type="button"
                 onClick={sayNo}

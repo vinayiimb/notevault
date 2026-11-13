@@ -51,7 +51,7 @@ export function NotesPromoCard({
 
         <button
           type="button"
-          onClick={openNotesFlow}
+          onClick={() => openNotesFlow()}
           className="inline-flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#0071e3] px-9 text-[18px] font-semibold tracking-[-0.01em] text-white transition duration-300 ease-[var(--ease-apple)] hover:bg-[#0077ed] active:scale-[0.985] lg:w-auto"
         >
           {cta}
