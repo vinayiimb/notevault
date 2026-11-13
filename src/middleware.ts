@@ -14,7 +14,8 @@ export function middleware(request: NextRequest) {
   // One canonical host: dupyq.online and www both served 200, splitting
   // Google's signals. Exact-match so Railway's internal health checks pass.
   const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
-  if (host === "dupyq.online") {
+  // ponytail: exact-match list; add hosts here if more domains are bought.
+  if (host === "dupyq.online" || host === "dupyq.com" || host === "www.dupyq.com") {
     return NextResponse.redirect(`https://www.dupyq.online${pathname}${request.nextUrl.search}`, 301);
   }
 
