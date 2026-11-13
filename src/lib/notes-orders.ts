@@ -5,13 +5,31 @@ import { parseLeadSemester } from "@/lib/note-leads";
 // on WhatsApp after a short buffer. Shared by the pop-up (client), the order routes and the admin page,
 // so it must stay free of server-only imports.
 
-export const ORDER_PLANS = ["subject", "three", "semester"] as const; // "three" (3 subjects) is only sold pay-first from the chat
+export const ORDER_PLANS = ["subject", "three", "semester", "mrq1", "mrq7", "notes1", "notes7"] as const; // "three" and the MRQ / Notes plans are only sold pay-first (no course named: the team asks on WhatsApp after payment)
 export type OrderPlan = (typeof ORDER_PLANS)[number];
 
 // Same prices as /paid-notes: one subject, and the whole-semester pack. Always read server-side when
 // an order is created; the client only displays them.
 const FULL_SEMESTER = PACKS[PACKS.length - 1];
-export const ORDER_PRICE: Record<OrderPlan, number> = { subject: PACKS[0].price, three: PACKS[1].price, semester: FULL_SEMESTER.price };
+export const ORDER_PRICE: Record<OrderPlan, number> = {
+  subject: PACKS[0].price,
+  three: PACKS[1].price,
+  semester: FULL_SEMESTER.price,
+  // MRQ (Most Repeated Questions) and Notes, one subject or all seven.
+  mrq1: 49,
+  mrq7: 249,
+  notes1: 99,
+  notes7: 449, // 7 x ₹99 = ₹693, sold at ₹449
+};
+
+/** The MRQ / Notes plans from the pricing sheet: pay-first, course and subjects named on WhatsApp afterwards. */
+export const PRICING_PLANS = ["mrq1", "mrq7", "notes1", "notes7"] as const;
+export type PricingPlan = (typeof PRICING_PLANS)[number];
+export const isPricingPlan = (p: unknown): p is PricingPlan => PRICING_PLANS.some((x) => x === p);
+/** "MRQ · 1 subject", "Notes · 7 subjects". */
+export function pricingPlanLabel(p: PricingPlan) {
+  return `${p.startsWith("mrq") ? "MRQ" : "Notes"} · ${p.endsWith("1") ? "1 subject" : "7 subjects"}`;
+}
 /** What the whole semester would cost one subject at a time: shown struck through next to the pack price. */
 export const SEMESTER_SUBJECTS = 7; // how the whole semester is advertised ("all 7 subjects"); the pack in PACKS stays as is
 
@@ -57,9 +75,12 @@ export function parseOrderRequest(body: unknown): Omit<NotesOrderInput, "amount"
   const chat = isChatOrder(programmeSlug);
   const semester = chat ? 0 : parseLeadSemester(b.semester);
   const programme = chat ? CHAT_ORDER.programme : text(b.programme);
-  if (plan === "three" && !chat) return null; // the 3-subject pack has no course to attach to outside the chat
+  if (plan && plan !== "subject" && plan !== "semester" && !chat) return null; // the 3-subject pack and the MRQ / Notes plans have no course to attach to outside the chat/pay-first flow
   if (!plan || !phone || semester === null || !programme || !programmeSlug) return null;
-  if (chat) return { phone, plan, programmeSlug, programme, semester, subject: plan === "subject" ? CHAT_ORDER.subject : plan === "three" ? "3 subjects (named in chat)" : "", subjectSlug: plan === "semester" ? "" : CHAT_ORDER.subjectSlug };
+  if (chat) {
+    if (isPricingPlan(plan)) return { phone, plan, programmeSlug, programme, semester, subject: `${pricingPlanLabel(plan)} (named on WhatsApp)`, subjectSlug: plan.endsWith("7") ? "" : CHAT_ORDER.subjectSlug };
+    return { phone, plan, programmeSlug, programme, semester, subject: plan === "subject" ? CHAT_ORDER.subject : plan === "three" ? "3 subjects (named in chat)" : "", subjectSlug: plan === "semester" ? "" : CHAT_ORDER.subjectSlug };
+  }
   const subject = plan === "subject" ? text(b.subject) : "";
   const subjectSlug = plan === "subject" ? text(b.subjectSlug) : "";
   if (plan === "subject" && (!subject || !subjectSlug)) return null;
@@ -93,6 +114,7 @@ export function fromRazorpayNotes(notes: Record<string, string> | null | undefin
 /** "Whole Semester 3" / "Risk Management" for the admin list and the WhatsApp message. */
 export function orderPlanLabel(o: { plan: string; subject: string; semester: number }) {
   if (o.plan === "three") return "3 subjects";
+  if (isPricingPlan(o.plan)) return pricingPlanLabel(o.plan);
   return o.plan === "semester" ? (o.semester ? `Whole Semester ${o.semester}` : "Whole semester") : o.subject;
 }
 

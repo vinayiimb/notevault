@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { ChatCircleDots, Check, Lock, WhatsappLogo } from "@phosphor-icons/react";
 import type { LeadResult } from "@/lib/note-lead-actions";
 import { CHAT_NUDGE_EVENT, trackIntent } from "@/lib/lead-intent";
 import { ANY_SUBJECT } from "@/lib/note-leads";
-import { NOTES_DELIVERY_TEXT, ORDER_PRICE, SEMESTER_SUBJECTS, orderPlanLabel, type OrderPlan } from "@/lib/notes-orders";
+import { NOTES_DELIVERY_TEXT, ORDER_PRICE, SEMESTER_SUBJECTS, isPricingPlan, orderPlanLabel, pricingPlanLabel, type OrderPlan } from "@/lib/notes-orders";
 
 const HELP_WHATSAPP = "919376180015";
 
@@ -81,6 +81,8 @@ export function NotesPurchase({
   result,
   initialPlan,
   hideContact = false,
+  autoPay = false,
+  onBack,
   intent,
   onPayingChange,
   onClose,
@@ -90,6 +92,10 @@ export function NotesPurchase({
   intent?: { source: string; programme?: string; subject?: string; semester?: number | null };
   /** Start with this plan selected (the chat's payment card says which one the student tapped). */
   initialPlan?: OrderPlan;
+  /** Open the payment window as soon as this step shows (the plan was already picked), with no confirm screen. Needs `onBack`. */
+  autoPay?: boolean;
+  /** autoPay only: the payment window was closed or couldn't open; go back a step, with a message when something failed. */
+  onBack?: (message?: string) => void;
   /** Leave out the "Chat now / WhatsApp first" block (used on the page that the chat links to). */
   hideContact?: boolean;
   /** true while Razorpay's window is open: the pop-up steps aside, since a native modal blocks clicks outside it. */
@@ -164,6 +170,7 @@ export function NotesPurchase({
             if (settled) return;
             onPayingChange(false);
             setBusy(false);
+            if (autoPay) onBack?.();
           },
         },
       });
@@ -171,9 +178,20 @@ export function NotesPurchase({
     } catch (err) {
       onPayingChange(false);
       setBusy(false);
-      setError(err instanceof Error ? err.message : "Could not start the payment.");
+      const message = err instanceof Error ? err.message : "Could not start the payment.";
+      if (autoPay && onBack) onBack(message);
+      else setError(message);
     }
   }
+
+  // Plan already picked: go straight to the payment window (once, even if React runs effects twice in dev).
+  const autoStarted = useRef(false);
+  useEffect(() => {
+    if (!autoPay || !canBuy || autoStarted.current) return;
+    autoStarted.current = true;
+    void pay();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoPay, canBuy]);
 
   if (phase !== "choose") {
     const paid = phase === "paid" || phase === "pending";
@@ -225,7 +243,19 @@ export function NotesPurchase({
     );
   }
 
-  const options: { plan: OrderPlan; title: string; detail: string; badge?: string }[] = [
+  // A plan picked in the MRQ / Notes pricing sheet is already chosen: just confirm it and pay.
+  const fixedPlan = chatOrder && initialPlan && isPricingPlan(initialPlan) ? initialPlan : null;
+  if (autoPay && phase === "choose") {
+    return (
+      <p role="status" className="py-10 text-center text-[15px] text-muted">
+        Opening payment…
+      </p>
+    );
+  }
+
+  const options: { plan: OrderPlan; title: string; detail: string; badge?: string }[] = fixedPlan
+    ? [{ plan: fixedPlan, title: pricingPlanLabel(fixedPlan), detail: fixedPlan.endsWith("7") ? "Any 7 subjects of your choice" : "One subject of your choice" }]
+    : [
     ...(canSubject || (chatOrder && canBuy) ? [{ plan: "subject" as const, title: chatOrder ? "Single subject" : "This subject", detail: chatOrder ? "One subject of your choice" : subjectName }] : []),
     ...(chatOrder ? [{ plan: "three" as const, title: "3 subjects", detail: "Any three subjects of your choice" }] : []),
     { plan: "semester", title: chatOrder ? "Whole semester" : `Whole Semester ${semester}`, detail: chatOrder ? `All ${SEMESTER_SUBJECTS} subjects · ₹${SEMESTER_SUBJECTS * ORDER_PRICE.subject} → ₹${ORDER_PRICE.semester}, you save ₹${SEMESTER_SUBJECTS * ORDER_PRICE.subject - ORDER_PRICE.semester}` : "All subjects of the semester, one price", badge: "Best value" },
@@ -235,7 +265,7 @@ export function NotesPurchase({
   return (
     <div>
       <h2 id="notes-prompt-title" className="pr-10 text-[24px] font-semibold leading-tight tracking-[-0.025em]">
-        Want the notes today?
+        {fixedPlan ? "Confirm your plan" : "Want the notes today?"}
       </h2>
       <p className="mb-5 mt-1.5 text-[15px] leading-snug text-muted">
         {chatOrder ? "Pay now, then tell us your course and subject on WhatsApp" : `${result.programme} · Semester ${semester}`}

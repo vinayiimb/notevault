@@ -601,7 +601,6 @@ export function PaperBrowser({ noncore = false }: { noncore?: boolean }) {
             <NotesPromoCard
               className="mt-4"
               title={course ? `Need notes for ${course}?` : "Need notes for your subject?"}
-              text="Solved answers, the most repeated questions and exam tips for any DU subject, sent on WhatsApp within 24 hours."
             />
             <NotesPrompt
               source="pyq-page"

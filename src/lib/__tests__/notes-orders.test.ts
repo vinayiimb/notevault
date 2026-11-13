@@ -116,3 +116,19 @@ test("the 3-subject pack exists only as a chat order, at its pack price", () => 
   assert.equal(parseOrderRequest({ plan: "three", phone: "9876543210", programmeSlug: "bcom-hons", programme: "B.Com", semester: 3 }), null);
   assert.equal(orderPlanLabel({ plan: "three", subject: "", semester: 0 }), "3 subjects");
 });
+
+test("MRQ and Notes pricing-sheet plans are pay-first only, at their sheet prices", () => {
+  assert.deepEqual([ORDER_PRICE.mrq1, ORDER_PRICE.mrq7, ORDER_PRICE.notes1, ORDER_PRICE.notes7], [49, 249, 99, 449]);
+  assert.equal(7 * ORDER_PRICE.notes1, 693); // list price of 7 Notes, sold at ₹449
+  for (const plan of ["mrq1", "mrq7", "notes1", "notes7"]) {
+    assert.equal(parseOrderPlan(plan), plan);
+    const o = parseOrderRequest({ plan, phone: "9876543210", programmeSlug: "chat" });
+    assert.equal(o?.plan, plan);
+    assert.equal(o?.semester, 0);
+    assert.equal(parseOrderRequest({ plan, phone: "9876543210", programmeSlug: "bcom-hons", programme: "B.Com", semester: 3 }), null);
+  }
+  assert.equal(orderPlanLabel({ plan: "mrq7", subject: "", semester: 0 }), "MRQ · 7 subjects");
+  assert.equal(orderPlanLabel({ plan: "notes1", subject: "", semester: 0 }), "Notes · 1 subject");
+  const back = fromRazorpayNotes(toRazorpayNotes({ ...parseOrderRequest({ plan: "notes7", phone: "9876543210", programmeSlug: "chat" })!, amount: ORDER_PRICE.notes7 }));
+  assert.equal(back?.amount, 449);
+});

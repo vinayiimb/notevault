@@ -589,6 +589,11 @@ body:has([data-ask-ai-launcher]) .wa-fab {
   .lead-pop[open], .lead-pop[open]::backdrop { animation: none; }
 }
 
+/* Pricing sheet: the plan list fades up when the MRQ / Notes tab changes. */
+@keyframes pv-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.pv-in { animation: pv-in 0.35s var(--ease-apple) both; }
+@media (prefers-reduced-motion: reduce) { .pv-in { animation: none; } }
+
 /* Hidden (sr-only) labels are absolutely positioned. Inside a table in a scroll box they would otherwise sit
    outside that box and widen the whole page (sideways scrolling on phones). Base layer, so any utility such as
    sticky/absolute/fixed on the same element still wins. */

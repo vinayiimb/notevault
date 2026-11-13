@@ -7,6 +7,7 @@ import { SiteSidebar } from "@/components/site-sidebar";
 import { FeatureGate } from "@/components/feature-flags-client";
 import { CommandPalette } from "@/components/command-palette";
 import { ChatNowFab } from "@/components/chat-now-fab";
+import { NotesPromptSite } from "@/components/notes-leads/notes-prompt-site";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -36,6 +37,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
     <div className={`flex w-full flex-1 ${isPapers ? "theme-classic" : ""}`}>
       <CommandPalette />
       <ChatNowFab />
+      <NotesPromptSite />
       {!isPapers && <SiteSidebar />}
       <div className="flex min-w-0 flex-1 flex-col">
         <SiteHeader />

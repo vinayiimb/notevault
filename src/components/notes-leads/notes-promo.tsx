@@ -1,20 +1,23 @@
 "use client";
 
-import { ArrowRight, BookOpenText } from "@phosphor-icons/react";
+import { ArrowRight } from "@phosphor-icons/react";
 import { openNotesFlow } from "@/lib/notes-promo";
 import { ORDER_PRICE } from "@/lib/notes-orders";
 
+/** The one line we sell with, on every card and pop-up. */
+export const NOTES_TAGLINE = { first: "Most Repeated Questions", second: "+ PYQ Solutions" } as const;
+
 /**
- * An in-page "get the notes" card. Tapping it opens the same notes flow as the pop-up (form, then pay or have us
- * reach out). The page needs a <NotesPrompt> mounted; it opens it.
+ * The in-page "get the notes" card: a dark Apple-style banner that stands out on the white page. Tapping it opens the
+ * same flow as the pop-up (plans, then pay). The page needs a <NotesPrompt> mounted; it opens it.
  *
- * Apple look (soft grey tile, SF type, blue pill). `apple-scope` restores the Apple palette on pages that keep
- * the classic theme, such as /papers.
+ * Callers still pass `title="Need notes for Economics?"`; only the "Economics" part is used (as the small "For …" line),
+ * the headline is always the tagline. `apple-scope` restores the Apple palette on pages that keep the classic theme.
  */
 export function NotesPromoCard({
-  title = "Need notes for your subject?",
-  text = "Solved answers, the most repeated questions and exam tips, sent on WhatsApp.",
-  cta = "Get the notes",
+  title,
+  text = "Exam-focused and unit-wise, sent to you on WhatsApp.",
+  cta = "See plans",
   className = "",
 }: {
   title?: string;
@@ -22,38 +25,39 @@ export function NotesPromoCard({
   cta?: string;
   className?: string;
 }) {
+  const forWhat = title?.match(/^Need notes for (.+)\?$/)?.[1];
   return (
     <section
-      aria-label="Get notes"
-      className={`apple-scope flex flex-col gap-5 rounded-[24px] bg-surface-muted p-5 text-foreground shadow-[var(--shadow-tile)] sm:flex-row sm:items-center sm:gap-6 sm:p-7 ${className}`}
+      aria-label="Most Repeated Questions and PYQ Solutions"
+      className={`apple-scope relative isolate overflow-hidden rounded-[28px] bg-[#1d1d1f] p-6 text-white shadow-[0_1px_2px_rgb(0_0_0/0.08),0_24px_60px_rgb(0_0_0/0.18)] sm:rounded-[32px] sm:p-10 ${className}`}
     >
-      <div className="flex min-w-0 flex-1 items-start gap-4">
-        <span
-          aria-hidden
-          className="flex size-12 shrink-0 items-center justify-center rounded-[14px] bg-gradient-to-b from-[#3fa0ff] to-[#0071e3] text-white shadow-[0_8px_20px_rgb(0_113_227/0.32)] sm:size-14 sm:rounded-[16px]"
-        >
-          <BookOpenText size={26} weight="fill" />
-        </span>
+      {/* one soft light in the corner, nothing more */}
+      <span aria-hidden className="pointer-events-none absolute -right-24 -top-32 -z-10 size-[26rem] rounded-full bg-[#0071e3]/25 blur-3xl" />
+
+      <div className="flex flex-col gap-7 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
         <div className="min-w-0">
-          <h3 className="text-[19px] font-semibold leading-snug tracking-[-0.02em] sm:text-[22px]">{title}</h3>
-          <p className="mt-1 text-[15px] leading-snug text-muted">{text}</p>
-          <p className="mt-2.5 text-[14px] font-medium text-foreground/80">
-            ₹{ORDER_PRICE.subject} a subject
-            <span aria-hidden className="mx-1.5 text-muted">
-              ·
-            </span>
-            ₹{ORDER_PRICE.semester} for the whole semester
+          {forWhat && <p className="mb-3 truncate text-[13px] font-semibold uppercase tracking-[0.08em] text-white/55">For {forWhat}</p>}
+          <h3 className="text-balance text-[32px] font-semibold leading-[1.04] tracking-[-0.04em] sm:text-[46px]">
+            {NOTES_TAGLINE.first}
+            <br />
+            <span className="text-[#2997ff]">{NOTES_TAGLINE.second}</span>
+          </h3>
+          <p className="mt-4 max-w-xl text-[16px] leading-snug text-white/65 sm:text-[18px]">{text}</p>
+          <p className="mt-5 flex flex-wrap gap-2 text-[14px] font-medium">
+            <span className="rounded-full bg-white/10 px-3.5 py-1.5 text-white/90">MRQ from ₹{ORDER_PRICE.mrq1}</span>
+            <span className="rounded-full bg-white/10 px-3.5 py-1.5 text-white/90">Notes from ₹{ORDER_PRICE.notes1}</span>
           </p>
         </div>
+
+        <button
+          type="button"
+          onClick={openNotesFlow}
+          className="inline-flex h-14 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-[#0071e3] px-9 text-[18px] font-semibold tracking-[-0.01em] text-white transition duration-300 ease-[var(--ease-apple)] hover:bg-[#0077ed] active:scale-[0.985] lg:w-auto"
+        >
+          {cta}
+          <ArrowRight size={18} weight="bold" />
+        </button>
       </div>
-      <button
-        type="button"
-        onClick={openNotesFlow}
-        className="inline-flex h-12 w-full shrink-0 items-center justify-center gap-2 rounded-full bg-brand px-7 text-[16px] font-semibold text-brand-foreground transition duration-300 ease-[var(--ease-apple)] hover:bg-brand-hover active:scale-[0.985] sm:w-auto"
-      >
-        {cta}
-        <ArrowRight size={16} weight="bold" />
-      </button>
     </section>
   );
 }
