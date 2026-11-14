@@ -9,7 +9,7 @@ import { ChatPanel } from "@/components/chat-panel";
 import { closeNotesFlow, openNotesFlow } from "@/lib/notes-promo";
 
 type Nudge = { href: string; what: string; star?: boolean; quiet?: boolean; source: string; programme?: string; subject?: string; semester?: number | null };
-const REPLY_POLL_MS = 15_000; // a team reply opens the chat within this long
+const REPLY_POLL_MS = 4_000; // a team reply opens the chat within this long
 
 /**
  * Floating "Chat now" button, bottom-right on every public page (replaces the old WhatsApp-group icon).
@@ -70,10 +70,12 @@ export function ChatNowFab() {
     void check();
     const t = setInterval(check, REPLY_POLL_MS);
     document.addEventListener("visibilitychange", check);
+    window.addEventListener("focus", check);
     return () => {
       alive = false;
       clearInterval(t);
       document.removeEventListener("visibilitychange", check);
+      window.removeEventListener("focus", check);
     };
   }, []);
 

@@ -23,15 +23,15 @@ export async function GET(req: Request) {
     if (l.length > 60) return NextResponse.json({ messages: [], typing: false });
     return NextResponse.json(await visitorThread(t));
   }
-  const ip = req.headers.get("x-forwarded-for")?.split(",").pop()?.trim() ?? "local";
+  // Capped per visitor (their private token), not per IP: a campus or mobile network shares one address, and an
+  // IP cap would silently stop the "team replied" check for everyone on it.
+  const token = sp0.get("t") ?? "";
   const now = Date.now();
   if (hits.size > 5_000) hits.clear();
-  const list = (hits.get(ip) ?? []).filter((t) => now - t < 60_000);
+  const list = (hits.get(token) ?? []).filter((t) => now - t < 60_000);
   list.push(now);
-  hits.set(ip, list);
-  if (list.length > 20) return NextResponse.json({ unread: 0, last: null });
-  const sp = new URL(req.url).searchParams;
-  const token = sp.get("t") ?? "";
+  hits.set(token, list);
+  if (list.length > 40) return NextResponse.json({ unread: 0, last: null });
   return NextResponse.json(await visitorChatStatus(token));
 }
 
