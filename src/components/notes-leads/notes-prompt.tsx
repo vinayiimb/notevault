@@ -47,6 +47,16 @@ function markAsked() {
   } catch {}
 }
 
+// Signed-in students (marker cookie set at login, see student-devices.ts) already have their notes: no sales pop-up.
+// Tapping a promo card still opens it; that is their choice.
+function signedIn() {
+  try {
+    return document.cookie.split("; ").includes("notevault_in=1");
+  } catch {
+    return false;
+  }
+}
+
 function quietFor(ms: number) {
   try {
     sessionStorage.setItem(OFF_KEY, String(Date.now() + ms));
@@ -148,7 +158,7 @@ export function NotesPrompt({
 
   useEffect(() => {
     if (!auto || (!landing && !paperId)) return;
-    if (promptOff() || (known && askedRecently())) return;
+    if (signedIn() || promptOff() || (known && askedRecently())) return;
     let timer: ReturnType<typeof setTimeout> | undefined;
     let shown = false;
     const arm = () => {
@@ -182,7 +192,7 @@ export function NotesPrompt({
       firstPick.current = false;
       if (!pickKey.replace(/\|/g, "")) return; // nothing picked yet
     }
-    if (promptOff() || (known && askedRecently())) return;
+    if (signedIn() || promptOff() || (known && askedRecently())) return;
     const t = setTimeout(() => { // next tick = "instantly" to the eye, and keeps setState out of the effect body
       if (known) markAsked();
       setStep((s) => s ?? "ask");
@@ -308,13 +318,6 @@ export function NotesPrompt({
               <p className="mx-auto mt-4 max-w-[19rem] text-[16px] leading-[1.35] text-[#6e6e73]">
                 {subject ? `For ${subject}, sent to you on WhatsApp.` : "Exam-focused, unit-wise, sent to you on WhatsApp."}
               </p>
-              <p className="mt-4 text-[14px] font-medium text-[#1d1d1f]">
-                MRQ from ₹49
-                <span aria-hidden className="mx-2 text-[#c7c7cc]">
-                  |
-                </span>
-                Notes from ₹99
-              </p>
               <a
                 href={salesWhatsAppLink()}
                 target="_blank"
@@ -378,7 +381,7 @@ export function NotesPrompt({
               <h2 id="notes-prompt-title" className="pr-10 text-[24px] font-semibold leading-tight tracking-[-0.025em]">
                 Want them on WhatsApp instead?
               </h2>
-              <p className="mb-5 mt-1.5 text-[15px] leading-snug text-muted">Just leave your number. That is all we need.</p>
+              <p className="mb-5 mt-1.5 text-[15px] leading-snug text-muted">Your number and course. That is all we need.</p>
               <PhoneOnlyForm source={leadSource} programmeName={course?.name} subjectName={subject} semester={semNumber} onSuccess={() => setStep("thanks")} />
             </>
           )}

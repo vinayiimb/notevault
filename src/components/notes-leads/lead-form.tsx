@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, useSyncExternalStore } from "react";
-import { CaretUpDown, Check, WhatsappLogo } from "@phosphor-icons/react";
+import { CaretRight, CaretUpDown, Check, WhatsappLogo } from "@phosphor-icons/react";
 import type { LeadResult } from "@/lib/note-lead-actions";
-import { getVisitorId } from "@/lib/lead-intent";
+import { getVisitorId, trackIntent } from "@/lib/lead-intent";
+import { ORDER_PRICE, SEMESTER_SUBJECTS } from "@/lib/notes-orders";
+import { salesWhatsAppLink } from "@/lib/sales-whatsapp";
 import {
   ANY_SUBJECT,
   LEAD_PHONE_KEY,
@@ -357,7 +359,7 @@ export function LeadForm({
   );
 }
 
-/** The pop-up's "No" step: asks for the WhatsApp number and nothing else. What the page already knows rides along hidden. */
+/** The pop-up's "No" step: asks for the WhatsApp number and course (prefilled when the page knows it). The subject rides along hidden. */
 export function PhoneOnlyForm({
   source,
   programmeName = "",
@@ -405,7 +407,6 @@ export function PhoneOnlyForm({
     <form onSubmit={onSubmit} className="flex flex-col gap-3">
       <input type="hidden" name="source" value={source} />
       <input type="hidden" name="phoneOnly" value="1" />
-      <input type="hidden" name="programmeName" value={programmeName} />
       <input type="hidden" name="subjectName" value={subjectName} />
       <input type="hidden" name="semester" value={semester ?? ""} />
       <input name="website" tabIndex={-1} autoComplete="off" aria-hidden="true" className="absolute -left-[9999px] size-px opacity-0" />
@@ -429,6 +430,19 @@ export function PhoneOnlyForm({
             />
           </div>
         </div>
+        <div className={row}>
+          <label htmlFor={`${uid}-course`} className={rowLabel}>Course</label>
+          <input
+            id={`${uid}-course`}
+            name="programmeName"
+            defaultValue={programmeName}
+            required
+            maxLength={120}
+            autoComplete="off"
+            placeholder="e.g. B.Com (Hons)"
+            className="h-7 w-full bg-transparent text-[17px] leading-7 text-foreground outline-none placeholder:text-muted/60"
+          />
+        </div>
       </div>
       {error && <p role="alert" className="px-1 text-[14px] text-red-600 dark:text-red-400">{error}</p>}
       <button type="submit" disabled={pending} className={`${pill} w-full`}>
@@ -436,5 +450,76 @@ export function PhoneOnlyForm({
       </button>
       <p className="text-center text-[13px] text-muted">We&apos;ll only WhatsApp you about these notes.</p>
     </form>
+  );
+}
+
+// /notes hub: course + semester, then the plans. A plan opens WhatsApp on the sales number with everything typed in;
+// payment and delivery happen there (owner's flow, 2026-11-14). Prices come from notes-orders, same as the pop-up.
+const BUY_PLANS = [
+  { id: "notes7", title: `Notes · whole semester`, note: `All ${SEMESTER_SUBJECTS} subjects`, price: ORDER_PRICE.notes7, was: ORDER_PRICE.notes1 * SEMESTER_SUBJECTS },
+  { id: "notes1", title: "Notes · 1 subject", note: "Tell us the subject on WhatsApp", price: ORDER_PRICE.notes1 },
+  { id: "mrq7", title: "Most Repeated Questions · semester", note: `All ${SEMESTER_SUBJECTS} subjects`, price: ORDER_PRICE.mrq7, was: ORDER_PRICE.mrq1 * SEMESTER_SUBJECTS },
+  { id: "mrq1", title: "Most Repeated Questions · 1 subject", note: "Tell us the subject on WhatsApp", price: ORDER_PRICE.mrq1 },
+] as const;
+
+export function NotesBuyForm({ courses }: { courses: LeadCourse[] }) {
+  const uid = useId();
+  const [course, setCourse] = useState("");
+  const [semester, setSemester] = useState("");
+  const name = courses.find((c) => c.slug === course)?.name ?? "";
+  const ready = !!name && !!semester;
+  return (
+    <div className="flex flex-col gap-4">
+      <div className={group}>
+        <Select id={`${uid}-course`} label="Course" value={course} onChange={(e) => setCourse(e.target.value)}>
+          <option value="">Select your course</option>
+          {courses.map((c) => (
+            <option key={c.slug} value={c.slug}>{c.name}</option>
+          ))}
+        </Select>
+        <Select id={`${uid}-sem`} label="Semester" value={semester} onChange={(e) => setSemester(e.target.value)}>
+          <option value="">Select semester</option>
+          {LEAD_SEMESTERS.map((n) => (
+            <option key={n} value={n}>Semester {n}</option>
+          ))}
+        </Select>
+      </div>
+      {ready ? (
+        <div>
+          <p className="px-1 text-[13px] font-medium text-muted">Choose a plan. WhatsApp opens with your details typed in.</p>
+          <ul className="mt-2 overflow-hidden rounded-[18px] bg-surface-muted divide-y divide-border/70">
+            {BUY_PLANS.map((p) => {
+              const text = `Hi i need notes\nCourse: ${name}\nSemester: ${semester}\nPlan: ${p.title} (Rs ${p.price})`;
+              return (
+                <li key={p.id}>
+                  <a
+                    href={salesWhatsAppLink(text)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => trackIntent("wa", { source: "notes-hub", programme: name, semester: Number(semester) })}
+                    className="flex min-h-[60px] items-center gap-3 px-4 py-2.5 transition active:bg-foreground/5"
+                  >
+                    <span className="min-w-0 flex-1 leading-tight">
+                      <span className="block text-[16px] font-medium">{p.title}</span>
+                      <span className="block text-[13px] text-muted">{p.note}</span>
+                    </span>
+                    <span className="text-right leading-tight">
+                      {"was" in p && <s className="block text-[13px] text-muted">₹{p.was}</s>}
+                      <span className="text-[17px] font-semibold tabular-nums">₹{p.price}</span>
+                    </span>
+                    <CaretRight size={14} weight="bold" className="shrink-0 text-muted" />
+                  </a>
+                </li>
+              );
+            })}
+          </ul>
+          <p className="mt-2 flex items-center justify-center gap-1.5 text-[13px] text-muted">
+            <WhatsappLogo size={15} weight="fill" className="text-[#25D366]" /> Pay and get your notes on WhatsApp.
+          </p>
+        </div>
+      ) : (
+        <p className="text-center text-[13px] text-muted">Pick your course and semester to see the plans.</p>
+      )}
+    </div>
   );
 }

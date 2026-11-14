@@ -36,7 +36,9 @@ export function TicketForm({ initialKind }: { initialKind: TicketKind }) {
   const placeholder =
     kind === "ERROR"
       ? "Which note / paper / page, and what is wrong? e.g. 'Unit 2 formula for … is incorrect'"
-      : kind === "SUGGESTION"
+      : kind === "SUBJECT_MISSING"
+        ? "Course, semester and subject you need, e.g. 'B.Com (Hons) Sem 3, Corporate Laws'"
+        : kind === "SUGGESTION"
         ? "What should we add or change, and how would it help you?"
         : "What happened, and what did you expect to happen?";
 
@@ -52,7 +54,7 @@ export function TicketForm({ initialKind }: { initialKind: TicketKind }) {
 
       <fieldset>
         <legend className="text-sm font-semibold">What is this about?</legend>
-        <div className="mt-2 grid grid-cols-1 gap-1 rounded-[18px] bg-foreground/[0.06] p-1 sm:grid-cols-3">
+        <div className="mt-2 grid grid-cols-1 gap-1 rounded-[18px] bg-foreground/[0.06] p-1 sm:grid-cols-4">
           {TICKET_KINDS.map((k) => (
             <button
               key={k.id}

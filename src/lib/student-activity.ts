@@ -49,7 +49,7 @@ export type StudentActivityDetail = {
   totalSeconds: number;
   activeDays: number;
   lastAt: Date | null;
-  /** Newest first, last 14 days incl. empty ones. */
+  /** Newest first, last `windowDays` days (default 14) incl. empty ones. */
   days: { day: string; seconds: number }[];
   subjects: { key: string; seconds: number; opens: number; days: number; lastAt: Date; depth: number }[];
   streak: number;
@@ -60,7 +60,7 @@ export type StudentActivityDetail = {
   hours: number[];
 };
 
-export async function getStudentActivity(email: string): Promise<StudentActivityDetail | null> {
+export async function getStudentActivity(email: string, windowDays = 14): Promise<StudentActivityDetail | null> {
   try {
     const [rows, hourRows] = await Promise.all([
       prisma.studentActivity.findMany({ where: { email }, orderBy: { day: "desc" }, take: 2000 }),
@@ -78,7 +78,7 @@ export async function getStudentActivity(email: string): Promise<StudentActivity
       if (r.lastAt > k.lastAt) k.lastAt = r.lastAt;
       perKey.set(r.itemKey, k);
     }
-    const days = Array.from({ length: 14 }, (_, i) => {
+    const days = Array.from({ length: windowDays }, (_, i) => {
       const day = istDay(new Date(Date.now() - i * 86_400_000));
       return { day, seconds: perDay.get(day) ?? 0 };
     });

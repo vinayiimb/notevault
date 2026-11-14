@@ -1,15 +1,19 @@
 export const dynamic = "force-dynamic";
 import Link from "next/link";
 import { NotePencil } from "@phosphor-icons/react/dist/ssr";
-import { getProgrammesWithNotesStatus } from "@/lib/canonical-subject-notes-data";
+import { getProgrammesWithNotesStatus, getReadyNotesByProgramme } from "@/lib/canonical-subject-notes-data";
 import { getSiteSettings } from "@/lib/data";
 import { updateNotesFeaturedProgrammesFromCheckboxesAction } from "@/lib/actions";
 
 export default async function SubjectNotesOverviewPage() {
-  const [programmes, siteSettings] = await Promise.all([
+  const [all, siteSettings, ready] = await Promise.all([
     getProgrammesWithNotesStatus(),
     getSiteSettings(),
+    getReadyNotesByProgramme(),
   ]);
+  // Courses with notes first in every list on this page.
+  const programmes = [...all].sort((a, b) => b.notesCount - a.notesCount || a.name.localeCompare(b.name));
+  const doneCount = ready.reduce((n, p) => n + p.subjects.length, 0);
   const featuredSlugs = new Set(
     siteSettings.notesFeaturedProgrammes
       ?.split(",")
@@ -32,6 +36,39 @@ export default async function SubjectNotesOverviewPage() {
           one to see its subjects and drop in a finished .md file.
         </p>
       </div>
+
+      {/* Done so far: every subject with a written note, by course (General Notes first) */}
+      <section className="rounded-2xl border border-border bg-surface p-4 sm:p-6">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-medium">Notes done</h2>
+          <p className="text-sm text-muted">{doneCount} subject{doneCount === 1 ? "" : "s"} in {ready.length} course{ready.length === 1 ? "" : "s"}</p>
+        </div>
+        {ready.length === 0 ? (
+          <p className="mt-3 text-sm text-muted">No notes written yet.</p>
+        ) : (
+          <div className="mt-4 grid grid-cols-1 items-start gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {ready.map((p) => (
+              <div key={p.slug} className="rounded-xl border border-border">
+                <div className="flex items-center justify-between gap-2 border-b border-border bg-surface-muted px-3.5 py-2.5">
+                  <Link href={`/admin/subject-notes/program/${p.slug}`} className="min-w-0 truncate text-sm font-semibold hover:text-accent">{p.name}</Link>
+                  <span className="shrink-0 rounded-full bg-success-soft px-2 py-0.5 text-xs font-bold text-success">{p.subjects.length} done</span>
+                </div>
+                <ul className="divide-y divide-border/60">
+                  {p.subjects.map((s) => (
+                    <li key={s.slug}>
+                      <Link href={`/admin/subject-notes/subject/${p.slug}/${s.slug}`} className="flex min-h-10 items-center gap-2 px-3.5 py-2 text-sm hover:bg-surface-muted">
+                        <span className="min-w-0 flex-1">{s.name}</span>
+                        {s.semester ? <span className="shrink-0 text-xs text-muted">Sem {s.semester}</span> : null}
+                        <span className="shrink-0 text-xs font-bold text-accent">Edit</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+        )}
+      </section>
 
       <form
         method="get"

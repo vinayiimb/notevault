@@ -1619,3 +1619,30 @@ model SupportTicket {
   @@index([email, createdAt])
   @@index([status, createdAt])
 }
+
+// Admin -> Students "Message students": a notice shown at the top of every signed-in student's /account dashboard.
+model StudentNotice {
+  id        String               @id @default(cuid())
+  title     String
+  body      String               @db.Text
+  audience  String               @default("ALL") // ALL = every signed-in student | PAID = only students with notes access
+  active    Boolean              @default(true)
+  createdAt DateTime             @default(now())
+  replies   StudentNoticeReply[]
+
+  @@index([active, createdAt])
+}
+
+// A student's reply to a StudentNotice, read by the admin under that message (Admin -> Students -> Message students).
+model StudentNoticeReply {
+  id        String        @id @default(cuid())
+  noticeId  String
+  notice    StudentNotice @relation(fields: [noticeId], references: [id], onDelete: Cascade)
+  email     String
+  body      String        @db.Text
+  seen      Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  @@index([noticeId, createdAt])
+  @@index([email])
+}

@@ -6,7 +6,7 @@ import { ChatCircleDots } from "@phosphor-icons/react";
 import { chatDraftFor, chatLink } from "@/lib/chat-link";
 import { CHAT_NUDGE_EVENT, getChatLink, takeWhatsAppReturn, trackIntent } from "@/lib/lead-intent";
 import { ChatPanel } from "@/components/chat-panel";
-import { closeNotesFlow, openNotesFlow } from "@/lib/notes-promo";
+import { closeNotesFlow } from "@/lib/notes-promo";
 
 type Nudge = { href: string; what: string; star?: boolean; quiet?: boolean; source: string; programme?: string; subject?: string; semester?: number | null };
 const REPLY_POLL_MS = 4_000; // a team reply opens the chat within this long
@@ -79,17 +79,15 @@ export function ChatNowFab() {
     };
   }, []);
 
-  // They tapped Yes, WhatsApp opened, and they are back on this page: the chat opens so they can carry on here too, and
-  // the MRQ / Notes plans open on top of it (close them and the chat is right there).
+  // They tapped Yes, WhatsApp opened, and they are back on this page: the chat opens and says "Hi i need notes" for them.
   // Tab visibility alone is not enough: when WhatsApp opens in its desktop app or another window, this tab never
   // becomes "hidden", so window focus and the first touch / mouse move / key / scroll count as coming back too
   // (takeWhatsAppReturn ignores anything in the first few seconds after the tap, and only fires once).
   useEffect(() => {
     const back = () => {
       if (document.visibilityState === "visible" && takeWhatsAppReturn()) {
-        setGreeting("back");
+        setGreeting("back"); // the panel sends "Hi i need notes" for them; prices come only when the team sends them
         setOpen(true);
-        openNotesFlow({ quiet: true }); // and the MRQ / Notes plans, on top, so they can pick a plan right away
       }
     };
     const signals: [EventTarget, string][] = [

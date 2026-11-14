@@ -18,7 +18,7 @@ export type Analytics = {
   revenue: { total: number; prevTotal: number; orders: number; aov: number; byDay: { day: string; value: number }[] };
   planMix: { label: string; count: number; amount: number }[];
   students: { paying: number; newPaying: number; repeat: number };
-  engagement: { active: number; activePct: number; seconds: number; avgPerActive: number; dau: { day: string; value: number }[]; avgDau: number };
+  engagement: { active: number; activePct: number; seconds: number; avgPerActive: number; dau: { day: string; value: number }[]; avgDau: number; readByDay: { day: string; value: number }[] };
   hoursOfDay: number[];
   topSubjects: { key: string; readers: number; seconds: number; opens: number; depth: number; buyers: number }[];
   unreadSubjects: { key: string; buyers: number }[];
@@ -74,6 +74,9 @@ export function computeAnalytics({ purchases, activity, hours, devices, now, ran
   const dauMap = new Map<string, Set<string>>();
   for (const a of activity) (dauMap.get(a.day) ?? dauMap.set(a.day, new Set()).get(a.day)!).add(a.email);
   const dau = chartDays.map((day) => ({ day, value: dauMap.get(day)?.size ?? 0 }));
+  const secByDay = new Map<string, number>();
+  for (const a of activity) secByDay.set(a.day, (secByDay.get(a.day) ?? 0) + a.seconds);
+  const readByDay = chartDays.map((day) => ({ day, value: Math.round((secByDay.get(day) ?? 0) / 60) })); // minutes
   const hoursOfDay = Array.from({ length: 24 }, () => 0);
   for (const h of hours) if (h.hour >= 0 && h.hour < 24) hoursOfDay[h.hour] += h.seconds;
 
@@ -164,6 +167,7 @@ export function computeAnalytics({ purchases, activity, hours, devices, now, ran
       seconds,
       avgPerActive: activeEmails.size ? Math.round(seconds / activeEmails.size) : 0,
       dau,
+      readByDay,
       avgDau: dau.length ? Math.round((sum(dau.map((d) => d.value)) / dau.length) * 10) / 10 : 0,
     },
     hoursOfDay,

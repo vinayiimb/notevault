@@ -35,8 +35,27 @@ const waBtn = "inline-flex h-11 items-center justify-center gap-1.5 rounded-lg b
 const callBtn = "inline-flex size-11 items-center justify-center gap-1.5 rounded-lg border border-border text-muted hover:text-foreground sm:h-auto sm:w-auto sm:px-3 sm:py-1.5 sm:text-xs sm:font-medium";
 const softBtn = "h-11 w-full rounded-lg border border-border px-3 text-sm text-muted hover:border-accent hover:text-accent sm:h-auto sm:w-auto sm:py-1.5 sm:text-xs";
 
-export default async function AdminLeadsPage({ searchParams }: { searchParams: Promise<{ status?: string }> }) {
-  const { status: rawStatus } = await searchParams;
+const VIEWS = [
+  { id: "orders", label: "Orders" },
+  { id: "numbers", label: "Numbers" },
+  { id: "visitors", label: "No number" },
+  { id: "insights", label: "Insights" },
+] as const;
+type ViewId = (typeof VIEWS)[number]["id"];
+
+function Tile({ label, value, hint, tone }: { label: string; value: string | number; hint?: string; tone?: "good" | "warn" | "hot" }) {
+  const color = tone === "good" ? "text-green-700 dark:text-green-400" : tone === "warn" ? "text-amber-700 dark:text-amber-400" : tone === "hot" ? "text-red-600" : "";
+  return (
+    <div className="rounded-xl border border-border bg-surface p-3.5 sm:p-4">
+      <p className="text-xs text-muted">{label}</p>
+      <p className={`mt-1 text-xl font-semibold tabular-nums sm:text-2xl ${color}`}>{value}</p>
+      {hint && <p className="mt-0.5 text-xs text-muted">{hint}</p>}
+    </div>
+  );
+}
+
+export default async function AdminLeadsPage({ searchParams }: { searchParams: Promise<{ status?: string; view?: string }> }) {
+  const { status: rawStatus, view: rawView } = await searchParams;
   const status: LeadStatusName = LEAD_STATUSES.find((s) => s === rawStatus) ?? "NEW";
 
   // Section 1: students who paid directly in the pop-up (Razorpay). Hand-added tracker rows start with "manual-", so they never show here.
@@ -70,7 +89,7 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
   let data;
   try {
     const since = daysAgo(30);
-    const [counts, leads, top] = await Promise.all([
+    const [counts, leads, top, week] = await Promise.all([
       prisma.noteLead.groupBy({ by: ["status"], _count: { _all: true } }),
       prisma.noteLead.findMany({ where: { status }, orderBy: { createdAt: "desc" }, take: 300 }),
       prisma.noteLead.groupBy({
@@ -80,10 +99,11 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
         orderBy: { _count: { subjectSlug: "desc" } },
         take: 8,
       }),
+      prisma.noteLead.count({ where: { createdAt: { gte: daysAgo(7) } } }),
     ]);
     const phones = [...new Set(leads.map((l) => l.phone))];
     const perPhone = await prisma.noteLead.groupBy({ by: ["phone"], where: { phone: { in: phones } }, _count: { _all: true } });
-    data = { counts, leads, top, requests: new Map(perPhone.map((p) => [p.phone, p._count._all])) };
+    data = { counts, leads, top, week, requests: new Map(perPhone.map((p) => [p.phone, p._count._all])) };
   } catch (err) {
     console.error("leads page:", err);
     return (
@@ -114,25 +134,51 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
     .filter((i) => !i.phone && withinDays(i.createdAt, 3))
     .sort((a, b) => intentScore(b) - intentScore(a) || b.createdAt.getTime() - a.createdAt.getTime())
     .slice(0, 40);
-  const { counts, top, requests } = data;
+  const { counts, top, requests, week } = data;
   // Hot first: someone who opened the chat or chose WhatsApp outranks a bare number, then newest first.
   const hot = (phone: string) => { const f = flagsOf.get(phone); return f ? intentScore({ chatAt: f.chat ? "x" : null, waAt: f.wa ? "x" : null }) : 0; };
   const leads = [...data.leads].sort((a, b) => hot(b.phone) - hot(a.phone) || b.createdAt.getTime() - a.createdAt.getTime());
   const countOf = (s: LeadStatusName) => counts.find((c) => c.status === s)?._count._all ?? 0;
+  const toSend = orders?.paid.length ?? 0;
+  const view: ViewId = VIEWS.find((v) => v.id === rawView)?.id ?? (rawStatus ? "numbers" : toSend > 0 ? "orders" : "numbers");
+  const totalLeads = LEAD_STATUSES.reduce((n, st) => n + countOf(st), 0);
+  const convRate = totalLeads ? Math.round((countOf("CONVERTED") / totalLeads) * 100) : 0;
+  const badge: Record<ViewId, number> = { orders: toSend, numbers: countOf("NEW"), visitors: unreached.length, insights: 0 };
 
   return (
     <div className="px-4 py-5 sm:p-8">
       <h1 className="text-2xl font-semibold">Leads</h1>
-      <nav className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-sm text-accent">
-        <a href="#paid" className="hover:underline">1. Paid directly</a>
-        <a href="#tracker" className="hover:underline">2. Tracker</a>
-        <a href="#numbers" className="hover:underline">3. WhatsApp numbers</a>
+
+      {/* At a glance */}
+      <div className="mt-4 grid max-w-5xl grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
+        <Tile label="Paid, notes to send" value={toSend} tone={toSend ? "good" : undefined} hint={`within ${NOTES_DELIVERY_HOURS}h`} />
+        <Tile label="New numbers" value={countOf("NEW")} tone={countOf("NEW") ? "hot" : undefined} hint="not contacted yet" />
+        <Tile label="Contacted" value={countOf("CONTACTED")} />
+        <Tile label="Converted" value={countOf("CONVERTED")} hint={`${convRate}% of all numbers`} tone="good" />
+        <Tile label="Said Yes, no number" value={unreached.length} hint="last 3 days" tone={unreached.length ? "warn" : undefined} />
+        <Tile label="Numbers this week" value={week} hint={`${totalLeads} in total`} />
+      </div>
+
+      {/* One job per tab */}
+      <nav aria-label="Leads sections" className="mt-5 grid max-w-3xl grid-cols-2 gap-1 rounded-xl bg-surface-muted p-1 sm:grid-cols-4">
+        {VIEWS.map((v) => (
+          <Link
+            key={v.id}
+            href={`/admin/leads?view=${v.id}`}
+            aria-current={view === v.id ? "page" : undefined}
+            className={`flex min-h-10 items-center justify-center gap-1.5 rounded-lg text-sm font-medium transition ${view === v.id ? "bg-surface text-foreground shadow-sm" : "text-muted hover:text-foreground"}`}
+          >
+            {v.label}
+            {badge[v.id] > 0 && <span className={`rounded-full px-1.5 text-[11px] font-semibold tabular-nums ${view === v.id ? "bg-accent text-accent-foreground" : "bg-border text-muted"}`}>{badge[v.id]}</span>}
+          </Link>
+        ))}
       </nav>
 
-      {orders && (
+      {view === "orders" && !orders && <p className="mt-6 text-sm text-muted">Orders table not readable yet (migration?).</p>}
+      {view === "orders" && orders && (
         <section id="paid" className="mt-6 max-w-3xl scroll-mt-4">
           <h2 className="text-lg font-semibold">
-            1. Paid directly{orders.paid.length > 0 ? <span className="text-green-600"> · {orders.paid.length} to send</span> : ""}
+            Paid directly{orders.paid.length > 0 ? <span className="text-green-600"> · {orders.paid.length} to send</span> : ""}
           </h2>
           <p className="mt-1 text-sm text-muted">
             Paid in the pop-up themselves. Ask for their Gmail on WhatsApp, type it in Give site access, done. Promised within{" "}
@@ -208,9 +254,10 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
       )}
 
 
+      {view === "orders" && (
       <section id="tracker" className="mt-10 max-w-3xl scroll-mt-4">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <h2 className="text-lg font-semibold">2. Tracker</h2>
+          <h2 className="text-lg font-semibold">Tracker</h2>
           <Link href="/admin/leads/delivery" className="text-sm font-medium text-accent hover:underline">Open full tracker &rarr;</Link>
         </div>
         {trackerRows.length === 0 ? (
@@ -234,15 +281,18 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
         )}
       </section>
 
-      <section id="numbers" className="mt-10 max-w-3xl scroll-mt-4">
-        <h2 className="text-lg font-semibold">3. WhatsApp numbers</h2>
+      )}
+
+      {view === "numbers" && (<>
+      <section id="numbers" className="mt-6 max-w-3xl scroll-mt-4">
+        <h2 className="text-lg font-semibold">WhatsApp numbers</h2>
         <p className="mt-1 text-sm text-muted">Left their number for notes. Message them, then move them along.</p>
       </section>
       <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
         {LEAD_STATUSES.map((s) => (
           <Link
             key={s}
-            href={`/admin/leads?status=${s}`}
+            href={`/admin/leads?view=numbers&status=${s}`}
             className={`rounded-lg border px-3 py-2.5 text-center text-sm sm:py-1.5 ${s === status ? "border-accent bg-accent-soft text-accent" : "border-border text-muted hover:text-foreground"}`}
           >
             {s.charAt(0) + s.slice(1).toLowerCase()} ({countOf(s)})
@@ -338,11 +388,11 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
           })}
         </ul>
       )}
-      <details className="mt-10 max-w-3xl">
-        <summary className="cursor-pointer text-sm font-medium text-muted hover:text-foreground">More: visitors with no number, most asked for, alerts</summary>
-        <AlertsPanel />
-      {unreached.length > 0 && (
-        <section className="mt-5 max-w-3xl">
+      </>)}
+
+      {view === "visitors" && unreached.length === 0 && <p className="mt-6 text-sm text-muted">Nobody in the last 3 days.</p>}
+      {view === "visitors" && unreached.length > 0 && (
+        <section className="mt-6 max-w-3xl">
           <h2 className="text-lg font-semibold">
             Said Yes, no number yet<span className="text-amber-600"> · {unreached.length}</span>
           </h2>
@@ -373,8 +423,9 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
         </section>
       )}
 
+      {view === "insights" && (<div className="max-w-3xl">
       {top.length > 0 && (
-        <section className="mt-6 max-w-3xl">
+        <section className="mt-6">
           <h2 className="text-sm font-medium">Most asked for, last 30 days</h2>
           <div className="mt-2 flex flex-wrap gap-2">
             {top.map((t) => (
@@ -390,8 +441,8 @@ export default async function AdminLeadsPage({ searchParams }: { searchParams: P
           <p className="mt-1.5 text-xs text-muted">Amber = no notes written yet, so these are the ones worth making next.</p>
         </section>
       )}
-
-      </details>
+      <AlertsPanel />
+      </div>)}
     </div>
   );
 }

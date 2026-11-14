@@ -1,8 +1,9 @@
-// Support tickets raised by signed-in students (Problem / Suggestion / Error).
+// Support tickets raised by signed-in students (Problem / Subject missing / Suggestion / Error).
 // Pure rules and types only (no I/O), so they can be unit-tested; the DB read is in support.ts.
 
 export const TICKET_KINDS = [
   { id: "PROBLEM", label: "Problem", hint: "Something isn't working for me" },
+  { id: "SUBJECT_MISSING", label: "Subject missing", hint: "A subject, unit or paper I need isn't here" },
   { id: "ERROR", label: "Report an error", hint: "Wrong or missing content, a typo, a broken page" },
   { id: "SUGGESTION", label: "Suggestion", hint: "An idea to make DU PYQ better" },
 ] as const;

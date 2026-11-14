@@ -132,6 +132,28 @@ export async function getProgrammesWithNotesStatus(featuredSlugs?: string[]) {
   }));
 }
 
+/** Every subject that has a written note, grouped by course (General Notes first), for the "Notes ready" list on /notes. */
+export async function getReadyNotesByProgramme() {
+  const rows = await readOrBuildFallback(
+    () =>
+      prisma.canonicalSubjectNote.findMany({
+        where: { NOT: { content: "" } },
+        select: { programmeSlug: true, programme: true, subjectSlug: true, subject: true, semester: true },
+        orderBy: [{ semester: "asc" }, { subject: "asc" }],
+      }),
+    [],
+  );
+  const groups = new Map<string, { slug: string; name: string; subjects: { slug: string; name: string; semester: number | null }[] }>();
+  for (const r of rows) {
+    const g = groups.get(r.programmeSlug) ?? { slug: r.programmeSlug, name: r.programme, subjects: [] };
+    g.subjects.push({ slug: r.subjectSlug, name: r.subject, semester: r.semester });
+    groups.set(r.programmeSlug, g);
+  }
+  return [...groups.values()].sort((a, b) =>
+    a.slug === GENERAL_PROGRAMME.slug ? -1 : b.slug === GENERAL_PROGRAMME.slug ? 1 : b.subjects.length - a.subjects.length || a.name.localeCompare(b.name),
+  );
+}
+
 export async function getProgrammeSubjectsWithNotesStatus(programmeSlug: string) {
   const programme = await findCanonicalProgramme(programmeSlug);
   if (!programme) return null;

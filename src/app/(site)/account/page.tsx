@@ -25,9 +25,13 @@ import { shortDate, timeAgo } from "@/lib/time-ago";
 import { getStudentActivity } from "@/lib/student-activity";
 import { getSubjectLimit, getWeeklyReaders, listSubjects } from "@/lib/student-dashboard";
 import { feathersFor, parseGoal } from "@/lib/feathers";
-import { CommunityCard, FeatherTile, OverviewTiles, ProgressCard, SectionLabel, StreakTile, ToolTiles } from "./dashboard-cards";
+import { CommunityCard, OverviewTiles, SectionLabel, ToolTiles } from "./dashboard-cards";
+import { ContinueCard, Greeting, QuickActions, TodayCard } from "./home-cards";
+import { NoticeCard } from "./notice-card";
+import { fmtDuration } from "@/lib/student-activity-format";
 import { SubjectsCard } from "./subjects-card";
 import { AccountShell } from "@/components/account-shell";
+import { noticesFor } from "@/lib/student-notices";
 
 export const metadata: Metadata = {
   title: "My notes",
@@ -66,6 +70,19 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
     cookies(),
     getSubjectLimit(email),
   ]);
+  const notices = await noticesFor(portal.ownedCount > 0, email);
+  // "Continue reading": the owned note read most recently, else their first note.
+  const owned = portal.groups.flatMap((g) => g.notes);
+  const lastRead = activity?.subjects.filter((s) => owned.some((n) => n.key === s.key)).sort((a, b) => b.lastAt.getTime() - a.lastAt.getTime())[0];
+  const pick = lastRead ? owned.find((n) => n.key === lastRead.key) : owned[0];
+  const continueNote = pick
+    ? {
+        href: `/account/notes/${pick.programmeSlug}/${pick.subjectSlug}`,
+        subject: pick.subject,
+        meta: lastRead ? `${fmtDuration(lastRead.seconds)} read · about ${lastRead.depth}% through` : pick.semester ? `Semester ${pick.semester}` : "Ready to read",
+        resume: !!lastRead,
+      }
+    : null;
   const goalMin = parseGoal(jar.get("notevault_goal")?.value);
   const totalSeconds = activity?.totalSeconds ?? 0;
   const activeDays = activity?.activeDays ?? 0;
@@ -76,16 +93,27 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
   return (
     <AccountShell name={firstName(email)} email={email} streak={activity?.streak ?? 0} feathers={feathers}>
     <div className="mx-auto w-full max-w-[1680px] px-4 pb-16 pt-5 sm:px-8 sm:pt-7 xl:px-12">
-      {/* Progress, streak, feathers, community */}
-      <div className="grid grid-cols-2 gap-3 lg:grid-cols-[1.35fr_0.85fr_1fr_1.5fr] xl:gap-4">
-        <div className="col-span-2 lg:col-span-1 [&>*]:h-full">
-          <ProgressCard todaySeconds={todaySeconds} goalMin={goalMin} />
+      <Greeting
+        name={firstName(email)}
+        sub={portal.ownedCount ? `${portal.ownedCount} note${portal.ownedCount === 1 ? "" : "s"} in your library.` : "Welcome to your study space."}
+      />
+
+      {/* Messages from the team (Admin -> Students -> Message students); students can reply */}
+      {notices.length > 0 && (
+        <div className="mt-5 flex flex-col gap-2.5">
+          {notices.map((n) => (
+            <NoticeCard key={n.id} id={n.id} title={n.title} body={n.body} date={shortDate(n.createdAt.toISOString())} replies={n.replies.map((r) => ({ id: r.id, body: r.body, createdAt: r.createdAt.toISOString() }))} />
+          ))}
         </div>
-        <StreakTile streak={activity?.streak ?? 0} />
-        <FeatherTile feathers={feathers} />
-        <div className="col-span-2 lg:col-span-1 [&>*]:h-full">
-          <CommunityCard readers={weeklyReaders} />
-        </div>
+      )}
+
+      <div className="mt-5 grid grid-cols-1 gap-3 lg:grid-cols-[1.25fr_1fr] xl:gap-4">
+        <ContinueCard note={continueNote} />
+        <TodayCard todaySeconds={todaySeconds} goalMin={goalMin} streak={activity?.streak ?? 0} feathers={feathers} />
+      </div>
+
+      <div className="mt-3 xl:mt-4">
+        <QuickActions helpWhatsApp={HELP_WHATSAPP} />
       </div>
 
       {portal.pendingCount > 0 && (
@@ -131,6 +159,10 @@ export default async function AccountPage({ searchParams }: { searchParams: Prom
 
       <SectionLabel>Study tools</SectionLabel>
       <ToolTiles />
+
+      <div className="mt-8 [&>*]:h-full">
+        <CommunityCard readers={weeklyReaders} />
+      </div>
 
       <SectionLabel>Overview</SectionLabel>
       <OverviewTiles notes={portal.ownedCount} totalSeconds={totalSeconds} activeDays={activeDays} subjects={subjects?.length ?? 0} />
